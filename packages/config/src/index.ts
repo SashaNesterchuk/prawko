@@ -1,0 +1,150 @@
+export const SUPPORTED_LOCALES = ["pl", "ua", "en"] as const;
+export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+
+export const ACTIVE_CATEGORIES = ["B"] as const;
+export type DrivingCategory = (typeof ACTIVE_CATEGORIES)[number];
+
+export const PLAN_LEVELS = [
+  "first_time",
+  "repeater",
+  "already_studied",
+] as const;
+export type PlanLevel = (typeof PLAN_LEVELS)[number];
+
+export const STUDY_PLAN_TASK_TYPES = [
+  "learn_topic",
+  "review_weak_spots",
+  "mini_test",
+  "full_exam",
+  "review_saved",
+  "review_wrong_answers",
+] as const;
+export type StudyPlanTaskType = (typeof STUDY_PLAN_TASK_TYPES)[number];
+
+export const TOPIC_BLOCK_IDS = [
+  "signs",
+  "intersections",
+  "overtaking",
+  "pedestrians",
+  "first_aid",
+  "priority",
+  "safety",
+  "technical",
+] as const;
+export type TopicBlockId = (typeof TOPIC_BLOCK_IDS)[number];
+
+export const QUESTION_SCOPES = ["base", "specialist"] as const;
+export type QuestionScope = (typeof QUESTION_SCOPES)[number];
+
+export const QUESTION_ANSWER_TYPES = ["boolean", "abc"] as const;
+export type QuestionAnswerType = (typeof QUESTION_ANSWER_TYPES)[number];
+
+export const QUESTION_MEDIA_TYPES = ["image", "video", "none"] as const;
+export type QuestionMediaType = (typeof QUESTION_MEDIA_TYPES)[number];
+
+export const SOURCE_MEDIA_COLLECTIONS = [
+  "primary",
+  "pjm",
+  "unknown",
+] as const;
+export type SourceMediaCollection = (typeof SOURCE_MEDIA_COLLECTIONS)[number];
+
+export const MEDIA_SOURCE_KINDS = [
+  "primary",
+  "pjm_question",
+  "pjm_answer",
+] as const;
+export type MediaSourceKind = (typeof MEDIA_SOURCE_KINDS)[number];
+
+export const MEDIA_MATCH_STRATEGIES = [
+  "exact",
+  "normalized",
+  "alias",
+  "missing",
+] as const;
+export type MediaMatchStrategy = (typeof MEDIA_MATCH_STRATEGIES)[number];
+
+export const MEDIA_STORAGE_BUCKET_IDS = [
+  "question-images",
+  "question-videos",
+  "question-posters",
+  "question-pjm",
+] as const;
+export type MediaStorageBucketId = (typeof MEDIA_STORAGE_BUCKET_IDS)[number];
+
+export const MEDIA_STORAGE_BUCKETS = {
+  images: "question-images",
+  videos: "question-videos",
+  posters: "question-posters",
+  pjm: "question-pjm",
+} as const;
+
+export const QUESTION_SESSION_MODES = [
+  "learning",
+  "weak_spots",
+  "hard_questions",
+  "seen_not_mastered",
+  "wrong_answers",
+  "saved",
+  "saved_sprint",
+  "exam_tomorrow",
+  "mini_test",
+  "exam",
+] as const;
+export type QuestionSessionMode = (typeof QUESTION_SESSION_MODES)[number];
+
+export const AI_PROVIDER_IDS = ["mock", "openai", "anthropic"] as const;
+export type AiProviderId = (typeof AI_PROVIDER_IDS)[number];
+
+export const APP_FEATURES = [
+  "premium_access",
+  "ai_explanations",
+  "ai_question_chat",
+  "exam_simulator",
+] as const;
+export type AppFeature = (typeof APP_FEATURES)[number];
+
+export const AI_MESSAGE_ROLES = ["user", "assistant", "system"] as const;
+export type AiMessageRole = (typeof AI_MESSAGE_ROLES)[number];
+
+export const AI_MESSAGE_KINDS = [
+  "question_explanation",
+  "question_chat",
+  "exam_review",
+  "plan_help",
+  "support",
+] as const;
+export type AiMessageKind = (typeof AI_MESSAGE_KINDS)[number];
+
+export const DEFAULT_LOCALE: SupportedLocale = "ua";
+export const DEFAULT_CATEGORY: DrivingCategory = "B";
+
+export const EXAM_RULES = {
+  totalQuestions: 32,
+  baseQuestions: 20,
+  specialistQuestions: 12,
+  durationMinutes: 25,
+  maxPoints: 74,
+  passingPoints: 68,
+} as const;
+
+export const STUDY_PLAN_LIMITS = {
+  minDays: 7,
+  recommendedDays: 14,
+  maxDays: 30,
+  minMinutesPerDay: 10,
+  maxMinutesPerDay: 180,
+} as const;
+
+export const FEATURE_FLAGS = {
+  enableCategoryBOnly: true,
+  enableSchoolCodes: true,
+  enableAiQuestionChat: true,
+  enableExamSimulator: true,
+} as const;
+
+export const AI_LIMITS = {
+  freeQuestionChatPerDay: 8,
+  maxHistoryMessages: 12,
+  maxPromptChars: 500,
+} as const;

@@ -1,0 +1,30 @@
+{
+  "name": "@prawko/data-pipeline",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "pipeline": "tsx src/cli.ts pipeline",
+    "inspect": "tsx src/cli.ts inspect",
+    "validate": "tsx src/cli.ts validate",
+    "media:audit": "tsx src/cli.ts media:audit",
+    "media:build": "tsx src/cli.ts media:build",
+    "media:upload": "tsx src/cli.ts media:upload",
+    "questions:sync": "tsx src/cli.ts questions:sync",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "@prawko/config": "workspace:*",
+    "@prawko/schemas": "workspace:*",
+    "adm-zip": "^0.5.16",
+    "xlsx": "^0.18.5",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

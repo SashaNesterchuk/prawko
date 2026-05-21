@@ -1,0 +1,546 @@
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import Toast from "react-native-toast-message";
+
+import { STUDY_PLAN_LIMITS } from "@prawko/config";
+
+import { AppButton } from "../../src/components/shell/AppButton";
+import { AppCard } from "../../src/components/shell/AppCard";
+import { AppScreen } from "../../src/components/shell/AppScreen";
+import { AppTextInput } from "../../src/components/shell/AppTextInput";
+import { isMobileSupabaseConfigured } from "../../src/config/env";
+import {
+  formatPlanDate,
+  generateAdjustedStudyPlan,
+  getDaysUntilExamFromDate,
+  getExamDateFromDays,
+} from "../../src/features/study-plan/generate-local-study-plan";
+import { saveGeneratedStudyPlanRemotely } from "../../src/features/study-plan/supabase-study-plan";
+import { useTheme } from "../../src/providers/ThemeProvider";
+import {
+  useCurrentStudyPlan,
+  useAppShellStore,
+} from "../../src/state/app-shell";
+
+const DAY_PRESETS = [1, 3, 5, 7, 10, 14, 21, 30] as const;
+
+export default function PlanAdjustModalScreen() {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = getStyles(theme);
+  const params = useLocalSearchParams<{
+    missedDays?: string | string[];
+  }>();
+  const authMode = useAppShellStore((state) => state.authMode);
+  const currentStudyPlan = useCurrentStudyPlan();
+  const currentStudyPlanRemoteId = useAppShellStore(
+    (state) => state.currentStudyPlanRemoteId
+  );
+  const hydrateRemoteStudyPlan = useAppShellStore(
+    (state) => state.hydrateRemoteStudyPlan
+  );
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
+  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const storedSchoolCode = useAppShellStore(
+    (state) => state.studyPlanSetup.schoolCode
+  );
+  const currentLevel = currentStudyPlan?.level ?? null;
+  const missedDays = parsePositiveInteger(getSingleParam(params.missedDays)) ?? 0;
+  const [examDateInput, setExamDateInput] = useState(
+    currentStudyPlan?.examDate ?? getExamDateFromDays(STUDY_PLAN_LIMITS.recommendedDays)
+  );
+  const [minutesInput, setMinutesInput] = useState(
+    String(
+      currentStudyPlan?.minutesPerDay ?? STUDY_PLAN_LIMITS.minMinutesPerDay
+    )
+  );
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const normalizedExamDate = parseStrictIsoDate(examDateInput);
+  const normalizedMinutes = parseInteger(minutesInput);
+  const daysUntilExam = normalizedExamDate
+    ? getDaysUntilExamFromDate(normalizedExamDate)
+    : null;
+  const dateError = getDateError({
+    daysUntilExam,
+    normalizedExamDate,
+    t,
+  });
+  const minutesError = getMinutesError({
+    minutesPerDay: normalizedMinutes,
+    t,
+  });
+  const previewPlan =
+    currentStudyPlan &&
+    currentLevel &&
+    normalizedExamDate &&
+    normalizedMinutes !== null &&
+    !dateError &&
+    !minutesError
+      ? generateAdjustedStudyPlan({
+          category: currentStudyPlan.category ?? preferredCategory,
+          examDate: normalizedExamDate,
+          level: currentLevel,
+          locale: currentStudyPlan.locale ?? preferredLocale,
+          minutesPerDay: normalizedMinutes,
+          schoolCode: storedSchoolCode || currentStudyPlan.schoolCode,
+        })
+      : null;
+
+  async function handleSubmit() {
+    if (
+      !currentStudyPlan ||
+      !currentLevel ||
+      !normalizedExamDate ||
+      normalizedMinutes === null ||
+      dateError ||
+      minutesError ||
+      !previewPlan ||
+      isSubmitting
+    ) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError(null);
+
+    try {
+      let nextRemoteId: string | null = null;
+
+      if (authMode === "supabase" && isMobileSupabaseConfigured) {
+        nextRemoteId = await saveGeneratedStudyPlanRemotely({
+          plan: previewPlan,
+          generationContext: {
+            days_until_exam: daysUntilExam,
+            from_exam_date: currentStudyPlan.examDate,
+            from_minutes_per_day: currentStudyPlan.minutesPerDay,
+            generated_at: new Date().toISOString(),
+            missed_days: missedDays,
+            previous_plan_id: currentStudyPlanRemoteId,
+            reason: getAdjustmentReason({
+              currentExamDate: currentStudyPlan.examDate,
+              currentMinutesPerDay: currentStudyPlan.minutesPerDay,
+              missedDays,
+              nextExamDate: normalizedExamDate,
+              nextMinutesPerDay: normalizedMinutes,
+            }),
+            source: "mobile_plan_adjust_modal",
+            to_exam_date: normalizedExamDate,
+            to_minutes_per_day: normalizedMinutes,
+          },
+        });
+      }
+
+      hydrateRemoteStudyPlan({
+        plan: previewPlan,
+        remoteId: nextRemoteId,
+      });
+
+      Toast.show({
+        type: "success",
+        text1: t("toasts.planAdjustedTitle"),
+        text2: t("toasts.planAdjustedSubtitle", {
+          days: previewPlan.daysPlanned,
+        }),
+      });
+
+      router.back();
+    } catch (error) {
+      console.warn("Failed to adjust study plan.", error);
+      setFormError(t("modals.planAdjust.submitFailed"));
+      Toast.show({
+        type: "error",
+        text1: t("toasts.planAdjustFailedTitle"),
+        text2: t("toasts.planAdjustFailedSubtitle"),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <AppScreen
+      title={t("modals.planAdjust.title")}
+      subtitle={t("modals.planAdjust.subtitle")}
+      footer={
+        <View style={{ gap: 10 }}>
+          {currentStudyPlan && currentLevel ? (
+            <AppButton
+              disabled={!previewPlan || isSubmitting}
+              label={t(
+                isSubmitting
+                  ? "modals.planAdjust.submitLoading"
+                  : "modals.planAdjust.submit"
+              )}
+              onPress={() => void handleSubmit()}
+            />
+          ) : (
+            <AppButton
+              label={t("home.openPlanPreview")}
+              onPress={() => router.replace("/(onboarding)/preview")}
+            />
+          )}
+          <AppButton
+            variant="ghost"
+            label={t("common.close")}
+            onPress={() => router.back()}
+          />
+        </View>
+      }
+    >
+      <View style={{ gap: 12 }}>
+        {!currentStudyPlan || !currentLevel ? (
+          <AppCard>
+            <Text style={styles.sectionTitle}>
+              {t("modals.planAdjust.missingPlanTitle")}
+            </Text>
+            <Text style={styles.bodyText}>
+              {t("modals.planAdjust.missingPlanBody")}
+            </Text>
+          </AppCard>
+        ) : (
+          <>
+            {missedDays > 0 ? (
+              <AppCard accent>
+                <Text style={styles.sectionTitle}>
+                  {t("modals.planAdjust.missedDaysTitle")}
+                </Text>
+                <Text style={styles.bodyText}>
+                  {t("modals.planAdjust.missedDaysBody", {
+                    days: missedDays,
+                  })}
+                </Text>
+              </AppCard>
+            ) : null}
+
+            <AppCard>
+              <Text style={styles.sectionTitle}>
+                {t("modals.planAdjust.currentPlanTitle")}
+              </Text>
+              <Text style={styles.bodyText}>
+                {t("modals.planAdjust.currentPlanDate", {
+                  date: formatPlanDate(currentStudyPlan.examDate),
+                })}
+              </Text>
+              <Text style={styles.bodyText}>
+                {t("modals.planAdjust.currentPlanMinutes", {
+                  minutes: currentStudyPlan.minutesPerDay,
+                })}
+              </Text>
+            </AppCard>
+
+            <AppCard>
+              <Text style={styles.sectionTitle}>
+                {t("modals.planAdjust.presetsTitle")}
+              </Text>
+              <Text style={styles.bodyText}>
+                {t("modals.planAdjust.presetsSubtitle")}
+              </Text>
+              <View style={styles.presetGrid}>
+                {DAY_PRESETS.map((days) => {
+                  const presetDate = getExamDateFromDays(days);
+                  const isActive = normalizedExamDate === presetDate;
+
+                  return (
+                    <Pressable
+                      key={days}
+                      accessibilityRole="button"
+                      onPress={() => {
+                        setExamDateInput(presetDate);
+                        setFormError(null);
+                      }}
+                      style={({ pressed }) => [
+                        styles.presetButton,
+                        isActive ? styles.presetButtonActive : null,
+                        pressed ? styles.presetButtonPressed : null,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.presetLabel,
+                          isActive ? styles.presetLabelActive : null,
+                        ]}
+                      >
+                        {t("modals.planAdjust.presetDays", { days })}
+                      </Text>
+                      <Text style={styles.presetMeta}>
+                        {formatPlanDate(presetDate)}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </AppCard>
+
+            <AppCard>
+              <Text style={styles.sectionTitle}>
+                {t("modals.planAdjust.inputsTitle")}
+              </Text>
+              <AppTextInput
+                autoCapitalize="none"
+                editable={!isSubmitting}
+                label={t("modals.planAdjust.examDateLabel")}
+                onChangeText={(value) => {
+                  setExamDateInput(value);
+                  setFormError(null);
+                }}
+                placeholder="2026-06-15"
+                value={examDateInput}
+              />
+              {dateError ? <Text style={styles.errorText}>{dateError}</Text> : null}
+              <AppTextInput
+                editable={!isSubmitting}
+                keyboardType="number-pad"
+                label={t("modals.planAdjust.minutesLabel")}
+                onChangeText={(value) => {
+                  setMinutesInput(value.replace(/[^0-9]/g, "").slice(0, 3));
+                  setFormError(null);
+                }}
+                placeholder="25"
+                value={minutesInput}
+              />
+              {minutesError ? (
+                <Text style={styles.errorText}>{minutesError}</Text>
+              ) : null}
+            </AppCard>
+
+            {previewPlan ? (
+              <AppCard accent>
+                <Text style={styles.sectionTitle}>
+                  {t("modals.planAdjust.previewTitle")}
+                </Text>
+                <Text style={styles.bodyText}>
+                  {t("modals.planAdjust.previewDate", {
+                    date: formatPlanDate(previewPlan.examDate),
+                  })}
+                </Text>
+                <Text style={styles.bodyText}>
+                  {t("modals.planAdjust.previewPace", {
+                    days: previewPlan.daysPlanned,
+                    minutes: previewPlan.minutesPerDay,
+                  })}
+                </Text>
+                <Text style={styles.bodyText}>
+                  {t("modals.planAdjust.previewMix", {
+                    full: previewPlan.summary.fullExamDays,
+                    mini: previewPlan.summary.miniTestDays,
+                    weak: previewPlan.summary.weakSpotDays,
+                  })}
+                </Text>
+                {previewPlan.summary.minimumModeDays > 0 ? (
+                  <Text style={styles.bodyText}>
+                    {t("modals.planAdjust.previewMinimum", {
+                      days: previewPlan.summary.minimumModeDays,
+                    })}
+                  </Text>
+                ) : null}
+              </AppCard>
+            ) : null}
+
+            {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
+          </>
+        )}
+      </View>
+    </AppScreen>
+  );
+}
+
+function getAdjustmentReason({
+  currentExamDate,
+  currentMinutesPerDay,
+  missedDays,
+  nextExamDate,
+  nextMinutesPerDay,
+}: {
+  currentExamDate: string;
+  currentMinutesPerDay: number;
+  missedDays: number;
+  nextExamDate: string;
+  nextMinutesPerDay: number;
+}) {
+  const examDateChanged = currentExamDate !== nextExamDate;
+  const minutesChanged = currentMinutesPerDay !== nextMinutesPerDay;
+
+  if (examDateChanged && minutesChanged) {
+    return "exam_date_and_pace_change";
+  }
+
+  if (examDateChanged) {
+    return "exam_date_change";
+  }
+
+  if (minutesChanged) {
+    return "pace_change";
+  }
+
+  if (missedDays > 0) {
+    return "missed_days";
+  }
+
+  return "manual_adjust";
+}
+
+function getDateError({
+  daysUntilExam,
+  normalizedExamDate,
+  t,
+}: {
+  daysUntilExam: number | null;
+  normalizedExamDate: string | null;
+  t: ReturnType<typeof useTranslation>["t"];
+}) {
+  if (!normalizedExamDate) {
+    return t("modals.planAdjust.errors.invalidDate");
+  }
+
+  if (daysUntilExam === null || daysUntilExam < 1) {
+    return t("modals.planAdjust.errors.minDays");
+  }
+
+  if (daysUntilExam > STUDY_PLAN_LIMITS.maxDays) {
+    return t("modals.planAdjust.errors.maxDays", {
+      days: STUDY_PLAN_LIMITS.maxDays,
+    });
+  }
+
+  return null;
+}
+
+function getMinutesError({
+  minutesPerDay,
+  t,
+}: {
+  minutesPerDay: number | null;
+  t: ReturnType<typeof useTranslation>["t"];
+}) {
+  if (minutesPerDay === null) {
+    return t("modals.planAdjust.errors.invalidMinutes");
+  }
+
+  if (minutesPerDay < STUDY_PLAN_LIMITS.minMinutesPerDay) {
+    return t("modals.planAdjust.errors.minMinutes", {
+      minutes: STUDY_PLAN_LIMITS.minMinutesPerDay,
+    });
+  }
+
+  if (minutesPerDay > STUDY_PLAN_LIMITS.maxMinutesPerDay) {
+    return t("modals.planAdjust.errors.maxMinutes", {
+      minutes: STUDY_PLAN_LIMITS.maxMinutesPerDay,
+    });
+  }
+
+  return null;
+}
+
+function getSingleParam(value: string | string[] | undefined) {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+}
+
+function parseInteger(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(trimmed, 10);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parsePositiveInteger(value: string | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function parseStrictIsoDate(value: string) {
+  const trimmed = value.trim();
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return null;
+  }
+
+  const [year, month, day] = trimmed
+    .split("-")
+    .map((part) => Number.parseInt(part, 10));
+  const candidate = new Date(year, month - 1, day);
+
+  if (
+    candidate.getFullYear() !== year ||
+    candidate.getMonth() !== month - 1 ||
+    candidate.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return trimmed;
+}
+
+const getStyles = (theme: ReturnType<typeof useTheme>) =>
+  StyleSheet.create({
+    bodyText: {
+      color: theme.colors.textPrimary,
+      fontSize: 14,
+      lineHeight: 22,
+    },
+    errorText: {
+      color: "#A44E37",
+      fontSize: 13,
+      lineHeight: 20,
+    },
+    presetButton: {
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.borderSoft,
+      borderRadius: theme.radius.large,
+      borderWidth: 1,
+      gap: 4,
+      minWidth: "47%",
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    presetButtonActive: {
+      backgroundColor: theme.colors.cardAccent,
+      borderColor: theme.colors.accentMuted,
+    },
+    presetButtonPressed: {
+      opacity: 0.84,
+    },
+    presetGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12,
+    },
+    presetLabel: {
+      color: theme.colors.textPrimary,
+      fontSize: 14,
+      fontWeight: "700",
+    },
+    presetLabelActive: {
+      color: theme.colors.textPrimary,
+    },
+    presetMeta: {
+      color: theme.colors.textSecondary,
+      fontSize: 12,
+      lineHeight: 18,
+    },
+    sectionTitle: {
+      color: theme.colors.textSecondary,
+      fontSize: 13,
+      fontWeight: "700",
+      marginBottom: 8,
+      textTransform: "uppercase",
+    },
+  });

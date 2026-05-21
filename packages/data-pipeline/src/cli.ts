@@ -1,0 +1,154 @@
+import type { PipelineOptions } from "./types";
+import { runInspect, runPipeline, runValidate } from "./pipeline";
+import { executeMediaBuild, uploadBuiltMedia } from "./media-build";
+import { syncQuestionsToSupabase } from "./question-sync";
+
+function parseArgs(argv: string[]): { command: string; options: PipelineOptions } {
+  const [command = "pipeline", ...rest] = argv;
+  const options: PipelineOptions = {};
+
+  for (let index = 0; index < rest.length; index += 1) {
+    const token = rest[index];
+
+    if (token === "--xlsx") {
+      options.xlsxPath = rest[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (token === "--sheet") {
+      options.sheetName = rest[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (token === "--media-dir") {
+      options.mediaDir = rest[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (token === "--aliases") {
+      options.aliasesPath = rest[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (token === "--delivery-dir") {
+      options.deliveryDir = rest[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (token === "--input") {
+      options.inputPath = rest[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (token === "--fail-on-warnings") {
+      options.failOnWarnings = true;
+      continue;
+    }
+
+    if (token === "--skip-existing") {
+      options.skipExisting = true;
+      continue;
+    }
+
+    if (token === "--dry-run") {
+      options.dryRun = true;
+      continue;
+    }
+
+    if (token === "--limit") {
+      const rawValue = Number.parseInt(rest[index + 1] ?? "", 10);
+      if (Number.isFinite(rawValue) && rawValue > 0) {
+        options.limit = rawValue;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (token === "--batch-size") {
+      const rawValue = Number.parseInt(rest[index + 1] ?? "", 10);
+      if (Number.isFinite(rawValue) && rawValue > 0) {
+        options.batchSize = rawValue;
+      }
+      index += 1;
+    }
+  }
+
+  return { command, options };
+}
+
+async function main() {
+  const { command, options } = parseArgs(process.argv.slice(2));
+
+  if (command === "pipeline") {
+    const result = await runPipeline(options);
+    console.log(JSON.stringify(result.summary, null, 2));
+    return;
+  }
+
+  if (command === "inspect") {
+    const result = await runInspect(options);
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "validate") {
+    const result = await runValidate();
+    console.log(JSON.stringify(result.summary, null, 2));
+    return;
+  }
+
+  if (command === "media:audit") {
+    const result = await runPipeline(options);
+    console.log(
+      JSON.stringify(
+        {
+          totalMediaEntries: result.summary.totalMediaEntries,
+          totalMediaReferences: result.summary.totalMediaReferences,
+          totalMediaBuildJobs: result.summary.totalMediaBuildJobs,
+          issues: result.summary.issues,
+        },
+        null,
+        2
+      )
+    );
+    return;
+  }
+
+  if (command === "media:build") {
+    const pipelineResult = await runPipeline(options);
+    const result = await executeMediaBuild(pipelineResult.mediaBuildPlan, options);
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "media:upload") {
+    const pipelineResult = await runPipeline(options);
+    const result = await uploadBuiltMedia(pipelineResult.mediaBuildPlan, options);
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "questions:sync") {
+    if (!options.inputPath) {
+      await runPipeline(options);
+    }
+    const result = await syncQuestionsToSupabase(options);
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  throw new Error(
+    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, questions:sync.`
+  );
+}
+
+void main().catch((error) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+});
