@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
@@ -24,6 +24,7 @@ import {
   restoreRevenueCatPurchases,
 } from "../../src/features/entitlements/revenuecat";
 import { formatPlanDate } from "../../src/features/study-plan/generate-local-study-plan";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import {
   useEntitlementStatus,
@@ -58,6 +59,7 @@ const FEATURES = [
 
 export default function PaywallModalScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const theme = useTheme();
   const styles = getStyles(theme);
   const params = useLocalSearchParams<{
@@ -121,6 +123,7 @@ export default function PaywallModalScreen() {
     () => pickRecommendedPackage(revenueCatOfferings),
     [revenueCatOfferings]
   );
+  const didTrackViewRef = useRef(false);
   const [selectedPackageKey, setSelectedPackageKey] = useState<string | null>(null);
   const selectedPackage =
     revenueCatOfferings.find((item) => getPackageKey(item) === selectedPackageKey) ??
@@ -131,6 +134,32 @@ export default function PaywallModalScreen() {
       setSelectedPackageKey(getPackageKey(recommendedPackage));
     }
   }, [recommendedPackage, selectedPackageKey]);
+
+  useEffect(() => {
+    if (didTrackViewRef.current) {
+      return;
+    }
+
+    didTrackViewRef.current = true;
+    track("paywall_viewed", {
+      auth_mode: authMode,
+      feature: highlightedFeature ?? null,
+      has_premium_access: hasPremiumAccess,
+      has_purchase_access: Boolean(purchaseAccess),
+      has_school_access: Boolean(schoolAccess),
+      offers_count: revenueCatOfferings.length,
+      revenuecat_configured: revenueCatConfigured,
+    });
+  }, [
+    authMode,
+    hasPremiumAccess,
+    highlightedFeature,
+    purchaseAccess,
+    revenueCatConfigured,
+    revenueCatOfferings.length,
+    schoolAccess,
+    track,
+  ]);
 
   const handleRedeemSchoolCode = async () => {
     const normalizedCode = normalizeSchoolCode(schoolCode);
@@ -155,6 +184,11 @@ export default function PaywallModalScreen() {
     setRedeemFeedback(null);
     setPurchaseFeedback(null);
     setEntitlementStatus("loading");
+    track("school_code_redeem_started", {
+      auth_mode: authMode,
+      code_length: normalizedCode.length,
+      source: "paywall",
+    });
 
     try {
       const redemption = await redeemSchoolCode(normalizedCode);
@@ -162,6 +196,11 @@ export default function PaywallModalScreen() {
 
       hydrateRemoteEntitlements(snapshot);
       setSchoolCode(normalizedCode);
+      track("school_code_redeemed", {
+        granted_features_count: redemption.grantedFeatures.length,
+        source: "paywall",
+        was_already_member: redemption.wasAlreadyMember,
+      });
       setRedeemFeedback({
         kind: "success",
         message: t(
@@ -189,6 +228,11 @@ export default function PaywallModalScreen() {
       const message = getSchoolCodeRedeemErrorMessage(error);
 
       setEntitlementStatus("ready");
+      track("school_code_redeem_failed", {
+        auth_mode: authMode,
+        message,
+        source: "paywall",
+      });
       setRedeemFeedback({
         kind: "error",
         message,
@@ -229,6 +273,15 @@ export default function PaywallModalScreen() {
     setPurchaseFeedback(null);
     setRedeemFeedback(null);
     setRevenueCatStatus("loading");
+    track("purchase_started", {
+      feature: highlightedFeature ?? "premium_access",
+      offering_identifier: selectedPackage.offeringIdentifier,
+      package_identifier: selectedPackage.identifier,
+      package_type: selectedPackage.packageType,
+      price: selectedPackage.price,
+      product_identifier: selectedPackage.productIdentifier,
+      source: "paywall",
+    });
 
     try {
       const snapshot = await purchaseRevenueCatPackage({
@@ -238,6 +291,15 @@ export default function PaywallModalScreen() {
       });
 
       hydrateRevenueCatSnapshot(snapshot);
+      track("purchase_succeeded", {
+        active_entitlements_count:
+          snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
+        offering_identifier: selectedPackage.offeringIdentifier,
+        package_identifier: selectedPackage.identifier,
+        package_type: selectedPackage.packageType,
+        product_identifier: selectedPackage.productIdentifier,
+        source: "paywall",
+      });
       setPurchaseFeedback({
         kind: "success",
         message: t("paywall.purchaseSuccess", {
@@ -254,6 +316,13 @@ export default function PaywallModalScreen() {
     } catch (error) {
       if (isRevenueCatPurchaseCancelled(error)) {
         setRevenueCatStatus("ready");
+        track("purchase_cancelled", {
+          offering_identifier: selectedPackage.offeringIdentifier,
+          package_identifier: selectedPackage.identifier,
+          package_type: selectedPackage.packageType,
+          product_identifier: selectedPackage.productIdentifier,
+          source: "paywall",
+        });
         setPurchaseFeedback({
           kind: "error",
           message: t("paywall.purchaseCancelled"),
@@ -264,6 +333,14 @@ export default function PaywallModalScreen() {
       const message = getRevenueCatErrorMessage(error);
 
       setRevenueCatStatus("ready");
+      track("purchase_failed", {
+        message,
+        offering_identifier: selectedPackage.offeringIdentifier,
+        package_identifier: selectedPackage.identifier,
+        package_type: selectedPackage.packageType,
+        product_identifier: selectedPackage.productIdentifier,
+        source: "paywall",
+      });
       setPurchaseFeedback({
         kind: "error",
         message,
@@ -296,6 +373,9 @@ export default function PaywallModalScreen() {
     setPurchaseFeedback(null);
     setRedeemFeedback(null);
     setRevenueCatStatus("loading");
+    track("purchase_restore_started", {
+      source: "paywall",
+    });
 
     try {
       const snapshot = await restoreRevenueCatPurchases(currentUser.id);
@@ -303,6 +383,9 @@ export default function PaywallModalScreen() {
       hydrateRevenueCatSnapshot(snapshot);
 
       if (!snapshot.featureEntitlements.premium_access) {
+        track("purchase_restore_empty", {
+          source: "paywall",
+        });
         setPurchaseFeedback({
           kind: "error",
           message: t("paywall.restoreEmpty"),
@@ -310,6 +393,11 @@ export default function PaywallModalScreen() {
         return;
       }
 
+      track("purchase_restore_succeeded", {
+        active_entitlements_count:
+          snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
+        source: "paywall",
+      });
       setPurchaseFeedback({
         kind: "success",
         message: t("paywall.restoreSuccess"),
@@ -323,6 +411,10 @@ export default function PaywallModalScreen() {
       const message = getRevenueCatErrorMessage(error);
 
       setRevenueCatStatus("ready");
+      track("purchase_restore_failed", {
+        message,
+        source: "paywall",
+      });
       setPurchaseFeedback({
         kind: "error",
         message,
@@ -426,6 +518,19 @@ export default function PaywallModalScreen() {
                       onPress={() => {
                         setSelectedPackageKey(getPackageKey(item));
                         setPurchaseFeedback(null);
+                        track("paywall_offer_selected", {
+                          feature: highlightedFeature ?? "premium_access",
+                          is_recommended:
+                            recommendedPackage
+                              ? getPackageKey(recommendedPackage) ===
+                                getPackageKey(item)
+                              : false,
+                          offering_identifier: item.offeringIdentifier,
+                          package_identifier: item.identifier,
+                          package_type: item.packageType,
+                          price: item.price,
+                          product_identifier: item.productIdentifier,
+                        });
                       }}
                       style={({ pressed }) => [
                         styles.offerCard,

@@ -20,6 +20,7 @@ import {
   signInWithEmailPassword,
   signUpWithEmailPassword,
 } from "../../src/features/auth/email-password-auth";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useEntitlementStore } from "../../src/state/entitlements";
 import { useCurrentUser, useAppShellStore } from "../../src/state/app-shell";
@@ -40,6 +41,7 @@ const STATUS_COLORS = {
 
 export default function AccessScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const theme = useTheme();
   const styles = getStyles(theme);
   const currentUser = useCurrentUser();
@@ -230,12 +232,22 @@ export default function AccessScreen() {
     }
 
     setEntitlementStatus("loading");
+    track("school_code_redeem_started", {
+      auth_mode: "supabase",
+      code_length: pendingSchoolCode.length,
+      source: "access_auto_redeem",
+    });
 
     try {
       const redemption = await redeemSchoolCode(pendingSchoolCode);
       const snapshot = await fetchRemoteEntitlementSnapshot();
 
       hydrateRemoteEntitlements(snapshot);
+      track("school_code_redeemed", {
+        granted_features_count: redemption.grantedFeatures.length,
+        source: "access_auto_redeem",
+        was_already_member: redemption.wasAlreadyMember,
+      });
       Toast.show({
         type: "success",
         text1: t("toasts.schoolCodeRedeemedTitle"),
@@ -252,6 +264,11 @@ export default function AccessScreen() {
       const message = getSchoolCodeRedeemErrorMessage(error);
 
       setEntitlementStatus("ready");
+      track("school_code_redeem_failed", {
+        auth_mode: "supabase",
+        message,
+        source: "access_auto_redeem",
+      });
       Toast.show({
         type: "error",
         text1: t("toasts.schoolCodeRedeemFailedTitle"),
