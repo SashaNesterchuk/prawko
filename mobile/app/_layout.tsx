@@ -34,6 +34,13 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="modals/media-viewer"
+          options={{
+            presentation: "modal",
+            animation: "slide_from_bottom",
+          }}
+        />
+        <Stack.Screen
           name="modals/plan-adjust"
           options={{
             presentation: "modal",

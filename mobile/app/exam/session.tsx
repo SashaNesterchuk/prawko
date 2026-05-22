@@ -3,7 +3,6 @@ import { useNavigation } from "@react-navigation/native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -29,10 +28,8 @@ import {
   setRemoteExamSessionStatus,
   submitRemoteExamAnswer,
 } from "../../src/features/exam/supabase-exam";
+import { QuestionMediaCard } from "../../src/features/questions/QuestionMediaCard";
 import { getLocalizedText, getQuestionById, getQuestionChoices } from "../../src/features/questions/question-engine";
-import {
-  getQuestionMediaPreviewUrl,
-} from "../../src/features/questions/question-media";
 import { isUuidString } from "../../src/features/questions/question-routes";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
@@ -311,10 +308,6 @@ export default function ExamSessionScreen() {
     );
   }
 
-  const mediaPreviewUrl = currentQuestion.media
-    ? getQuestionMediaPreviewUrl(currentQuestion.media)
-    : null;
-
   return (
     <AppScreen
       title={t("exam.sessionTitle")}
@@ -374,24 +367,10 @@ export default function ExamSessionScreen() {
         </AppCard>
 
         {currentQuestion.media ? (
-          <AppCard>
-            <Text style={styles.mediaTitle}>
-              {t(`question.mediaTypes.${currentQuestion.media.type}`)}
-            </Text>
-            {mediaPreviewUrl ? (
-              <Image
-                source={{ uri: mediaPreviewUrl }}
-                resizeMode="cover"
-                style={styles.mediaPreview}
-              />
-            ) : (
-              <View style={styles.mediaFallback}>
-                <Text style={styles.mediaFallbackText}>
-                  {t("exam.mediaUnavailable")}
-                </Text>
-              </View>
-            )}
-          </AppCard>
+          <QuestionMediaCard
+            locale={displayLocale}
+            media={currentQuestion.media}
+          />
         ) : null}
 
         <AppCard>
@@ -529,36 +508,6 @@ const getStyles = (theme: ReturnType<typeof useTheme>) =>
       fontSize: 13,
       lineHeight: 20,
       marginTop: 8,
-    },
-    mediaFallback: {
-      alignItems: "center",
-      backgroundColor: theme.colors.cardMuted,
-      borderColor: theme.colors.borderSoft,
-      borderRadius: theme.radius.large,
-      borderWidth: 1,
-      justifyContent: "center",
-      minHeight: 160,
-      padding: 18,
-    },
-    mediaFallbackText: {
-      color: theme.colors.textSecondary,
-      fontSize: 14,
-      lineHeight: 22,
-    },
-    mediaPreview: {
-      backgroundColor: theme.colors.cardMuted,
-      borderRadius: theme.radius.large,
-      height: 220,
-      marginTop: 12,
-      width: "100%",
-    },
-    mediaTitle: {
-      color: theme.colors.accent,
-      fontSize: 12,
-      fontWeight: "800",
-      letterSpacing: 0.6,
-      lineHeight: 18,
-      textTransform: "uppercase",
     },
     metaPill: {
       backgroundColor: theme.colors.cardMuted,

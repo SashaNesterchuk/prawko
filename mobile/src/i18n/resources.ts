@@ -298,8 +298,16 @@ export const resources = {
         media: {
           bucketLabel: "Bucket",
           deliveryReady: "Delivery ready",
+          openLabel: "Otworz {{label}}",
           originalFileLabel: "Plik zrodlowy",
+          primaryImageLabel: "Obraz pytania",
+          primaryVideoLabel: "Wideo pytania",
           pjmLabel: "Track PJM",
+          pjmTracksTitle: "Tracki PJM",
+          pjmTracksBody:
+            "Mozesz otworzyc PJM dla calego pytania albo dla konkretnej odpowiedzi.",
+          pjmQuestionLabel: "PJM pytanie",
+          pjmAnswerLabel: "PJM odpowiedz {{answer}}",
           pjmSummary: "Pytanie: {{questionTrack}}, odpowiedzi: {{answerCount}}",
           posterPathLabel: "Sciezka poster",
           posterReady: "Poster ready",
@@ -308,12 +316,23 @@ export const resources = {
           previewNotConfigured: "Brakuje publicznego Supabase URL albo asset nie zostal jeszcze wrzucony do Storage.",
           previewUnavailable: "Preview niedostepny",
           publicUrlLabel: "Public URL",
+          tapToOpen: "Dotknij preview albo uzyj przycisku ponizej.",
           sourceKinds: {
             primary: "Primary exam media",
             pjm_question: "PJM question track",
             pjm_answer: "PJM answer track",
           },
           storagePathLabel: "Storage path",
+          videoHint:
+            "Pelne wideo otworzy sie na nastepnym ekranie, a potem przejdzie do systemowego playera.",
+          viewerTitle: "Media pytania",
+          viewerImageBody:
+            "Otworz pelny obraz i porownaj dokladny kontekst z pytania.",
+          viewerVideoBody:
+            "Ten build otwiera pelny klip w systemowym playerze albo przegladarce.",
+          viewerOpenExternal: "Otworz w systemowym playerze",
+          viewerLoadFailed: "Preview nie zaladowal sie w tym buildzie.",
+          viewerMissingAsset: "Ten asset nie jest jeszcze publicznie dostepny.",
         },
         tapToAnswer: "Dotknij odpowiedzi, aby od razu zapisac attempt.",
         correctAnswerTag: "Poprawna odpowiedz",
@@ -977,8 +996,16 @@ export const resources = {
         media: {
           bucketLabel: "Bucket",
           deliveryReady: "Delivery ready",
+          openLabel: "Відкрити {{label}}",
           originalFileLabel: "Початковий файл",
+          primaryImageLabel: "Зображення питання",
+          primaryVideoLabel: "Відео питання",
           pjmLabel: "PJM track",
+          pjmTracksTitle: "PJM підтримка",
+          pjmTracksBody:
+            "Можна відкрити PJM для всього питання або для конкретної відповіді.",
+          pjmQuestionLabel: "PJM питання",
+          pjmAnswerLabel: "PJM відповідь {{answer}}",
           pjmSummary: "Питання: {{questionTrack}}, відповіді: {{answerCount}}",
           posterPathLabel: "Шлях poster",
           posterReady: "Poster ready",
@@ -987,12 +1014,23 @@ export const resources = {
           previewNotConfigured: "Немає public Supabase URL або asset ще не завантажено в Storage.",
           previewUnavailable: "Preview недоступний",
           publicUrlLabel: "Public URL",
+          tapToOpen: "Торкнись preview або скористайся кнопкою нижче.",
           sourceKinds: {
             primary: "Основний exam media",
             pjm_question: "PJM доріжка питання",
             pjm_answer: "PJM доріжка відповіді",
           },
           storagePathLabel: "Storage path",
+          videoHint:
+            "Повне відео відкриється на наступному екрані, а далі перейде в системний плеєр.",
+          viewerTitle: "Media питання",
+          viewerImageBody:
+            "Відкрий повне зображення і звір точний візуальний контекст питання.",
+          viewerVideoBody:
+            "У цій збірці повний ролик відкривається в системному плеєрі або браузері.",
+          viewerOpenExternal: "Відкрити в системному плеєрі",
+          viewerLoadFailed: "Preview не завантажився в цій збірці.",
+          viewerMissingAsset: "Цей asset ще не доступний публічно.",
         },
         tapToAnswer: "Торкнись відповіді, щоб одразу записати attempt.",
         correctAnswerTag: "Правильна відповідь",
@@ -1659,8 +1697,16 @@ export const resources = {
         media: {
           bucketLabel: "Bucket",
           deliveryReady: "Delivery ready",
+          openLabel: "Open {{label}}",
           originalFileLabel: "Source file",
+          primaryImageLabel: "Question image",
+          primaryVideoLabel: "Question video",
           pjmLabel: "PJM track",
+          pjmTracksTitle: "PJM support",
+          pjmTracksBody:
+            "Open the sign-language track for the whole question or for a specific answer.",
+          pjmQuestionLabel: "PJM question track",
+          pjmAnswerLabel: "PJM answer {{answer}}",
           pjmSummary: "Question: {{questionTrack}}, answers: {{answerCount}}",
           posterPathLabel: "Poster path",
           posterReady: "Poster ready",
@@ -1669,12 +1715,23 @@ export const resources = {
           previewNotConfigured: "The public Supabase URL is missing or the asset has not been uploaded to Storage yet.",
           previewUnavailable: "Preview unavailable",
           publicUrlLabel: "Public URL",
+          tapToOpen: "Tap the preview or use the button below.",
           sourceKinds: {
             primary: "Primary exam media",
             pjm_question: "PJM question track",
             pjm_answer: "PJM answer track",
           },
           storagePathLabel: "Storage path",
+          videoHint:
+            "The full video opens on the next screen and then hands off to the system player.",
+          viewerTitle: "Question media",
+          viewerImageBody:
+            "Open the full image and compare the exact visual context from the question.",
+          viewerVideoBody:
+            "This build opens the full clip in the system player or browser.",
+          viewerOpenExternal: "Open in system player",
+          viewerLoadFailed: "The preview could not be loaded in this build.",
+          viewerMissingAsset: "This asset is not publicly reachable yet.",
         },
         tapToAnswer: "Tap an answer to save the attempt immediately.",
         correctAnswerTag: "Correct answer",
