@@ -1,7 +1,7 @@
 import { APP_FEATURES, type AppFeature } from "@prawko/config";
 import { create } from "zustand";
 
-import { useAppShellStore } from "./app-shell";
+import { getCurrentUserFromState, useAppShellStore } from "./app-shell";
 
 export type FeatureEntitlementMap = Record<AppFeature, boolean>;
 
@@ -149,7 +149,7 @@ export function useRevenueCatStatus() {
 }
 
 export function useHasFeatureAccess(feature: AppFeature) {
-  const authMode = useAppShellStore((state) => state.authMode);
+  const currentUser = useAppShellStore((state) => getCurrentUserFromState(state));
   const remoteFeatureEntitlements = useEntitlementStore(
     (state) => state.featureEntitlements
   );
@@ -157,7 +157,7 @@ export function useHasFeatureAccess(feature: AppFeature) {
     (state) => state.revenueCatFeatureEntitlements
   );
 
-  if (authMode === "mock") {
+  if (currentUser?.provider === "mock") {
     return true;
   }
 

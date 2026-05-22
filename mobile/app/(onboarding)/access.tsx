@@ -8,7 +8,10 @@ import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { AppTextInput } from "../../src/components/shell/AppTextInput";
-import { isMobileSupabaseConfigured } from "../../src/config/env";
+import {
+  isMobileSupabaseConfigured,
+  isMockAuthEnabled,
+} from "../../src/config/env";
 import {
   fetchRemoteEntitlementSnapshot,
   getSchoolCodeRedeemErrorMessage,
@@ -82,6 +85,10 @@ export default function AccessScreen() {
     (isSignUp && !fullName.trim());
 
   const continueWithMock = () => {
+    if (!isMockAuthEnabled) {
+      return;
+    }
+
     setAuthFeedback(null);
     signInMock();
     Toast.show({
@@ -303,7 +310,11 @@ export default function AccessScreen() {
   return (
     <AppScreen
       title={t("onboarding.accessTitle")}
-      subtitle={t("onboarding.accessSubtitle")}
+      subtitle={t(
+        isMockAuthEnabled
+          ? "onboarding.accessSubtitle"
+          : "onboarding.accessSubtitleNoMock"
+      )}
       footer={
         <View style={{ gap: 10 }}>
           <AppButton
@@ -451,18 +462,22 @@ export default function AccessScreen() {
           </View>
         </AppCard>
 
-        <AppCard>
-          <Text style={styles.cardTitle}>{t("onboarding.mockAccessTitle")}</Text>
-          <Text style={styles.cardBody}>{t("onboarding.mockAccessSubtitle")}</Text>
-          <View style={styles.mockAction}>
-            <AppButton
-              disabled={isSubmitting}
-              label={t("onboarding.continueWithMock")}
-              onPress={continueWithMock}
-              variant="secondary"
-            />
-          </View>
-        </AppCard>
+        {isMockAuthEnabled ? (
+          <AppCard>
+            <Text style={styles.cardTitle}>{t("onboarding.mockAccessTitle")}</Text>
+            <Text style={styles.cardBody}>
+              {t("onboarding.mockAccessSubtitle")}
+            </Text>
+            <View style={styles.mockAction}>
+              <AppButton
+                disabled={isSubmitting}
+                label={t("onboarding.continueWithMock")}
+                onPress={continueWithMock}
+                variant="secondary"
+              />
+            </View>
+          </AppCard>
+        ) : null}
 
         <AppCard accent>
           <Text style={styles.eyebrow}>{t("onboarding.planSummaryLabel")}</Text>

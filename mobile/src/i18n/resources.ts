@@ -74,6 +74,8 @@ export const resources = {
         accessTitle: "Wejscie do aplikacji",
         accessSubtitle:
           "Mozesz zalogowac sie przez Supabase albo wejsc przez mock session jako fallback.",
+        accessSubtitleNoMock:
+          "Zaloguj sie przez Supabase, aby zapisac plan, progres i stan dostepu do exam flow.",
         continueWithMock: "Wejdz przez mock session",
         mockAccessTitle: "Mock access",
         mockAccessSubtitle:
@@ -393,9 +395,13 @@ export const resources = {
         lockedTitle: "Exam simulator jest zablokowany",
         lockedBody:
           "Ten flow wymaga premium albo aktywnego dostepu szkoly. Po odblokowaniu wejdziesz tu od razu.",
+        authRequiredTitle: "Najpierw sie zaloguj",
+        authRequiredBody:
+          "Pelny exam simulator zapisuje aktywna sesje i wynik, dlatego wymaga prawdziwego konta.",
         fallbackTitle: "Fallback preview",
         fallbackBody:
           "Realny Supabase exam flow jest niedostepny, wiec mozesz otworzyc lokalny preview tej samej kolejki.",
+        openAccessCta: "Przejdz do logowania",
         openPreviewCta: "Otworz lokalny preview",
         resumeTitle: "Masz aktywna sesje",
         resumeBody:
@@ -771,6 +777,8 @@ export const resources = {
         accessTitle: "Доступ до застосунку",
         accessSubtitle:
           "Можна увійти через Supabase або скористатись mock session як fallback.",
+        accessSubtitleNoMock:
+          "Увійди через Supabase, щоб зберігати план, прогрес і стан доступу до exam flow.",
         continueWithMock: "Увійти через mock session",
         mockAccessTitle: "Mock access",
         mockAccessSubtitle:
@@ -1091,9 +1099,13 @@ export const resources = {
         lockedTitle: "Exam simulator заблокований",
         lockedBody:
           "Цей flow вимагає premium або активного доступу від школи. Після розблокування зайдеш сюди одразу.",
+        authRequiredTitle: "Спочатку увійди",
+        authRequiredBody:
+          "Повний exam simulator зберігає live session і результат, тому йому потрібен справжній акаунт.",
         fallbackTitle: "Fallback preview",
         fallbackBody:
           "Real Supabase exam flow зараз недоступний, тому можна відкрити локальний preview цієї ж черги.",
+        openAccessCta: "Перейти до входу",
         openPreviewCta: "Відкрити локальний preview",
         resumeTitle: "У тебе вже є активна сесія",
         resumeBody:
@@ -1473,6 +1485,8 @@ export const resources = {
         accessTitle: "App access",
         accessSubtitle:
           "Use real Supabase auth first, or fall back to a mock session for demo access.",
+        accessSubtitleNoMock:
+          "Sign in with Supabase to save the plan, progress, and exam access state.",
         continueWithMock: "Enter with mock session",
         mockAccessTitle: "Mock access",
         mockAccessSubtitle:
@@ -1793,9 +1807,13 @@ export const resources = {
         lockedTitle: "Exam simulator is locked",
         lockedBody:
           "This flow requires premium or active school access. Once it is unlocked, you can enter immediately.",
+        authRequiredTitle: "Sign in first",
+        authRequiredBody:
+          "The full exam simulator stores the live session and result, so it requires a real account.",
         fallbackTitle: "Fallback preview",
         fallbackBody:
           "The real Supabase exam flow is unavailable, so you can open a local preview of the same queue instead.",
+        openAccessCta: "Go to sign in",
         openPreviewCta: "Open local preview",
         resumeTitle: "An active session is waiting",
         resumeBody:

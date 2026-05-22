@@ -10,6 +10,8 @@ import type { GeneratedStudyPlan } from "@prawko/schemas";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import { isMockAuthEnabled } from "../config/env";
+
 type AuthMode = "mock" | "supabase";
 
 type AppUser = {
@@ -94,6 +96,19 @@ type AppShellState = {
   signOutLocal: () => void;
 };
 
+type PersistedAppShellState = Pick<
+  AppShellState,
+  | "authMode"
+  | "currentStudyPlan"
+  | "currentStudyPlanRemoteId"
+  | "mockUser"
+  | "onboardingCompleted"
+  | "onboardingProgress"
+  | "preferredCategory"
+  | "preferredLocale"
+  | "studyPlanSetup"
+>;
+
 const defaultOnboardingProgress: OnboardingProgress = {
   categoryDone: false,
   examIntroSeen: false,
@@ -124,10 +139,48 @@ function createCompletedOnboardingProgress(): OnboardingProgress {
   };
 }
 
+function createMockUser(): AppUser {
+  return {
+    id: "mock-user",
+    email: "demo@prawko.app",
+    fullName: "Demo Student",
+    provider: "mock",
+  };
+}
+
+function getSignedOutAuthMode(): AuthMode {
+  return isMockAuthEnabled ? "mock" : "supabase";
+}
+
+function getNextMockUser(mockUser: AppUser | null) {
+  return isMockAuthEnabled && mockUser?.provider === "mock" ? mockUser : null;
+}
+
+function normalizePersistedShellState(
+  persistedState: Partial<PersistedAppShellState> | undefined
+): PersistedAppShellState {
+  const nextMockUser = getNextMockUser(persistedState?.mockUser ?? null);
+  const authMode =
+    persistedState?.authMode === "mock" && nextMockUser ? "mock" : "supabase";
+
+  return {
+    authMode,
+    currentStudyPlan: persistedState?.currentStudyPlan ?? null,
+    currentStudyPlanRemoteId: persistedState?.currentStudyPlanRemoteId ?? null,
+    mockUser: authMode === "mock" ? nextMockUser : null,
+    onboardingCompleted: persistedState?.onboardingCompleted ?? false,
+    onboardingProgress:
+      persistedState?.onboardingProgress ?? defaultOnboardingProgress,
+    preferredCategory: persistedState?.preferredCategory ?? DEFAULT_CATEGORY,
+    preferredLocale: persistedState?.preferredLocale ?? DEFAULT_LOCALE,
+    studyPlanSetup: persistedState?.studyPlanSetup ?? defaultStudyPlanSetup,
+  };
+}
+
 export const useAppShellStore = create<AppShellState>()(
   persist(
     (set) => ({
-      authMode: "mock",
+      authMode: getSignedOutAuthMode(),
       currentStudyPlan: null,
       currentStudyPlanRemoteId: null,
       hasHydrated: false,
@@ -196,7 +249,7 @@ export const useAppShellStore = create<AppShellState>()(
         })),
       resetShell: () =>
         set({
-          authMode: "mock",
+          authMode: getSignedOutAuthMode(),
           currentStudyPlan: null,
           currentStudyPlanRemoteId: null,
           hasHydrated: true,
@@ -270,28 +323,36 @@ export const useAppShellStore = create<AppShellState>()(
         })),
       setSessionResolved: (value) => set({ sessionResolved: value }),
       setSupabaseUser: (supabaseUser) =>
-        set((state) => ({
-          supabaseUser,
-          mockUser: supabaseUser ? null : state.mockUser,
-          authMode: supabaseUser
-            ? "supabase"
-            : state.authMode === "supabase"
-              ? "mock"
-              : state.authMode,
-        })),
+        set((state) => {
+          const nextMockUser = supabaseUser
+            ? null
+            : getNextMockUser(state.mockUser);
+
+          return {
+            supabaseUser,
+            mockUser: nextMockUser,
+            authMode: supabaseUser
+              ? "supabase"
+              : nextMockUser
+                ? "mock"
+                : getSignedOutAuthMode(),
+          };
+        }),
       signInMock: () =>
-        set({
-          authMode: "mock",
-          mockUser: {
-            id: "mock-user",
-            email: "demo@prawko.app",
-            fullName: "Demo Student",
-            provider: "mock",
-          },
+        set((state) => {
+          if (!isMockAuthEnabled) {
+            return state;
+          }
+
+          return {
+            authMode: "mock",
+            mockUser: createMockUser(),
+            supabaseUser: null,
+          };
         }),
       signOutLocal: () =>
         set({
-          authMode: "mock",
+          authMode: getSignedOutAuthMode(),
           currentStudyPlan: null,
           currentStudyPlanRemoteId: null,
           mockUser: null,
@@ -304,6 +365,12 @@ export const useAppShellStore = create<AppShellState>()(
     {
       name: "prawko-mobile-shell",
       storage: createJSONStorage(() => AsyncStorage),
+      version: 2,
+      migrate: (persistedState) =>
+        normalizePersistedShellState(
+          (persistedState as Partial<PersistedAppShellState> | undefined) ??
+            undefined
+        ),
       partialize: (state) => ({
         authMode: state.authMode,
         currentStudyPlan: state.currentStudyPlan,
@@ -316,6 +383,10 @@ export const useAppShellStore = create<AppShellState>()(
         studyPlanSetup: state.studyPlanSetup,
       }),
       onRehydrateStorage: () => (state) => {
+        if (!isMockAuthEnabled && state?.authMode === "mock") {
+          state.setSupabaseUser(null);
+        }
+
         state?.setHasHydrated(true);
       },
     }

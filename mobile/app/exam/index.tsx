@@ -8,7 +8,10 @@ import { EXAM_RULES } from "@prawko/config";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { isMobileSupabaseConfigured } from "../../src/config/env";
+import {
+  isMobileSupabaseConfigured,
+  isMockAuthEnabled,
+} from "../../src/config/env";
 import {
   formatExamCountdown,
   getExamDurationMinutes,
@@ -17,10 +20,17 @@ import {
   getExamScopeTargets,
   isExamSimulatorMode,
 } from "../../src/features/exam/exam-config";
-import { fetchLatestActiveExamSession, startRemoteExamSession } from "../../src/features/exam/supabase-exam";
-import { buildQuestionRouteParams, isUuidString } from "../../src/features/questions/question-routes";
+import {
+  fetchLatestActiveExamSession,
+  startRemoteExamSession,
+} from "../../src/features/exam/supabase-exam";
+import {
+  buildQuestionRouteParams,
+  isUuidString,
+} from "../../src/features/questions/question-routes";
 import {
   useCurrentStudyPlanRemoteId,
+  useCurrentUser,
   useAppShellStore,
 } from "../../src/state/app-shell";
 import { useHasFeatureAccess } from "../../src/state/entitlements";
@@ -33,6 +43,7 @@ export default function ExamIntroScreen() {
     studyPlanTaskId?: string | string[];
   }>();
   const authMode = useAppShellStore((state) => state.authMode);
+  const currentUser = useCurrentUser();
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const currentStudyPlanRemoteId = useCurrentStudyPlanRemoteId();
@@ -72,9 +83,15 @@ export default function ExamIntroScreen() {
       }),
     [mode, studyPlanTaskId, totalQuestionsTarget]
   );
+  const canUseRemoteExam =
+    authMode === "supabase" &&
+    Boolean(currentUser) &&
+    isMobileSupabaseConfigured;
+  const shouldShowAuthRequired = !currentUser && !isMockAuthEnabled;
+  const shouldShowFallbackPreview = !canUseRemoteExam && isMockAuthEnabled;
 
   useEffect(() => {
-    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
+    if (!canUseRemoteExam) {
       setActiveSessionId(null);
       setActiveSessionSummary(null);
       setIsLoadingActiveSession(false);
@@ -121,7 +138,7 @@ export default function ExamIntroScreen() {
     return () => {
       cancelled = true;
     };
-  }, [authMode, mode]);
+  }, [canUseRemoteExam, mode]);
 
   const openPaywall = () =>
     router.push({
@@ -130,6 +147,8 @@ export default function ExamIntroScreen() {
         feature: "exam_simulator",
       },
     });
+
+  const openAccess = () => router.push("/(onboarding)/access");
 
   const openPreviewFallback = () =>
     router.push({
@@ -146,13 +165,23 @@ export default function ExamIntroScreen() {
     });
 
   const handleStartSession = async (replaceExisting: boolean) => {
+    if (!currentUser && !isMockAuthEnabled) {
+      openAccess();
+      return;
+    }
+
     if (!hasExamAccess) {
       openPaywall();
       return;
     }
 
-    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
-      openPreviewFallback();
+    if (!canUseRemoteExam) {
+      if (isMockAuthEnabled) {
+        openPreviewFallback();
+        return;
+      }
+
+      openAccess();
       return;
     }
 
@@ -187,33 +216,39 @@ export default function ExamIntroScreen() {
       })}
       footer={
         <View style={{ gap: 10 }}>
-          {activeSessionId && activeSessionSummary ? (
-            <AppButton
-              label={t("exam.resumeCta")}
-              onPress={() => openExamSession(activeSessionId)}
-            />
+          {shouldShowAuthRequired ? (
+            <AppButton label={t("exam.openAccessCta")} onPress={openAccess} />
           ) : (
-            <AppButton
-              label={t("exam.startCta")}
-              onPress={() => void handleStartSession(false)}
-              disabled={isStarting}
-            />
+            <>
+              {activeSessionId && activeSessionSummary ? (
+                <AppButton
+                  label={t("exam.resumeCta")}
+                  onPress={() => openExamSession(activeSessionId)}
+                />
+              ) : (
+                <AppButton
+                  label={t("exam.startCta")}
+                  onPress={() => void handleStartSession(false)}
+                  disabled={isStarting}
+                />
+              )}
+              {activeSessionId && activeSessionSummary ? (
+                <AppButton
+                  variant="secondary"
+                  label={t("exam.restartCta")}
+                  onPress={() => void handleStartSession(true)}
+                  disabled={isStarting}
+                />
+              ) : null}
+              {!hasExamAccess ? (
+                <AppButton
+                  variant="secondary"
+                  label={t("exam.unlockCta")}
+                  onPress={openPaywall}
+                />
+              ) : null}
+            </>
           )}
-          {activeSessionId && activeSessionSummary ? (
-            <AppButton
-              variant="secondary"
-              label={t("exam.restartCta")}
-              onPress={() => void handleStartSession(true)}
-              disabled={isStarting}
-            />
-          ) : null}
-          {!hasExamAccess ? (
-            <AppButton
-              variant="secondary"
-              label={t("exam.unlockCta")}
-              onPress={openPaywall}
-            />
-          ) : null}
           <AppButton
             variant="ghost"
             label={t("common.close")}
@@ -230,7 +265,21 @@ export default function ExamIntroScreen() {
           </AppCard>
         ) : null}
 
-        {authMode !== "supabase" || !isMobileSupabaseConfigured ? (
+        {shouldShowAuthRequired ? (
+          <AppCard accent>
+            <Text style={sectionTitle}>{t("exam.authRequiredTitle")}</Text>
+            <Text style={bodyText}>{t("exam.authRequiredBody")}</Text>
+            <View style={{ marginTop: 12 }}>
+              <AppButton
+                variant="secondary"
+                label={t("exam.openAccessCta")}
+                onPress={openAccess}
+              />
+            </View>
+          </AppCard>
+        ) : null}
+
+        {shouldShowFallbackPreview ? (
           <AppCard accent>
             <Text style={sectionTitle}>{t("exam.fallbackTitle")}</Text>
             <Text style={bodyText}>{t("exam.fallbackBody")}</Text>
