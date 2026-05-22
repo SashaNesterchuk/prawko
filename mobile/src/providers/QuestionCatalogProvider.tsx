@@ -17,6 +17,7 @@ import {
   useQuestionProgressHydrated,
   useQuestionProgressStore,
 } from "../state/question-progress";
+import { useErrorLogger } from "./ErrorLoggingProvider";
 
 const QUESTION_CATALOG_SELECT = [
   "question_source_id",
@@ -48,6 +49,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
   const preferredCategory = useAppShellStore(
     (state) => state.preferredCategory
   );
+  const { captureError, captureFallback } = useErrorLogger();
   const sessionResolved = useAppShellStore((state) => state.sessionResolved);
   const appShellHydrated = useHasHydrated();
   const questionProgressHydrated = useQuestionProgressHydrated();
@@ -112,10 +114,31 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
 
         if (error) {
           if (authMode !== "supabase") {
+            captureFallback({
+              area: "question_catalog",
+              error,
+              eventName: "question_catalog_remote_fallback",
+              message:
+                "Remote question catalog failed, so the app fell back to the bundled mock catalog.",
+              metadata: {
+                category: preferredCategory,
+                reason: "remote_query_failed",
+              },
+            });
             applyMockCatalog();
             return;
           }
 
+          captureError({
+            area: "question_catalog",
+            error,
+            eventName: "question_catalog_remote_fetch_failed",
+            message: "Failed to fetch the remote question catalog.",
+            metadata: {
+              category: preferredCategory,
+              reason: "remote_query_failed",
+            },
+          });
           applyMockCatalog(getCatalogErrorMessage(error));
           return;
         }
@@ -123,6 +146,28 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
         const records = ((data ?? []) as unknown) as SupabaseQuestionRecord[];
 
         if (records.length === 0) {
+          if (authMode !== "supabase") {
+            captureFallback({
+              area: "question_catalog",
+              eventName: "question_catalog_remote_fallback",
+              message:
+                "Remote question catalog returned no rows, so the app fell back to the bundled mock catalog.",
+              metadata: {
+                category: preferredCategory,
+                reason: "remote_catalog_empty",
+              },
+            });
+          } else {
+            captureError({
+              area: "question_catalog",
+              eventName: "question_catalog_remote_fetch_failed",
+              message: "Remote question catalog returned no active rows.",
+              metadata: {
+                category: preferredCategory,
+                reason: "remote_catalog_empty",
+              },
+            });
+          }
           applyMockCatalog("Supabase returned an empty question catalog.");
           return;
         }
@@ -138,10 +183,31 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
         }
 
         if (authMode !== "supabase") {
+          captureFallback({
+            area: "question_catalog",
+            error,
+            eventName: "question_catalog_remote_fallback",
+            message:
+              "Question catalog hydration threw before completion, so the app fell back to the bundled mock catalog.",
+            metadata: {
+              category: preferredCategory,
+              reason: "remote_query_exception",
+            },
+          });
           applyMockCatalog();
           return;
         }
 
+        captureError({
+          area: "question_catalog",
+          error,
+          eventName: "question_catalog_remote_fetch_failed",
+          message: "Question catalog hydration threw before completion.",
+          metadata: {
+            category: preferredCategory,
+            reason: "remote_query_exception",
+          },
+        });
         applyMockCatalog(getCatalogErrorMessage(error));
       }
     })();
@@ -152,6 +218,8 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
   }, [
     appShellHydrated,
     authMode,
+    captureError,
+    captureFallback,
     preferredCategory,
     questionProgressHydrated,
     reconcileCatalog,

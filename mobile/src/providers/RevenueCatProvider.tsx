@@ -8,10 +8,12 @@ import {
 } from "../features/entitlements/revenuecat";
 import { useHasHydrated, useAppShellStore } from "../state/app-shell";
 import { useEntitlementStore } from "../state/entitlements";
+import { useErrorLogger } from "./ErrorLoggingProvider";
 
 export function RevenueCatProvider({ children }: PropsWithChildren) {
   const appShellHydrated = useHasHydrated();
   const authMode = useAppShellStore((state) => state.authMode);
+  const { captureError } = useErrorLogger();
   const sessionResolved = useAppShellStore((state) => state.sessionResolved);
   const supabaseUserId = useAppShellStore((state) => state.supabaseUser?.id ?? null);
   const clearRevenueCatState = useEntitlementStore(
@@ -52,6 +54,15 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
       .catch((error) => {
         if (!cancelled) {
           console.warn("Failed to hydrate RevenueCat state.", error);
+          captureError({
+            area: "revenuecat",
+            error,
+            eventName: "revenuecat_hydration_failed",
+            message: "Failed to hydrate RevenueCat customer state.",
+            metadata: {
+              user_id: supabaseUserId,
+            },
+          });
           clearRevenueCatState("ready");
         }
       });
@@ -62,6 +73,7 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
   }, [
     appShellHydrated,
     authMode,
+    captureError,
     clearRevenueCatState,
     hydrateRevenueCatSnapshot,
     sessionResolved,

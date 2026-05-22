@@ -5,6 +5,7 @@ import Toast from "react-native-toast-message";
 
 import "../i18n";
 import { AnalyticsProvider } from "./AnalyticsProvider";
+import { ErrorLoggingProvider } from "./ErrorLoggingProvider";
 import { LocaleSyncProvider } from "./LocaleSyncProvider";
 import { QuestionCatalogProvider } from "./QuestionCatalogProvider";
 import { RevenueCatProvider } from "./RevenueCatProvider";
@@ -20,22 +21,24 @@ export function AppProviders({ children }: PropsWithChildren) {
       <SafeAreaProvider>
         <ThemeProvider>
           <AnalyticsProvider>
-            <SessionProvider>
-              <RemoteEntitlementsProvider>
-                <RevenueCatProvider>
-                  <RemoteLearningStateProvider>
-                    <LocaleSyncProvider>
-                      <UserProvider>
-                        <QuestionCatalogProvider>
-                          {children}
-                          <Toast />
-                        </QuestionCatalogProvider>
-                      </UserProvider>
-                    </LocaleSyncProvider>
-                  </RemoteLearningStateProvider>
-                </RevenueCatProvider>
-              </RemoteEntitlementsProvider>
-            </SessionProvider>
+            <ErrorLoggingProvider>
+              <SessionProvider>
+                <RemoteEntitlementsProvider>
+                  <RevenueCatProvider>
+                    <RemoteLearningStateProvider>
+                      <LocaleSyncProvider>
+                        <UserProvider>
+                          <QuestionCatalogProvider>
+                            {children}
+                            <Toast />
+                          </QuestionCatalogProvider>
+                        </UserProvider>
+                      </LocaleSyncProvider>
+                    </RemoteLearningStateProvider>
+                  </RevenueCatProvider>
+                </RemoteEntitlementsProvider>
+              </SessionProvider>
+            </ErrorLoggingProvider>
           </AnalyticsProvider>
         </ThemeProvider>
       </SafeAreaProvider>

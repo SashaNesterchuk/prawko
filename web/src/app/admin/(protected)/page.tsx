@@ -187,6 +187,70 @@ export default async function AdminOverviewPage() {
           )}
         </div>
       </section>
+
+      <section className="section">
+        <SectionTitle
+          eyebrow="App errors"
+          title="Recent failure and fallback logs."
+          description="This is the fastest operational view into mobile, admin, and edge-function issues that were persisted to app_error_logs."
+        />
+        <div className="admin-table-card">
+          {data.recentAppErrorLogs.length ? (
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>When</th>
+                  <th>Severity</th>
+                  <th>Area</th>
+                  <th>Event</th>
+                  <th>Source</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.recentAppErrorLogs.map((log) => (
+                  <tr key={`${log.source}:${log.eventName}:${log.createdAt}`}>
+                    <td>{formatAdminDateTime(log.createdAt)}</td>
+                    <td>
+                      <span className={getSeverityBadgeClass(log.severity)}>
+                        {log.severity}
+                      </span>
+                    </td>
+                    <td>{log.area}</td>
+                    <td>{log.eventName}</td>
+                    <td>{log.source}</td>
+                    <td>
+                      {truncateAdminText(
+                        `${log.message}${
+                          log.errorCode ? ` (${log.errorCode})` : ""
+                        }`,
+                        120
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="admin-empty">
+              No app error logs recorded yet. Either the new migration is not applied
+              yet or the sampled window is clean.
+            </p>
+          )}
+        </div>
+      </section>
     </div>
   );
+}
+
+function getSeverityBadgeClass(severity: string) {
+  if (severity === "info") {
+    return "admin-badge admin-badge-success";
+  }
+
+  if (severity === "warning") {
+    return "admin-badge admin-badge-warning";
+  }
+
+  return "admin-badge";
 }

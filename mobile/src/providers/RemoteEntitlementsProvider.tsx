@@ -5,10 +5,12 @@ import { isMobileSupabaseConfigured } from "../config/env";
 import { fetchRemoteEntitlementSnapshot } from "../features/entitlements/supabase-entitlements";
 import { useHasHydrated, useAppShellStore } from "../state/app-shell";
 import { useEntitlementStore } from "../state/entitlements";
+import { useErrorLogger } from "./ErrorLoggingProvider";
 
 export function RemoteEntitlementsProvider({ children }: PropsWithChildren) {
   const appShellHydrated = useHasHydrated();
   const authMode = useAppShellStore((state) => state.authMode);
+  const { captureError } = useErrorLogger();
   const sessionResolved = useAppShellStore((state) => state.sessionResolved);
   const supabaseUserId = useAppShellStore((state) => state.supabaseUser?.id ?? null);
   const clearEntitlements = useEntitlementStore(
@@ -47,6 +49,15 @@ export function RemoteEntitlementsProvider({ children }: PropsWithChildren) {
       .catch((error) => {
         if (!cancelled) {
           console.warn("Failed to hydrate remote entitlements.", error);
+          captureError({
+            area: "entitlements",
+            error,
+            eventName: "remote_entitlements_hydration_failed",
+            message: "Failed to hydrate the remote entitlements snapshot.",
+            metadata: {
+              user_id: supabaseUserId,
+            },
+          });
           clearEntitlements("ready");
         }
       });
@@ -57,6 +68,7 @@ export function RemoteEntitlementsProvider({ children }: PropsWithChildren) {
   }, [
     appShellHydrated,
     authMode,
+    captureError,
     clearEntitlements,
     hydrateRemoteEntitlements,
     sessionResolved,

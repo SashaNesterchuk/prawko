@@ -21,6 +21,7 @@ import {
   signUpWithEmailPassword,
 } from "../../src/features/auth/email-password-auth";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
+import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useEntitlementStore } from "../../src/state/entitlements";
 import { useCurrentUser, useAppShellStore } from "../../src/state/app-shell";
@@ -42,6 +43,7 @@ const STATUS_COLORS = {
 export default function AccessScreen() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
+  const { captureError } = useErrorLogger();
   const theme = useTheme();
   const styles = getStyles(theme);
   const currentUser = useCurrentUser();
@@ -210,6 +212,17 @@ export default function AccessScreen() {
     } catch (error) {
       const message = getEmailPasswordAuthErrorMessage(error);
 
+      captureError({
+        area: "auth",
+        error,
+        eventName: "auth_submit_failed",
+        message: isSignUp
+          ? "Email/password sign-up failed."
+          : "Email/password sign-in failed.",
+        metadata: {
+          auth_action: isSignUp ? "sign_up" : "sign_in",
+        },
+      });
       setAuthFeedback({
         kind: "error",
         message,
@@ -263,6 +276,16 @@ export default function AccessScreen() {
     } catch (error) {
       const message = getSchoolCodeRedeemErrorMessage(error);
 
+      captureError({
+        area: "school_access",
+        error,
+        eventName: "school_code_auto_redeem_failed",
+        message: "Failed to auto-redeem the pending school code after auth.",
+        metadata: {
+          code_length: pendingSchoolCode.length,
+          source: "access_auto_redeem",
+        },
+      });
       setEntitlementStatus("ready");
       track("school_code_redeem_failed", {
         auth_mode: "supabase",

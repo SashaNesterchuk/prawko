@@ -19,6 +19,7 @@ The current migration set covers the v1 backend backbone:
 13. `school_codes`
 14. `school_memberships`
 15. `feature_entitlements`
+16. `app_error_logs`
 
 ## Design choices
 
@@ -76,6 +77,13 @@ The current migration set covers the v1 backend backbone:
 4. `feature_entitlements` is the source of truth for paid or sponsored access.
 5. `redeem_school_code(text)` handles secure code redemption without exposing raw code rows to the client.
 
+### `app_error_logs`
+
+1. Central append-only store for mobile, web admin, and edge-function error events.
+2. Client inserts go through `log_client_error(...)` so authenticated apps do not need direct table access.
+3. `service_role` can insert and read directly for admin workflows, edge functions, and backoffice tooling.
+4. This table is intentionally operational, not user-facing. It exists to make failures visible to the team.
+
 ## Storage posture
 
 1. `question-images`
@@ -97,6 +105,7 @@ All four buckets are intentionally public because they contain official non-user
 8. Users can read only their own `school_memberships` and `feature_entitlements`.
 9. Raw `school_codes` remain closed to direct client reads.
 10. `service_role` keeps full access for imports, admin flows, edge functions, and backoffice automation.
+11. `app_error_logs` stays service-role readable; authenticated users can write through `log_client_error(...)` only.
 
 ## Remaining follow-up
 

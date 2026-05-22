@@ -3,8 +3,10 @@ import { PropsWithChildren, useEffect } from "react";
 import { isMobileSupabaseConfigured } from "../config/env";
 import { getMobileSupabaseClient } from "../lib/supabase";
 import { useAppShellStore } from "../state/app-shell";
+import { useErrorLogger } from "./ErrorLoggingProvider";
 
 export function SessionProvider({ children }: PropsWithChildren) {
+  const { captureError } = useErrorLogger();
   const setSupabaseUser = useAppShellStore((state) => state.setSupabaseUser);
   const setSessionResolved = useAppShellStore(
     (state) => state.setSessionResolved
@@ -29,11 +31,21 @@ export function SessionProvider({ children }: PropsWithChildren) {
         setSupabaseUser(mapSupabaseUser(data.session?.user ?? null));
         setSessionResolved(true);
       })
-      .catch(() => {
+      .catch((error) => {
         if (cancelled) {
           return;
         }
 
+        captureError({
+          area: "auth_session",
+          error,
+          eventName: "session_bootstrap_failed",
+          message: "Failed to restore the Supabase session during app bootstrap.",
+          metadata: {
+            stage: "get_session",
+          },
+          severity: "error",
+        });
         setSupabaseUser(null);
         setSessionResolved(true);
       });
@@ -49,7 +61,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       cancelled = true;
       subscription.unsubscribe();
     };
-  }, [setSessionResolved, setSupabaseUser]);
+  }, [captureError, setSessionResolved, setSupabaseUser]);
 
   return children;
 }

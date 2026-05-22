@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireAdminSession } from "../../../../lib/admin-auth";
+import { logServerError } from "../../../../lib/server-error-logging";
 import { getWebServerEnv } from "../../../../lib/server-env";
 import { getWebSupabaseAdminClient } from "../../../../lib/supabase-admin";
 
@@ -83,6 +84,17 @@ export async function createSchoolAction(formData: FormData) {
   });
 
   if (error) {
+    await logServerError({
+      area: "admin_school_codes",
+      error,
+      eventName: "create_school_failed",
+      message: "Failed to create a school from the admin dashboard.",
+      metadata: {
+        city: emptyToNull(parsed.data.city),
+        slug: parsed.data.slug,
+        supported_locales: parsed.data.supportedLocales,
+      },
+    });
     redirect("/admin/school-codes?error=school_create_failed");
   }
 
@@ -126,6 +138,20 @@ export async function createSchoolCodeAction(formData: FormData) {
   });
 
   if (error) {
+    await logServerError({
+      area: "admin_school_codes",
+      error,
+      eventName: "create_school_code_failed",
+      message: "Failed to create a school code from the admin dashboard.",
+      metadata: {
+        code_length: parsed.data.code.length,
+        granted_features: parsed.data.grantedFeatures,
+        grants_days: parsed.data.grantsDays,
+        max_redemptions:
+          parsed.data.maxRedemptions === "" ? null : parsed.data.maxRedemptions,
+        school_id: parsed.data.schoolId,
+      },
+    });
     redirect("/admin/school-codes?error=code_create_failed");
   }
 
@@ -158,6 +184,16 @@ export async function setSchoolCodeStatusAction(formData: FormData) {
     .eq("id", parsed.data.codeId);
 
   if (error) {
+    await logServerError({
+      area: "admin_school_codes",
+      error,
+      eventName: "set_school_code_status_failed",
+      message: "Failed to update a school-code status from the admin dashboard.",
+      metadata: {
+        code_id: parsed.data.codeId,
+        next_status: parsed.data.nextStatus,
+      },
+    });
     redirect("/admin/school-codes?error=code_status_failed");
   }
 

@@ -12,6 +12,7 @@ const FREE_DAILY_LIMIT = 8;
 
 type SupportedLocale = "pl" | "ua" | "en";
 type AiProviderId = "mock" | "openai" | "anthropic";
+type AppLogSeverity = "info" | "warning" | "error" | "critical";
 type QuestionChatMessage = {
   id: string;
   role: "user" | "assistant" | "system";
@@ -71,10 +72,21 @@ Deno.serve(async (request) => {
     );
   }
 
+  let adminClient: ReturnType<typeof createClient> | null = maybeCreateAdminClient();
+  let conversationId: string | null = null;
+  let locale: SupportedLocale | null = null;
+  let questionId: string | null = null;
+  let userId: string | null = null;
+
   try {
     const payload = validateRequest(await request.json());
-    const conversationId =
+    const normalizedConversationId =
       normalizeUuid(payload.conversationId) ?? crypto.randomUUID();
+    const normalizedQuestionId = normalizeUuid(payload.question.questionId);
+
+    conversationId = normalizedConversationId;
+    locale = payload.locale;
+    questionId = normalizedQuestionId;
     const supabaseUrl = getRequiredEnv("SUPABASE_URL");
     const supabaseAnonKey = getRequiredEnv("SUPABASE_ANON_KEY");
     const serviceRoleKey = getRequiredEnv("SUPABASE_SERVICE_ROLE_KEY");
@@ -88,11 +100,14 @@ Deno.serve(async (request) => {
         },
       },
     });
-    const adminClient = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        persistSession: false,
-      },
-    });
+    const serviceClient =
+      adminClient ??
+      createClient(supabaseUrl, serviceRoleKey, {
+        auth: {
+          persistSession: false,
+        },
+      });
+    adminClient = serviceClient;
     const {
       data: { user },
     } = await userClient.auth.getUser();
@@ -105,11 +120,12 @@ Deno.serve(async (request) => {
         401
       );
     }
+    userId = user.id;
 
     const hasEntitlement = await checkAiEntitlement(userClient);
 
     if (!hasEntitlement) {
-      const usedToday = await getDailyQuestionChatCount(adminClient, user.id);
+      const usedToday = await getDailyQuestionChatCount(serviceClient, user.id);
 
       if (usedToday >= FREE_DAILY_LIMIT) {
         return jsonResponse(
@@ -123,14 +139,14 @@ Deno.serve(async (request) => {
     }
 
     const nextMessageOrder = await getNextMessageOrder(
-      adminClient,
+      serviceClient,
       user.id,
-      conversationId
+      normalizedConversationId
     );
 
-    await insertAiMessage(adminClient, {
+    await insertAiMessage(serviceClient, {
       content: payload.prompt,
-      conversationId,
+      conversationId: normalizedConversationId,
       messageKind: "question_chat",
       messageOrder: nextMessageOrder,
       messageRole: "user",
@@ -140,7 +156,7 @@ Deno.serve(async (request) => {
         selectedAnswer: payload.question.selectedAnswer ?? null,
         topicBlock: payload.question.topicBlock,
       },
-      questionId: normalizeUuid(payload.question.questionId),
+      questionId: normalizedQuestionId,
       userId: user.id,
     });
 
@@ -151,6 +167,21 @@ Deno.serve(async (request) => {
       providerResponse = await provider(payload);
     } catch (providerError) {
       console.error("question-chat provider fallback", providerError);
+      await logAppError(serviceClient, {
+        area: "question_chat",
+        error: providerError,
+        eventName: "question_chat_provider_fallback",
+        message: "Primary AI provider failed, so question chat fell back to the mock adapter.",
+        metadata: {
+          conversation_id: normalizedConversationId,
+          locale: payload.locale,
+          preferred_provider: Deno.env.get("AI_PROVIDER") ?? null,
+          question_id: normalizedQuestionId,
+        },
+        severity: "warning",
+        source: "supabase_edge",
+        userId: user.id,
+      });
       providerResponse = createMockProviderResponse(payload);
     }
     const assistantMessage: QuestionChatMessage = {
@@ -162,9 +193,9 @@ Deno.serve(async (request) => {
       model: providerResponse.model,
     };
 
-    await insertAiMessage(adminClient, {
+    await insertAiMessage(serviceClient, {
       content: assistantMessage.content,
-      conversationId,
+      conversationId: normalizedConversationId,
       inputTokens: providerResponse.inputTokens ?? null,
       latencyMs: providerResponse.latencyMs,
       messageKind: "question_chat",
@@ -180,7 +211,7 @@ Deno.serve(async (request) => {
       model: providerResponse.model,
       outputTokens: providerResponse.outputTokens ?? null,
       provider: providerResponse.provider,
-      questionId: normalizeUuid(payload.question.questionId),
+      questionId: normalizedQuestionId,
       userId: user.id,
     });
 
@@ -188,11 +219,12 @@ Deno.serve(async (request) => {
       ? null
       : Math.max(
           0,
-          FREE_DAILY_LIMIT - (await getDailyQuestionChatCount(adminClient, user.id))
+          FREE_DAILY_LIMIT -
+            (await getDailyQuestionChatCount(serviceClient, user.id))
         );
 
     return jsonResponse({
-      conversationId,
+      conversationId: normalizedConversationId,
       provider: providerResponse.provider,
       model: providerResponse.model,
       message: assistantMessage,
@@ -201,6 +233,20 @@ Deno.serve(async (request) => {
     });
   } catch (error) {
     console.error("question-chat error", error);
+    await logAppError(adminClient, {
+      area: "question_chat",
+      error,
+      eventName: "question_chat_request_failed",
+      message: "Question chat failed before a response could be completed.",
+      metadata: {
+        conversation_id: conversationId,
+        locale,
+        question_id: questionId,
+      },
+      severity: "error",
+      source: "supabase_edge",
+      userId,
+    });
 
     return jsonResponse(
       {
@@ -273,6 +319,21 @@ function getRequiredEnv(name: string) {
   return value;
 }
 
+function maybeCreateAdminClient() {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return null;
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+    },
+  });
+}
+
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -331,6 +392,52 @@ async function getNextMessageOrder(
     .limit(1);
 
   return (data?.[0]?.message_order ?? 0) + 1;
+}
+
+async function logAppError(
+  adminClient: ReturnType<typeof createClient> | null,
+  input: {
+    area: string;
+    error?: unknown;
+    eventName: string;
+    message?: string;
+    metadata?: Record<string, unknown>;
+    severity?: AppLogSeverity;
+    source?: string;
+    userId?: string | null;
+  }
+) {
+  if (!adminClient) {
+    return;
+  }
+
+  const normalizedError = normalizeLoggedError(input.error);
+
+  try {
+    const { error } = await adminClient.from("app_error_logs").insert({
+      user_id: input.userId ?? null,
+      source: sanitizeLogString(input.source) ?? "supabase_edge",
+      area: sanitizeLogString(input.area) ?? "edge_unknown",
+      event_name:
+        sanitizeLogString(input.eventName) ?? "edge_unknown_error",
+      severity: input.severity ?? "error",
+      message:
+        sanitizeLogString(input.message) ??
+        normalizedError.message ??
+        `${input.area}:${input.eventName}`,
+      error_name: normalizedError.name,
+      error_code: normalizedError.code,
+      auth_mode: input.userId ? "supabase" : null,
+      platform: "edge",
+      metadata: sanitizeLogMetadata(input.metadata),
+    });
+
+    if (error) {
+      console.error("question-chat app_error_logs insert failed", error);
+    }
+  } catch (error) {
+    console.error("question-chat app_error_logs insert failed", error);
+  }
 }
 
 async function insertAiMessage(
@@ -666,4 +773,55 @@ function getOptionText(request: QuestionChatRequest, optionId: string) {
   const matched = request.question.options.find((option) => option.id === optionId);
 
   return matched?.text ?? optionId.toUpperCase();
+}
+
+function normalizeLoggedError(error: unknown) {
+  if (error instanceof Error) {
+    const record = error as Error & {
+      code?: unknown;
+      status?: unknown;
+    };
+
+    return {
+      code: normalizeLogCode(record.code ?? record.status),
+      message: sanitizeLogString(error.message),
+      name: sanitizeLogString(error.name),
+    };
+  }
+
+  const record =
+    error && typeof error === "object" && !Array.isArray(error)
+      ? (error as Record<string, unknown>)
+      : null;
+
+  return {
+    code: normalizeLogCode(record?.code ?? record?.status),
+    message:
+      sanitizeLogString(record?.message) ??
+      sanitizeLogString(record?.details) ??
+      sanitizeLogString(record?.error_description),
+    name: sanitizeLogString(record?.name),
+  };
+}
+
+function normalizeLogCode(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  return sanitizeLogString(value);
+}
+
+function sanitizeLogMetadata(metadata?: Record<string, unknown>) {
+  if (!metadata) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(metadata).filter((entry) => entry[1] !== undefined)
+  );
+}
+
+function sanitizeLogString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
 }

@@ -25,6 +25,7 @@ import {
 } from "../../src/features/entitlements/revenuecat";
 import { formatPlanDate } from "../../src/features/study-plan/generate-local-study-plan";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
+import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import {
   useEntitlementStatus,
@@ -60,6 +61,7 @@ const FEATURES = [
 export default function PaywallModalScreen() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
+  const { captureError } = useErrorLogger();
   const theme = useTheme();
   const styles = getStyles(theme);
   const params = useLocalSearchParams<{
@@ -227,6 +229,17 @@ export default function PaywallModalScreen() {
     } catch (error) {
       const message = getSchoolCodeRedeemErrorMessage(error);
 
+      captureError({
+        area: "school_access",
+        error,
+        eventName: "paywall_school_code_redeem_failed",
+        message: "Failed to redeem a school code from the paywall.",
+        metadata: {
+          code_length: normalizedCode.length,
+          feature: highlightedFeature ?? null,
+          source: "paywall",
+        },
+      });
       setEntitlementStatus("ready");
       track("school_code_redeem_failed", {
         auth_mode: authMode,
@@ -332,6 +345,20 @@ export default function PaywallModalScreen() {
 
       const message = getRevenueCatErrorMessage(error);
 
+      captureError({
+        area: "monetization",
+        error,
+        eventName: "purchase_failed",
+        message: "Direct purchase failed from the paywall.",
+        metadata: {
+          feature: highlightedFeature ?? "premium_access",
+          offering_identifier: selectedPackage.offeringIdentifier,
+          package_identifier: selectedPackage.identifier,
+          package_type: selectedPackage.packageType,
+          product_identifier: selectedPackage.productIdentifier,
+          source: "paywall",
+        },
+      });
       setRevenueCatStatus("ready");
       track("purchase_failed", {
         message,
@@ -410,6 +437,15 @@ export default function PaywallModalScreen() {
     } catch (error) {
       const message = getRevenueCatErrorMessage(error);
 
+      captureError({
+        area: "monetization",
+        error,
+        eventName: "purchase_restore_failed",
+        message: "Purchase restore failed from the paywall.",
+        metadata: {
+          source: "paywall",
+        },
+      });
       setRevenueCatStatus("ready");
       track("purchase_restore_failed", {
         message,

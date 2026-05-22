@@ -12,6 +12,7 @@ import type { PropsWithChildren } from "react";
 import { useEffect } from "react";
 
 import { isMobileSupabaseConfigured } from "../config/env";
+import type { CaptureErrorInput } from "../features/errors/error-logging";
 import { fetchRemoteQuestionUserStateMap } from "../features/questions/supabase-question-state";
 import type { QuestionUserStateMap } from "../features/questions/types";
 import { getMobileSupabaseClient } from "../lib/supabase";
@@ -23,6 +24,7 @@ import {
   useQuestionProgressHydrated,
   useQuestionProgressStore,
 } from "../state/question-progress";
+import { useErrorLogger } from "./ErrorLoggingProvider";
 
 type RemoteProfileRecord = {
   current_category: DrivingCategory;
@@ -48,6 +50,7 @@ type RemoteStudyPlanRecord = {
 export function RemoteLearningStateProvider({ children }: PropsWithChildren) {
   const appShellHydrated = useHasHydrated();
   const authMode = useAppShellStore((state) => state.authMode);
+  const { captureError } = useErrorLogger();
   const hydrateRemoteProfile = useAppShellStore(
     (state) => state.hydrateRemoteProfile
   );
@@ -88,6 +91,26 @@ export function RemoteLearningStateProvider({ children }: PropsWithChildren) {
         if (cancelled || profileError || !profileData) {
           if (profileError) {
             console.warn("Failed to fetch remote profile state.", profileError);
+            captureError({
+              area: "learning_state",
+              error: profileError,
+              eventName: "remote_profile_fetch_failed",
+              message: "Failed to fetch the remote profile state.",
+              metadata: {
+                user_id: supabaseUserId,
+              },
+            });
+          } else if (!profileData) {
+            captureError({
+              area: "learning_state",
+              eventName: "remote_profile_fetch_failed",
+              message: "Authenticated user is missing a remote profile row.",
+              metadata: {
+                reason: "missing_profile_row",
+                user_id: supabaseUserId,
+              },
+              severity: "warning",
+            });
           }
           return;
         }
@@ -105,14 +128,30 @@ export function RemoteLearningStateProvider({ children }: PropsWithChildren) {
             client,
             profile,
             hydrateRemoteStudyPlan,
-            () => cancelled
+            () => cancelled,
+            captureError,
+            supabaseUserId
           );
         }
 
-        void hydrateQuestionState(replaceQuestionUserState, () => cancelled);
+        void hydrateQuestionState(
+          replaceQuestionUserState,
+          () => cancelled,
+          captureError,
+          supabaseUserId
+        );
       } catch (error) {
         if (!cancelled) {
           console.warn("Failed to hydrate remote learning state.", error);
+          captureError({
+            area: "learning_state",
+            error,
+            eventName: "remote_profile_fetch_failed",
+            message: "Failed to hydrate the remote learning state.",
+            metadata: {
+              user_id: supabaseUserId,
+            },
+          });
         }
       }
     })();
@@ -123,6 +162,7 @@ export function RemoteLearningStateProvider({ children }: PropsWithChildren) {
   }, [
     appShellHydrated,
     authMode,
+    captureError,
     hydrateRemoteProfile,
     hydrateRemoteStudyPlan,
     questionProgressHydrated,
@@ -141,7 +181,9 @@ async function hydrateStudyPlan(
     plan: GeneratedStudyPlan | null;
     remoteId: string | null;
   }) => void,
-  isCancelled: () => boolean
+  isCancelled: () => boolean,
+  captureError: (input: CaptureErrorInput) => void,
+  userId: string
 ) {
   try {
     const latestStudyPlanId = getLatestStudyPlanId(profile.metadata);
@@ -174,6 +216,16 @@ async function hydrateStudyPlan(
     if (isCancelled() || studyPlanError) {
       if (studyPlanError) {
         console.warn("Failed to fetch remote study plan.", studyPlanError);
+        captureError({
+          area: "learning_state",
+          error: studyPlanError,
+          eventName: "remote_study_plan_fetch_failed",
+          message: "Failed to fetch the remote study plan.",
+          metadata: {
+            latest_study_plan_id: latestStudyPlanId,
+            user_id: userId,
+          },
+        });
       }
       return;
     }
@@ -195,13 +247,24 @@ async function hydrateStudyPlan(
   } catch (error) {
     if (!isCancelled()) {
       console.warn("Failed to hydrate remote study plan.", error);
+      captureError({
+        area: "learning_state",
+        error,
+        eventName: "remote_study_plan_fetch_failed",
+        message: "Study plan hydration threw before completion.",
+        metadata: {
+          user_id: userId,
+        },
+      });
     }
   }
 }
 
 async function hydrateQuestionState(
   replaceQuestionUserState: (questionUserState: QuestionUserStateMap) => void,
-  isCancelled: () => boolean
+  isCancelled: () => boolean,
+  captureError: (input: CaptureErrorInput) => void,
+  userId: string
 ) {
   try {
     const questionUserState = await fetchRemoteQuestionUserStateMap();
@@ -214,6 +277,15 @@ async function hydrateQuestionState(
   } catch (error) {
     if (!isCancelled()) {
       console.warn("Failed to fetch remote question state.", error);
+      captureError({
+        area: "learning_state",
+        error,
+        eventName: "remote_question_state_fetch_failed",
+        message: "Failed to fetch the remote question state map.",
+        metadata: {
+          user_id: userId,
+        },
+      });
     }
   }
 }

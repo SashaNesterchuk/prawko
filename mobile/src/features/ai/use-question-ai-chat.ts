@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAiConversation, useAiChatHydrated, useAiChatStore } from "../../state/ai-chat";
 import { useQuestionCatalogVersion } from "../../state/question-catalog";
+import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
 import { createAiMessageId } from "./create-ai-id";
 import { createIntroAiMessage } from "./mock-question-chat";
 import { buildQuestionChatContext } from "./question-chat-context";
@@ -21,6 +22,7 @@ export function useQuestionAiChat(input: {
 }) {
   const aiChatHydrated = useAiChatHydrated();
   const conversation = useAiConversation(input.questionId);
+  const { captureError, captureFallback } = useErrorLogger();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const ensureConversation = useAiChatStore((state) => state.ensureConversation);
   const appendMessage = useAiChatStore((state) => state.appendMessage);
@@ -125,6 +127,21 @@ export function useQuestionAiChat(input: {
     try {
       const response = await requestQuestionChat(request);
 
+      if (response.fallbackUsed) {
+        captureFallback({
+          area: "question_chat",
+          eventName: "question_chat_fallback_used",
+          message: "Question chat used the local fallback assistant response.",
+          metadata: {
+            conversation_id: targetConversation.conversationId,
+            model: response.model,
+            provider: response.provider,
+            question_id: questionContext.questionId,
+            remaining_free_messages: response.remainingFreeMessages ?? null,
+          },
+        });
+      }
+
       appendMessage({
         conversationId: targetConversation.conversationId,
         locale: input.locale,
@@ -135,6 +152,18 @@ export function useQuestionAiChat(input: {
         consumeAssistantResponse();
       }
     } catch (error) {
+      if (!(error instanceof QuestionChatLimitError)) {
+        captureError({
+          area: "question_chat",
+          error,
+          eventName: "question_chat_send_failed",
+          message: "Failed to send the question chat request.",
+          metadata: {
+            conversation_id: targetConversation.conversationId,
+            question_id: questionContext.questionId,
+          },
+        });
+      }
       setErrorCode(
         error instanceof QuestionChatLimitError ? "limit_reached" : "send_failed"
       );

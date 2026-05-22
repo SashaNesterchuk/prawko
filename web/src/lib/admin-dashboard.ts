@@ -55,6 +55,20 @@ type RecentAiMessage = {
   userId: string;
 };
 
+type RecentAppErrorLog = {
+  area: string;
+  authMode: string | null;
+  createdAt: string;
+  errorCode: string | null;
+  errorName: string | null;
+  eventName: string;
+  message: string;
+  platform: string | null;
+  severity: string;
+  source: string;
+  userId: string | null;
+};
+
 type SchoolRow = {
   city: string | null;
   createdAt: string;
@@ -256,6 +270,7 @@ export async function getAdminOverviewData() {
           "Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY for live overview data."
         ),
       ],
+      recentAppErrorLogs: [] as RecentAppErrorLog[],
       recentAssistantMessages: [] as RecentAiMessage[],
       recentProfiles: [] as RecentProfile[],
       recentSchoolEntitlements: [] as RecentEntitlement[],
@@ -275,9 +290,11 @@ export async function getAdminOverviewData() {
     activeSchoolCodes,
     activeEntitlements,
     assistantMessagesLast7Days,
+    appErrorsLast7Days,
     recentProfilesResponse,
     recentEntitlementsResponse,
     recentAiMessagesResponse,
+    recentAppErrorLogsResponse,
   ] = await Promise.all([
     readCount(
       "profiles_total",
@@ -334,6 +351,13 @@ export async function getAdminOverviewData() {
         .eq("message_role", "assistant")
         .gte("created_at", last7DaysIso)
     ),
+    readCount(
+      "app_error_logs_last_7_days",
+      client
+        .from("app_error_logs")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", last7DaysIso)
+    ),
     client
       .from("profiles")
       .select(
@@ -357,6 +381,13 @@ export async function getAdminOverviewData() {
       .eq("message_role", "assistant")
       .order("created_at", { ascending: false })
       .limit(12),
+    client
+      .from("app_error_logs")
+      .select(
+        "user_id, source, area, event_name, severity, message, error_name, error_code, auth_mode, platform, created_at"
+      )
+      .order("created_at", { ascending: false })
+      .limit(12),
   ]);
 
   captureError(errors, totalProfiles);
@@ -368,6 +399,7 @@ export async function getAdminOverviewData() {
   captureError(errors, activeSchoolCodes);
   captureError(errors, activeEntitlements);
   captureError(errors, assistantMessagesLast7Days);
+  captureError(errors, appErrorsLast7Days);
 
   const recentProfiles = unwrapRows<RecentProfile>(
     "profiles_recent",
@@ -425,6 +457,25 @@ export async function getAdminOverviewData() {
     })
   );
 
+  const recentAppErrorLogs = unwrapRows<RecentAppErrorLog>(
+    "app_error_logs_recent",
+    recentAppErrorLogsResponse,
+    errors,
+    (row) => ({
+      area: stringValue(row.area),
+      authMode: nullableStringValue(row.auth_mode),
+      createdAt: stringValue(row.created_at),
+      errorCode: nullableStringValue(row.error_code),
+      errorName: nullableStringValue(row.error_name),
+      eventName: stringValue(row.event_name),
+      message: stringValue(row.message),
+      platform: nullableStringValue(row.platform),
+      severity: stringValue(row.severity),
+      source: stringValue(row.source),
+      userId: nullableStringValue(row.user_id),
+    })
+  );
+
   return {
     configuration,
     errors,
@@ -464,7 +515,13 @@ export async function getAdminOverviewData() {
         formatCount(assistantMessagesLast7Days.value),
         "Visible assistant responses stored in ai_messages."
       ),
+      createMetric(
+        "App errors (7d)",
+        formatCount(appErrorsLast7Days.value),
+        "Client, admin, and edge-function issues persisted to app_error_logs."
+      ),
     ],
+    recentAppErrorLogs,
     recentAssistantMessages,
     recentProfiles,
     recentSchoolEntitlements: recentEntitlements.map((row) => ({
