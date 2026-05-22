@@ -1,6 +1,10 @@
 import type { StudyPlanTaskType, TopicBlockId } from "@prawko/config";
 
 import { isMobileSupabaseConfigured } from "../../config/env";
+import type {
+  ExamSimulatorMode,
+  RemoteExamSessionStatus,
+} from "../exam/types";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 
 type RemoteTodayPlanRow = {
@@ -22,6 +26,7 @@ type RemoteTodayPlanRow = {
 };
 
 type RemoteReadinessSummaryRow = {
+  accuracy_component: number | string;
   accuracy_percent: number | string;
   active_plan_status: StudyPlanStatus;
   active_study_plan_id: string;
@@ -29,10 +34,19 @@ type RemoteReadinessSummaryRow = {
   days_until_exam: number | string;
   due_reviews: number | string;
   exam_date: string;
+  plan_completion_percent: number | string;
+  plan_component: number | string;
+  recent_exam_component: number | string;
+  recent_exam_finished_at: string | null;
+  recent_exam_mode: ExamSimulatorMode | null;
+  recent_exam_score_percent: number | string | null;
+  recent_exam_status: RemoteExamSessionStatus | null;
   readiness_score: number | string;
+  review_hygiene_component: number | string;
   total_attempts: number | string;
   total_plan_days: number | string;
   unresolved_weak_spots: number | string;
+  weak_spot_component: number | string;
 };
 
 export type StudyPlanStatus =
@@ -79,6 +93,7 @@ export type RemoteTodayPlan = {
 };
 
 export type RemoteReadinessSummary = {
+  accuracyComponent: number;
   accuracyPercent: number;
   activePlanStatus: StudyPlanStatus;
   activeStudyPlanId: string;
@@ -86,10 +101,19 @@ export type RemoteReadinessSummary = {
   daysUntilExam: number;
   dueReviews: number;
   examDate: string;
+  planCompletionPercent: number;
+  planComponent: number;
+  recentExamComponent: number;
+  recentExamFinishedAt: string | null;
+  recentExamMode: ExamSimulatorMode | null;
+  recentExamScorePercent: number | null;
+  recentExamStatus: RemoteExamSessionStatus | null;
   readinessScore: number;
+  reviewHygieneComponent: number;
   totalAttempts: number;
   totalPlanDays: number;
   unresolvedWeakSpots: number;
+  weakSpotComponent: number;
 };
 
 type UpdateStudyPlanTaskStatusInput = {
@@ -156,6 +180,7 @@ export async function fetchRemoteReadinessSummary() {
   }
 
   return {
+    accuracyComponent: toNumber(row.accuracy_component),
     accuracyPercent: toNumber(row.accuracy_percent),
     activePlanStatus: row.active_plan_status,
     activeStudyPlanId: row.active_study_plan_id,
@@ -163,10 +188,22 @@ export async function fetchRemoteReadinessSummary() {
     daysUntilExam: toNumber(row.days_until_exam),
     dueReviews: toNumber(row.due_reviews),
     examDate: row.exam_date,
+    planCompletionPercent: toNumber(row.plan_completion_percent),
+    planComponent: toNumber(row.plan_component),
+    recentExamComponent: toNumber(row.recent_exam_component),
+    recentExamFinishedAt: row.recent_exam_finished_at,
+    recentExamMode: row.recent_exam_mode,
+    recentExamScorePercent:
+      row.recent_exam_score_percent === null
+        ? null
+        : toNumber(row.recent_exam_score_percent),
+    recentExamStatus: row.recent_exam_status,
     readinessScore: toNumber(row.readiness_score),
+    reviewHygieneComponent: toNumber(row.review_hygiene_component),
     totalAttempts: toNumber(row.total_attempts),
     totalPlanDays: toNumber(row.total_plan_days),
     unresolvedWeakSpots: toNumber(row.unresolved_weak_spots),
+    weakSpotComponent: toNumber(row.weak_spot_component),
   } satisfies RemoteReadinessSummary;
 }
 

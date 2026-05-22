@@ -377,6 +377,79 @@ export default function HomeTabScreen() {
           ) : null}
         </AppCard>
 
+        {remoteReadinessSummary ? (
+          <AppCard>
+            <Text style={styles.sectionLabel}>{t("home.breakdownTitle")}</Text>
+            <Text style={styles.bodyText}>{t("home.breakdownBody")}</Text>
+            <View style={styles.breakdownList}>
+              <ReadinessBreakdownRow
+                hint={t("home.breakdownAccuracyHint", {
+                  percent: formatScoreMetric(
+                    remoteReadinessSummary.accuracyPercent
+                  ),
+                })}
+                label={t("home.breakdownAccuracyLabel")}
+                value={t("home.breakdownPointsValue", {
+                  max: 45,
+                  points: remoteReadinessSummary.accuracyComponent,
+                })}
+              />
+              <ReadinessBreakdownRow
+                hint={t("home.breakdownPlanHint", {
+                  completed: remoteReadinessSummary.completedPlanDays,
+                  percent: formatScoreMetric(
+                    remoteReadinessSummary.planCompletionPercent
+                  ),
+                  total: remoteReadinessSummary.totalPlanDays,
+                })}
+                label={t("home.breakdownPlanLabel")}
+                value={t("home.breakdownPointsValue", {
+                  max: 25,
+                  points: remoteReadinessSummary.planComponent,
+                })}
+              />
+              <ReadinessBreakdownRow
+                hint={
+                  remoteReadinessSummary.recentExamMode &&
+                  remoteReadinessSummary.recentExamScorePercent !== null
+                    ? t("home.breakdownExamHint", {
+                        mode: t(`modes.${remoteReadinessSummary.recentExamMode}`),
+                        percent: formatScoreMetric(
+                          remoteReadinessSummary.recentExamScorePercent
+                        ),
+                      })
+                    : t("home.breakdownExamMissing")
+                }
+                label={t("home.breakdownExamLabel")}
+                value={t("home.breakdownPointsValue", {
+                  max: 20,
+                  points: remoteReadinessSummary.recentExamComponent,
+                })}
+              />
+              <ReadinessBreakdownRow
+                hint={t("home.breakdownReviewHint", {
+                  count: remoteReadinessSummary.dueReviews,
+                })}
+                label={t("home.breakdownReviewLabel")}
+                value={t("home.breakdownPointsValue", {
+                  max: 5,
+                  points: remoteReadinessSummary.reviewHygieneComponent,
+                })}
+              />
+              <ReadinessBreakdownRow
+                hint={t("home.breakdownWeakHint", {
+                  count: remoteReadinessSummary.unresolvedWeakSpots,
+                })}
+                label={t("home.breakdownWeakLabel")}
+                value={t("home.breakdownPointsValue", {
+                  max: 5,
+                  points: remoteReadinessSummary.weakSpotComponent,
+                })}
+              />
+            </View>
+          </AppCard>
+        ) : null}
+
         <AppCard>
           <Text style={styles.sectionLabel}>{t("home.todayTasksTitle")}</Text>
           {today ? (
@@ -573,8 +646,66 @@ function formatTodayTaskLine(task: RemoteTodayPlanTask, index: number) {
   return `${index + 1}. ${task.title}${progressPart}${minutesPart}`;
 }
 
+function formatScoreMetric(value: number) {
+  return Number.isInteger(value) ? `${value}` : value.toFixed(1);
+}
+
+function ReadinessBreakdownRow({
+  hint,
+  label,
+  value,
+}: {
+  hint: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <View style={breakdownRowStyles.container}>
+      <View style={breakdownRowStyles.copy}>
+        <Text style={breakdownRowStyles.label}>{label}</Text>
+        <Text style={breakdownRowStyles.hint}>{hint}</Text>
+      </View>
+      <Text style={breakdownRowStyles.value}>{value}</Text>
+    </View>
+  );
+}
+
+const breakdownRowStyles = StyleSheet.create({
+  container: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+  },
+  copy: {
+    flex: 1,
+    gap: 2,
+  },
+  hint: {
+    color: "#6B746C",
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  label: {
+    color: "#182018",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 20,
+  },
+  value: {
+    color: "#1E5B4F",
+    fontSize: 14,
+    fontWeight: "800",
+    lineHeight: 20,
+  },
+});
+
 const getStyles = (theme: ReturnType<typeof useTheme>) =>
   StyleSheet.create({
+    breakdownList: {
+      gap: 10,
+      marginTop: 12,
+    },
     bodyText: {
       color: theme.colors.textPrimary,
       fontSize: 14,

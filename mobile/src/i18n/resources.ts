@@ -156,6 +156,22 @@ export const resources = {
         summaryReviews: "Due reviews: {{due}}. Weak spots: {{weak}}.",
         summaryPlanProgress:
           "Ukonczone dni planu: {{completed}}/{{total}}. Do egzaminu: {{days}} dni.",
+        breakdownTitle: "Dlaczego taki wynik",
+        breakdownBody:
+          "Readiness score sklada sie z accuracy, progresu planu, ostatniego examu i higieny review.",
+        breakdownAccuracyLabel: "Accuracy",
+        breakdownAccuracyHint: "Poprawnosc odpowiedzi: {{percent}}%",
+        breakdownPlanLabel: "Plan progress",
+        breakdownPlanHint:
+          "Ukonczone dni: {{completed}} / {{total}} ({{percent}}%)",
+        breakdownExamLabel: "Recent exam",
+        breakdownExamHint: "Ostatni {{mode}}: {{percent}}%",
+        breakdownExamMissing: "Brakuje zakonczonej sesji exam do tej czesci score.",
+        breakdownReviewLabel: "Review hygiene",
+        breakdownReviewHint: "Pytania due do review: {{count}}",
+        breakdownWeakLabel: "Weak spots",
+        breakdownWeakHint: "Nierozwiazane weak spots: {{count}}",
+        breakdownPointsValue: "{{points}} / {{max}}",
         summaryEmpty: "Nie masz jeszcze zatwierdzonego planu. Wroc do preview i uruchom pierwszy sprint.",
         summaryMissedDays:
           "Masz {{days}} zaleglych dni w planie. Warto przebudowac remaining flow od dzis.",
@@ -876,6 +892,22 @@ export const resources = {
         summaryReviews: "Due reviews: {{due}}. Weak spots: {{weak}}.",
         summaryPlanProgress:
           "Завершені дні плану: {{completed}}/{{total}}. До іспиту: {{days}} днів.",
+        breakdownTitle: "Чому саме такий score",
+        breakdownBody:
+          "Readiness score складається з accuracy, прогресу плану, останнього exam і гігієни review.",
+        breakdownAccuracyLabel: "Accuracy",
+        breakdownAccuracyHint: "Правильність відповідей: {{percent}}%",
+        breakdownPlanLabel: "Plan progress",
+        breakdownPlanHint:
+          "Завершені дні: {{completed}} / {{total}} ({{percent}}%)",
+        breakdownExamLabel: "Recent exam",
+        breakdownExamHint: "Останній {{mode}}: {{percent}}%",
+        breakdownExamMissing: "Ще немає завершеної exam session для цієї частини score.",
+        breakdownReviewLabel: "Review hygiene",
+        breakdownReviewHint: "Питань due для review: {{count}}",
+        breakdownWeakLabel: "Weak spots",
+        breakdownWeakHint: "Нерозв'язані weak spots: {{count}}",
+        breakdownPointsValue: "{{points}} / {{max}}",
         summaryEmpty:
           "Ти ще не затвердив план. Повернись у preview і запусти перший навчальний спринт.",
         summaryMissedDays:
@@ -1601,6 +1633,23 @@ export const resources = {
         summaryReviews: "Due reviews: {{due}}. Weak spots: {{weak}}.",
         summaryPlanProgress:
           "Completed plan days: {{completed}}/{{total}}. Days to exam: {{days}}.",
+        breakdownTitle: "Why this score",
+        breakdownBody:
+          "The readiness score is built from answer accuracy, plan progress, the latest exam, and review hygiene.",
+        breakdownAccuracyLabel: "Accuracy",
+        breakdownAccuracyHint: "Answer accuracy: {{percent}}%",
+        breakdownPlanLabel: "Plan progress",
+        breakdownPlanHint:
+          "Completed days: {{completed}} / {{total}} ({{percent}}%)",
+        breakdownExamLabel: "Recent exam",
+        breakdownExamHint: "Latest {{mode}}: {{percent}}%",
+        breakdownExamMissing:
+          "There is no finished exam session yet for this part of the score.",
+        breakdownReviewLabel: "Review hygiene",
+        breakdownReviewHint: "Questions due for review: {{count}}",
+        breakdownWeakLabel: "Weak spots",
+        breakdownWeakHint: "Unresolved weak spots: {{count}}",
+        breakdownPointsValue: "{{points}} / {{max}}",
         summaryEmpty:
           "You have not confirmed a plan yet. Go back to preview and start the first sprint.",
         summaryMissedDays:
