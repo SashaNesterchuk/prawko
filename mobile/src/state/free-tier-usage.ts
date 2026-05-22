@@ -7,6 +7,7 @@ type FreeTierQuestionUsageState = {
   answeredQuestionsByDate: Record<string, number>;
   hasHydrated: boolean;
   consumeQuestionAnswer: () => number;
+  getUsedQuestionAnswersToday: () => number;
   getRemainingQuestionAnswers: () => number;
   setHasHydrated: (value: boolean) => void;
 };
@@ -30,6 +31,8 @@ export const useFreeTierQuestionUsageStore = create<FreeTierQuestionUsageState>(
 
         return Math.max(0, FREE_TIER_LIMITS.questionPracticePerDay - nextUsed);
       },
+      getUsedQuestionAnswersToday: () =>
+        get().answeredQuestionsByDate[getTodayKey()] ?? 0,
       getRemainingQuestionAnswers: () => {
         const usedToday = get().answeredQuestionsByDate[getTodayKey()] ?? 0;
 
@@ -57,6 +60,12 @@ export function useFreeTierQuestionUsageHydrated() {
 export function useRemainingFreeQuestionAnswers() {
   return useFreeTierQuestionUsageStore((state) =>
     state.getRemainingQuestionAnswers()
+  );
+}
+
+export function useUsedFreeQuestionAnswersToday() {
+  return useFreeTierQuestionUsageStore((state) =>
+    state.getUsedQuestionAnswersToday()
   );
 }
 

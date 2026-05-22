@@ -23,6 +23,8 @@
 - [ ] `pnpm --filter @prawko/web build`
 - [ ] Fresh user can complete: install -> auth -> onboarding -> study plan -> learning -> paywall.
 - [ ] School-code user can complete: auth -> redeem code -> premium access confirmed.
+- [ ] Access Center confirms current access state, school-code redemption, and purchase restore on a signed-in build.
+- [ ] Free preview question cap is verified on a signed-in user across at least two sessions/devices.
 - [ ] AI fallback path is tested once by temporarily breaking the provider env in a staging environment.
 
 ## 4. Launch operations

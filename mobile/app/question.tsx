@@ -18,6 +18,8 @@ import {
   LoadingStateView,
 } from "../src/components/shell/StateViews";
 import { isMobileSupabaseConfigured } from "../src/config/env";
+import { fetchRemoteDailyUsageSnapshot } from "../src/features/entitlements/supabase-daily-usage";
+import { useErrorLogger } from "../src/providers/ErrorLoggingProvider";
 import {
   buildQuestionRouteParams,
   isUuidString,
@@ -45,7 +47,7 @@ import { useHasFeatureAccess } from "../src/state/entitlements";
 import {
   useFreeTierQuestionUsageHydrated,
   useFreeTierQuestionUsageStore,
-  useRemainingFreeQuestionAnswers,
+  useUsedFreeQuestionAnswersToday,
 } from "../src/state/free-tier-usage";
 import { useQuestionCatalogVersion } from "../src/state/question-catalog";
 import {
@@ -63,6 +65,7 @@ const RESULT_COLORS = {
 
 export default function QuestionScreen() {
   const { t } = useTranslation();
+  const { captureError } = useErrorLogger();
   const params = useLocalSearchParams<{
     mode?: string | string[];
     questionLimit?: string | string[];
@@ -75,9 +78,10 @@ export default function QuestionScreen() {
     (state) => state.currentStudyPlanRemoteId
   );
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const supabaseUserId = useAppShellStore((state) => state.supabaseUser?.id ?? null);
   const hasPremiumAccess = useHasFeatureAccess("premium_access");
   const freeTierQuestionUsageHydrated = useFreeTierQuestionUsageHydrated();
-  const remainingFreeQuestionAnswers = useRemainingFreeQuestionAnswers();
+  const localUsedQuestionAnswersToday = useUsedFreeQuestionAnswersToday();
   const consumeFreeQuestionAnswer = useFreeTierQuestionUsageStore(
     (state) => state.consumeQuestionAnswer
   );
@@ -96,6 +100,9 @@ export default function QuestionScreen() {
   );
   const [displayLocale, setDisplayLocale] =
     useState<SupportedLocale>(preferredLocale);
+  const [remoteUsedQuestionAnswersToday, setRemoteUsedQuestionAnswersToday] =
+    useState<number | null>(null);
+  const [hasRemoteUsageResolved, setHasRemoteUsageResolved] = useState(false);
   const questionStartedAtRef = useRef(Date.now());
 
   const rawMode = getSingleParam(params.mode);
@@ -199,6 +206,20 @@ export default function QuestionScreen() {
   const isCompleted = Boolean(activeSession?.finishedAt && !activeSession.emptyReason);
   const isEmptyState = Boolean(activeSession?.emptyReason);
   const hasUnlimitedQuestionPractice = hasPremiumAccess;
+  const shouldLoadRemoteQuestionUsage =
+    authMode === "supabase" &&
+    Boolean(supabaseUserId) &&
+    isMobileSupabaseConfigured &&
+    !hasUnlimitedQuestionPractice;
+  const usedQuestionAnswersToday = hasUnlimitedQuestionPractice
+    ? 0
+    : remoteUsedQuestionAnswersToday === null
+      ? localUsedQuestionAnswersToday
+      : Math.max(remoteUsedQuestionAnswersToday, localUsedQuestionAnswersToday);
+  const remainingFreeQuestionAnswers = Math.max(
+    0,
+    FREE_TIER_LIMITS.questionPracticePerDay - usedQuestionAnswersToday
+  );
   const questionLimitReached =
     !hasUnlimitedQuestionPractice && remainingFreeQuestionAnswers <= 0;
   const styles = getStyles();
@@ -206,6 +227,51 @@ export default function QuestionScreen() {
   useEffect(() => {
     questionStartedAtRef.current = Date.now();
   }, [currentQuestionId]);
+
+  useEffect(() => {
+    if (!shouldLoadRemoteQuestionUsage) {
+      setRemoteUsedQuestionAnswersToday(null);
+      setHasRemoteUsageResolved(true);
+      return;
+    }
+
+    let cancelled = false;
+    setHasRemoteUsageResolved(false);
+
+    void fetchRemoteDailyUsageSnapshot()
+      .then((snapshot) => {
+        if (cancelled) {
+          return;
+        }
+
+        setRemoteUsedQuestionAnswersToday(snapshot.questionAttemptsUsedToday);
+        setHasRemoteUsageResolved(true);
+      })
+      .catch((error) => {
+        if (cancelled) {
+          return;
+        }
+
+        console.warn("Failed to fetch the remote daily question usage snapshot.", error);
+        captureError({
+          area: "question_practice",
+          error,
+          eventName: "remote_daily_usage_snapshot_failed",
+          message:
+            "Failed to fetch the remote daily question practice usage snapshot.",
+          metadata: {
+            user_id: supabaseUserId,
+          },
+          severity: "warning",
+        });
+        setRemoteUsedQuestionAnswersToday(null);
+        setHasRemoteUsageResolved(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [captureError, shouldLoadRemoteQuestionUsage, supabaseUserId]);
 
   function openQuestionPracticePaywall() {
     router.push({
@@ -313,6 +379,7 @@ export default function QuestionScreen() {
   if (
     !questionProgressHydrated ||
     !freeTierQuestionUsageHydrated ||
+    (shouldLoadRemoteQuestionUsage && !hasRemoteUsageResolved) ||
     !activeSession
   ) {
     return (
@@ -527,7 +594,18 @@ export default function QuestionScreen() {
                   }
 
                   if (!hasUnlimitedQuestionPractice) {
+                    const nextLocalUsedQuestionAnswers =
+                      localUsedQuestionAnswersToday + 1;
+
                     consumeFreeQuestionAnswer();
+
+                    if (shouldLoadRemoteQuestionUsage) {
+                      setRemoteUsedQuestionAnswersToday((current) =>
+                        current === null
+                          ? nextLocalUsedQuestionAnswers
+                          : Math.max(current + 1, nextLocalUsedQuestionAnswers)
+                      );
+                    }
                   }
 
                   if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
@@ -554,6 +632,7 @@ export default function QuestionScreen() {
                       client_attempt_id: answeredAttempt.id,
                       client_session_id: answeredAttempt.sessionId,
                       displayed_locale: displayLocale,
+                      source: "question_screen",
                       study_plan_task_id:
                         activeSession.request.studyPlanTaskId ?? null,
                       session_question_limit:

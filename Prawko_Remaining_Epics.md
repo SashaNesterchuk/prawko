@@ -112,7 +112,7 @@ Status: `mostly_done`
 
 ### Epic 10 — Paywall And School Access
 
-Status: `partial`
+Status: `mostly_done`
 
 Что уже закрыто:
 
@@ -122,16 +122,16 @@ Status: `partial`
 4. Free AI cap.
 5. Free preview question limit.
 6. Access Center из Profile.
+7. Backend-backed free preview question quota snapshot with local fallback.
 
 Остаток:
 
-1. Перенести free-tier quotas на backend/shared source of truth, а не только local persisted state.
-2. Привязать purchase visibility к admin/web слою, если нужен backoffice обзор paid users.
-3. Развести реальные commercial offers:
+1. Привязать purchase visibility к admin/web слою, если нужен backoffice обзор paid users.
+2. Развести реальные commercial offers:
    - sprint
    - 30-day premium
    - school access
-4. Проверить весь entitlement lifecycle после reinstall и multi-device use.
+3. Проверить весь entitlement lifecycle после reinstall и multi-device use.
 
 ### Epic 11 — Web App
 
@@ -158,36 +158,41 @@ Status: `mostly_done`
 
 ### Epic 12 — Analytics, QA, Release
 
-Status: `partial`
+Status: `mostly_done`
 
 Что уже есть:
 
 1. PostHog provider foundation.
 2. Event tracking across key flows.
 3. Error logging foundation.
+4. QA checklist document.
+5. Beta release checklist document.
+6. Data refresh runbook.
+7. Mobile beta rollout process.
 
 Остаток:
 
-1. Составить явный QA checklist документ.
-2. Составить release checklist документ.
-3. Описать TestFlight / internal Android rollout process.
-4. Описать data refresh runbook для вопросов и media.
-5. Проверить coverage ключевых KPI events end-to-end.
+1. Проверить coverage ключевых KPI events end-to-end.
+2. Прогнать один полноценный beta dry-run по iOS/Android release distribution.
 
 ## Current Execution Order
 
 Следующие срезы имеет смысл брать в таком порядке:
 
-1. `Epic 10` — backend-backed free-tier quotas and entitlement visibility
-2. `Epic 6` — pre-generated explanations and stronger AI fallback
-3. `Epic 11` — web admin question import status + explanation review queue
-4. `Epic 12` — QA / release / refresh runbooks
+1. `Epic 6` — pre-generated explanations and stronger AI fallback
+2. `Epic 11` — web admin question import status + explanation review queue
+3. `Epic 10` — admin visibility for paid users and entitlement lifecycle QA
+4. `Epic 12` — KPI verification and beta dry-run
 
 ## Current Pass
 
 В этом проходе в работу взят следующий кусок:
 
-1. `Epic 10` — separate Access Center from `Profile` for:
-   - school code redeem
-   - purchase restore
-   - current access inspection
+1. `Epic 10` — backend-backed free preview question quota using:
+   - Supabase daily usage snapshot RPC
+   - Warsaw day boundary
+   - mobile remote+local fallback merge
+2. `Epic 12` — release operations docs refreshed with:
+   - shared quota QA checks
+   - Access Center beta checks
+   - TestFlight / Android internal rollout runbook

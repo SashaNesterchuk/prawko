@@ -22,8 +22,11 @@
 - [ ] Sign in works for an existing account.
 - [ ] Onboarding creates a study plan and lands on the main app shell.
 - [ ] Question catalog loads from Supabase for authenticated users.
+- [ ] Free preview question cap blocks after `20` answers and keeps the correct remaining count for signed-in users.
+- [ ] Daily free preview usage stays consistent after reinstall and on a second signed-in device.
 - [ ] Wrong-answer replay and weak-spot flows show actual remote progress.
 - [ ] AI question chat answers and shows fallback content if the edge path is unavailable.
+- [ ] Access Center shows current access, can redeem a school code, and can run purchase restore.
 - [ ] Paywall can redeem a school code for an authenticated user.
 - [ ] RevenueCat purchase flow is verified on a real device build if purchase env is enabled.
 
@@ -47,4 +50,5 @@
 - [ ] `pnpm --filter @prawko/mobile typecheck`
 - [ ] `pnpm --filter @prawko/web typecheck`
 - [ ] `pnpm --filter @prawko/web build`
+- [ ] At least one authenticated smoke test confirms shared free-tier quota against Supabase, not only local storage.
 - [ ] Smoke test on at least one Android device and one iPhone build if both platforms are in scope.
