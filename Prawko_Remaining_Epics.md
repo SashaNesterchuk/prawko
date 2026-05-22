@@ -149,11 +149,11 @@ Status: `mostly_done`
 10. AI review queue with manual admin decisions.
 11. Public school pilot inquiry form saved into Supabase.
 12. Admin school lead queue with status and notes.
+13. Root `/admin` noindex surface with safer auth redirects and auth-route robot headers.
 
 Остаток:
 
 1. Добавить real app-store / play-store deep links.
-2. Дожать protected admin auth и non-indexed admin surface.
 
 ### Epic 12 — Analytics, QA, Release
 
@@ -178,15 +178,15 @@ Status: `mostly_done`
 
 Следующие срезы имеет смысл брать в таком порядке:
 
-1. `Epic 11` — store links and admin auth hardening
-2. `Epic 10` — entitlement lifecycle QA and commercial offer split
-3. `Epic 12` — KPI verification and beta dry-run
+1. `Epic 10` — entitlement lifecycle QA and commercial offer split
+2. `Epic 12` — KPI verification and beta dry-run
+3. `Epic 11` — plug in real store URLs once published
 
 ## Current Pass
 
 В этом проходе в работу взят следующий кусок:
 
-1. `Epic 11` — school inquiry funnel now has:
-   - public pilot form on `/schools`
-   - Supabase-backed lead capture
-   - admin lead queue with status and notes
+1. `Epic 11` — admin surface hardening with:
+   - root `/admin` noindex metadata
+   - safer post-login redirects
+   - `X-Robots-Tag` headers on admin auth routes

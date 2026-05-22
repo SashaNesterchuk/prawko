@@ -47,7 +47,19 @@ export function normalizeAdminNextPath(value: string | null | undefined) {
   }
 
   const normalized = value.trim();
-  return normalized.startsWith("/admin") ? normalized : "/admin";
+
+  if (!normalized.startsWith("/admin")) {
+    return "/admin";
+  }
+
+  if (
+    normalized === "/admin/login" ||
+    normalized.startsWith("/admin/auth")
+  ) {
+    return "/admin";
+  }
+
+  return normalized;
 }
 
 export async function getAdminSession() {

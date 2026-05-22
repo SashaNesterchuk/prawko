@@ -24,20 +24,26 @@ export async function POST(request: NextRequest) {
       redirectUrl.searchParams.set("email", email);
     }
 
-    return NextResponse.redirect(redirectUrl, {
-      status: 303,
-    });
+    return createAdminAuthRedirectResponse(redirectUrl);
   }
 
-  const response = NextResponse.redirect(new URL(nextPath, request.url), {
-    status: 303,
-  });
+  const response = createAdminAuthRedirectResponse(new URL(nextPath, request.url));
 
   response.cookies.set({
     name: ADMIN_SESSION_COOKIE,
     value: createAdminSessionCookieValue(result.email),
     ...buildAdminCookieOptions(),
   });
+
+  return response;
+}
+
+function createAdminAuthRedirectResponse(url: URL) {
+  const response = NextResponse.redirect(url, {
+    status: 303,
+  });
+
+  response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
 
   return response;
 }

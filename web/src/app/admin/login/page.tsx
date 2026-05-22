@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { AdminMessage } from "../../../components/admin/AdminPageHeader";
-import { getAdminAuthReadiness, normalizeAdminNextPath } from "../../../lib/admin-auth";
+import {
+  getAdminAuthReadiness,
+  getAdminSession,
+  normalizeAdminNextPath,
+} from "../../../lib/admin-auth";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export const metadata: Metadata = {
   title: "Admin Login",
-  robots: {
-    index: false,
-    follow: false,
-  },
 };
 
 export default async function AdminLoginPage({
@@ -24,6 +25,11 @@ export default async function AdminLoginPage({
   const email = firstSearchParam(params.email) ?? "";
   const nextPath = normalizeAdminNextPath(firstSearchParam(params.next));
   const signedOut = firstSearchParam(params.signed_out) === "1";
+  const session = signedOut ? null : await getAdminSession();
+
+  if (session) {
+    redirect(nextPath);
+  }
 
   return (
     <main className="admin-login-shell">
