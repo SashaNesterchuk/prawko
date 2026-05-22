@@ -1,6 +1,7 @@
 import {
   AI_LIMITS,
   EXAM_RULES,
+  FREE_TIER_LIMITS,
   STUDY_PLAN_LIMITS,
   SUPPORTED_LOCALES,
 } from "@prawko/config";
@@ -175,7 +176,7 @@ export const pricingTiers = [
     price: "0 PLN",
     subtitle: "Enough to feel the product before paying",
     features: [
-      "Limited questions per day",
+      `${FREE_TIER_LIMITS.questionPracticePerDay} questions per day`,
       "Daily plan preview",
       "AI explanations with daily cap",
       "No unlimited simulator access",

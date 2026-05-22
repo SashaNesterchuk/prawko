@@ -4,7 +4,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
 
-import { SUPPORTED_LOCALES, type SupportedLocale } from "@prawko/config";
+import {
+  FREE_TIER_LIMITS,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+} from "@prawko/config";
 
 import { AppButton } from "../src/components/shell/AppButton";
 import { AppCard } from "../src/components/shell/AppCard";
@@ -37,6 +41,12 @@ import {
   syncQuestionHardState,
 } from "../src/features/questions/supabase-question-state";
 import { useAppShellStore } from "../src/state/app-shell";
+import { useHasFeatureAccess } from "../src/state/entitlements";
+import {
+  useFreeTierQuestionUsageHydrated,
+  useFreeTierQuestionUsageStore,
+  useRemainingFreeQuestionAnswers,
+} from "../src/state/free-tier-usage";
 import { useQuestionCatalogVersion } from "../src/state/question-catalog";
 import {
   useActiveQuestionSession,
@@ -65,6 +75,12 @@ export default function QuestionScreen() {
     (state) => state.currentStudyPlanRemoteId
   );
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const hasPremiumAccess = useHasFeatureAccess("premium_access");
+  const freeTierQuestionUsageHydrated = useFreeTierQuestionUsageHydrated();
+  const remainingFreeQuestionAnswers = useRemainingFreeQuestionAnswers();
+  const consumeFreeQuestionAnswer = useFreeTierQuestionUsageStore(
+    (state) => state.consumeQuestionAnswer
+  );
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionProgressHydrated = useQuestionProgressHydrated();
   const activeSession = useActiveQuestionSession();
@@ -182,11 +198,23 @@ export default function QuestionScreen() {
   ) as Record<string, string>;
   const isCompleted = Boolean(activeSession?.finishedAt && !activeSession.emptyReason);
   const isEmptyState = Boolean(activeSession?.emptyReason);
+  const hasUnlimitedQuestionPractice = hasPremiumAccess;
+  const questionLimitReached =
+    !hasUnlimitedQuestionPractice && remainingFreeQuestionAnswers <= 0;
   const styles = getStyles();
 
   useEffect(() => {
     questionStartedAtRef.current = Date.now();
   }, [currentQuestionId]);
+
+  function openQuestionPracticePaywall() {
+    router.push({
+      pathname: "/modals/paywall",
+      params: {
+        feature: "premium_access",
+      },
+    });
+  }
 
   const screenTitle = isCompleted
     ? t("question.summaryTitle")
@@ -266,6 +294,14 @@ export default function QuestionScreen() {
         />
       ) : null}
 
+      {!isCompleted && !isEmptyState && questionLimitReached ? (
+        <AppButton
+          variant="secondary"
+          label={t("question.practiceUnlockCta")}
+          onPress={() => openQuestionPracticePaywall()}
+        />
+      ) : null}
+
       <AppButton
         variant="ghost"
         label={t("common.close")}
@@ -274,7 +310,11 @@ export default function QuestionScreen() {
     </View>
   );
 
-  if (!questionProgressHydrated || !activeSession) {
+  if (
+    !questionProgressHydrated ||
+    !freeTierQuestionUsageHydrated ||
+    !activeSession
+  ) {
     return (
       <AppScreen
         title={t("question.title")}
@@ -408,6 +448,16 @@ export default function QuestionScreen() {
                 points: currentQuestion.points,
               })}
             />
+            <MetaPill
+              accent={!hasUnlimitedQuestionPractice}
+              label={
+                hasUnlimitedQuestionPractice
+                  ? t("question.practiceUnlimited")
+                  : t("question.practiceFreeLeft", {
+                      count: remainingFreeQuestionAnswers,
+                    })
+              }
+            />
             {currentDerivedState?.isReviewDue ? (
               <MetaPill label={t("question.reviewDue")} accent />
             ) : null}
@@ -428,6 +478,25 @@ export default function QuestionScreen() {
           <Text style={styles.helperText}>{t("question.tapToAnswer")}</Text>
         </AppCard>
 
+        {questionLimitReached ? (
+          <AppCard>
+            <Text style={styles.sectionTitle}>
+              {t("question.practiceLimitReachedTitle")}
+            </Text>
+            <Text style={styles.feedbackBody}>
+              {t("question.practiceLimitReachedBody", {
+                count: FREE_TIER_LIMITS.questionPracticePerDay,
+              })}
+            </Text>
+            <View style={{ marginTop: 10 }}>
+              <AppButton
+                label={t("question.practiceUnlockCta")}
+                onPress={() => openQuestionPracticePaywall()}
+              />
+            </View>
+          </AppCard>
+        ) : null}
+
         <View style={{ gap: 10 }}>
           {questionChoices.map((choice) => {
             const isSelected = currentAnswer?.selectedAnswer === choice.id;
@@ -446,13 +515,22 @@ export default function QuestionScreen() {
                     return;
                   }
 
+                  if (questionLimitReached) {
+                    openQuestionPracticePaywall();
+                    return;
+                  }
+
                   const answeredAttempt = answerCurrentQuestion(choice.id);
 
-                  if (
-                    !answeredAttempt ||
-                    authMode !== "supabase" ||
-                    !isMobileSupabaseConfigured
-                  ) {
+                  if (!answeredAttempt) {
+                    return;
+                  }
+
+                  if (!hasUnlimitedQuestionPractice) {
+                    consumeFreeQuestionAnswer();
+                  }
+
+                  if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
                     return;
                   }
 
@@ -503,6 +581,7 @@ export default function QuestionScreen() {
                         borderColor: RESULT_COLORS.wrongBorder,
                       }
                     : null,
+                  questionLimitReached ? styles.answerCardDisabled : null,
                   isSelected && !currentAnswer ? styles.answerCardActive : null,
                 ]}
               >
@@ -726,6 +805,9 @@ const getStyles = () =>
       borderColor: "#D8D1C6",
       borderRadius: 24,
       backgroundColor: "#FFFDF8",
+    },
+    answerCardDisabled: {
+      opacity: 0.52,
     },
     answerCardActive: {
       borderColor: "#5D8A80",

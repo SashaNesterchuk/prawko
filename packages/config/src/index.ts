@@ -148,3 +148,7 @@ export const AI_LIMITS = {
   maxHistoryMessages: 12,
   maxPromptChars: 500,
 } as const;
+
+export const FREE_TIER_LIMITS = {
+  questionPracticePerDay: 20,
+} as const;
