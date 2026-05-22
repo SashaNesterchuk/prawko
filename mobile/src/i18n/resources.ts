@@ -199,6 +199,22 @@ export const resources = {
       practice: {
         snapshotTitle: "Review queue",
         snapshotBody: "Zapisane: {{saved}}. Review due: {{reviewDue}}.",
+        recentExamsTitle: "Ostatnie sesje exam",
+        recentExamsSubtitle:
+          "Tutaj wracaja zakonczone, wygasle albo porzucone sesje simulatora.",
+        recentExamsLoading: "Ladujemy recent exam history.",
+        recentExamsEmptyBody:
+          "Gdy zakonczysz albo przerwiesz pierwsza sesje exam, pojawi sie tutaj do review.",
+        historyDate: "Data: {{date}}",
+        historyScore: "Wynik: {{score}} / {{total}}",
+        historyQuestions:
+          "Odpowiedziano: {{answered}} / {{total}}. Blednych: {{wrong}}.",
+        historyOutcomes: {
+          passed: "Wynik zaliczony",
+          failed: "Wynik niezaliczony",
+          expired: "Sesja wygasla przez timer",
+          abandoned: "Sesja zakonczona przed czasem",
+        },
         examTitle: "Exam simulator",
         examSubtitle:
           "Timed simulator z {{count}} pytaniami, bez cofania i z wynikiem po zakonczeniu.",
@@ -223,6 +239,7 @@ export const resources = {
         openHardQuestions: "Open hard questions",
         openSeenNotMastered: "Open seen, not mastered",
         openWrongAnswers: "Przejdz do blednych odpowiedzi",
+        openExamResult: "Otworz wynik",
         openSaved: "Open saved list",
         startSavedSprint: "Start saved sprint",
         examTomorrow: "Open exam tomorrow",
@@ -903,6 +920,22 @@ export const resources = {
       practice: {
         snapshotTitle: "Review queue",
         snapshotBody: "Збережених: {{saved}}. Review due: {{reviewDue}}.",
+        recentExamsTitle: "Останні exam sessions",
+        recentExamsSubtitle:
+          "Тут з'являються завершені, прострочені або покинуті сесії simulator.",
+        recentExamsLoading: "Завантажуємо recent exam history.",
+        recentExamsEmptyBody:
+          "Щойно завершиш або перервеш першу exam session, вона з'явиться тут для review.",
+        historyDate: "Дата: {{date}}",
+        historyScore: "Результат: {{score}} / {{total}}",
+        historyQuestions:
+          "Відповіді: {{answered}} / {{total}}. Помилок: {{wrong}}.",
+        historyOutcomes: {
+          passed: "Іспит складено",
+          failed: "Іспит не складено",
+          expired: "Сесію завершив таймер",
+          abandoned: "Сесію завершено достроково",
+        },
         examTitle: "Exam simulator",
         examSubtitle:
           "Timed simulator з {{count}} питаннями, без повернення назад і з результатом в кінці.",
@@ -927,6 +960,7 @@ export const resources = {
         openHardQuestions: "Відкрити hard questions",
         openSeenNotMastered: "Відкрити seen, not mastered",
         openWrongAnswers: "Відкрити неправильні відповіді",
+        openExamResult: "Відкрити результат",
         openSaved: "Відкрити saved",
         startSavedSprint: "Почати saved sprint",
         examTomorrow: "Відкрити exam tomorrow",
@@ -1611,6 +1645,22 @@ export const resources = {
       practice: {
         snapshotTitle: "Review queue",
         snapshotBody: "Saved: {{saved}}. Review due: {{reviewDue}}.",
+        recentExamsTitle: "Recent exam sessions",
+        recentExamsSubtitle:
+          "Completed, expired, and abandoned simulator runs return here for review.",
+        recentExamsLoading: "Loading recent exam history.",
+        recentExamsEmptyBody:
+          "Once you finish or leave an exam session, it will appear here for review.",
+        historyDate: "Date: {{date}}",
+        historyScore: "Score: {{score}} / {{total}}",
+        historyQuestions:
+          "Answered: {{answered}} / {{total}}. Wrong: {{wrong}}.",
+        historyOutcomes: {
+          passed: "Passed",
+          failed: "Not passed",
+          expired: "Timer expired",
+          abandoned: "Ended early",
+        },
         examTitle: "Exam simulator",
         examSubtitle:
           "Timed simulator with {{count}} questions, no back navigation, and a final result screen.",
@@ -1635,6 +1685,7 @@ export const resources = {
         openHardQuestions: "Open hard questions",
         openSeenNotMastered: "Open seen, not mastered",
         openWrongAnswers: "Open wrong answers",
+        openExamResult: "Open result",
         openSaved: "Open saved list",
         startSavedSprint: "Start saved sprint",
         examTomorrow: "Open exam tomorrow",

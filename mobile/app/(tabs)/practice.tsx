@@ -15,17 +15,23 @@ import {
   getExamQuestionTarget,
   isExamSimulatorMode,
 } from "../../src/features/exam/exam-config";
+import { fetchRecentExamSessions } from "../../src/features/exam/supabase-exam";
+import type { RemoteExamSession } from "../../src/features/exam/types";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import {
   buildQuestionSession,
   getQuestionDisplayStats,
 } from "../../src/features/questions/question-engine";
+import { formatPlanDate } from "../../src/features/study-plan/generate-local-study-plan";
 import {
   fetchRemoteTodayPlan,
   type RemoteTodayPlan,
 } from "../../src/features/study-plan/supabase-study-plan-progress";
 import { createPracticeSessionBinding } from "../../src/features/study-plan/today-task-bindings";
-import { useAppShellStore } from "../../src/state/app-shell";
+import {
+  useAppShellStore,
+  useCurrentUser,
+} from "../../src/state/app-shell";
 import { useHasFeatureAccess } from "../../src/state/entitlements";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
@@ -50,6 +56,8 @@ type PracticeCard = {
 export default function PracticeTabScreen() {
   const { t } = useTranslation();
   const authMode = useAppShellStore((state) => state.authMode);
+  const currentUser = useCurrentUser();
+  const currentUserId = currentUser?.id ?? null;
   const currentStudyPlanRemoteId = useAppShellStore(
     (state) => state.currentStudyPlanRemoteId
   );
@@ -62,6 +70,11 @@ export default function PracticeTabScreen() {
   const [remoteTodayPlan, setRemoteTodayPlan] = useState<RemoteTodayPlan | null>(
     null
   );
+  const [recentExamSessions, setRecentExamSessions] = useState<
+    RemoteExamSession[]
+  >([]);
+  const [isLoadingRecentExamSessions, setIsLoadingRecentExamSessions] =
+    useState(false);
   const stats = useMemo(
     () => getQuestionDisplayStats(questionUserState),
     [questionCatalogVersion, questionUserState]
@@ -108,7 +121,11 @@ export default function PracticeTabScreen() {
       return;
     }
 
-    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
+    if (
+      authMode !== "supabase" ||
+      !currentUserId ||
+      !isMobileSupabaseConfigured
+    ) {
       setRemoteTodayPlan(null);
       return;
     }
@@ -131,7 +148,48 @@ export default function PracticeTabScreen() {
     return () => {
       cancelled = true;
     };
-  }, [authMode, currentStudyPlanRemoteId, isFocused]);
+  }, [authMode, currentStudyPlanRemoteId, currentUserId, isFocused]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+
+    if (
+      authMode !== "supabase" ||
+      !currentUserId ||
+      !isMobileSupabaseConfigured
+    ) {
+      setRecentExamSessions([]);
+      setIsLoadingRecentExamSessions(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingRecentExamSessions(true);
+
+    void fetchRecentExamSessions(5)
+      .then((sessions) => {
+        if (!cancelled) {
+          setRecentExamSessions(sessions);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.warn("Failed to fetch recent exam sessions.", error);
+          setRecentExamSessions([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingRecentExamSessions(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authMode, currentUserId, isFocused]);
 
   const sessionSizes = useMemo(
     () => ({
@@ -334,6 +392,93 @@ export default function PracticeTabScreen() {
           </Text>
         </AppCard>
 
+        {isLoadingRecentExamSessions ? (
+          <AppCard>
+            <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 4 }}>
+              {t("practice.recentExamsTitle")}
+            </Text>
+            <Text style={{ fontSize: 14, lineHeight: 22 }}>
+              {t("practice.recentExamsLoading")}
+            </Text>
+          </AppCard>
+        ) : (
+          <AppCard>
+            <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 4 }}>
+              {t("practice.recentExamsTitle")}
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                lineHeight: 22,
+                marginBottom: recentExamSessions.length > 0 ? 12 : 0,
+              }}
+            >
+              {recentExamSessions.length > 0
+                ? t("practice.recentExamsSubtitle")
+                : t("practice.recentExamsEmptyBody")}
+            </Text>
+            {recentExamSessions.length > 0 ? (
+              <View style={{ gap: 10 }}>
+                {recentExamSessions.map((session, index) => (
+                  <View
+                    key={session.id}
+                    style={{
+                      borderTopColor: "#E7DFD2",
+                      borderTopWidth: index === 0 ? 0 : 1,
+                      paddingTop: index === 0 ? 0 : 10,
+                    }}
+                  >
+                    <Text
+                      style={{ fontSize: 16, fontWeight: "700", marginBottom: 4 }}
+                    >
+                      {t(`modes.${session.mode}`)}
+                    </Text>
+                    <Text style={{ fontSize: 13, lineHeight: 20 }}>
+                      {t(
+                        `practice.historyOutcomes.${getRecentExamOutcomeKey(session)}`
+                      )}
+                    </Text>
+                    <Text style={{ fontSize: 13, lineHeight: 20 }}>
+                      {t("practice.historyDate", {
+                        date: formatPlanDate(
+                          (session.finishedAt ?? session.startedAt).slice(0, 10)
+                        ),
+                      })}
+                    </Text>
+                    <Text style={{ fontSize: 13, lineHeight: 20 }}>
+                      {t("practice.historyScore", {
+                        score: session.scorePoints,
+                        total: session.totalPointsTarget,
+                      })}
+                    </Text>
+                    <Text
+                      style={{ fontSize: 13, lineHeight: 20, marginBottom: 8 }}
+                    >
+                      {t("practice.historyQuestions", {
+                        answered: session.totalQuestionsAnswered,
+                        total: session.totalQuestionsTarget,
+                        wrong: session.wrongAnswersCount,
+                      })}
+                    </Text>
+                    <AppButton
+                      variant="ghost"
+                      label={t("practice.openExamResult")}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/exam/result",
+                          params: {
+                            sessionId: session.id,
+                          },
+                        })
+                      }
+                    />
+                  </View>
+                ))}
+              </View>
+            ) : null}
+          </AppCard>
+        )}
+
         {practiceCards.map((card) => (
           <PracticeCardView
             key={card.key}
@@ -351,6 +496,20 @@ export default function PracticeTabScreen() {
       </View>
     </AppScreen>
   );
+}
+
+function getRecentExamOutcomeKey(
+  session: RemoteExamSession
+): "passed" | "failed" | "expired" | "abandoned" {
+  if (session.status === "expired") {
+    return "expired";
+  }
+
+  if (session.status === "abandoned") {
+    return "abandoned";
+  }
+
+  return session.passed ? "passed" : "failed";
 }
 
 function PracticeCardView({

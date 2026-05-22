@@ -4,6 +4,7 @@ import { isMobileSupabaseConfigured } from "../../config/env";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 import type {
   ExamSimulatorMode,
+  RemoteExamSession,
   RemoteExamSessionStatus,
   RemoteExamSnapshot,
 } from "./types";
@@ -92,6 +93,23 @@ export async function fetchLatestActiveExamSession(mode?: ExamSimulatorMode | nu
   return parseRemoteExamSnapshot(data);
 }
 
+export async function fetchRecentExamSessions(
+  limit = 5
+): Promise<RemoteExamSession[]> {
+  assertMobileSupabaseConfigured();
+
+  const client = getMobileSupabaseClient();
+  const { data, error } = await client.rpc("list_recent_exam_sessions", {
+    p_limit: limit,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return parseRemoteExamSessionList(data);
+}
+
 export async function submitRemoteExamAnswer(
   input: SubmitRemoteExamAnswerInput
 ): Promise<RemoteExamSnapshot> {
@@ -146,6 +164,18 @@ function parseRemoteExamSnapshot(value: unknown): RemoteExamSnapshot {
   }
 
   return value as RemoteExamSnapshot;
+}
+
+function parseRemoteExamSessionList(value: unknown): RemoteExamSession[] {
+  if (value === null) {
+    return [];
+  }
+
+  if (!Array.isArray(value)) {
+    throw new Error("Recent exam sessions RPC returned an invalid payload.");
+  }
+
+  return value as RemoteExamSession[];
 }
 
 function toRpcJsonObject(value: Record<string, unknown>) {
