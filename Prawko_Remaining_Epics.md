@@ -123,15 +123,15 @@ Status: `mostly_done`
 5. Free preview question limit.
 6. Access Center из Profile.
 7. Backend-backed free preview question quota snapshot with local fallback.
+8. Admin/web visibility for purchase entitlements.
 
 Остаток:
 
-1. Привязать purchase visibility к admin/web слою, если нужен backoffice обзор paid users.
-2. Развести реальные commercial offers:
+1. Развести реальные commercial offers:
    - sprint
    - 30-day premium
    - school access
-3. Проверить весь entitlement lifecycle после reinstall и multi-device use.
+2. Проверить весь entitlement lifecycle после reinstall и multi-device use.
 
 ### Epic 11 — Web App
 
@@ -181,7 +181,7 @@ Status: `mostly_done`
 
 1. `Epic 6` — pre-generated explanations and stronger AI fallback
 2. `Epic 11` — web admin question import status + explanation review queue
-3. `Epic 10` — admin visibility for paid users and entitlement lifecycle QA
+3. `Epic 10` — entitlement lifecycle QA and commercial offer split
 4. `Epic 12` — KPI verification and beta dry-run
 
 ## Current Pass
@@ -196,3 +196,7 @@ Status: `mostly_done`
    - shared quota QA checks
    - Access Center beta checks
    - TestFlight / Android internal rollout runbook
+3. `Epic 10` — admin overview extended with:
+   - direct purchase entitlement visibility
+   - purchase vs school active entitlement split
+   - profile name lookup for entitlement rows

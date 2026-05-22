@@ -20,7 +20,7 @@ export default async function AdminOverviewPage() {
       <AdminPageHeader
         eyebrow="Overview"
         title="Operational pulse for the current product state."
-        description="This page keeps the first backoffice slice focused on what matters now: users entering the funnel, school-code activity, and AI output quality."
+        description="This page keeps the first backoffice slice focused on what matters now: users entering the funnel, entitlement activity across school and direct purchase, and AI output quality."
       />
 
       {!data.configuration.authConfigured ? (
@@ -109,6 +109,7 @@ export default async function AdminOverviewPage() {
             <table className="admin-table">
               <thead>
                 <tr>
+                  <th>User</th>
                   <th>School</th>
                   <th>Feature</th>
                   <th>Status</th>
@@ -119,6 +120,7 @@ export default async function AdminOverviewPage() {
               <tbody>
                 {data.recentSchoolEntitlements.map((row) => (
                   <tr key={`${row.userId}:${row.featureKey}:${row.createdAt}`}>
+                    <td>{row.userName ?? truncateAdminText(row.userId, 16)}</td>
                     <td>{row.schoolName ?? row.schoolId ?? "Unknown school"}</td>
                     <td>{row.featureKey}</td>
                     <td>
@@ -145,10 +147,56 @@ export default async function AdminOverviewPage() {
 
         <div className="admin-table-card">
           <SectionTitle
-            eyebrow="AI signal"
-            title="Latest assistant output sample."
-            description="A fast sanity check for provider mix, latency, and fallback usage before digging into the dedicated AI review page."
+            eyebrow="Direct purchase"
+            title="Recent self-serve purchase entitlements."
+            description="This is the backoffice view for paid access windows that should stay visible after restore, reinstall, and support checks."
           />
+          {data.recentPurchaseEntitlements.length ? (
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Feature</th>
+                  <th>Status</th>
+                  <th>Starts</th>
+                  <th>Ends</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.recentPurchaseEntitlements.map((row) => (
+                  <tr key={`${row.userId}:${row.featureKey}:${row.createdAt}`}>
+                    <td>{row.userName ?? truncateAdminText(row.userId, 16)}</td>
+                    <td>{row.featureKey}</td>
+                    <td>
+                      <span
+                        className={
+                          row.status === "active"
+                            ? "admin-badge admin-badge-success"
+                            : "admin-badge"
+                        }
+                      >
+                        {row.status}
+                      </span>
+                    </td>
+                    <td>{formatAdminDateTime(row.startsAt)}</td>
+                    <td>{formatAdminDateTime(row.endsAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="admin-empty">No purchase entitlements found yet.</p>
+          )}
+        </div>
+      </section>
+
+      <section className="section">
+        <SectionTitle
+          eyebrow="AI signal"
+          title="Latest assistant output sample."
+          description="A fast sanity check for provider mix, latency, and fallback usage before digging into the dedicated AI review page."
+        />
+        <div className="admin-table-card">
           {data.recentAssistantMessages.length ? (
             <table className="admin-table">
               <thead>

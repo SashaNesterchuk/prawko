@@ -35,9 +35,11 @@ type RecentEntitlement = {
   schoolCodeId: string | null;
   schoolId: string | null;
   schoolName: string | null;
+  sourceType: string;
   startsAt: string;
   status: string;
   userId: string;
+  userName: string | null;
 };
 
 type RecentAiMessage = {
@@ -272,6 +274,7 @@ export async function getAdminOverviewData() {
       ],
       recentAppErrorLogs: [] as RecentAppErrorLog[],
       recentAssistantMessages: [] as RecentAiMessage[],
+      recentPurchaseEntitlements: [] as RecentEntitlement[],
       recentProfiles: [] as RecentProfile[],
       recentSchoolEntitlements: [] as RecentEntitlement[],
     };
@@ -289,10 +292,13 @@ export async function getAdminOverviewData() {
     totalSchools,
     activeSchoolCodes,
     activeEntitlements,
+    activePurchaseEntitlements,
+    activeSchoolEntitlements,
     assistantMessagesLast7Days,
     appErrorsLast7Days,
     recentProfilesResponse,
-    recentEntitlementsResponse,
+    recentSchoolEntitlementsResponse,
+    recentPurchaseEntitlementsResponse,
     recentAiMessagesResponse,
     recentAppErrorLogsResponse,
   ] = await Promise.all([
@@ -344,6 +350,22 @@ export async function getAdminOverviewData() {
         .eq("status", "active")
     ),
     readCount(
+      "feature_entitlements_purchase_active",
+      client
+        .from("feature_entitlements")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active")
+        .eq("source_type", "purchase")
+    ),
+    readCount(
+      "feature_entitlements_school_active",
+      client
+        .from("feature_entitlements")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active")
+        .eq("source_type", "school_code")
+    ),
+    readCount(
       "ai_messages_assistant_last_7_days",
       client
         .from("ai_messages")
@@ -368,9 +390,17 @@ export async function getAdminOverviewData() {
     client
       .from("feature_entitlements")
       .select(
-        "user_id, feature_key, status, school_id, school_code_id, starts_at, ends_at, created_at"
+        "user_id, feature_key, source_type, status, school_id, school_code_id, starts_at, ends_at, created_at"
       )
       .eq("source_type", "school_code")
+      .order("created_at", { ascending: false })
+      .limit(8),
+    client
+      .from("feature_entitlements")
+      .select(
+        "user_id, feature_key, source_type, status, school_id, school_code_id, starts_at, ends_at, created_at"
+      )
+      .eq("source_type", "purchase")
       .order("created_at", { ascending: false })
       .limit(8),
     client
@@ -398,6 +428,8 @@ export async function getAdminOverviewData() {
   captureError(errors, totalSchools);
   captureError(errors, activeSchoolCodes);
   captureError(errors, activeEntitlements);
+  captureError(errors, activePurchaseEntitlements);
+  captureError(errors, activeSchoolEntitlements);
   captureError(errors, assistantMessagesLast7Days);
   captureError(errors, appErrorsLast7Days);
 
@@ -415,9 +447,9 @@ export async function getAdminOverviewData() {
     })
   );
 
-  const recentEntitlements = unwrapRows<RecentEntitlement>(
-    "feature_entitlements_recent",
-    recentEntitlementsResponse,
+  const recentSchoolEntitlements = unwrapRows<RecentEntitlement>(
+    "feature_entitlements_recent_school",
+    recentSchoolEntitlementsResponse,
     errors,
     (row) => ({
       createdAt: stringValue(row.created_at),
@@ -426,16 +458,47 @@ export async function getAdminOverviewData() {
       schoolCodeId: nullableStringValue(row.school_code_id),
       schoolId: nullableStringValue(row.school_id),
       schoolName: null,
+      sourceType: stringValue(row.source_type),
       startsAt: stringValue(row.starts_at),
       status: stringValue(row.status),
       userId: stringValue(row.user_id),
+      userName: null,
     })
   );
 
-  const schoolNameById = await getSchoolNamesById(
-    recentEntitlements.map((row) => row.schoolId),
-    errors
+  const recentPurchaseEntitlements = unwrapRows<RecentEntitlement>(
+    "feature_entitlements_recent_purchase",
+    recentPurchaseEntitlementsResponse,
+    errors,
+    (row) => ({
+      createdAt: stringValue(row.created_at),
+      endsAt: nullableStringValue(row.ends_at),
+      featureKey: stringValue(row.feature_key),
+      schoolCodeId: nullableStringValue(row.school_code_id),
+      schoolId: nullableStringValue(row.school_id),
+      schoolName: null,
+      sourceType: stringValue(row.source_type),
+      startsAt: stringValue(row.starts_at),
+      status: stringValue(row.status),
+      userId: stringValue(row.user_id),
+      userName: null,
+    })
   );
+
+  const [profileNameById, schoolNameById] = await Promise.all([
+    getProfileNamesById(
+      [...recentSchoolEntitlements, ...recentPurchaseEntitlements].map(
+        (row) => row.userId
+      ),
+      errors
+    ),
+    getSchoolNamesById(
+      [...recentSchoolEntitlements, ...recentPurchaseEntitlements].map(
+        (row) => row.schoolId
+      ),
+      errors
+    ),
+  ]);
 
   const recentAssistantMessages = unwrapRows<RecentAiMessage>(
     "ai_messages_recent",
@@ -508,7 +571,9 @@ export async function getAdminOverviewData() {
       createMetric(
         "Active entitlements",
         formatCount(activeEntitlements.value),
-        "Paid or school-granted access windows currently active."
+        `${formatCount(activePurchaseEntitlements.value)} purchase / ${formatCount(
+          activeSchoolEntitlements.value
+        )} school access windows currently active.`
       ),
       createMetric(
         "AI assistant messages (7d)",
@@ -523,10 +588,16 @@ export async function getAdminOverviewData() {
     ],
     recentAppErrorLogs,
     recentAssistantMessages,
-    recentProfiles,
-    recentSchoolEntitlements: recentEntitlements.map((row) => ({
+    recentPurchaseEntitlements: recentPurchaseEntitlements.map((row) => ({
       ...row,
       schoolName: row.schoolId ? schoolNameById.get(row.schoolId) ?? null : null,
+      userName: profileNameById.get(row.userId) ?? null,
+    })),
+    recentProfiles,
+    recentSchoolEntitlements: recentSchoolEntitlements.map((row) => ({
+      ...row,
+      schoolName: row.schoolId ? schoolNameById.get(row.schoolId) ?? null : null,
+      userName: profileNameById.get(row.userId) ?? null,
     })),
   };
 }
@@ -1083,6 +1154,42 @@ async function getSchoolNamesById(
       stringValue((row as Record<string, unknown>).id),
       stringValue((row as Record<string, unknown>).display_name),
     ])
+  );
+}
+
+async function getProfileNamesById(
+  userIds: Array<string | null>,
+  errors: DashboardError[]
+) {
+  const filteredIds = Array.from(
+    new Set(userIds.filter((value): value is string => Boolean(value)))
+  );
+
+  if (!filteredIds.length || !getAdminConfigurationStatus().databaseConfigured) {
+    return new Map<string, string>();
+  }
+
+  const { data, error } = await getWebSupabaseAdminClient()
+    .from("profiles")
+    .select("id, full_name")
+    .in("id", filteredIds);
+
+  if (error) {
+    errors.push({
+      area: "profiles_lookup",
+      message: error.message,
+    });
+    return new Map<string, string>();
+  }
+
+  return new Map(
+    (data ?? [])
+      .map((row) => ({
+        fullName: nullableStringValue((row as Record<string, unknown>).full_name),
+        id: stringValue((row as Record<string, unknown>).id),
+      }))
+      .filter((row): row is { fullName: string; id: string } => Boolean(row.fullName))
+      .map((row) => [row.id, row.fullName])
   );
 }
 
