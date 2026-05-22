@@ -34,7 +34,6 @@ export default function HomePage() {
             href: links.googlePlayUrl,
             label: "Get on Google Play",
             variant: "primary",
-            external: true,
           },
           {
             href: "/pricing",
@@ -100,7 +99,6 @@ export default function HomePage() {
             href: links.schoolInquiryUrl,
             label: "Start school pilot",
             variant: "primary",
-            external: true,
           },
         ]}
       />

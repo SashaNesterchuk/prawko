@@ -147,12 +147,13 @@ Status: `mostly_done`
 8. Admin foundation.
 9. Import Health page.
 10. AI review queue with manual admin decisions.
+11. Public school pilot inquiry form saved into Supabase.
+12. Admin school lead queue with status and notes.
 
 Остаток:
 
 1. Добавить real app-store / play-store deep links.
 2. Дожать protected admin auth и non-indexed admin surface.
-3. Усилить school inquiry funnel.
 
 ### Epic 12 — Analytics, QA, Release
 
@@ -177,16 +178,15 @@ Status: `mostly_done`
 
 Следующие срезы имеет смысл брать в таком порядке:
 
-1. `Epic 6` — pre-generated explanations and stronger AI fallback
-2. `Epic 11` — store links and school inquiry funnel polish
-3. `Epic 10` — entitlement lifecycle QA and commercial offer split
-4. `Epic 12` — KPI verification and beta dry-run
+1. `Epic 11` — store links and admin auth hardening
+2. `Epic 10` — entitlement lifecycle QA and commercial offer split
+3. `Epic 12` — KPI verification and beta dry-run
 
 ## Current Pass
 
 В этом проходе в работу взят следующий кусок:
 
-1. `Epic 6` — question chat now has a pre-generated explanation fallback with:
-   - seeded first assistant answer on mobile from official explanation data
-   - deterministic follow-up fallback replies without live AI keys
-   - explicit fallback analytics and edge metadata for review/debugging
+1. `Epic 11` — school inquiry funnel now has:
+   - public pilot form on `/schools`
+   - Supabase-backed lead capture
+   - admin lead queue with status and notes

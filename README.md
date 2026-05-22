@@ -48,6 +48,10 @@ The project now also includes:
    - persisted local question chat history and free-tier usage tracking
    - question-aware AI modal on mobile
    - Supabase Edge Function skeleton with provider adapters, auth-aware logging, and pre-generated explanation fallback
+8. `Epic 11` web + admin layer with:
+   - marketing pages for landing, pricing, support, FAQ, and schools
+   - public school pilot inquiry form
+   - admin school code surface and AI review queue
 
 ## Next steps
 

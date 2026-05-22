@@ -32,13 +32,11 @@ export default function PricingPage() {
             href: links.googlePlayUrl,
             label: "Get the app",
             variant: "primary",
-            external: true,
           },
           {
             href: links.schoolInquiryUrl,
             label: "Ask about school pilot",
             variant: "secondary",
-            external: true,
           },
         ]}
       />
@@ -91,7 +89,6 @@ export default function PricingPage() {
             href: links.schoolInquiryUrl,
             label: "Start pilot conversation",
             variant: "primary",
-            external: true,
           },
         ]}
       />

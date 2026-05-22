@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { getMarketingLinks } from "../../lib/marketing-links";
+import { SchoolInquiryForm } from "../../components/marketing/SchoolInquiryForm";
 import {
   schoolBenefits,
   schoolRolloutSteps,
@@ -29,10 +30,9 @@ export default function SchoolsPage() {
         description="The school page is not a corporate brochure. It should help close the first 3-5 pilot schools by showing a sharper student fit, a cleaner access model, and less support chaos."
         actions={[
           {
-            href: links.schoolInquiryUrl,
+            href: "#pilot-form",
             label: "Start school pilot",
             variant: "primary",
-            external: true,
           },
           {
             href: "/pricing",
@@ -77,15 +77,48 @@ export default function SchoolsPage() {
         </div>
       </section>
 
+      <section className="section" id="pilot-form">
+        <SectionTitle
+          eyebrow="Pilot form"
+          title="Collect a real school lead instead of pushing everyone into email."
+          description="The first school funnel should end in a concrete request: who the school is, how big the cohort is, which languages matter, and what current prep flow they want to replace."
+        />
+
+        <div className="split-section">
+          <div className="content-card">
+            <SectionTitle
+              eyebrow="Request pilot"
+              title="Send the school details."
+              description="This should be enough to answer with a concrete pilot offer instead of another vague discovery call."
+            />
+            <SchoolInquiryForm supportEmail={links.supportEmail} />
+          </div>
+
+          <div className="content-card">
+            <SectionTitle
+              eyebrow="What happens next"
+              title="Keep the first school conversation operational."
+              description="The fastest useful reply is not a brochure. It is a concrete proposal around cohort size, access length, and who inside the school owns rollout."
+            />
+
+            <ul className="card-list">
+              <li>Reply with a pilot scope, not a generic sales deck.</li>
+              <li>Choose a code window like 14, 30, or 90 days.</li>
+              <li>Confirm whether the school needs Ukrainian, Polish, or mixed onboarding.</li>
+              <li>Replace random prep with plan-driven daily work and faster explanation loops.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <ActionBand
         title="Want to test a school cohort?"
         description="Start with a small pilot, a defined access window, and one clear contact person inside the school."
         actions={[
           {
-            href: links.schoolInquiryUrl,
-            label: "Contact for pilot",
+            href: "#pilot-form",
+            label: "Open pilot form",
             variant: "primary",
-            external: true,
           },
           {
             href: "/support",

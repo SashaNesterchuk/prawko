@@ -387,7 +387,8 @@ a {
 
 .feature-card h3,
 .pricing-card h3,
-.step-card h3 {
+.step-card h3,
+.content-card h3 {
   margin: 0 0 8px;
   font-size: 22px;
   line-height: 1.15;
@@ -640,7 +641,8 @@ a {
 }
 
 .admin-select,
-.admin-form-grid input {
+.admin-form-grid input,
+.admin-form-grid textarea {
   width: 100%;
   border-radius: 14px;
   border: 1px solid rgba(23, 23, 23, 0.1);
@@ -651,9 +653,15 @@ a {
 }
 
 .admin-select:focus,
-.admin-form-grid input:focus {
+.admin-form-grid input:focus,
+.admin-form-grid textarea:focus {
   outline: 2px solid rgba(125, 90, 47, 0.22);
   border-color: rgba(125, 90, 47, 0.42);
+}
+
+.admin-form-grid textarea {
+  min-height: 120px;
+  resize: vertical;
 }
 
 .admin-check-group {
@@ -921,6 +929,12 @@ a {
   gap: 12px;
 }
 
+.form-grid-two {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .field {
   display: grid;
   gap: 6px;
@@ -932,7 +946,9 @@ a {
   color: #453c31;
 }
 
-.field input {
+.field input,
+.field textarea,
+.field select {
   width: 100%;
   border-radius: 14px;
   border: 1px solid rgba(23, 23, 23, 0.1);
@@ -942,9 +958,16 @@ a {
   font: inherit;
 }
 
-.field input:focus {
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
   outline: 2px solid rgba(125, 90, 47, 0.22);
   border-color: rgba(125, 90, 47, 0.42);
+}
+
+.field textarea {
+  min-height: 120px;
+  resize: vertical;
 }
 
 .status {
@@ -1056,12 +1079,26 @@ a {
   margin-top: 8px;
 }
 
+.inline-link {
+  color: var(--accent-deep);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
 .muted {
   color: #5d564f;
 }
 
 .compact {
   font-size: 15px;
+}
+
+.school-inquiry-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 @media (max-width: 1024px) {
@@ -1098,6 +1135,10 @@ a {
 
   .hero-title {
     max-width: none;
+  }
+
+  .form-grid-two {
+    grid-template-columns: 1fr;
   }
 
   .panel-header {

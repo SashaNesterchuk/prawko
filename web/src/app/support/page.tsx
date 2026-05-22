@@ -34,7 +34,6 @@ export default function SupportPage() {
             href: links.schoolInquiryUrl,
             label: "School inquiries",
             variant: "secondary",
-            external: true,
           },
         ]}
       />

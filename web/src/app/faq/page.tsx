@@ -47,7 +47,6 @@ export default function FaqPage() {
             href: links.schoolInquiryUrl,
             label: "Ask about school access",
             variant: "primary",
-            external: true,
           },
         ]}
       />

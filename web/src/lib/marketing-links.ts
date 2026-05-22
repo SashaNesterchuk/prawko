@@ -12,8 +12,7 @@ export function getMarketingLinks() {
     googlePlayUrl:
       normalizeValue(webEnv.NEXT_PUBLIC_GOOGLE_PLAY_URL) ?? "/support",
     schoolInquiryUrl:
-      normalizeValue(webEnv.NEXT_PUBLIC_SCHOOL_INQUIRY_URL) ??
-      `mailto:${supportEmail}?subject=Prawko%20school%20pilot`,
+      normalizeValue(webEnv.NEXT_PUBLIC_SCHOOL_INQUIRY_URL) ?? "/schools#pilot-form",
     supportEmail,
     supportEmailHref: `mailto:${supportEmail}`,
   };

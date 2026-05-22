@@ -13,6 +13,10 @@ const ADMIN_LINKS = [
     label: "School Codes",
   },
   {
+    href: "/admin/school-inquiries",
+    label: "School Leads",
+  },
+  {
     href: "/admin/import-health",
     label: "Import Health",
   },

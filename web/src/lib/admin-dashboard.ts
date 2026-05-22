@@ -112,6 +112,26 @@ type SchoolMembershipRow = {
   userId: string;
 };
 
+type SchoolInquiryRow = {
+  adminNotes: string | null;
+  city: string | null;
+  contactName: string;
+  createdAt: string;
+  currentSolution: string | null;
+  email: string;
+  estimatedStudents: number | null;
+  handledAt: string | null;
+  handledByEmail: string | null;
+  id: string;
+  message: string;
+  organizationName: string;
+  phone: string | null;
+  sourcePage: string;
+  status: string;
+  studentLocales: string[];
+  websiteUrl: string | null;
+};
+
 type SchoolSummaryRow = {
   activeCodes: number;
   activeMembers: number;
@@ -770,6 +790,173 @@ export async function getAdminSchoolCodeData() {
     ],
     schools,
     schoolSummaries,
+  };
+}
+
+export async function getAdminSchoolInquiryData() {
+  const errors: DashboardError[] = [];
+  const configuration = getAdminConfigurationStatus();
+
+  if (!configuration.databaseConfigured) {
+    return {
+      configuration,
+      errors,
+      inquiries: [] as SchoolInquiryRow[],
+      metrics: [
+        createMetric(
+          "Admin database",
+          "Unavailable",
+          "Set service-role env to inspect school inquiries from web."
+        ),
+      ],
+      openInquiries: [] as SchoolInquiryRow[],
+      recentHandledInquiries: [] as SchoolInquiryRow[],
+    };
+  }
+
+  const client = getWebSupabaseAdminClient();
+  const [
+    totalInquiries,
+    newInquiries,
+    pipelineInquiries,
+    wonInquiries,
+    inquiriesResponse,
+  ] = await Promise.all([
+    readCount(
+      "school_inquiries_total",
+      client.from("school_inquiries").select("*", { count: "exact", head: true })
+    ),
+    readCount(
+      "school_inquiries_new",
+      client
+        .from("school_inquiries")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "new")
+    ),
+    readCount(
+      "school_inquiries_pipeline",
+      client
+        .from("school_inquiries")
+        .select("*", { count: "exact", head: true })
+        .in("status", ["contacted", "qualified"])
+    ),
+    readCount(
+      "school_inquiries_won",
+      client
+        .from("school_inquiries")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "won")
+    ),
+    client
+      .from("school_inquiries")
+      .select(
+        [
+          "id",
+          "organization_name",
+          "contact_name",
+          "email",
+          "phone",
+          "city",
+          "website_url",
+          "student_locales",
+          "estimated_students",
+          "current_solution",
+          "message",
+          "source_page",
+          "status",
+          "admin_notes",
+          "handled_by_email",
+          "handled_at",
+          "created_at",
+        ].join(", ")
+      )
+      .order("created_at", { ascending: false })
+      .limit(80),
+  ]);
+
+  captureError(errors, totalInquiries);
+  captureError(errors, newInquiries);
+  captureError(errors, pipelineInquiries);
+  captureError(errors, wonInquiries);
+
+  const inquiries = unwrapRows<SchoolInquiryRow>(
+    "school_inquiries",
+    inquiriesResponse,
+    errors,
+    (row) => ({
+      adminNotes: nullableStringValue(row.admin_notes),
+      city: nullableStringValue(row.city),
+      contactName: stringValue(row.contact_name),
+      createdAt: stringValue(row.created_at),
+      currentSolution: nullableStringValue(row.current_solution),
+      email: stringValue(row.email),
+      estimatedStudents: nullableNumberValue(row.estimated_students),
+      handledAt: nullableStringValue(row.handled_at),
+      handledByEmail: nullableStringValue(row.handled_by_email),
+      id: stringValue(row.id),
+      message: stringValue(row.message),
+      organizationName: stringValue(row.organization_name),
+      phone: nullableStringValue(row.phone),
+      sourcePage: stringValue(row.source_page),
+      status: stringValue(row.status),
+      studentLocales: stringArrayValue(row.student_locales),
+      websiteUrl: nullableStringValue(row.website_url),
+    })
+  );
+
+  const openInquiries = [...inquiries]
+    .filter((row) =>
+      row.status === "new" ||
+      row.status === "contacted" ||
+      row.status === "qualified"
+    )
+    .sort((left, right) => {
+      const leftPriority = getSchoolInquiryPriority(left.status);
+      const rightPriority = getSchoolInquiryPriority(right.status);
+
+      if (leftPriority !== rightPriority) {
+        return rightPriority - leftPriority;
+      }
+
+      return Date.parse(right.createdAt) - Date.parse(left.createdAt);
+    });
+
+  const recentHandledInquiries = [...inquiries]
+    .filter((row) => row.status !== "new")
+    .sort(
+      (left, right) =>
+        Date.parse(right.handledAt ?? right.createdAt) -
+        Date.parse(left.handledAt ?? left.createdAt)
+    );
+
+  return {
+    configuration,
+    errors,
+    inquiries,
+    metrics: [
+      createMetric(
+        "All inquiries",
+        formatCount(totalInquiries.value),
+        "School leads captured from the public pilot form."
+      ),
+      createMetric(
+        "New",
+        formatCount(newInquiries.value),
+        "Leads that still need first contact."
+      ),
+      createMetric(
+        "Active pipeline",
+        formatCount(pipelineInquiries.value),
+        "School conversations marked contacted or qualified."
+      ),
+      createMetric(
+        "Won",
+        formatCount(wonInquiries.value),
+        "School inquiries already marked as successful pilots."
+      ),
+    ],
+    openInquiries,
+    recentHandledInquiries,
   };
 }
 
@@ -1433,6 +1620,22 @@ function getAiReviewPriority(message: RecentAiMessage) {
   }
 
   return priority;
+}
+
+function getSchoolInquiryPriority(status: string) {
+  if (status === "qualified") {
+    return 3;
+  }
+
+  if (status === "new") {
+    return 2;
+  }
+
+  if (status === "contacted") {
+    return 1;
+  }
+
+  return 0;
 }
 
 function createMetric(label: string, value: string, detail: string): DashboardMetric {
