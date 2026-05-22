@@ -226,6 +226,11 @@ export default function ProfileTabScreen() {
           />
           <AppButton
             variant="secondary"
+            label={t("profile.manageAccess")}
+            onPress={() => router.push("/modals/access-center")}
+          />
+          <AppButton
+            variant="secondary"
             label={t("profile.openPaywall")}
             onPress={() => router.push("/modals/paywall")}
           />

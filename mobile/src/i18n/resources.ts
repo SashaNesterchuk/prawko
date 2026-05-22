@@ -286,6 +286,7 @@ export const resources = {
         planDaysValue: "Dni nauki: {{days}}",
         viewPlan: "Otworz Plan Preview",
         openAi: "Otworz AI modal",
+        manageAccess: "Zarzadzaj dostepem",
         openPaywall: "Otworz paywall",
         access: "Dostep",
         aiAccessValue: "AI chat: {{status}}",
@@ -302,6 +303,28 @@ export const resources = {
         },
         signOut: "Wyloguj i wroc",
         resetShell: "Reset shell state",
+      },
+      accessCenter: {
+        title: "Dostep i aktywacja",
+        subtitle:
+          "Tutaj user moze aktywowac kod szkoly, przywrocic purchase i sprawdzic obecny stan dostepu.",
+        authRequiredTitle: "Najpierw realne logowanie",
+        authRequiredBody:
+          "Aktywacja kodu szkoly i przywracanie purchase dzialaja tylko na prawdziwym koncie Supabase.",
+        openSignIn: "Przejdz do logowania",
+        statusTitle: "Stan dostepu",
+        statusSubtitle:
+          "Ten ekran rozdziela school access od direct purchase, zeby user zawsze wiedzial skad bierze sie odblokowanie.",
+        redeemBody:
+          "Jesli szkola dala Ci papierowy kod, aktywuj go tutaj bez wchodzenia w paywall flow.",
+        restoreBody:
+          "Jesli premium bylo juz kupione na tym koncie sklepu, przywroc dostep stamtad bez ponownego zakupu.",
+        openOffers: "Otworz oferty premium",
+        openPaywall: "Przejdz do paywall",
+        manageSubscription: "Zarzadzaj subskrypcja",
+        manageSubscriptionFailedTitle: "Nie udalo sie otworzyc zarzadzania purchase",
+        manageSubscriptionFailedBody:
+          "Sprobuj ponownie pozniej albo otworz ustawienia subskrypcji bezposrednio w sklepie.",
       },
       question: {
         title: "Sesja pytan",
@@ -1029,6 +1052,7 @@ export const resources = {
         planDaysValue: "Днів підготовки: {{days}}",
         viewPlan: "Відкрити Plan Preview",
         openAi: "Відкрити AI modal",
+        manageAccess: "Керувати доступом",
         openPaywall: "Відкрити paywall",
         access: "Доступ",
         aiAccessValue: "AI chat: {{status}}",
@@ -1045,6 +1069,28 @@ export const resources = {
         },
         signOut: "Вийти і повернутись",
         resetShell: "Скинути shell state",
+      },
+      accessCenter: {
+        title: "Доступ і активація",
+        subtitle:
+          "Тут user може активувати school code, відновити purchase і перевірити поточний стан доступу.",
+        authRequiredTitle: "Спочатку потрібен реальний вхід",
+        authRequiredBody:
+          "Активація коду школи і відновлення purchase працюють тільки на справжньому Supabase акаунті.",
+        openSignIn: "Перейти до входу",
+        statusTitle: "Стан доступу",
+        statusSubtitle:
+          "Цей екран розводить school access і direct purchase, щоб user завжди бачив джерело розблокування.",
+        redeemBody:
+          "Якщо школа дала тобі паперовий код, активуй його тут без окремого paywall flow.",
+        restoreBody:
+          "Якщо premium уже було куплено на цьому store account, віднови доступ без повторної покупки.",
+        openOffers: "Відкрити premium оффери",
+        openPaywall: "Перейти до paywall",
+        manageSubscription: "Керувати підпискою",
+        manageSubscriptionFailedTitle: "Не вдалося відкрити керування purchase",
+        manageSubscriptionFailedBody:
+          "Спробуй ще раз пізніше або відкрий керування підпискою прямо в store.",
       },
       question: {
         title: "Сесія питань",
@@ -1777,6 +1823,7 @@ export const resources = {
         planDaysValue: "Study days: {{days}}",
         viewPlan: "Open plan preview",
         openAi: "Open AI modal",
+        manageAccess: "Manage access",
         openPaywall: "Open paywall",
         access: "Access",
         aiAccessValue: "AI chat: {{status}}",
@@ -1793,6 +1840,28 @@ export const resources = {
         },
         signOut: "Sign out and return",
         resetShell: "Reset shell state",
+      },
+      accessCenter: {
+        title: "Access and activation",
+        subtitle:
+          "This screen lets the user redeem a school code, restore a purchase, and inspect the current access state.",
+        authRequiredTitle: "Real sign-in is required first",
+        authRequiredBody:
+          "School-code activation and purchase restore work only on a real Supabase account.",
+        openSignIn: "Go to sign in",
+        statusTitle: "Access status",
+        statusSubtitle:
+          "This keeps school access separate from direct purchase so the user always sees where the unlock comes from.",
+        redeemBody:
+          "If your driving school gave you a paper code, redeem it here without going through the paywall flow.",
+        restoreBody:
+          "If premium was already bought on this store account, restore it here without buying again.",
+        openOffers: "Open premium offers",
+        openPaywall: "Go to paywall",
+        manageSubscription: "Manage subscription",
+        manageSubscriptionFailedTitle: "The subscription management page could not be opened",
+        manageSubscriptionFailedBody:
+          "Try again later or open the subscription settings directly in the store.",
       },
       question: {
         title: "Question session",
