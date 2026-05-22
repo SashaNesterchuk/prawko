@@ -304,8 +304,8 @@ function validateRequest(value: unknown): QuestionChatRequest {
     throw new Error("question.prompt is required.");
   }
 
-  if (typeof question.explanation !== "string" || !question.explanation.trim()) {
-    throw new Error("question.explanation is required.");
+  if (typeof question.explanation !== "string") {
+    throw new Error("question.explanation must be a string.");
   }
 
   if (!Array.isArray(question.options)) {
@@ -422,6 +422,14 @@ async function logAppError(
   }
 
   const normalizedError = normalizeLoggedError(input.error);
+  const errorMetadata =
+    normalizedError.code || normalizedError.message || normalizedError.name
+      ? {
+          error_code: normalizedError.code,
+          error_message: normalizedError.message,
+          error_name: normalizedError.name,
+        }
+      : {};
 
   try {
     const { error } = await adminClient.from("app_error_logs").insert({
@@ -439,7 +447,10 @@ async function logAppError(
       error_code: normalizedError.code,
       auth_mode: input.userId ? "supabase" : null,
       platform: "edge",
-      metadata: sanitizeLogMetadata(input.metadata),
+      metadata: sanitizeLogMetadata({
+        ...input.metadata,
+        ...errorMetadata,
+      }),
     });
 
     if (error) {
@@ -684,6 +695,7 @@ function buildUserPrompt(request: QuestionChatRequest) {
   const optionLines = request.question.options
     .map((option) => `- ${option.id}: ${option.text}`)
     .join("\n");
+  const officialExplanation = request.question.explanation.trim();
 
   return [
     `Question locale: ${request.locale}`,
@@ -694,7 +706,9 @@ function buildUserPrompt(request: QuestionChatRequest) {
     request.question.selectedAnswer
       ? `Student selected: ${request.question.selectedAnswer}`
       : null,
-    `Official explanation: ${request.question.explanation}`,
+    officialExplanation
+      ? `Official explanation: ${officialExplanation}`
+      : null,
     `Student prompt: ${request.prompt}`,
     "Keep the response focused on this question only.",
   ]
@@ -735,7 +749,8 @@ function buildPreGeneratedExplanationContent(
 ) {
   const intent = getPromptIntent(prompt, context.locale);
   const statusLine = buildStatusLine(context);
-  const explanation = context.explanation.trim();
+  const explanation =
+    context.explanation.trim() || getMissingExplanationFallback(context.locale);
   const memoryRule = getMemoryRule(context.locale);
   const mistakeLine = getMistakeLine(context.locale);
 
@@ -897,6 +912,18 @@ function getMistakeLine(locale: SupportedLocale) {
   }
 
   return "Вгадування по інтуїції або вибір варіанта, який просто звучить найбезпечніше.";
+}
+
+function getMissingExplanationFallback(locale: SupportedLocale) {
+  if (locale === "pl") {
+    return "Brak oficjalnego wyjasnienia w bazie. Odpowiedz opiera sie na poprawnej odpowiedzi i logice pytania.";
+  }
+
+  if (locale === "en") {
+    return "The official explanation is missing in the dataset, so this answer is based on the correct option and the question logic.";
+  }
+
+  return "У базі немає офіційного пояснення, тому відповідь побудована на правильному варіанті та логіці самого питання.";
 }
 
 function normalizeLoggedError(error: unknown) {
