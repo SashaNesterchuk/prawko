@@ -9,6 +9,7 @@ import {
 import type { SupabaseQuestionRecord } from "../features/questions/supabase-question-record";
 import { getMobileSupabaseClient } from "../lib/supabase";
 import {
+  useCurrentUser,
   useAppShellStore,
   useHasHydrated,
 } from "../state/app-shell";
@@ -46,6 +47,8 @@ const QUESTION_CATALOG_SELECT = [
 
 export function QuestionCatalogProvider({ children }: PropsWithChildren) {
   const authMode = useAppShellStore((state) => state.authMode);
+  const currentUser = useCurrentUser();
+  const currentUserId = currentUser?.id ?? null;
   const preferredCategory = useAppShellStore(
     (state) => state.preferredCategory
   );
@@ -92,7 +95,11 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
       });
     };
 
-    if (!isMobileSupabaseConfigured) {
+    if (
+      authMode !== "supabase" ||
+      !currentUserId ||
+      !isMobileSupabaseConfigured
+    ) {
       applyMockCatalog();
       return;
     }
@@ -220,6 +227,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
     authMode,
     captureError,
     captureFallback,
+    currentUserId,
     preferredCategory,
     questionProgressHydrated,
     reconcileCatalog,
