@@ -47,7 +47,7 @@ The project now also includes:
    - shared AI request/response contracts
    - persisted local question chat history and free-tier usage tracking
    - question-aware AI modal on mobile
-   - Supabase Edge Function skeleton with provider adapters, auth-aware logging, and mock fallback
+   - Supabase Edge Function skeleton with provider adapters, auth-aware logging, and pre-generated explanation fallback
 
 ## Next steps
 

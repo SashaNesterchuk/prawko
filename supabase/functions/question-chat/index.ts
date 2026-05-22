@@ -9,6 +9,7 @@ const CORS_HEADERS = {
 } as const;
 
 const FREE_DAILY_LIMIT = 8;
+const PREGENERATED_EXPLANATION_MODEL = "pre-generated-explanation-v1";
 
 type SupportedLocale = "pl" | "ua" | "en";
 type AiProviderId = "mock" | "openai" | "anthropic";
@@ -171,9 +172,11 @@ Deno.serve(async (request) => {
         area: "question_chat",
         error: providerError,
         eventName: "question_chat_provider_fallback",
-        message: "Primary AI provider failed, so question chat fell back to the mock adapter.",
+        message:
+          "Primary AI provider failed, so question chat fell back to the pre-generated explanation adapter.",
         metadata: {
           conversation_id: normalizedConversationId,
+          fallback_kind: "pre_generated_explanation",
           locale: payload.locale,
           preferred_provider: Deno.env.get("AI_PROVIDER") ?? null,
           question_id: normalizedQuestionId,
@@ -202,8 +205,15 @@ Deno.serve(async (request) => {
       messageOrder: nextMessageOrder + 1,
       messageRole: "assistant",
       metadata: {
+        fallbackKind:
+          providerResponse.fallbackUsed &&
+          providerResponse.model === PREGENERATED_EXPLANATION_MODEL
+            ? "pre_generated_explanation"
+            : null,
         fallbackUsed: providerResponse.fallbackUsed,
         locale: payload.locale,
+        preGeneratedExplanation:
+          providerResponse.model === PREGENERATED_EXPLANATION_MODEL,
         rawQuestionId: payload.question.questionId,
         selectedAnswer: payload.question.selectedAnswer ?? null,
         topicBlock: payload.question.topicBlock,
@@ -696,72 +706,13 @@ function createMockProviderResponse(
   request: QuestionChatRequest
 ): ProviderResponse {
   const startedAt = Date.now();
-  const correctAnswerText = getOptionText(
-    request,
-    request.question.correctAnswer
-  );
-  const selectedAnswerText = request.question.selectedAnswer
-    ? getOptionText(request, request.question.selectedAnswer)
-    : null;
-  const selectedIsCorrect =
-    request.question.selectedAnswer === request.question.correctAnswer;
-  const normalizedPrompt = request.prompt.toLowerCase();
-
-  if (request.locale === "pl") {
-    const summary = request.question.selectedAnswer
-      ? selectedIsCorrect
-        ? `Wybrales poprawna odpowiedz: ${selectedAnswerText}.`
-        : `Wybrales ${selectedAnswerText}, ale poprawna odpowiedz to ${correctAnswerText}.`
-      : `Poprawna odpowiedz to ${correctAnswerText}.`;
-
-    return {
-      provider: "mock",
-      model: "mock-question-chat-v1",
-      content:
-        normalizedPrompt.includes("zapam") || normalizedPrompt.includes("egz")
-          ? `${summary} Zapamietaj ten motyw jako konkretna zasade egzaminacyjna. ${request.question.explanation}`
-          : `${summary} Logika pytania jest taka: ${request.question.explanation}`,
-      fallbackUsed: true,
-      latencyMs: Date.now() - startedAt,
-      inputTokens: null,
-      outputTokens: null,
-    };
-  }
-
-  if (request.locale === "en") {
-    const summary = request.question.selectedAnswer
-      ? selectedIsCorrect
-        ? `You chose the correct answer: ${selectedAnswerText}.`
-        : `You chose ${selectedAnswerText}, but the correct answer is ${correctAnswerText}.`
-      : `The correct answer is ${correctAnswerText}.`;
-
-    return {
-      provider: "mock",
-      model: "mock-question-chat-v1",
-      content:
-        normalizedPrompt.includes("remember") || normalizedPrompt.includes("exam")
-          ? `${summary} Treat this as a specific exam rule to remember. ${request.question.explanation}`
-          : `${summary} The question works like this: ${request.question.explanation}`,
-      fallbackUsed: true,
-      latencyMs: Date.now() - startedAt,
-      inputTokens: null,
-      outputTokens: null,
-    };
-  }
-
-  const summary = request.question.selectedAnswer
-    ? selectedIsCorrect
-      ? `Ти вибрав правильну відповідь: ${selectedAnswerText}.`
-      : `Ти вибрав ${selectedAnswerText}, але правильна відповідь: ${correctAnswerText}.`
-    : `Правильна відповідь: ${correctAnswerText}.`;
-
   return {
     provider: "mock",
-    model: "mock-question-chat-v1",
-    content:
-      normalizedPrompt.includes("запам") || normalizedPrompt.includes("іспит")
-        ? `${summary} Сприймай це як конкретне правило для іспиту. ${request.question.explanation}`
-        : `${summary} Логіка питання така: ${request.question.explanation}`,
+    model: PREGENERATED_EXPLANATION_MODEL,
+    content: buildPreGeneratedExplanationContent(
+      request.question,
+      request.prompt
+    ),
     fallbackUsed: true,
     latencyMs: Date.now() - startedAt,
     inputTokens: null,
@@ -769,10 +720,183 @@ function createMockProviderResponse(
   };
 }
 
-function getOptionText(request: QuestionChatRequest, optionId: string) {
-  const matched = request.question.options.find((option) => option.id === optionId);
+function getOptionText(
+  question: QuestionChatRequest["question"],
+  optionId: string
+) {
+  const matched = question.options.find((option) => option.id === optionId);
 
   return matched?.text ?? optionId.toUpperCase();
+}
+
+function buildPreGeneratedExplanationContent(
+  context: QuestionChatRequest["question"],
+  prompt?: string
+) {
+  const intent = getPromptIntent(prompt, context.locale);
+  const statusLine = buildStatusLine(context);
+  const explanation = context.explanation.trim();
+  const memoryRule = getMemoryRule(context.locale);
+  const mistakeLine = getMistakeLine(context.locale);
+
+  if (context.locale === "pl") {
+    if (intent === "memory") {
+      return `${statusLine} Regula do zapamietania: ${memoryRule} Dlaczego tak: ${explanation}`;
+    }
+
+    if (intent === "mistake") {
+      return `${statusLine} Najczestsza pomylka: ${mistakeLine} Dlaczego tak: ${explanation} Regula do zapamietania: ${memoryRule}`;
+    }
+
+    return `${statusLine} Dlaczego tak: ${explanation} Regula do zapamietania: ${memoryRule}`;
+  }
+
+  if (context.locale === "en") {
+    if (intent === "memory") {
+      return `${statusLine} Memory rule: ${memoryRule} Why this is correct: ${explanation}`;
+    }
+
+    if (intent === "mistake") {
+      return `${statusLine} Common mistake: ${mistakeLine} Why this is correct: ${explanation} Memory rule: ${memoryRule}`;
+    }
+
+    return `${statusLine} Why this is correct: ${explanation} Memory rule: ${memoryRule}`;
+  }
+
+  if (intent === "memory") {
+    return `${statusLine} Правило для запам'ятовування: ${memoryRule} Чому так: ${explanation}`;
+  }
+
+  if (intent === "mistake") {
+    return `${statusLine} Типова помилка: ${mistakeLine} Чому так: ${explanation} Правило для запам'ятовування: ${memoryRule}`;
+  }
+
+  return `${statusLine} Чому так: ${explanation} Правило для запам'ятовування: ${memoryRule}`;
+}
+
+function buildStatusLine(context: QuestionChatRequest["question"]) {
+  const correctAnswerText = getOptionText(context, context.correctAnswer);
+  const selectedAnswerText = context.selectedAnswer
+    ? getOptionText(context, context.selectedAnswer)
+    : null;
+  const selectedIsCorrect = context.selectedAnswer === context.correctAnswer;
+
+  if (context.locale === "pl") {
+    if (context.selectedAnswer) {
+      return selectedIsCorrect
+        ? `Wybrales poprawna odpowiedz: ${selectedAnswerText}.`
+        : `Wybrales ${selectedAnswerText}, ale poprawna odpowiedz to ${correctAnswerText}.`;
+    }
+
+    return `Poprawna odpowiedz to ${correctAnswerText}.`;
+  }
+
+  if (context.locale === "en") {
+    if (context.selectedAnswer) {
+      return selectedIsCorrect
+        ? `You chose the correct answer: ${selectedAnswerText}.`
+        : `You chose ${selectedAnswerText}, but the correct answer is ${correctAnswerText}.`;
+    }
+
+    return `The correct answer is ${correctAnswerText}.`;
+  }
+
+  if (context.selectedAnswer) {
+    return selectedIsCorrect
+      ? `Ти вибрав правильну відповідь: ${selectedAnswerText}.`
+      : `Ти вибрав ${selectedAnswerText}, але правильна відповідь: ${correctAnswerText}.`;
+  }
+
+  return `Правильна відповідь: ${correctAnswerText}.`;
+}
+
+function getPromptIntent(
+  prompt: string | undefined,
+  locale: SupportedLocale
+) {
+  const normalizedPrompt = prompt?.trim().toLowerCase() ?? "";
+
+  if (!normalizedPrompt) {
+    return "why";
+  }
+
+  if (locale === "pl") {
+    if (
+      normalizedPrompt.includes("zapam") ||
+      normalizedPrompt.includes("regul") ||
+      normalizedPrompt.includes("egz")
+    ) {
+      return "memory";
+    }
+
+    if (
+      normalizedPrompt.includes("blad") ||
+      normalizedPrompt.includes("pomyl") ||
+      normalizedPrompt.includes("wrong")
+    ) {
+      return "mistake";
+    }
+  }
+
+  if (locale === "en") {
+    if (
+      normalizedPrompt.includes("remember") ||
+      normalizedPrompt.includes("rule") ||
+      normalizedPrompt.includes("exam")
+    ) {
+      return "memory";
+    }
+
+    if (
+      normalizedPrompt.includes("mistake") ||
+      normalizedPrompt.includes("wrong")
+    ) {
+      return "mistake";
+    }
+  }
+
+  if (
+    normalizedPrompt.includes("запам") ||
+    normalizedPrompt.includes("правил") ||
+    normalizedPrompt.includes("іспит") ||
+    normalizedPrompt.includes("exam")
+  ) {
+    return "memory";
+  }
+
+  if (
+    normalizedPrompt.includes("помил") ||
+    normalizedPrompt.includes("не так") ||
+    normalizedPrompt.includes("wrong")
+  ) {
+    return "mistake";
+  }
+
+  return "why";
+}
+
+function getMemoryRule(locale: SupportedLocale) {
+  if (locale === "pl") {
+    return "Patrz na dokladna zasade z pytania i wybieraj odpowiedz, ktora pasuje do niej 1:1, a nie tylko brzmi bezpiecznie.";
+  }
+
+  if (locale === "en") {
+    return "Look for the exact rule being tested and choose the option that matches it 1:1, not the one that merely sounds safe.";
+  }
+
+  return "Шукай точне правило з питання і обирай варіант, що збігається з ним 1:1, а не просто звучить безпечніше.";
+}
+
+function getMistakeLine(locale: SupportedLocale) {
+  if (locale === "pl") {
+    return "Zgadywanie po intuicji albo wybieranie odpowiedzi, ktora brzmi ogolnie najbezpieczniej.";
+  }
+
+  if (locale === "en") {
+    return "Guessing from intuition or choosing the option that sounds generally safest.";
+  }
+
+  return "Вгадування по інтуїції або вибір варіанта, який просто звучить найбезпечніше.";
 }
 
 function normalizeLoggedError(error: unknown) {

@@ -71,13 +71,12 @@ Status: `mostly_done`
 
 ### Epic 6 — AI Layer
 
-Status: `partial`
+Status: `mostly_done`
 
 Остаток:
 
-1. Добавить pre-generated explanation path для graceful fallback без live AI.
-2. Дожать provider-agnostic server path до production-level конфигурации.
-3. Проверить server-side rate limit и AI logging на реальном edge flow.
+1. Дожать provider-agnostic server path до production-level конфигурации.
+2. Проверить server-side rate limit и AI logging на реальном edge flow.
 
 ### Epic 7 — Exam Simulator
 
@@ -187,19 +186,7 @@ Status: `mostly_done`
 
 В этом проходе в работу взят следующий кусок:
 
-1. `Epic 10` — backend-backed free preview question quota using:
-   - Supabase daily usage snapshot RPC
-   - Warsaw day boundary
-   - mobile remote+local fallback merge
-2. `Epic 12` — release operations docs refreshed with:
-   - shared quota QA checks
-   - Access Center beta checks
-   - TestFlight / Android internal rollout runbook
-3. `Epic 10` — admin overview extended with:
-   - direct purchase entitlement visibility
-   - purchase vs school active entitlement split
-   - profile name lookup for entitlement rows
-4. `Epic 6` / `Epic 11` — AI review became a real admin queue with:
-   - dedicated review status table
-   - admin review actions and notes
-   - pending/reviewed queue split on web
+1. `Epic 6` — question chat now has a pre-generated explanation fallback with:
+   - seeded first assistant answer on mobile from official explanation data
+   - deterministic follow-up fallback replies without live AI keys
+   - explicit fallback analytics and edge metadata for review/debugging

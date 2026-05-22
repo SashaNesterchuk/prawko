@@ -7,6 +7,7 @@ import { useQuestionCatalogVersion } from "../../state/question-catalog";
 import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
 import { createAiMessageId } from "./create-ai-id";
 import { createIntroAiMessage } from "./mock-question-chat";
+import { PREGENERATED_EXPLANATION_MODEL } from "./pregenerated-question-explanation";
 import { buildQuestionChatContext } from "./question-chat-context";
 import {
   QuestionChatLimitError,
@@ -131,9 +132,16 @@ export function useQuestionAiChat(input: {
         captureFallback({
           area: "question_chat",
           eventName: "question_chat_fallback_used",
-          message: "Question chat used the local fallback assistant response.",
+          message:
+            response.model === PREGENERATED_EXPLANATION_MODEL
+              ? "Question chat used the pre-generated explanation fallback."
+              : "Question chat used the local fallback assistant response.",
           metadata: {
             conversation_id: targetConversation.conversationId,
+            fallback_kind:
+              response.model === PREGENERATED_EXPLANATION_MODEL
+                ? "pre_generated_explanation"
+                : "local_fallback",
             model: response.model,
             provider: response.provider,
             question_id: questionContext.questionId,

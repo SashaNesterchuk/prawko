@@ -7,7 +7,7 @@ Current function status:
    - user auth check
    - free-tier daily cap fallback
    - assistant/user logging into `ai_messages`
-   - mock response path when provider keys are missing
+   - pre-generated explanation response path when provider keys are missing
 
 Suggested next functions:
 
