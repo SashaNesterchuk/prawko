@@ -78,7 +78,6 @@ Status: `partial`
 1. Добавить pre-generated explanation path для graceful fallback без live AI.
 2. Дожать provider-agnostic server path до production-level конфигурации.
 3. Проверить server-side rate limit и AI logging на реальном edge flow.
-4. Добавить review/admin queue для ручной проверки AI outputs на web.
 
 ### Epic 7 — Exam Simulator
 
@@ -147,14 +146,14 @@ Status: `mostly_done`
 6. Support.
 7. Legal pages.
 8. Admin foundation.
+9. Import Health page.
+10. AI review queue with manual admin decisions.
 
 Остаток:
 
 1. Добавить real app-store / play-store deep links.
 2. Дожать protected admin auth и non-indexed admin surface.
-3. Сделать question import status page.
-4. Сделать manual explanation review queue.
-5. Усилить school inquiry funnel.
+3. Усилить school inquiry funnel.
 
 ### Epic 12 — Analytics, QA, Release
 
@@ -180,7 +179,7 @@ Status: `mostly_done`
 Следующие срезы имеет смысл брать в таком порядке:
 
 1. `Epic 6` — pre-generated explanations and stronger AI fallback
-2. `Epic 11` — web admin question import status + explanation review queue
+2. `Epic 11` — store links and school inquiry funnel polish
 3. `Epic 10` — entitlement lifecycle QA and commercial offer split
 4. `Epic 12` — KPI verification and beta dry-run
 
@@ -200,3 +199,7 @@ Status: `mostly_done`
    - direct purchase entitlement visibility
    - purchase vs school active entitlement split
    - profile name lookup for entitlement rows
+4. `Epic 6` / `Epic 11` — AI review became a real admin queue with:
+   - dedicated review status table
+   - admin review actions and notes
+   - pending/reviewed queue split on web

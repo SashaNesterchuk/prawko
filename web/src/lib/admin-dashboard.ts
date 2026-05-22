@@ -47,6 +47,7 @@ type RecentAiMessage = {
   conversationId: string;
   createdAt: string;
   fallbackUsed: boolean;
+  id: string;
   inputTokens: number | null;
   latencyMs: number | null;
   messageKind: string;
@@ -54,6 +55,10 @@ type RecentAiMessage = {
   outputTokens: number | null;
   provider: string | null;
   questionId: string | null;
+  reviewNotes: string | null;
+  reviewStatus: string;
+  reviewedAt: string | null;
+  reviewedByEmail: string | null;
   userId: string;
 };
 
@@ -134,6 +139,14 @@ type ValidationWarning = {
   questionSourceId: string | null;
   severity: string;
   sourceRowNumber: number | null;
+};
+
+type AiMessageReviewSnapshot = {
+  aiMessageId: string;
+  reviewNotes: string | null;
+  reviewStatus: string;
+  reviewedAt: string | null;
+  reviewedByEmail: string | null;
 };
 
 type DatabaseComparison = {
@@ -406,7 +419,7 @@ export async function getAdminOverviewData() {
     client
       .from("ai_messages")
       .select(
-        "user_id, question_id, conversation_id, message_kind, provider, model, content, input_tokens, output_tokens, latency_ms, metadata, created_at"
+        "id, user_id, question_id, conversation_id, message_kind, provider, model, content, input_tokens, output_tokens, latency_ms, metadata, created_at"
       )
       .eq("message_role", "assistant")
       .order("created_at", { ascending: false })
@@ -509,6 +522,7 @@ export async function getAdminOverviewData() {
       conversationId: stringValue(row.conversation_id),
       createdAt: stringValue(row.created_at),
       fallbackUsed: Boolean(getJsonObject(row.metadata)?.fallbackUsed),
+      id: stringValue(row.id),
       inputTokens: nullableNumberValue(row.input_tokens),
       latencyMs: nullableNumberValue(row.latency_ms),
       messageKind: stringValue(row.message_kind),
@@ -516,6 +530,10 @@ export async function getAdminOverviewData() {
       outputTokens: nullableNumberValue(row.output_tokens),
       provider: nullableStringValue(row.provider),
       questionId: nullableStringValue(row.question_id),
+      reviewNotes: null,
+      reviewStatus: "pending",
+      reviewedAt: null,
+      reviewedByEmail: null,
       userId: stringValue(row.user_id),
     })
   );
@@ -929,8 +947,10 @@ export async function getAdminAiReviewData() {
           "Set service-role env to inspect ai_messages from web."
         ),
       ],
+      pendingReviewMessages: [] as RecentAiMessage[],
       providerMetrics: [] as DashboardMetric[],
       recentAssistantMessages: [] as RecentAiMessage[],
+      recentReviewedMessages: [] as RecentAiMessage[],
     };
   }
 
@@ -954,7 +974,7 @@ export async function getAdminAiReviewData() {
       client
         .from("ai_messages")
         .select(
-          "user_id, question_id, conversation_id, message_kind, provider, model, content, input_tokens, output_tokens, latency_ms, metadata, created_at"
+          "id, user_id, question_id, conversation_id, message_kind, provider, model, content, input_tokens, output_tokens, latency_ms, metadata, created_at"
         )
         .eq("message_role", "assistant")
         .order("created_at", { ascending: false })
@@ -964,7 +984,7 @@ export async function getAdminAiReviewData() {
   captureError(errors, totalAiMessages);
   captureError(errors, assistantLast7Days);
 
-  const recentAssistantMessages = unwrapRows<RecentAiMessage>(
+  const recentAssistantMessagesBase = unwrapRows<RecentAiMessage>(
     "ai_messages_review_recent",
     recentAssistantMessagesResponse,
     errors,
@@ -973,6 +993,7 @@ export async function getAdminAiReviewData() {
       conversationId: stringValue(row.conversation_id),
       createdAt: stringValue(row.created_at),
       fallbackUsed: Boolean(getJsonObject(row.metadata)?.fallbackUsed),
+      id: stringValue(row.id),
       inputTokens: nullableNumberValue(row.input_tokens),
       latencyMs: nullableNumberValue(row.latency_ms),
       messageKind: stringValue(row.message_kind),
@@ -980,11 +1001,54 @@ export async function getAdminAiReviewData() {
       outputTokens: nullableNumberValue(row.output_tokens),
       provider: nullableStringValue(row.provider),
       questionId: nullableStringValue(row.question_id),
+      reviewNotes: null,
+      reviewStatus: "pending",
+      reviewedAt: null,
+      reviewedByEmail: null,
       userId: stringValue(row.user_id),
     })
   );
 
+  const reviewByMessageId = await getAiMessageReviewByMessageId(
+    recentAssistantMessagesBase.map((row) => row.id),
+    errors
+  );
+  const recentAssistantMessages = recentAssistantMessagesBase.map((message) => {
+    const review = reviewByMessageId.get(message.id);
+
+    return review
+      ? {
+          ...message,
+          reviewNotes: review.reviewNotes,
+          reviewStatus: review.reviewStatus,
+          reviewedAt: review.reviewedAt,
+          reviewedByEmail: review.reviewedByEmail,
+        }
+      : message;
+  });
   const fallbackMessages = recentAssistantMessages.filter((row) => row.fallbackUsed);
+  const pendingReviewMessages = [...recentAssistantMessages]
+    .filter((row) => row.reviewStatus === "pending")
+    .sort((left, right) => {
+      const leftPriority = getAiReviewPriority(left);
+      const rightPriority = getAiReviewPriority(right);
+
+      if (leftPriority !== rightPriority) {
+        return rightPriority - leftPriority;
+      }
+
+      return Date.parse(right.createdAt) - Date.parse(left.createdAt);
+    });
+  const recentReviewedMessages = [...recentAssistantMessages]
+    .filter((row) => row.reviewStatus !== "pending")
+    .sort(
+      (left, right) =>
+        Date.parse(right.reviewedAt ?? right.createdAt) -
+        Date.parse(left.reviewedAt ?? left.createdAt)
+    );
+  const explanationMessages = recentAssistantMessages.filter(
+    (row) => row.messageKind === "question_explanation"
+  );
   const averageLatency = average(
     recentAssistantMessages
       .map((row) => row.latencyMs)
@@ -1008,6 +1072,21 @@ export async function getAdminAiReviewData() {
         "Recent assistant-side output volume."
       ),
       createMetric(
+        "Pending review",
+        formatCount(pendingReviewMessages.length),
+        "Assistant outputs in the sampled window with no manual review decision yet."
+      ),
+      createMetric(
+        "Reviewed in sample",
+        formatCount(recentReviewedMessages.length),
+        "Assistant outputs that already have an admin review decision."
+      ),
+      createMetric(
+        "Explanation outputs",
+        formatCount(explanationMessages.length),
+        "Question explanation messages sampled from ai_messages."
+      ),
+      createMetric(
         "Fallbacks in sample",
         formatCount(fallbackMessages.length),
         "Recent assistant messages marked with fallbackUsed=true."
@@ -1018,8 +1097,10 @@ export async function getAdminAiReviewData() {
         "Calculated from the most recent assistant sample."
       ),
     ],
+    pendingReviewMessages,
     providerMetrics: providerBreakdown,
     recentAssistantMessages,
+    recentReviewedMessages,
   };
 }
 
@@ -1193,6 +1274,47 @@ async function getProfileNamesById(
   );
 }
 
+async function getAiMessageReviewByMessageId(
+  messageIds: string[],
+  errors: DashboardError[]
+) {
+  const filteredIds = Array.from(new Set(messageIds.filter(Boolean)));
+
+  if (!filteredIds.length || !getAdminConfigurationStatus().databaseConfigured) {
+    return new Map<string, AiMessageReviewSnapshot>();
+  }
+
+  const { data, error } = await getWebSupabaseAdminClient()
+    .from("ai_message_reviews")
+    .select(
+      "ai_message_id, review_status, review_notes, reviewer_email, reviewed_at"
+    )
+    .in("ai_message_id", filteredIds);
+
+  if (error) {
+    errors.push({
+      area: "ai_message_reviews_lookup",
+      message: error.message,
+    });
+    return new Map<string, AiMessageReviewSnapshot>();
+  }
+
+  return new Map(
+    (data ?? []).map((row) => {
+      const record = row as Record<string, unknown>;
+      const snapshot = {
+        aiMessageId: stringValue(record.ai_message_id),
+        reviewNotes: nullableStringValue(record.review_notes),
+        reviewStatus: stringValue(record.review_status),
+        reviewedAt: nullableStringValue(record.reviewed_at),
+        reviewedByEmail: nullableStringValue(record.reviewer_email),
+      } satisfies AiMessageReviewSnapshot;
+
+      return [snapshot.aiMessageId, snapshot];
+    })
+  );
+}
+
 async function readOptionalJsonReport<T>(
   file: {
     absolutePath: string;
@@ -1289,6 +1411,28 @@ function buildProviderBreakdown(messages: RecentAiMessage[]) {
     .map(([provider, count]) =>
       createMetric(provider, formatCount(count), "Assistant messages in recent sample.")
     );
+}
+
+function getAiReviewPriority(message: RecentAiMessage) {
+  let priority = 0;
+
+  if (message.messageKind === "question_explanation") {
+    priority += 4;
+  }
+
+  if (message.fallbackUsed) {
+    priority += 3;
+  }
+
+  if (message.provider === "mock") {
+    priority += 2;
+  }
+
+  if (message.questionId) {
+    priority += 1;
+  }
+
+  return priority;
 }
 
 function createMetric(label: string, value: string, detail: string): DashboardMetric {
