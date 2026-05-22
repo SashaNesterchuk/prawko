@@ -1,7 +1,50 @@
+import path from "node:path";
+
+import { mediaBuildJobSchema } from "@prawko/schemas";
+
+import { EXPORTS_GENERATED_DIR, NORMALIZED_GENERATED_DIR } from "./constants";
 import type { PipelineOptions } from "./types";
 import { runInspect, runPipeline, runValidate } from "./pipeline";
 import { executeMediaBuild, uploadBuiltMedia } from "./media-build";
 import { syncQuestionsToSupabase } from "./question-sync";
+import { pathExists, readJsonFile, resolveRepoPath } from "./utils";
+
+function hasPipelineSourceOverrides(options: PipelineOptions): boolean {
+  return Boolean(
+    options.xlsxPath ??
+      options.sheetName ??
+      options.mediaDir ??
+      options.aliasesPath ??
+      options.deliveryDir
+  );
+}
+
+async function resolveGeneratedQuestionExportPath(
+  inputPath?: string
+): Promise<string | null> {
+  const candidatePath = resolveRepoPath(
+    inputPath ??
+      path.join(EXPORTS_GENERATED_DIR, "supabase.questions.category-b.json")
+  );
+
+  return (await pathExists(candidatePath)) ? candidatePath : null;
+}
+
+async function loadGeneratedMediaBuildPlan(
+  inputPath?: string
+) {
+  const candidatePath = resolveRepoPath(
+    inputPath ?? path.join(NORMALIZED_GENERATED_DIR, "media-build-plan.json")
+  );
+
+  if (!(await pathExists(candidatePath))) {
+    return null;
+  }
+
+  return mediaBuildJobSchema
+    .array()
+    .parse(await readJsonFile(candidatePath));
+}
 
 function parseArgs(argv: string[]): { command: string; options: PipelineOptions } {
   const [command = "pipeline", ...rest] = argv;
@@ -128,13 +171,21 @@ async function main() {
   }
 
   if (command === "media:upload") {
-    const pipelineResult = await runPipeline(options);
-    const result = await uploadBuiltMedia(pipelineResult.mediaBuildPlan, options);
+    const mediaBuildPlan =
+      hasPipelineSourceOverrides(options)
+        ? (await runPipeline(options)).mediaBuildPlan
+        : ((await loadGeneratedMediaBuildPlan(options.inputPath)) ??
+          (await runPipeline(options)).mediaBuildPlan);
+    const result = await uploadBuiltMedia(mediaBuildPlan, options);
     console.log(JSON.stringify(result, null, 2));
     return;
   }
 
   if (command === "questions:sync") {
+    if (!options.inputPath && !hasPipelineSourceOverrides(options)) {
+      options.inputPath = await resolveGeneratedQuestionExportPath() ?? undefined;
+    }
+
     if (!options.inputPath) {
       await runPipeline(options);
     }

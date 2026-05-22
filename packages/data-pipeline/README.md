@@ -39,3 +39,6 @@ Important exports:
 5. `media:build` expects local `ffmpeg` and writes encoded assets and posters into `delivery/generated/assets/`.
 6. `media:upload` reads Supabase credentials from `.env.local`, `.env`, or `.env.example` and uploads built assets to Storage.
 7. `questions:sync` upserts the enriched Category B export into `public.questions` using the service role key.
+8. `media:upload` can reuse `data/questions/normalized/generated/media-build-plan.json`; it does not need the raw XLSX when generated artifacts already exist.
+9. `questions:sync` can reuse `data/questions/exports/generated/supabase.questions.category-b.json`; it does not need the raw XLSX when generated artifacts already exist.
+10. Pass `--input <path>` to override the generated export/build-plan file used by `questions:sync` or `media:upload`.

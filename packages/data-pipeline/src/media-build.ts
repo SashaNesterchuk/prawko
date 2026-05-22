@@ -298,6 +298,12 @@ export async function uploadBuiltMedia(
 ): Promise<MediaUploadResult> {
   await loadLocalEnvFiles();
 
+  const limit =
+    typeof options.limit === "number" && options.limit > 0
+      ? options.limit
+      : buildJobs.length;
+  const selectedJobs = buildJobs.slice(0, limit);
+
   const supabaseUrl =
     process.env.SUPABASE_URL ??
     process.env.EXPO_PUBLIC_SUPABASE_URL ??
@@ -327,7 +333,7 @@ export async function uploadBuiltMedia(
     error: string | null;
   }> = [];
 
-  for (const job of buildJobs) {
+  for (const job of selectedJobs) {
     const uploadTargets = collectUploadTargets(job);
 
     for (const target of uploadTargets) {
