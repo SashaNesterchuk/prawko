@@ -1,5 +1,6 @@
 import { Redirect, Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { LoadingStateView } from "../../src/components/shell/StateViews";
@@ -11,9 +12,12 @@ import {
   useAppShellStore,
 } from "../../src/state/app-shell";
 
+const TAB_BAR_CONTENT_HEIGHT = 56;
+
 export default function TabsLayout() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const hasHydrated = useHasHydrated();
   const sessionResolved = useAppShellStore((state) => state.sessionResolved);
   const onboardingCompleted = useAppShellStore(
@@ -50,9 +54,9 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.borderSoft,
-          height: 68,
-          paddingBottom: 10,
-          paddingTop: 10,
+          height: TAB_BAR_CONTENT_HEIGHT + bottomInset,
+          paddingTop: 8,
+          paddingBottom: bottomInset > 0 ? bottomInset : 10,
         },
         tabBarLabelStyle: {
           fontSize: 12,
