@@ -30,12 +30,12 @@ const BOOLEAN_CHOICES: Record<
   true: {
     pl: "Tak",
     ua: "Так",
-    en: "True",
+    en: "Yes",
   },
   false: {
     pl: "Nie",
     ua: "Ні",
-    en: "False",
+    en: "No",
   },
 };
 

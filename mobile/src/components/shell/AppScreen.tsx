@@ -6,7 +6,7 @@ import { StatusBar } from "expo-status-bar";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type AppScreenProps = PropsWithChildren<{
-  title: string;
+  title?: string;
   subtitle?: string;
   footer?: ReactNode;
   scroll?: boolean;
@@ -22,12 +22,16 @@ export function AppScreen({
   const theme = useTheme();
   const styles = getStyles(theme);
 
+  const hasHeader = Boolean(title || subtitle);
+
   const content = (
     <View style={styles.inner}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-      </View>
+      {hasHeader ? (
+        <View style={styles.header}>
+          {title ? <Text style={styles.title}>{title}</Text> : null}
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        </View>
+      ) : null}
       <View style={styles.content}>{children}</View>
     </View>
   );

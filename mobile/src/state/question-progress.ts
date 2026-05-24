@@ -82,7 +82,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
 
         const questionId = activeSession.questionIds[activeSession.currentIndex];
 
-        if (!questionId || activeSession.answers[questionId]) {
+        if (!questionId) {
           return null;
         }
 
@@ -92,17 +92,27 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           return null;
         }
 
+        const existingAnswer = activeSession.answers[questionId];
         const now = new Date();
         const answeredAt = now.toISOString();
         const isCorrect = question.correctAnswer === selectedAnswer;
-        const previousState = getQuestionUserState(
-          state.questionUserState,
-          questionId
-        );
-        const nextState = getNextQuestionUserStateAfterAttempt(previousState, {
-          answeredAt,
-          isCorrect,
-        });
+
+        if (
+          existingAnswer &&
+          existingAnswer.selectedAnswer === selectedAnswer
+        ) {
+          return {
+            id: `attempt-${existingAnswer.answeredAt}-${questionId}`,
+            questionId,
+            sessionId: activeSession.id,
+            sessionMode: activeSession.request.mode,
+            topicBlock: question.topicBlock,
+            selectedAnswer: existingAnswer.selectedAnswer,
+            isCorrect: existingAnswer.isCorrect,
+            answeredAt: existingAnswer.answeredAt,
+          };
+        }
+
         const attempt: QuestionAttempt = {
           id: `attempt-${now.getTime().toString(36)}-${questionId}`,
           questionId,
@@ -113,6 +123,36 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           isCorrect,
           answeredAt,
         };
+
+        if (existingAnswer) {
+          set((currentState) => ({
+            activeSession: currentState.activeSession
+              ? {
+                  ...currentState.activeSession,
+                  answers: {
+                    ...currentState.activeSession.answers,
+                    [questionId]: {
+                      questionId,
+                      selectedAnswer,
+                      isCorrect,
+                      answeredAt,
+                    },
+                  },
+                }
+              : null,
+          }));
+
+          return attempt;
+        }
+
+        const previousState = getQuestionUserState(
+          state.questionUserState,
+          questionId
+        );
+        const nextState = getNextQuestionUserStateAfterAttempt(previousState, {
+          answeredAt,
+          isCorrect,
+        });
 
         set((currentState) => ({
           attempts: [...currentState.attempts, attempt],
