@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { Switch, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 import { AppButton } from "../../src/components/shell/AppButton";
@@ -35,6 +35,8 @@ export default function ProfileTabScreen() {
   const preferredCategory = useAppShellStore(
     (state) => state.preferredCategory
   );
+  const enablePjmTracks = useAppShellStore((state) => state.enablePjmTracks);
+  const setEnablePjmTracks = useAppShellStore((state) => state.setEnablePjmTracks);
   const authMode = useAppShellStore((state) => state.authMode);
   const signOutLocal = useAppShellStore((state) => state.signOutLocal);
   const resetShell = useAppShellStore((state) => state.resetShell);
@@ -112,6 +114,29 @@ export default function ProfileTabScreen() {
                 : t("common.missing"),
             })}
           </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 12,
+              marginTop: 8,
+            }}
+          >
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text style={{ fontSize: 15, lineHeight: 22, fontWeight: "700" }}>
+                {t("profile.pjmTracksTitle")}
+              </Text>
+              <Text style={{ fontSize: 14, lineHeight: 21, opacity: 0.8 }}>
+                {t("profile.pjmTracksDescription")}
+              </Text>
+            </View>
+            <Switch
+              accessibilityLabel={t("profile.pjmTracksTitle")}
+              value={enablePjmTracks}
+              onValueChange={setEnablePjmTracks}
+            />
+          </View>
         </AppCard>
 
         <AppCard>

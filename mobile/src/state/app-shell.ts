@@ -60,6 +60,7 @@ type AppShellState = {
   onboardingProgress: OnboardingProgress;
   preferredCategory: DrivingCategory;
   preferredLocale: SupportedLocale;
+  enablePjmTracks: boolean;
   sessionResolved: boolean;
   studyPlanSetup: StudyPlanSetupDraft;
   supabaseUser: AppUser | null;
@@ -89,6 +90,7 @@ type AppShellState = {
   setMinutesPerDay: (minutesPerDay: number) => void;
   setPreferredCategory: (category: DrivingCategory) => void;
   setPreferredLocale: (locale: SupportedLocale) => void;
+  setEnablePjmTracks: (enabled: boolean) => void;
   setSchoolCode: (schoolCode: string) => void;
   setSessionResolved: (value: boolean) => void;
   setSupabaseUser: (user: AppUser | null) => void;
@@ -106,6 +108,7 @@ type PersistedAppShellState = Pick<
   | "onboardingProgress"
   | "preferredCategory"
   | "preferredLocale"
+  | "enablePjmTracks"
   | "studyPlanSetup"
 >;
 
@@ -157,7 +160,7 @@ function getNextMockUser(mockUser: AppUser | null) {
 }
 
 function normalizePersistedShellState(
-  persistedState: Partial<PersistedAppShellState> | undefined
+  persistedState: Partial<PersistedAppShellState> | undefined,
 ): PersistedAppShellState {
   const nextMockUser = getNextMockUser(persistedState?.mockUser ?? null);
   const authMode =
@@ -173,6 +176,7 @@ function normalizePersistedShellState(
       persistedState?.onboardingProgress ?? defaultOnboardingProgress,
     preferredCategory: persistedState?.preferredCategory ?? DEFAULT_CATEGORY,
     preferredLocale: persistedState?.preferredLocale ?? DEFAULT_LOCALE,
+    enablePjmTracks: persistedState?.enablePjmTracks ?? false,
     studyPlanSetup: persistedState?.studyPlanSetup ?? defaultStudyPlanSetup,
   };
 }
@@ -189,6 +193,7 @@ export const useAppShellStore = create<AppShellState>()(
       onboardingProgress: defaultOnboardingProgress,
       preferredCategory: DEFAULT_CATEGORY,
       preferredLocale: DEFAULT_LOCALE,
+      enablePjmTracks: false,
       sessionResolved: false,
       studyPlanSetup: defaultStudyPlanSetup,
       supabaseUser: null,
@@ -258,6 +263,7 @@ export const useAppShellStore = create<AppShellState>()(
           onboardingProgress: defaultOnboardingProgress,
           preferredCategory: DEFAULT_CATEGORY,
           preferredLocale: DEFAULT_LOCALE,
+          enablePjmTracks: false,
           sessionResolved: true,
           studyPlanSetup: defaultStudyPlanSetup,
           supabaseUser: null,
@@ -308,6 +314,7 @@ export const useAppShellStore = create<AppShellState>()(
         })),
       setPreferredCategory: (preferredCategory) => set({ preferredCategory }),
       setPreferredLocale: (preferredLocale) => set({ preferredLocale }),
+      setEnablePjmTracks: (enablePjmTracks) => set({ enablePjmTracks }),
       setSchoolCode: (schoolCode) =>
         set((state) => ({
           currentStudyPlan: null,
@@ -365,11 +372,11 @@ export const useAppShellStore = create<AppShellState>()(
     {
       name: "prawko-mobile-shell",
       storage: createJSONStorage(() => AsyncStorage),
-      version: 2,
+      version: 3,
       migrate: (persistedState) =>
         normalizePersistedShellState(
           (persistedState as Partial<PersistedAppShellState> | undefined) ??
-            undefined
+            undefined,
         ),
       partialize: (state) => ({
         authMode: state.authMode,
@@ -380,6 +387,7 @@ export const useAppShellStore = create<AppShellState>()(
         onboardingProgress: state.onboardingProgress,
         preferredCategory: state.preferredCategory,
         preferredLocale: state.preferredLocale,
+        enablePjmTracks: state.enablePjmTracks,
         studyPlanSetup: state.studyPlanSetup,
       }),
       onRehydrateStorage: () => (state) => {
@@ -389,8 +397,8 @@ export const useAppShellStore = create<AppShellState>()(
 
         state?.setHasHydrated(true);
       },
-    }
-  )
+    },
+  ),
 );
 
 export function getCurrentUserFromState(state: AppShellState) {
@@ -425,7 +433,10 @@ export function getNextOnboardingRoute(state: AppShellState): OnboardingRoute {
     return "/(onboarding)/minutes";
   }
 
-  if (!state.onboardingProgress.levelDone || state.studyPlanSetup.level === null) {
+  if (
+    !state.onboardingProgress.levelDone ||
+    state.studyPlanSetup.level === null
+  ) {
     return "/(onboarding)/level";
   }
 
