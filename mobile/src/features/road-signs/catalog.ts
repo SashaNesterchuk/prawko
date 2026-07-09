@@ -1,7 +1,10 @@
 import signUrls from "../../../../data/pl-road-signs-wikimedia/urls.json";
 
 import type { GreenWaveAccent } from "../../theme/green-wave";
-import { matchesCuratedSearch } from "./content/registry";
+import {
+  getSignDescription,
+  matchesSignSearch,
+} from "./content/registry";
 import type { RoadSign, RoadSignCategory, RoadSignCategoryId } from "./types";
 
 const CATEGORY_META: Record<
@@ -177,7 +180,7 @@ export function searchRoadSigns(query: string): RoadSign[] {
   return ALL_SIGNS.filter(
     (sign) =>
       sign.searchText.includes(normalized) ||
-      matchesCuratedSearch(sign.id, normalized)
+      matchesSignSearch(sign.id, normalized)
   );
 }
 
@@ -186,6 +189,8 @@ export function getCategoryAccent(categoryId: RoadSignCategoryId): GreenWaveAcce
 }
 
 export function getSignDescriptionPl(sign: RoadSign): string {
-  const category = CATEGORY_META[sign.categoryId];
-  return `${category.titlePl}. Znak ${sign.code}.`;
+  return (
+    getSignDescription(sign.id, "pl") ??
+    `${CATEGORY_META[sign.categoryId].titlePl}. Znak ${sign.code}.`
+  );
 }

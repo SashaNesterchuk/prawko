@@ -21,7 +21,7 @@ import {
 import {
   getSignDescription,
   getSignDisplayName,
-  hasSignContent,
+  hasSignPracticeContent,
 } from "../../../src/features/road-signs/content/registry";
 import { SignImage } from "../../../src/features/road-signs/SignImage";
 import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
@@ -127,7 +127,7 @@ export default function SignDetailScreen() {
             <SignImage sign={sign} size={spacing.exact(220)} />
           </View>
 
-          {hasSignContent(sign.id) ? (
+          {hasSignPracticeContent(sign.id) ? (
             <SignStatusBadge status={learningStatus} label={statusLabel} />
           ) : null}
 

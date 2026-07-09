@@ -2,10 +2,10 @@ import type { RoadSignCategoryId } from "./types";
 import { getRoadSignsByCategory } from "./catalog";
 import { pickLocalized } from "./content/localized";
 import {
-  getSignContent,
   getSignDisplayName,
   getSignPractices,
-  hasSignContent,
+  getSignMetadata,
+  hasSignPracticeContent,
 } from "./content/registry";
 import type { SignPractice } from "./content/types";
 
@@ -23,21 +23,21 @@ function buildNameRecognitionQuestion(
   categoryId: RoadSignCategoryId,
   locale: string
 ): CategorySignTestQuestion | null {
-  const content = getSignContent(signId);
+  const metadata = getSignMetadata(signId);
 
-  if (!content) {
+  if (!metadata) {
     return null;
   }
 
   const categorySigns = getRoadSignsByCategory(categoryId)
-    .filter((sign) => hasSignContent(sign.id) && sign.id !== signId)
+    .filter((sign) => hasSignPracticeContent(sign.id) && sign.id !== signId)
     .slice(0, 2);
 
   if (categorySigns.length < 2) {
     return null;
   }
 
-  const correctLabel = pickLocalized(content.name, locale);
+  const correctLabel = pickLocalized(metadata.name, locale);
   const distractors = categorySigns.map((sign) => ({
     id: sign.id,
     label: {
@@ -51,7 +51,7 @@ function buildNameRecognitionQuestion(
     id: `name-${signId}`,
     signId,
     options: [
-      { id: "correct", label: content.name },
+      { id: "correct", label: metadata.name },
       ...distractors.map((item, index) => ({
         id: `distractor-${index}`,
         label: item.label,
@@ -70,7 +70,7 @@ export function buildCategorySignTestQuestions(
   categoryId: RoadSignCategoryId
 ): CategorySignTestQuestion[] {
   const signs = getRoadSignsByCategory(categoryId).filter((sign) =>
-    hasSignContent(sign.id)
+    hasSignPracticeContent(sign.id)
   );
 
   const questions: CategorySignTestQuestion[] = [];

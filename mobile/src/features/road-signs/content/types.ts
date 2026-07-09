@@ -17,11 +17,15 @@ export type SignPractice = {
   explanation?: LocalizedString;
 };
 
-export type RoadSignContent = {
+export type RoadSignMetadata = {
   id: string;
   categoryId: RoadSignCategoryId;
   name: LocalizedString;
   description: LocalizedString;
-  assetKey?: string;
+};
+
+export type RoadSignPracticeContent = {
+  id: string;
+  categoryId: RoadSignCategoryId;
   practices: SignPractice[];
 };

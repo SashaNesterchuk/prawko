@@ -1,21 +1,67 @@
-import { buildSearchText, pickLocalized } from "./localized";
-import { A1_CONTENT } from "./signs/A-1";
-import type { RoadSignContent, SignPractice } from "./types";
+import generatedMetadata from "../../../../../data/pl-road-signs-wikimedia/metadata.generated.json";
 
-const CURATED_SIGNS: Record<string, RoadSignContent> = {
-  "A-1": A1_CONTENT,
+import { buildSearchText, pickLocalized } from "./localized";
+import { A1_PRACTICE_CONTENT } from "./signs/A-1";
+import type {
+  LocalizedString,
+  RoadSignMetadata,
+  RoadSignPracticeContent,
+  SignPractice,
+} from "./types";
+
+type GeneratedRoadSignMetadata = {
+  id: string;
+  categoryId: RoadSignMetadata["categoryId"];
+  name: string;
+  description: string;
 };
 
-export function getSignContent(signId: string): RoadSignContent | undefined {
-  return CURATED_SIGNS[signId];
+function toLocalizedString(value: string): LocalizedString {
+  return {
+    pl: value,
+    ua: value,
+    en: value,
+  };
 }
 
-export function hasSignContent(signId: string): boolean {
-  return signId in CURATED_SIGNS;
+const SIGN_METADATA: Record<string, RoadSignMetadata> = Object.fromEntries(
+  Object.entries(generatedMetadata as Record<string, GeneratedRoadSignMetadata>).map(
+    ([signId, metadata]) => [
+      signId,
+      {
+        id: metadata.id,
+        categoryId: metadata.categoryId,
+        name: toLocalizedString(metadata.name),
+        description: toLocalizedString(metadata.description),
+      },
+    ]
+  )
+);
+
+const PRACTICE_CONTENT: Record<string, RoadSignPracticeContent> = {
+  "A-1": A1_PRACTICE_CONTENT,
+};
+
+export function getSignMetadata(signId: string): RoadSignMetadata | undefined {
+  return SIGN_METADATA[signId];
 }
 
-export function listCuratedSignIds(): string[] {
-  return Object.keys(CURATED_SIGNS);
+export function hasSignMetadata(signId: string): boolean {
+  return signId in SIGN_METADATA;
+}
+
+export function getSignPracticeContent(
+  signId: string
+): RoadSignPracticeContent | undefined {
+  return PRACTICE_CONTENT[signId];
+}
+
+export function hasSignPracticeContent(signId: string): boolean {
+  return signId in PRACTICE_CONTENT;
+}
+
+export function listPracticeSignIds(): string[] {
+  return Object.keys(PRACTICE_CONTENT);
 }
 
 export function getSignDisplayName(
@@ -23,10 +69,10 @@ export function getSignDisplayName(
   locale: string,
   fallbackCode?: string
 ): string {
-  const content = getSignContent(signId);
+  const metadata = getSignMetadata(signId);
 
-  if (content) {
-    return pickLocalized(content.name, locale);
+  if (metadata) {
+    return pickLocalized(metadata.name, locale);
   }
 
   return fallbackCode ?? signId;
@@ -36,35 +82,35 @@ export function getSignDescription(
   signId: string,
   locale: string
 ): string | undefined {
-  const content = getSignContent(signId);
+  const metadata = getSignMetadata(signId);
 
-  if (!content) {
+  if (!metadata) {
     return undefined;
   }
 
-  return pickLocalized(content.description, locale);
+  return pickLocalized(metadata.description, locale);
 }
 
 export function getSignPractices(signId: string): SignPractice[] {
-  return getSignContent(signId)?.practices ?? [];
+  return getSignPracticeContent(signId)?.practices ?? [];
 }
 
-export function getCuratedSearchText(signId: string): string {
-  const content = getSignContent(signId);
+export function getSignSearchText(signId: string): string {
+  const metadata = getSignMetadata(signId);
 
-  if (!content) {
+  if (!metadata) {
     return "";
   }
 
-  return buildSearchText(signId, content.name);
+  return buildSearchText(signId, metadata.name);
 }
 
-export function matchesCuratedSearch(signId: string, query: string): boolean {
+export function matchesSignSearch(signId: string, query: string): boolean {
   const normalized = query.trim().toLowerCase();
 
   if (!normalized) {
     return false;
   }
 
-  return getCuratedSearchText(signId).includes(normalized);
+  return getSignSearchText(signId).includes(normalized);
 }

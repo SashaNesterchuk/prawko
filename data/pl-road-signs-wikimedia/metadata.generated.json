@@ -1,0 +1,2801 @@
+{
+  "A-1": {
+    "id": "A-1",
+    "categoryId": "A",
+    "name": "Niebezpieczny zakręt w prawo",
+    "description": "Ostrzega o niebezpiecznym zakręcie w kierunku wskazanym na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-1",
+    "matchedVia": "source-exact"
+  },
+  "A-2": {
+    "id": "A-2",
+    "categoryId": "A",
+    "name": "Niebezpieczny zakręt w lewo",
+    "description": "Ostrzega o niebezpiecznym zakręcie w kierunku wskazanym na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-2",
+    "matchedVia": "source-exact"
+  },
+  "A-3": {
+    "id": "A-3",
+    "categoryId": "A",
+    "name": "Niebezpieczne zakręty, pierwszy w prawo",
+    "description": "Ostrzega o dwóch niebezpiecznych zakrętach, z których pierwszy jest w kierunku wskazanym na znaku, a drugi może być zarówno w lewo, jak i w prawo. Może występować z tabliczką T-4 lub T-5.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-3",
+    "matchedVia": "source-exact"
+  },
+  "A-4": {
+    "id": "A-4",
+    "categoryId": "A",
+    "name": "Niebezpieczne zakręty, pierwszy w lewo",
+    "description": "Ostrzega o dwóch niebezpiecznych zakrętach, z których pierwszy jest w kierunku wskazanym na znaku, a drugi może być zarówno w lewo, jak i w prawo. Może występować z tabliczką T-4 lub T-5.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-4",
+    "matchedVia": "source-exact"
+  },
+  "A-5": {
+    "id": "A-5",
+    "categoryId": "A",
+    "name": "Skrzyżowanie dróg",
+    "description": "Ostrzega o skrzyzowaniu dróg, na którym pierwszeństwo przejazdu nie jest określone znakami.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-5",
+    "matchedVia": "source-exact"
+  },
+  "A-6a": {
+    "id": "A-6a",
+    "categoryId": "A",
+    "name": "Skrzyżowanie z drogą podporządkowaną występującą po obu stronach",
+    "description": "Ostrzega o skrzyżowaniu z drogą podporządkowaną, występującą po obu stronach. Umieszczona pod znakiem tabliczka T-6b wskazuje układ dróg na skrzyżowaniu. Gruba linia na znakach i tabliczkach oznacza drogę z pierwszeństwem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-6a",
+    "matchedVia": "source-exact"
+  },
+  "A-6b": {
+    "id": "A-6b",
+    "categoryId": "A",
+    "name": "Skrzyżowanie z drogą podporządkowaną występującą po prawej stronie",
+    "description": "Ostrzega o skrzyżowaniu z drogą podporządkowaną, występującą po stronie prawej. Umieszczona pod znakiem tabliczka T-6b wskazuje układ dróg na skrzyżowaniu. Gruba linia na znakach i tabliczkach oznacza drogę z pierwszeństwem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-6b",
+    "matchedVia": "source-exact"
+  },
+  "A-6c": {
+    "id": "A-6c",
+    "categoryId": "A",
+    "name": "Skrzyżowanie z drogą podporządkowaną występującą po lewej stronie",
+    "description": "Ostrzega o skrzyżowaniu z drogą podporządkowaną, występującą po stronie lewej. Umieszczona pod znakiem tabliczka T-6b wskazuje układ dróg na skrzyżowaniu. Gruba linia na znakach i tabliczkach oznacza drogę z pierwszeństwem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-6c",
+    "matchedVia": "source-exact"
+  },
+  "A-6d": {
+    "id": "A-6d",
+    "categoryId": "A",
+    "name": "Wlot drogi jednokierunkowej z prawej strony",
+    "description": "Ostrzega o skrzyżowaniu z jednokierunkową drogą podporządkowaną, której wlot występuje po stronie prawej. Gruba linia na znakach oznacza drogę z pierwszeństwem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-6d",
+    "matchedVia": "source-exact"
+  },
+  "A-6e": {
+    "id": "A-6e",
+    "categoryId": "A",
+    "name": "Wlot drogi jednokierunkowej z lewej strony",
+    "description": "Ostrzega o skrzyżowaniu z jednokierunkową drogą podporządkowaną, której wlot występuje po stronie lewej. Gruba linia na znakach oznacza drogę z pierwszeństwem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-6e",
+    "matchedVia": "source-exact"
+  },
+  "A-7": {
+    "id": "A-7",
+    "categoryId": "A",
+    "name": "Ustąp pierwszeństwa",
+    "description": "Ostrzega o skrzyżowaniu z drogą z pierwszeństwem. Znak A-7 znajdujący się w obrębie skrzyżowania dotyczy tylko najbliższej jezdni, przed którą został umieszczony. Przepis stosuje się odpowiednio do znaku A-7 umieszczonego przed torowiskiem pojazdów szynowych lub w innych miejscach przecinania się kierunków ruchu. Umieszczona pod znakiem A-7 tabliczka T-6c lub T-6d wskazuje rzeczywisty przebieg drogi z pierwszeństwem przez skrzyżowanie. Gruba linia na tabliczkach oznacza drogę z pierwszeństwem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-7",
+    "matchedVia": "source-exact"
+  },
+  "A-8": {
+    "id": "A-8",
+    "categoryId": "A",
+    "name": "Skrzyżowanie o ruchu okrężnym",
+    "description": "Ostrzega o skrzyżowaniu, na którym ruch odbywa się dookoła wyspy lub placu w kierunku wskazanym na znaku. Stosuje się przed skrzyżowaniami, na których ruch odbywa się po obwiedni wyspy (z wyjątkiem tramwajów, które mogą przecinać wyspę), a które są oznakowane znakami C-12. Znaku A-8 nie stosuje się, gdy zastosowano tablicę E-1 przed skrzyżowaniem o ruchu okrężnym lub skrzyżowanie znajduje się w obszarze zabudowanym i jest widoczne z dostatecznej odległości.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-8",
+    "matchedVia": "source-exact"
+  },
+  "A-9": {
+    "id": "A-9",
+    "categoryId": "A",
+    "name": "Przejazd kolejowy z zaporami",
+    "description": "Ostrzega o przejeździe kolejowym wyposażonym w zapory lub półzapory. Umieszczona pod znakiem A-9 tabliczka T-7 wskazuje układ torów i drogi na przejeździe.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-9",
+    "matchedVia": "source-exact"
+  },
+  "A-10": {
+    "id": "A-10",
+    "categoryId": "A",
+    "name": "Przejazd kolejowy bez zapór",
+    "description": "Ostrzega o przejeździe kolejowym niewyposażonym ani w zapory, ani w półzapory. Umieszczona pod znakiem A-10 tabliczka T-7 wskazuje układ torów i drogi na przejeździe.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-10",
+    "matchedVia": "source-exact"
+  },
+  "A-11": {
+    "id": "A-11",
+    "categoryId": "A",
+    "name": "Nierówna droga",
+    "description": "Ostrzega o poprzecznej nierówności jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-11",
+    "matchedVia": "source-exact"
+  },
+  "A-11a": {
+    "id": "A-11a",
+    "categoryId": "A",
+    "name": "Próg zwalniający",
+    "description": "Ostrzega o wypukłości na jezdni zastosowanej w celu spowolnienia ruchu pojazdów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-11a",
+    "matchedVia": "source-exact"
+  },
+  "A-12a": {
+    "id": "A-12a",
+    "categoryId": "A",
+    "name": "Zwężenie jezdni - dwustronne",
+    "description": "Ostrzega o występującym po obu stronach jezdni zwężeniu, które może powodować utrudnienia ruchu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-12a",
+    "matchedVia": "source-exact"
+  },
+  "A-12b": {
+    "id": "A-12b",
+    "categoryId": "A",
+    "name": "Zwężenie jezdni - prawostronne",
+    "description": "Ostrzega o występującym po prawej stronie jezdni zwężeniu, które może powodować utrudnienia ruchu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-12b",
+    "matchedVia": "source-exact"
+  },
+  "A-12c": {
+    "id": "A-12c",
+    "categoryId": "A",
+    "name": "Zwężenie jezdni - lewostronne",
+    "description": "Ostrzega o występującym po lewej stronie jezdni zwężeniu, które może powodować utrudnienia ruchu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-12c",
+    "matchedVia": "source-exact"
+  },
+  "A-13": {
+    "id": "A-13",
+    "categoryId": "A",
+    "name": "Ruchomy most",
+    "description": "Ostrzega o wjeździe na most zwodzony lub obrotowy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-13",
+    "matchedVia": "source-exact"
+  },
+  "A-14": {
+    "id": "A-14",
+    "categoryId": "A",
+    "name": "Roboty drogowe",
+    "description": "Ostrzega o prowadzonych na drodze robotach; umieszczona pod znakiem tabliczka T-19 wskazuje na malowanie znaków poziomych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-14",
+    "matchedVia": "source-exact"
+  },
+  "A-15": {
+    "id": "A-15",
+    "categoryId": "A",
+    "name": "Śliska jezdnia",
+    "description": "Ostrzega o możliwości poślizgu pojazdu spowodowanego w szczególności zmianą nawierzchni jezdni, stałym lub okresowym jej zawilgoceniem itd.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-15",
+    "matchedVia": "source-exact"
+  },
+  "A-16": {
+    "id": "A-16",
+    "categoryId": "A",
+    "name": "Przejście dla pieszych",
+    "description": "Uprzedza kierowców o zbliżaniu się do przejścia. To proste ostrzeżenie, które w praktyce wymusza wcześniejszą redukcję prędkości i większą uwagę – szczególnie w miejscach o podwyższonym ryzyku, jak okolice szkół, osiedli, dojścia do przystanków czy wyjścia z parków.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-16",
+    "matchedVia": "source-exact"
+  },
+  "A-17": {
+    "id": "A-17",
+    "categoryId": "A",
+    "name": "Dzieci",
+    "description": "Ostrzega o miejscu na drodze szczególnie uczęszczanym przez dzieci lub o bliskości takiego miejsca.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-17",
+    "matchedVia": "source-exact"
+  },
+  "A-18a": {
+    "id": "A-18a",
+    "categoryId": "A",
+    "name": "Zwierzęta gospodarskie",
+    "description": "Ostrzega o możliwości napotkania na drodze zwierząt gospodarskich.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-18a",
+    "matchedVia": "source-exact"
+  },
+  "A-18b": {
+    "id": "A-18b",
+    "categoryId": "A",
+    "name": "Zwierzęta dzikie",
+    "description": "Ostrzega o możliwości napotkania na drodze zwierząt dzikich.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-18b",
+    "matchedVia": "source-exact"
+  },
+  "A-19": {
+    "id": "A-19",
+    "categoryId": "A",
+    "name": "Boczny wiatr",
+    "description": "Ostrzega o miejscu, w którym mogą występować silne boczne podmuchy wiatru.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-19",
+    "matchedVia": "source-exact"
+  },
+  "A-20": {
+    "id": "A-20",
+    "categoryId": "A",
+    "name": "Odcinek jezdni o ruchu dwukierunkowym",
+    "description": "Ostrzega jadących jezdnią jednokierunkową o miejscu, w którym rozpoczyna się ruch dwukierunkowy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-20",
+    "matchedVia": "source-exact"
+  },
+  "A-21": {
+    "id": "A-21",
+    "categoryId": "A",
+    "name": "Tramwaj",
+    "description": "Ostrzega o przejeździe przez tory tramwajowe. Umieszczona pod znakiem tabliczka T-7 wskazuje układ torów i drogi na tym przejeździe.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-21",
+    "matchedVia": "source-exact"
+  },
+  "A-22": {
+    "id": "A-22",
+    "categoryId": "A",
+    "name": "Niebezpieczny zjazd",
+    "description": "Ostrzega o znacznym spadku podłużnym drogi. Umieszczona pod znakiem tabliczka T-9 wskazuje rzeczywistą wielkość spadku, np. wartość 8% oznacza, że droga na długości 100m opada o 8 m.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-22",
+    "matchedVia": "source-exact"
+  },
+  "A-23": {
+    "id": "A-23",
+    "categoryId": "A",
+    "name": "Stromy podjazd",
+    "description": "Ostrzega o znacznym wzniesieniu drogi. Umieszczona pod znakiem tabliczka T-9 wskazuje rzeczywistą wielkość wzniesienia, np. wartość 8% oznacza, że droga na długości 100m wznosi się o 8 m.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-23",
+    "matchedVia": "source-exact"
+  },
+  "A-24": {
+    "id": "A-24",
+    "categoryId": "A",
+    "name": "Rowerzyści",
+    "description": "Ostrzega o miejscu, w którym rowerzyści wjeżdżają z drogi dla rowerów na jezdnię lub przez nią przejeżdżają.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-24",
+    "matchedVia": "source-exact"
+  },
+  "A-25": {
+    "id": "A-25",
+    "categoryId": "A",
+    "name": "Spadające odłamki skalne",
+    "description": "Ostrzega o możliwości spadania na drogę lub zalegania na niej odłamków skalnych o znacznej wielkości.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-25",
+    "matchedVia": "source-exact"
+  },
+  "A-26": {
+    "id": "A-26",
+    "categoryId": "A",
+    "name": "Lotnisko",
+    "description": "Ostrzega o możliwości nagłego pojawienia się nisko przelatującego samolotu lub śmigłowca.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-26",
+    "matchedVia": "source-exact"
+  },
+  "A-27": {
+    "id": "A-27",
+    "categoryId": "A",
+    "name": "Nabrzeże lub brzeg rzeki",
+    "description": "Ostrzega o odcinku drogi prowadzącym bezpośrednio do nabrzeża lub wzdłuż brzegu rzeki lub innego zbiornika wodnego.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-27",
+    "matchedVia": "source-exact"
+  },
+  "A-28": {
+    "id": "A-28",
+    "categoryId": "A",
+    "name": "Sypki żwir",
+    "description": "Ostrzega o odcinku drogi pokrytej żwirem (grysem), który może być wyrzucany spod kół jadących pojazdów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-28",
+    "matchedVia": "source-exact"
+  },
+  "A-29": {
+    "id": "A-29",
+    "categoryId": "A",
+    "name": "Sygnały świetlne",
+    "description": "Ostrzega o miejscu, w którym ruch jest kierowany za pomocą sygnalizacji świetlnej.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-29",
+    "matchedVia": "source-exact"
+  },
+  "A-30": {
+    "id": "A-30",
+    "categoryId": "A",
+    "name": "Inne niebezpieczeństwo",
+    "description": "Ostrzega o niebezpieczeństwie innego rodzaju niż określone pozostałymi znakami ostrzegawczymi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-30",
+    "matchedVia": "source-exact"
+  },
+  "A-31": {
+    "id": "A-31",
+    "categoryId": "A",
+    "name": "Niebezpieczne pobocze",
+    "description": "Ostrzega o niebezpiecznym poboczu (miękkim lub obniżonym); znak z odwróconym symbolem ostrzega o niebezpiecznym poboczu występującym po lewej stronie drogi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-31",
+    "matchedVia": "source-exact"
+  },
+  "A-32": {
+    "id": "A-32",
+    "categoryId": "A",
+    "name": "Oszronienie jezdni",
+    "description": "Ostrzega o mogącym występować na drodze oszronieniu jezdni lub gołoledzi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-32",
+    "matchedVia": "source-exact"
+  },
+  "A-33": {
+    "id": "A-33",
+    "categoryId": "A",
+    "name": "Zator drogowy",
+    "description": "Ostrzega o częstym występowaniu zablokowania ruchu pojazdów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-33",
+    "matchedVia": "source-exact"
+  },
+  "A-34": {
+    "id": "A-34",
+    "categoryId": "A",
+    "name": "Wypadek drogowy",
+    "description": "Ostrzega o miejscu, w którym na skutek wypadku drogowego nastąpiło zablokowanie drogi lub znaczne utrudnienie ruchu pojazdów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "A-34",
+    "matchedVia": "source-exact"
+  },
+  "B-1": {
+    "id": "B-1",
+    "categoryId": "B",
+    "name": "Zakaz ruchu w obu kierunkach",
+    "description": "Oznacza zakaz ruchu na drodze pojazdów, kolumn pieszych oraz jeźdźców i poganiaczy; znak może być ustawiony na jezdni. Umieszczona pod znakiem B-1 tabliczka T-22 wskazuje, że zakaz nie dotyczy rowerów jednośladowych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-1",
+    "matchedVia": "source-exact"
+  },
+  "B-2": {
+    "id": "B-2",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu",
+    "description": "Oznacza zakaz wjazdu pojazdów na drogę lub jezdnię od strony jego umieszczenia; zakaz dotyczy również kolumn pieszych oraz jeźdźców i poganiaczy. Umieszczona pod znakiem B-2 tabliczka T-22 wskazuje, że znak nie dotyczy rowerów jednośladowych wjeżdżających na wyznaczony na jezdni pas ruchu dla rowerów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-2",
+    "matchedVia": "source-exact"
+  },
+  "B-3": {
+    "id": "B-3",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów silnikowych, z wyjątkiem motocykli jednośladowych",
+    "description": "Oznacza zakaz ruchu pojazdów silnikowych; zakaz nie dotyczy motocykli jednośladowych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-3",
+    "matchedVia": "source-exact"
+  },
+  "B-3a": {
+    "id": "B-3a",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu autobusów",
+    "description": "Oznacza zakaz ruchu autobusów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-3a",
+    "matchedVia": "source-exact"
+  },
+  "B-4": {
+    "id": "B-4",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu motocykli",
+    "description": "Oznacza zakaz ruchu motocykli.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-4",
+    "matchedVia": "source-exact"
+  },
+  "B-5": {
+    "id": "B-5",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu samochodów ciężarowych",
+    "description": "Oznacza zakaz ruchu: 1. samochodów ciężarowych o DMC przekraczającej 3,5 t, 2. ciągników samochodowych, 3. pojazdów specjalnych i używanych do celów specjalnych o DMC przekraczającej 3,5 t, 4. ciągników rolniczych, 5. pojazdów wolnobieżnych. Określona na znaku B-5 albo na tabliczce umieszczonej pod nim masa oznacza, że zakaz dotyczy pojazdu (zespołu pojazdów), którego dopuszczalna masa całkowita przekracza masę podaną na znaku albo na tabliczce.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-5",
+    "matchedVia": "source-exact"
+  },
+  "B-6": {
+    "id": "B-6",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu ciągników rolniczych",
+    "description": "Oznacza zakaz ruchu ciągników rolniczych i pojazdów wolnobieżnych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-6",
+    "matchedVia": "source-exact"
+  },
+  "B-7": {
+    "id": "B-7",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów silnikowych z przyczepą",
+    "description": "Oznacza zakaz ruchu pojazdów silnikowych z przyczepą (przyczepami); zakaz nie dotyczy pojazdów z przyczepą jednoosiową lub naczepą. Określona na znaku B-7 lub na tabliczce umieszczonej pod nim masa dotyczy dopuszczalnej masy całkowitej przyczepy, a w razie ciągnięcia dwóch przyczep - sumy ich mas.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-7",
+    "matchedVia": "source-exact"
+  },
+  "B-8": {
+    "id": "B-8",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów zaprzęgowych",
+    "description": "Oznacza zakaz ruchu pojazdów zaprzęgowych oraz jeźdźców i poganiaczy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-8",
+    "matchedVia": "source-exact"
+  },
+  "B-9": {
+    "id": "B-9",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu rowerów",
+    "description": "Oznacza zakaz ruchu rowerów na jezdni i poboczu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-9",
+    "matchedVia": "source-exact"
+  },
+  "B-10": {
+    "id": "B-10",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu motorowerów",
+    "description": "Oznacza zakaz ruchu motorowerów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-10",
+    "matchedVia": "source-exact"
+  },
+  "B-11": {
+    "id": "B-11",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu wózków rowerowych i rowerów wielośladowych",
+    "description": "Oznacza zakaz wjazdu wózków rowerowych i rowerów wielośladowych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-11",
+    "matchedVia": "source-exact"
+  },
+  "B-12": {
+    "id": "B-12",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu wózków ręcznych",
+    "description": "Oznacza zakaz ruchu na jezdni i poboczu wózków ręcznych przeznaczonych do używania na jezdni, prowadzonych, ciągniętych lub pchanych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-12",
+    "matchedVia": "source-exact"
+  },
+  "B-13": {
+    "id": "B-13",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów z materiałami wybuchowymi lub łatwo zapalnymi",
+    "description": "Oznacza zakaz ruchu pojazdów przewożących, określone w przepisach o przewozie materiałów (towarów) niebezpiecznych, materiały niebezpieczne klas: 1, 3, 4.1, 4.2, 4.3, 5.1, 5.2 lub gazy palne klasy 2 w ilościach, dla których jest wymagane oznakowanie pojazdu tablicami ostrzegawczymi barwy pomarańczowej.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-13",
+    "matchedVia": "source-exact"
+  },
+  "B-13a": {
+    "id": "B-13a",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów z materiałami niebezpiecznymi",
+    "description": "Oznacza zakaz ruchu pojazdów przewożących, określone w przepisach o przewozie materiałów (towarów) niebezpiecznych, materiały niebezpieczne w ilościach, dla których jest wymagane oznakowanie pojazdu tablicami ostrzegawczymi barwy pomarańczowej; tabliczka z odpowiednim napisem umieszczona pod znakiem wskazuje, że zakaz dotyczy tylko określonych klas lub grup materiałów niebezpiecznych albo określonego sposobu ich przewozu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-13a",
+    "matchedVia": "source-exact"
+  },
+  "B-14": {
+    "id": "B-14",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów z materiałami, które mogą skazić wodę",
+    "description": "Oznacza zakaz ruchu pojazdów przewożących, określone w przepisach o przewozie materiałów (towarów) niebezpiecznych, materiały niebezpieczne klas 3, 4.3, 6.1, 6.2, 8, gazy trujące lub gazy żrące klasy 2, lub materiały zagrażające środowisku klasy 9 w ilościach, dla których jest wymagane oznakowanie pojazdu tablicami ostrzegawczymi barwy pomarańczowej.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-14",
+    "matchedVia": "source-exact"
+  },
+  "B-15-2.0m": {
+    "id": "B-15-2.0m",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów o szerokości ponad ... m.",
+    "description": "Oznacza zakaz ruchu pojazdów, których szerokość (również z ładunkiem) jest większa od wartości podanej na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-15",
+    "matchedVia": "source-alias"
+  },
+  "B-16-3.1m": {
+    "id": "B-16-3.1m",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów o wysokości ponad ... m.",
+    "description": "Oznacza zakaz ruchu pojazdów, których wysokość (również z ładunkiem) jest większa od wartości podanej na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-16",
+    "matchedVia": "source-alias"
+  },
+  "B-16-3.2m": {
+    "id": "B-16-3.2m",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów o wysokości ponad ... m.",
+    "description": "Oznacza zakaz ruchu pojazdów, których wysokość (również z ładunkiem) jest większa od wartości podanej na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-16",
+    "matchedVia": "source-alias"
+  },
+  "B-16-3.4m": {
+    "id": "B-16-3.4m",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów o wysokości ponad ... m.",
+    "description": "Oznacza zakaz ruchu pojazdów, których wysokość (również z ładunkiem) jest większa od wartości podanej na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-16",
+    "matchedVia": "source-alias"
+  },
+  "B-16-3.5m": {
+    "id": "B-16-3.5m",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów o wysokości ponad ... m.",
+    "description": "Oznacza zakaz ruchu pojazdów, których wysokość (również z ładunkiem) jest większa od wartości podanej na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-16",
+    "matchedVia": "source-alias"
+  },
+  "B-17-6m": {
+    "id": "B-17-6m",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów o długości ponad ... m.",
+    "description": "Oznacza zakaz ruchu pojazdów lub zespołów pojazdów, których długość (również z ładunkiem) jest większa od wartości podanej na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-17",
+    "matchedVia": "source-alias"
+  },
+  "B-18-3.5t": {
+    "id": "B-18-3.5t",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów o rzeczywistej masie całkowitej ponad ... t.",
+    "description": "Oznacza zakaz ruchu pojazdów, których rzeczywista masa całkowita jest większa od wartości podanej na znaku; w przypadku zespołu pojazdów zakaz dotyczy ich łącznej masy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-18",
+    "matchedVia": "source-alias"
+  },
+  "B-18-7t": {
+    "id": "B-18-7t",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów o rzeczywistej masie całkowitej ponad ... t.",
+    "description": "Oznacza zakaz ruchu pojazdów, których rzeczywista masa całkowita jest większa od wartości podanej na znaku; w przypadku zespołu pojazdów zakaz dotyczy ich łącznej masy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-18",
+    "matchedVia": "source-alias"
+  },
+  "B-19-10t": {
+    "id": "B-19-10t",
+    "categoryId": "B",
+    "name": "Zakaz wjazdu pojazdów o nacisku osi większym niż ... t.",
+    "description": "Oznacza zakaz ruchu pojazdów, których nacisk osi jest większy od nacisku odpowiadającego masie podanej na znaku; w przypadku osi wielokrotnej nacisk żadnej z osi składowych nie może odpowiadać masie większej niż 80% masy podanej na znaku. Jeżeli na znaku B-19 podano wartość 8 t lub 10 t, oznacza to dopuszczalny nacisk osi pojedynczej odpowiadający masie do 8 t lub 10 t, a osi wielokrotnej - odpowiednio większej masie, zgodnie z przepisami określającymi warunki techniczne pojazdów poruszających się po drogach.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-19",
+    "matchedVia": "source-alias"
+  },
+  "B-20": {
+    "id": "B-20",
+    "categoryId": "B",
+    "name": "STOP",
+    "description": "Oznacza: 1. zakaz wjazdu na skrzyżowanie bez zatrzymania się przed drogą z pierwszeństwem, 2. obowiązek ustąpienia pierwszeństwa kierującym poruszającym się tą drogą. Zatrzymanie powinno nastąpić w wyznaczonym w tym celu miejscu, a w razie jego braku - w takim miejscu, w którym kierujący może upewnić się, że nie utrudni ruchu na drodze z pierwszeństwem. Znak B-20 umieszczony w obrębie skrzyżowania dotyczy tylko najbliższej jezdni, przed którą został ustawiony. Przepisy stosuje się odpowiednio do znaku B-20 umieszczonego przed torowiskiem pojazdów szynowych lub w innych miejscach przecinania się kierunków ruchu. Umieszczona pod znakiem B-20 tabliczka T-6c lub T-6d wskazuje rzeczywisty przebieg drogi z pierwszeństwem przez skrzyżowanie.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-20",
+    "matchedVia": "source-exact"
+  },
+  "B-21": {
+    "id": "B-21",
+    "categoryId": "B",
+    "name": "Zakaz skręcania w lewo",
+    "description": "Zabrania skręcania w lewo oraz zabrania zawracania. Zakaz wyrażony znakiem B-21 obowiązuje na najbliższym skrzyżowaniu. Znak B-21 znajdujący się w obrębie skrzyżowania dotyczy tylko najbliższej jezdni, przed którą został umieszczony. Umieszczona pod znakiem B-21 tabliczka T-22 wskazuje, że znak nie dotyczy rowerów jednośladowych skręcających na drogę dla rowerów lub wyznaczony na jezdni pas ruchu przeznaczony dla tych pojazdów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-21",
+    "matchedVia": "source-exact"
+  },
+  "B-22": {
+    "id": "B-22",
+    "categoryId": "B",
+    "name": "Zakaz skręcania w prawo",
+    "description": "Zabrania skręcania w prawo. Zakaz wyrażony znakiem B-22 obowiązuje na najbliższym skrzyżowaniu. Znak B-22 znajdujący się w obrębie skrzyżowania dotyczy tylko najbliższej jezdni, przed którą został umieszczony. Umieszczona pod znakiem B-22 tabliczka T-22 wskazuje, że znak nie dotyczy rowerów jednośladowych skręcających na drogę dla rowerów lub wyznaczony na jezdni pas ruchu przeznaczony dla tych pojazdów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-22",
+    "matchedVia": "source-exact"
+  },
+  "B-23": {
+    "id": "B-23",
+    "categoryId": "B",
+    "name": "Zakaz zawracania",
+    "description": "Zabrania kierującym zawracania do najbliższego skrzyżowania włącznie.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-23",
+    "matchedVia": "source-exact"
+  },
+  "B-24": {
+    "id": "B-24",
+    "categoryId": "B",
+    "name": "Koniec zakazu zawracania",
+    "description": "Oznacza odwołanie zakazu zawracania przed skrzyżowaniem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-24",
+    "matchedVia": "source-exact"
+  },
+  "B-25": {
+    "id": "B-25",
+    "categoryId": "B",
+    "name": "Zakaz wyprzedzania",
+    "description": "Zabrania kierującym pojazdami silnikowymi wyprzedzania pojazdów silnikowych wielośladowych. Umieszczona pod znakiem B-25 tabliczka od T-23a do T-23j wskazuje, że zakaz wyprzedzania dotyczy kierującego pojazdem, którego symbol znajduje się na tabliczce. Jeżeli zakaz wyrażony przez znak B-25 nie jest uprzednio odwołany znakiem B-27 lub B-42, to obowiązuje do najbliższego skrzyżowania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-25",
+    "matchedVia": "source-exact"
+  },
+  "B-26": {
+    "id": "B-26",
+    "categoryId": "B",
+    "name": "Zakaz wyprzedzania przez samochody ciężarowe",
+    "description": "Zabrania wyprzedzania pojazdów silnikowych wielośladowych kierującemu: 1. samochodem ciężarowym o dopuszczalnej masie całkowitej przekraczającej 3,5 t, 2. ciągnikiem samochodowym, 3. pojazdem specjalnym lub używanym do celów specjalnych - o dopuszczalnej masie całkowitej przekraczającej 3,5 t. Jeżeli zakaz wyrażony przez znak B-26 nie jest uprzednio odwołany znakiem B-28 lub B-42, to obowiązuje do najbliższego skrzyżowania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-26",
+    "matchedVia": "source-exact"
+  },
+  "B-27": {
+    "id": "B-27",
+    "categoryId": "B",
+    "name": "Koniec zakazu wyprzedzania",
+    "description": "Oznacza koniec obowiązywania zakazu zarządzonego znakiem B-25.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-27",
+    "matchedVia": "source-exact"
+  },
+  "B-28": {
+    "id": "B-28",
+    "categoryId": "B",
+    "name": "Koniec zakazu wyprzedzania przez samochody ciężarowe",
+    "description": "Oznacza koniec obowiązywania zakazu zarządzonego znakiem B-26.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-28",
+    "matchedVia": "source-exact"
+  },
+  "B-29": {
+    "id": "B-29",
+    "categoryId": "B",
+    "name": "Zakaz używania sygnałów dźwiękowych",
+    "description": "Zabrania używania tych sygnałów, chyba że jest to konieczne w celu ostrzeżenia o bezpośrednim zagrożeniu bezpieczeństwa ruchu. Jeżeli zakaz wyrażony przez znak B-29 nie jest uprzednio odwołany znakiem B-30 lub B-42, to obowiązuje do najbliższego skrzyżowania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-29",
+    "matchedVia": "source-exact"
+  },
+  "B-30": {
+    "id": "B-30",
+    "categoryId": "B",
+    "name": "Koniec zakazu używania sygnałów dźwiękowych",
+    "description": "Oznacza koniec obowiązywania zakazu zarządzonego znakiem B-29.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-30",
+    "matchedVia": "source-exact"
+  },
+  "B-31": {
+    "id": "B-31",
+    "categoryId": "B",
+    "name": "Pierwszeństwo dla nadjeżdżających z przeciwka",
+    "description": "Zabrania kierującym wjazdu lub wejścia na zwężony odcinek jezdni, jeżeli zmusiłoby to kierujących znajdujących się na tym odcinku lub zbliżających się do niego z przeciwnej strony do zatrzymania się lub zmiany toru jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-31",
+    "matchedVia": "source-exact"
+  },
+  "B-32": {
+    "id": "B-32",
+    "categoryId": "B",
+    "name": "Stój - kontrola celna",
+    "description": "Oznacza obowiązek zatrzymania się. Zatrzymanie powinno nastąpić w miejscu wyznaczonym w tym celu, a jeżeli nie jest ono wyznaczone - przed znakiem. Dalszy ruch może nastąpić za zgodą uprawnionej osoby lub po nadaniu sygnału zezwalającego na ruch.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-32",
+    "matchedVia": "source-exact"
+  },
+  "B-32a": {
+    "id": "B-32a",
+    "categoryId": "B",
+    "name": "Stój – kontrola graniczna",
+    "description": "Oznacza obowiązek zatrzymania się. Zatrzymanie powinno nastąpić w miejscu wyznaczonym w tym celu, a jeżeli nie jest ono wyznaczone - przed znakiem. Dalszy ruch może nastąpić za zgodą uprawnionej osoby lub po nadaniu sygnału zezwalającego na ruch.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-32a",
+    "matchedVia": "source-exact"
+  },
+  "B-32b": {
+    "id": "B-32b",
+    "categoryId": "B",
+    "name": "Stój – uszkodzona rogatka",
+    "description": "Oznacza obowiązek zatrzymania się. Zatrzymanie powinno nastąpić w miejscu wyznaczonym w tym celu, a jeżeli nie jest ono wyznaczone - przed znakiem. Dalszy ruch może nastąpić za zgodą uprawnionej osoby lub po nadaniu sygnału zezwalającego na ruch.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-32b",
+    "matchedVia": "source-exact"
+  },
+  "B-32c": {
+    "id": "B-32c",
+    "categoryId": "B",
+    "name": "Stój - uszkodzona sygnalizacja",
+    "description": "Oznacza obowiązek zatrzymania się. Zatrzymanie powinno nastąpić w miejscu wyznaczonym w tym celu, a jeżeli nie jest ono wyznaczone - przed znakiem. Dalszy ruch może nastąpić za zgodą uprawnionej osoby lub po nadaniu sygnału zezwalającego na ruch.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-32c",
+    "matchedVia": "source-exact"
+  },
+  "B-32d": {
+    "id": "B-32d",
+    "categoryId": "B",
+    "name": "Stój - wjazd na prom",
+    "description": "Oznacza obowiązek zatrzymania się. Zatrzymanie powinno nastąpić w miejscu wyznaczonym w tym celu, a jeżeli nie jest ono wyznaczone - przed znakiem. Dalszy ruch może nastąpić za zgodą uprawnionej osoby lub po nadaniu sygnału zezwalającego na ruch.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-32d",
+    "matchedVia": "source-exact"
+  },
+  "B-32e": {
+    "id": "B-32e",
+    "categoryId": "B",
+    "name": "Stój – kontrola drogowa",
+    "description": "Oznacza obowiązek zatrzymania się. Zatrzymanie powinno nastąpić w miejscu wyznaczonym w tym celu, a jeżeli nie jest ono wyznaczone - przed znakiem. Dalszy ruch może nastąpić za zgodą uprawnionej osoby lub po nadaniu sygnału zezwalającego na ruch.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-32e",
+    "matchedVia": "source-exact"
+  },
+  "B-32f": {
+    "id": "B-32f",
+    "categoryId": "B",
+    "name": "Stój – pobór opłat",
+    "description": "Oznacza obowiązek zatrzymania się. Zatrzymanie powinno nastąpić w miejscu wyznaczonym w tym celu, a jeżeli nie jest ono wyznaczone - przed znakiem. Dalszy ruch może nastąpić za zgodą uprawnionej osoby lub po nadaniu sygnału zezwalającego na ruch.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-32f",
+    "matchedVia": "source-exact"
+  },
+  "B-33-50": {
+    "id": "B-33-50",
+    "categoryId": "B",
+    "name": "Ograniczenie prędkości",
+    "description": "1. Znak B-33 „ograniczenie prędkości” oznacza zakaz przekraczania prędkości określonej na znaku liczbą kilometrów na godzinę. Dopuszczalna prędkość określona na znaku obowiązuje, z zastrzeżeniem ust. 4 i § 32, do miejsca: 1) wprowadzenia innej dopuszczalnej prędkości znakiem B-33 lub B-43; 2) umieszczenia znaku D-40 oznaczającego początek strefy zamieszkania; 3) umieszczenia znaków oznaczających odpowiednio początek lub koniec obszaru zabudowanego, o których mowa w § 58 ust. 3 i w § 114 ust. 1 pkt 1 i 2. 2. Umieszczona pod znakiem B-33 tabliczka, o której mowa w § 23 ust. 2, wskazuje, że ograniczenie prędkości dotyczy kierującego pojazdem, którego symbol znajduje się na tabliczce. 3. Znak B-33, określający dopuszczalną prędkość większą niż 50 km/h, umieszczony na obszarze zabudowanym, dotyczy samochodu osobowego, motocykla i samochodu ciężarowego o dopuszczalnej masie całkowitej nieprzekraczającej 3,5 t, z wyjątkiem:16) 1) pojazdu przewożącego towary niebezpieczne; 2) pojazdu z urządzeniem wystającym do przodu więcej niż 1,5 m od siedzenia kierującego, o którym mowa w art. 20 ust. 6 pkt 2 ustawy; 3) pojazdu holującego pojazd silnikowy, o którym mowa w art. 31 ust. 1 pkt 1 ustawy; 4) motocykla, którym przewozi się dziecko w wieku do lat 7, o którym mowa w art. 20 ust. 6 pkt 3 ustawy; 5) samochodu ciężarowego przewożącego osoby poza kabiną kierowcy, o którym mowa w art. 63 ust. 2 pkt 4 ustawy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-33",
+    "matchedVia": "source-alias"
+  },
+  "B-34-50": {
+    "id": "B-34-50",
+    "categoryId": "B",
+    "name": "Koniec ograniczenia prędkości",
+    "description": "Oznacza odwołanie ograniczenia prędkości zarządzonego znakiem B-33.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-34",
+    "matchedVia": "source-alias"
+  },
+  "B-35": {
+    "id": "B-35",
+    "categoryId": "B",
+    "name": "Zakaz postoju",
+    "description": "Oznacza zakaz postoju pojazdu. Jeżeli zakaz wyrażony znakiem B-36 nie jest uprzednio odwołany przez taki sam znak z tabliczką T-25c lub znak B-35, to obowiązuje do najbliższego skrzyżowania. Zakaz wyrażony tym znakiem: dotyczy tej strony drogi, po której znak się znajduje, z wyjątkiem miejsc, gdzie za pomocą znaku dopuszcza się postój lub zatrzymanie, dotyczy również kolumn pieszych oraz jeźdźców i poganiaczy, nie dotyczy pojazdów unieruchomionych ze względu na warunki lub przepisy ruchu drogowego.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-35",
+    "matchedVia": "source-exact"
+  },
+  "B-36": {
+    "id": "B-36",
+    "categoryId": "B",
+    "name": "Zakaz zatrzymywania się",
+    "description": "Oznacza zakaz zatrzymywania pojazdu. Jeżeli zakaz wyrażony znakiem B-36 nie jest uprzednio odwołany przez taki sam znak z tabliczką T-25c lub znak B-35, to obowiązuje do najbliższego skrzyżowania. Zakaz wyrażony tym znakiem: dotyczy tej strony drogi, po której znak się znajduje, z wyjątkiem miejsc, gdzie za pomocą znaku dopuszcza się postój lub zatrzymanie, dotyczy również kolumn pieszych oraz jeźdźców i poganiaczy, nie dotyczy pojazdów unieruchomionych ze względu na warunki lub przepisy ruchu drogowego.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-36",
+    "matchedVia": "source-exact"
+  },
+  "B-37": {
+    "id": "B-37",
+    "categoryId": "B",
+    "name": "Zakaz postoju w dni nieparzyste",
+    "description": "Oznacza zakaz postoju pojazdów w nieparzyste dni miesiąca; zakaz nie obowiązuje od godziny 21 do 24. Jeżeli zakaz wyrażony znakiem B-37 nie jest uprzednio odwołany przez taki sam znak z tabliczką T-25c, to obowiązuje do najbliższego skrzyżowania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-37",
+    "matchedVia": "source-exact"
+  },
+  "B-38": {
+    "id": "B-38",
+    "categoryId": "B",
+    "name": "Zakaz postoju w dni parzyste",
+    "description": "Oznacza zakaz postoju pojazdów w parzyste dni miesiąca; zakaz nie obowiązuje od godziny 21 do 24. Jeżeli zakaz wyrażony znakiem B-38 nie jest uprzednio odwołany przez taki sam znak z tabliczką T-25c, to obowiązuje do najbliższego skrzyżowania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-38",
+    "matchedVia": "source-exact"
+  },
+  "B-39": {
+    "id": "B-39",
+    "categoryId": "B",
+    "name": "Strefa ograniczonego postoju",
+    "description": "Oznacza wjazd do strefy, w której obowiązuje zakaz postoju pojazdów na wszystkich drogach; dopuszczalny czas unieruchomienia pojazdu dłuższy niż jedna minuta jest wskazany napisem na znaku. Znak B-39 nie dotyczy: 1) pojazdu komunikacji publicznej zatrzymującego się na wyznaczonym dla niego miejscu, 2) pojazdu zatrzymującego się w miejscu oznaczonym znakiem D-18, D-18a, D-18b lub D-44, 3) pojazdu unieruchomionego ze względu na warunki lub przepisy ruchu drogowego, 4) autobusu szkolnego.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-39",
+    "matchedVia": "source-exact"
+  },
+  "B-40": {
+    "id": "B-40",
+    "categoryId": "B",
+    "name": "Koniec strefy ograniczonego postoju",
+    "description": "Oznacza wyjazd ze strefy ograniczonego postoju.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-40",
+    "matchedVia": "source-exact"
+  },
+  "B-41": {
+    "id": "B-41",
+    "categoryId": "B",
+    "name": "Zakaz ruchu pieszych",
+    "description": "Oznacza zakaz ruchu pieszych po tej stronie drogi, po której znak jest umieszczony.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-41",
+    "matchedVia": "source-exact"
+  },
+  "B-42": {
+    "id": "B-42",
+    "categoryId": "B",
+    "name": "Koniec zakazów",
+    "description": "Oznacza odwołanie zakazów wyrażonych znakami B-23, B-25, B-26, B-29 i B-33.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-42",
+    "matchedVia": "source-exact"
+  },
+  "B-43-30": {
+    "id": "B-43-30",
+    "categoryId": "B",
+    "name": "Strefa ograniczonej prędkości",
+    "description": "W zależności od warunków drogowych, natężenia ruchu pojazdów i pieszych w strefach oznaczonych znakiem B-43 stosuje się ograniczenie prędkości do 30, 40 lub 50 km/h. Znak B-43 umieszcza się na wszystkich ulicach doprowadzających ruch do strefy ograniczonej prędkości. W strefie ograniczonej prędkości powinny być stosowane rozwiązania lub urządzenia wymuszające jazdę z prędkością podaną na znaku. W strefie ograniczonej prędkości nie powinno się stosować znaków określających pierwszeństwo na skrzyżowaniach. Zaleca się stosowanie urządzeń bezpieczeństwa ruchu drogowego takich jak progi zwalniające oraz stosowanie organizacji ruchu wymuszającej powolną jazdę (zmiana kierunku jazdy, miejscowe przewężenie). W strefach o dopuszczalnej prędkości 30 km/h lub mniejszej, urządzenia i rozwiązania wymuszające powolną jazdę mogą nie być oznakowane znakami ostrzegawczymi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-43",
+    "matchedVia": "source-alias"
+  },
+  "B-44-30": {
+    "id": "B-44-30",
+    "categoryId": "B",
+    "name": "Koniec strefy ograniczonej prędkości",
+    "description": "Oznacza wyjazd ze strefy ograniczonej prędkości.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "B-44",
+    "matchedVia": "source-alias"
+  },
+  "C-1": {
+    "id": "C-1",
+    "categoryId": "C",
+    "name": "Nakaz jazdy w prawo przed znakiem",
+    "description": "Zobowiązuje kierującego do jazdy w prawo przed znakiem; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-1",
+    "matchedVia": "source-exact"
+  },
+  "C-2": {
+    "id": "C-2",
+    "categoryId": "C",
+    "name": "Nakaz jazdy w prawo za znakiem",
+    "description": "Zobowiązuje kierującego do jazdy w prawo za znakiem; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-2",
+    "matchedVia": "source-exact"
+  },
+  "C-3": {
+    "id": "C-3",
+    "categoryId": "C",
+    "name": "Nakaz jazdy w lewo przed znakiem",
+    "description": "Zobowiązuje kierującego do jazdy w lewo przed znakiem; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-3",
+    "matchedVia": "source-exact"
+  },
+  "C-4": {
+    "id": "C-4",
+    "categoryId": "C",
+    "name": "Nakaz jazdy w lewo za znakiem",
+    "description": "Zobowiązuje kierującego do jazdy w lewo za znakiem; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-4",
+    "matchedVia": "source-exact"
+  },
+  "C-5": {
+    "id": "C-5",
+    "categoryId": "C",
+    "name": "Nakaz jazdy prosto",
+    "description": "Zobowiązuje kierującego do jazdy prosto; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-5",
+    "matchedVia": "source-exact"
+  },
+  "C-6": {
+    "id": "C-6",
+    "categoryId": "C",
+    "name": "Nakaz jazdy prosto lub w prawo",
+    "description": "Zobowiązuje kierującego do jazdy prosto lub w prawo; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-6",
+    "matchedVia": "source-exact"
+  },
+  "C-7": {
+    "id": "C-7",
+    "categoryId": "C",
+    "name": "Nakaz jazdy prosto lub w lewo",
+    "description": "Zobowiązuje kierującego do jazdy prosto lub w lewo; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-7",
+    "matchedVia": "source-exact"
+  },
+  "C-8": {
+    "id": "C-8",
+    "categoryId": "C",
+    "name": "Nakaz jazdy w prawo lub w lewo",
+    "description": "Zobowiązuje kierującego do jazdy w prawo lub w lewo; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-8",
+    "matchedVia": "source-exact"
+  },
+  "C-9": {
+    "id": "C-9",
+    "categoryId": "C",
+    "name": "Nakaz jazdy z prawej strony znaku",
+    "description": "Zobowiązuje kierującego do jazdy z prawej strony znaku; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-9",
+    "matchedVia": "source-exact"
+  },
+  "C-10": {
+    "id": "C-10",
+    "categoryId": "C",
+    "name": "Nakaz jazdy z lewej strony znaku",
+    "description": "Zobowiązuje kierującego do jazdy z lewej strony znaku; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-10",
+    "matchedVia": "source-exact"
+  },
+  "C-11": {
+    "id": "C-11",
+    "categoryId": "C",
+    "name": "Nakaz jazdy z prawej lub z lewej strony znaku",
+    "description": "Zobowiązuje kierującego do jazdy z prawej lub z lewej strony znaku; znak ten może być umieszczony na przedłużeniu osi drogi (jezdni) lub na samej jezdni. Znak obowiązuje na najbliższym skrzyżowaniu lub w miejscu, gdzie występuje możliwość zmiany kierunku jazdy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-11",
+    "matchedVia": "source-exact"
+  },
+  "C-12": {
+    "id": "C-12",
+    "categoryId": "C",
+    "name": "Ruch okrężny",
+    "description": "Oznacza, że na skrzyżowaniu ruch odbywa się dookoła wyspy lub placu w kierunku wskazanym na znaku. Znak C-12 występujący łącznie ze znakiem A-7 oznacza pierwszeństwo kierującego znajdującego się na skrzyżowaniu przed kierującym wjeżdżającym (wchodzącym) na to skrzyżowanie.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-12",
+    "matchedVia": "source-exact"
+  },
+  "C-13": {
+    "id": "C-13",
+    "categoryId": "C",
+    "name": "Droga dla rowerów",
+    "description": "Oznacza drogę przeznaczoną dla kierujących rowerami jednośladowymi, którzy są obowiązani do korzystania z tej drogi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-13",
+    "matchedVia": "source-exact"
+  },
+  "C-13a": {
+    "id": "C-13a",
+    "categoryId": "C",
+    "name": "Koniec drogi dla rowerów",
+    "description": "Oznacza koniec drogi przeznaczonej dla kierujących rowerami jednośladowymi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-13a",
+    "matchedVia": "source-exact"
+  },
+  "C-14-30": {
+    "id": "C-14-30",
+    "categoryId": "C",
+    "name": "Prędkość minimalna",
+    "description": "Oznacza, że kierujący, przy zachowaniu ograniczeń prędkości wynikających z przepisów szczegółowych, jest obowiązany jechać z prędkością nie mniejszą niż określona na znaku liczbą kilometrów na godzinę, chyba że warunki ruchu lub jego bezpieczeństwo wymagają zmniejszenia prędkości.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-14",
+    "matchedVia": "source-alias"
+  },
+  "C-15-30": {
+    "id": "C-15-30",
+    "categoryId": "C",
+    "name": "Koniec minimalnej prędkości",
+    "description": "Oznacza miejsce, w którym prędkość minimalna określona znakiem C-14 przestaje obowiązywać.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-15",
+    "matchedVia": "source-alias"
+  },
+  "C-16": {
+    "id": "C-16",
+    "categoryId": "C",
+    "name": "Droga dla pieszych",
+    "description": "Znak C-16 „droga dla pieszych” stosuje się w celu wyeliminowania z drogi ruchu pojazdów i dopuszczenia wyłącznie ruchu pieszych. Znak ten umieszcza się na początku drogi (ciągu) przeznaczonej wyłącznie dla pieszych. Znak C-16 umieszcza się przede wszystkim na drogach położonych np. w centrach handlowych miast, na których występuje znaczne natężenie ruchu pieszego – gdzie wyeliminowanie ruchu pojazdów wpłynie znacząco na poprawę bezpieczeństwa pieszych i ułatwi im korzystanie z drogi. Znak C-16 umieszcza się również w osiedlach mieszkaniowych, na drogach publicznych, których przeznaczenie (tylko dla pieszych) może budzić wątpliwości. Znaku tego nie umieszcza się na chodnikach oraz innych drogach, których przeznaczenie dla pieszych jest oczywiste.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-16",
+    "matchedVia": "source-exact"
+  },
+  "C-16a": {
+    "id": "C-16a",
+    "categoryId": "C",
+    "name": "Koniec drogi dla pieszych",
+    "description": "Oznacza koniec drogi przeznaczonej dla pieszych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-16a",
+    "matchedVia": "source-exact"
+  },
+  "C-17-2": {
+    "id": "C-17-2",
+    "categoryId": "C",
+    "name": "Nakazany kierunek jazdy dla pojazdów z materiałami niebezpiecznymi",
+    "description": "Oznacza obowiązujący dla pojazdów przewożących materiały niebezpieczne, wskazany znakami C-2, C-4, C-5, C-6, C-7 lub C-8, kierunek jazdy na skrzyżowaniu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-17",
+    "matchedVia": "source-alias"
+  },
+  "C-18": {
+    "id": "C-18",
+    "categoryId": "C",
+    "name": "Nakaz używania łańcuchów przeciwpoślizgowych",
+    "description": "Oznacza, że na drodze, na której znak został umieszczony, kierujący pojazdem silnikowym jest obowiązany stosować łańcuchy przeciwpoślizgowe na co najmniej dwóch kołach napędowych; umieszczona pod znakiem tabliczka od T-23a do T-23j oznacza, że znak dotyczy pojazdów określonych na tabliczce.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-18",
+    "matchedVia": "source-exact"
+  },
+  "C-19": {
+    "id": "C-19",
+    "categoryId": "C",
+    "name": "Koniec nakazu używania łańcuchów przeciwpoślizgowych",
+    "description": "Oznacza miejsce, w którym nakaz określony znakiem C-18 przestaje obowiązywać.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "C-19",
+    "matchedVia": "source-exact"
+  },
+  "D-1": {
+    "id": "D-1",
+    "categoryId": "D",
+    "name": "Droga z pierwszeństwem",
+    "description": "Oznacza początek lub kontynuację drogi z pierwszeństwem. Umieszczona pod znakiem D-1 tabliczka T-6a albo T-6b wskazuje odpowiednio rzeczywisty przebieg drogi z pierwszeństwem przez skrzyżowanie lub układ dróg podporządkowanych (gruba linia na tabliczkach oznacza drogę z pierwszeństwem).",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-1",
+    "matchedVia": "source-exact"
+  },
+  "D-2": {
+    "id": "D-2",
+    "categoryId": "D",
+    "name": "Koniec drogi z pierwszeństwem",
+    "description": "Oznacza koniec drogi z pierwszeństwem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-2",
+    "matchedVia": "source-exact"
+  },
+  "D-3": {
+    "id": "D-3",
+    "categoryId": "D",
+    "name": "Droga jednokierunkowa",
+    "description": "Oznacza początek lub kontynuację drogi lub jezdni, na której ruch odbywa się w jednym kierunku. Umieszczona pod znakiem D-3 tabliczka z napisem „Nie dotyczy” wraz z symbolem pojazdu lub wyrażeniem określającym pojazd wskazuje, że ruch pojazdów określonych tabliczką odbywa się w dwóch kierunkach. Znak D-3 z umieszczoną pod nim tabliczką z napisem „Nie dotyczy” i symbolem roweru lub wózka rowerowego umieszczony na drodze o dopuszczalnej prędkości nie większej niż 30 km/h oznacza, że ruch tych pojazdów może odbywać się bez wyznaczonych pasów ruchu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-3",
+    "matchedVia": "source-exact"
+  },
+  "D-4a": {
+    "id": "D-4a",
+    "categoryId": "D",
+    "name": "Droga bez przejazdu",
+    "description": "Oznacza początek drogi bez przejazdu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-4a",
+    "matchedVia": "source-exact"
+  },
+  "D-4b": {
+    "id": "D-4b",
+    "categoryId": "D",
+    "name": "Wjazd na drogę bez przejazdu",
+    "description": "Oznacza, że droga za skrzyżowaniem po stronie wskazanej na znaku jest drogą bez przejazdu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-4b",
+    "matchedVia": "source-exact"
+  },
+  "D-5": {
+    "id": "D-5",
+    "categoryId": "D",
+    "name": "Pierwszeństwo na zwężonym odcinku jezdni",
+    "description": "Oznacza, że kierujący przejeżdżają lub przechodzą przed kierującymi zbliżającymi się z kierunku przeciwnego.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-5",
+    "matchedVia": "source-exact"
+  },
+  "D-6": {
+    "id": "D-6",
+    "categoryId": "D",
+    "name": "Przejście dla pieszych",
+    "description": "Oznacza miejsce przeznaczone do przechodzenia pieszych w poprzek drogi. Kierujący pojazdem zbliżający się do miejsca oznaczonego znakiem jest obowiązany zmniejszyć prędkość tak, aby nie narazić na niebezpieczeństwo pieszych znajdujących się w tych miejscach lub na nie wchodzących. Umieszczona pod znakiem tabliczka T-27 wskazuje, że przejście dla pieszych jest szczególnie uczęszczane przez dzieci.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-6",
+    "matchedVia": "source-exact"
+  },
+  "D-6a": {
+    "id": "D-6a",
+    "categoryId": "D",
+    "name": "Przejazd dla rowerów",
+    "description": "Oznacza miejsce przeznaczone do przejeżdżania rowerzystów w poprzek drogi. Kierujący pojazdem zbliżający się do miejsca oznaczonego znakiem jest obowiązany zmniejszyć prędkość tak, aby nie narazić na niebezpieczeństwo rowerzystów znajdujących się w tych miejscach lub na nie wjeżdżających.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-6a",
+    "matchedVia": "source-exact"
+  },
+  "D-6b": {
+    "id": "D-6b",
+    "categoryId": "D",
+    "name": "Przejście dla pieszych i przejazd dla rowerzystów",
+    "description": "Oznacza miejsce przeznaczone do przechodzenia pieszych i przejeżdżania rowerzystów w poprzek drogi. Kierujący pojazdem zbliżający się do miejsca oznaczonego znakiem jest obowiązany zmniejszyć prędkość tak, aby nie narazić na niebezpieczeństwo pieszych znajdujących się w tych miejscach lub na nie wchodzących oraz rowerzystów znajdujących się w tych miejscach lub na nie wjeżdżających. Umieszczona pod znakiem tabliczka T-27 wskazuje, że przejście dla pieszych jest szczególnie uczęszczane przez dzieci.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-6b",
+    "matchedVia": "source-exact"
+  },
+  "D-7": {
+    "id": "D-7",
+    "categoryId": "D",
+    "name": "Droga ekspresowa",
+    "description": "Oznacza początek lub kontynuację drogi ekspresowej. Umieszczona pod znakiem tabliczka T-1a wskazuje odległość do początku drogi. Umieszczona pod znakiem tabliczka T-28 wskazuje, że za przejazd pobierane są opłaty.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-7",
+    "matchedVia": "source-exact"
+  },
+  "D-8": {
+    "id": "D-8",
+    "categoryId": "D",
+    "name": "Koniec drogi ekspresowej",
+    "description": "Oznacza koniec drogi ekspresowej. Umieszczona pod znakiem tabliczka T-1a wskazuje odległość do końca drogi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-8",
+    "matchedVia": "source-exact"
+  },
+  "D-9": {
+    "id": "D-9",
+    "categoryId": "D",
+    "name": "Autostrada",
+    "description": "Oznacza początek lub kontynuację autostrady. Umieszczona pod znakiem tabliczka T-1a wskazuje odległość do początku autostrady. Umieszczona pod znakiem tabliczka T-28 wskazuje, że za przejazd pobierane są opłaty.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-9",
+    "matchedVia": "source-exact"
+  },
+  "D-10": {
+    "id": "D-10",
+    "categoryId": "D",
+    "name": "Koniec autostrady",
+    "description": "Oznacza koniec autostrady. Umieszczona pod znakiem tabliczka T-1a wskazuje odległość do końca autostrady.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-10",
+    "matchedVia": "source-exact"
+  },
+  "D-11": {
+    "id": "D-11",
+    "categoryId": "D",
+    "name": "Początek pasa ruchu dla autobusów",
+    "description": "Oznacza początek pasa ruchu przeznaczonego tylko dla autobusów lub trolejbusów oraz innych pojazdów wykonujących odpłatny przewóz osób na regularnych liniach. Umieszczony na znaku napis TAXI oznacza, że na pasie oznaczonym tym znakiem jest dopuszczony także ruch taksówek.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-11",
+    "matchedVia": "source-exact"
+  },
+  "D-12": {
+    "id": "D-12",
+    "categoryId": "D",
+    "name": "Pas ruchu dla autobusów",
+    "description": "Oznacza kontynuację pasa ruchu przeznaczonego tylko dla autobusów lub trolejbusów oraz innych pojazdów wykonujących odpłatny przewóz osób na regularnych liniach. Umieszczony na znaku napis TAXI oznacza, że na pasie oznaczonym tym znakiem jest dopuszczony także ruch taksówek.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-12",
+    "matchedVia": "source-exact"
+  },
+  "D-13": {
+    "id": "D-13",
+    "categoryId": "D",
+    "name": "Początek pasa ruchu powolnego",
+    "description": "Oznacza początek pasa ruchu, z którego są obowiązani korzystać kierujący pojazdami nieosiągającymi na wzniesieniu minimalnej prędkości określonej na znaku liczbą kilometrów na godzinę. Umieszczona pod znakiem tabliczka T-1a wskazuje odległość do początku pasa ruchu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-13",
+    "matchedVia": "source-exact"
+  },
+  "D-13a": {
+    "id": "D-13a",
+    "categoryId": "D",
+    "name": "Początek pasa ruchu",
+    "description": "Oznacza początek pasa ruchu po stronie wskazanej na znaku. Umieszczona pod znakiem tabliczka T-1a wskazuje odległość do początku lub końca pasa ruchu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-13a",
+    "matchedVia": "source-exact"
+  },
+  "D-13b": {
+    "id": "D-13b",
+    "categoryId": "D",
+    "name": "początek pasa ruchu na jezdni dwukierunkowej",
+    "description": "stosuje się w celu wskazania początku dodatkowego pasa ruchu na jezdni dwukierunkowej.",
+    "source": "eli.gov.pl",
+    "sourceCode": "D-13b",
+    "matchedVia": "official-exact"
+  },
+  "D-14": {
+    "id": "D-14",
+    "categoryId": "D",
+    "name": "Koniec pasa ruchu",
+    "description": "Oznacza koniec skrajnego pasa ruchu, znajdującego się po stronie wskazanej na znaku. Znak D-14 umieszczony przy pasie ruchu powolnego oznacza koniec tego pasa ruchu. Umieszczona pod znakiem tabliczka T-1a wskazuje odległość do początku lub końca pasa ruchu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-14",
+    "matchedVia": "source-exact"
+  },
+  "D-15": {
+    "id": "D-15",
+    "categoryId": "D",
+    "name": "Przystanek autobusowy",
+    "description": "Oznacza miejsce zatrzymywania się wskazanych na znaku pojazdów wykonujących odpłatny przewóz osób na regularnych liniach. Oznacza ponadto miejsce do zatrzymywania się innych niż autobus pojazdów samochodowych wykonujących odpłatny przewóz osób na regularnych liniach i pojazdów przeznaczonych do przewozu dzieci do szkół i przedszkoli.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-15",
+    "matchedVia": "source-exact"
+  },
+  "D-16": {
+    "id": "D-16",
+    "categoryId": "D",
+    "name": "Przystanek trolejbusowy",
+    "description": "Oznacza miejsce zatrzymywania się wskazanych na znaku pojazdów wykonujących odpłatny przewóz osób na regularnych liniach.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-16",
+    "matchedVia": "source-exact"
+  },
+  "D-17": {
+    "id": "D-17",
+    "categoryId": "D",
+    "name": "Przystanek tramwajowy",
+    "description": "Oznacza miejsce zatrzymywania się wskazanych na znaku pojazdów wykonujących odpłatny przewóz osób na regularnych liniach.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-17",
+    "matchedVia": "source-exact"
+  },
+  "D-18": {
+    "id": "D-18",
+    "categoryId": "D",
+    "name": "Parking",
+    "description": "Oznacza miejsce przeznaczone na postój pojazdów (zespołów pojazdów), z wyjątkiem przyczep kempingowych. Umieszczona pod znakiem tabliczka T-23e oznacza, że na parkingu jest dopuszczony także postój przyczep kempingowych. Umieszczona pod znakiem D-18 tabliczka T-30 wskazuje sposób ustawienia pojazdu względem krawędzi jezdni (oznaczonej na tabliczce barwą szarą) oraz że miejsce jest przeznaczone dla pojazdów samochodowych o dopuszczalnej masie całkowitej nieprzekraczającej 2,5 t. Umieszczona pod znakiem D-18 tabliczka T-3a wskazuje koniec miejsca przeznaczonego na postój. Umieszczona pod znakiem tabliczka T-29 informuje o miejscu przeznaczonym dla pojazdu samochodowego uprawnionej osoby niepełnosprawnej o obniżonej sprawności ruchowej oraz dla kierującego pojazdem przewożącego taką osobę. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-18",
+    "matchedVia": "source-exact"
+  },
+  "D-18a": {
+    "id": "D-18a",
+    "categoryId": "D",
+    "name": "Parking - miejsce zastrzeżone",
+    "description": "Oznacza miejsce przeznaczone na postój pojazdu uprawnionej osoby. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-18a",
+    "matchedVia": "source-exact"
+  },
+  "D-18b": {
+    "id": "D-18b",
+    "categoryId": "D",
+    "name": "Parking zadaszony",
+    "description": "Oznacza miejsce przeznaczone na postój pojazdów znajdujące się w budynku lub pod wiatą. Umieszczona pod znakiem tabliczka T-29 informuje o miejscu przeznaczonym dla pojazdu samochodowego uprawnionej osoby niepełnosprawnej o obniżonej sprawności ruchowej oraz dla kierującego pojazdem przewożącego taką osobę. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-18b",
+    "matchedVia": "source-exact"
+  },
+  "D-19": {
+    "id": "D-19",
+    "categoryId": "D",
+    "name": "Postój taksówek",
+    "description": "Oznacza miejsce przenzaczone na postój taksówek osobowych, z wyjątkiem taksówek zajętych. Umieszczony dodatkowo na znaku napis \"Bagażowe\" wskazuje, że znak ten dotyczy taksówek bagażowych. Jeśli na postoju taksówek nie umieszczono znaku D-20, to kończy się on w odległości nie większej niż 20m za znakiem D-19.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-19",
+    "matchedVia": "source-exact"
+  },
+  "D-20": {
+    "id": "D-20",
+    "categoryId": "D",
+    "name": "Koniec postoju taksówek",
+    "description": "Oznacza miesjsce, w którym kończy się postój taksówek. Umieszczony dodatkowo na znaku napis \"Bagażowe\" wskazuje, że znak ten dotyczy taksówek bagażowych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-20",
+    "matchedVia": "source-exact"
+  },
+  "D-21": {
+    "id": "D-21",
+    "categoryId": "D",
+    "name": "Szpital",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-21",
+    "matchedVia": "source-exact"
+  },
+  "D-21a": {
+    "id": "D-21a",
+    "categoryId": "D",
+    "name": "Policja",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-21a",
+    "matchedVia": "source-exact"
+  },
+  "D-22": {
+    "id": "D-22",
+    "categoryId": "D",
+    "name": "Punkt opatrunkowy",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-22",
+    "matchedVia": "source-exact"
+  },
+  "D-23": {
+    "id": "D-23",
+    "categoryId": "D",
+    "name": "Stacja paliwowa",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Umieszczony w dolnej części znaku napis LPG GAZ informuje, że stacja prowadzi także sprzedaż gazu do napędu pojazdów. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-23",
+    "matchedVia": "source-exact"
+  },
+  "D-23a": {
+    "id": "D-23a",
+    "categoryId": "D",
+    "name": "Stacja paliwowa tylko z gazem do napędu pojazdów",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-23a",
+    "matchedVia": "source-exact"
+  },
+  "D-23b": {
+    "id": "D-23b",
+    "categoryId": "D",
+    "name": "Stacja paliwowa z punktem ładowania pojazdów elektrycznych",
+    "description": "Znak D-23b „stacja paliwowa z punktem ładowania pojazdów elektrycznych” stosuje się w celu wskazania stacji paliw wyposażonej w punkt ładowania pojazdów elektrycznych. Jeżeli stacja paliw prowadzi także sprzedaż paliwa gazowego do napędu pojazdów, dopuszcza się umieszczenie w dolnej części znaku na w punkt ładowania pojazdów elektrycznych. Jeżeli stacja paliw prowadzi także sprzedaż paliwa gazowego do napędu pojazdów, dopuszcza się umieszczenie w dolnej części znaku napisu określającego rodzaj tego paliwa: „LPG”, „CNG”, „LNG”, „wodór (H2)”.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-23b",
+    "matchedVia": "source-exact"
+  },
+  "D-23c": {
+    "id": "D-23c",
+    "categoryId": "D",
+    "name": "Punkt ładowania pojazdów elektrycznych",
+    "description": "Znak D-23c „punkt ładowania pojazdów elektrycznych” stosuje się w celu wskazania punktu ładowania pojazdów elektrycznych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-23c",
+    "matchedVia": "source-exact"
+  },
+  "D-24": {
+    "id": "D-24",
+    "categoryId": "D",
+    "name": "Telefon",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-24",
+    "matchedVia": "source-exact"
+  },
+  "D-25": {
+    "id": "D-25",
+    "categoryId": "D",
+    "name": "Poczta",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Umieszczony na znaku symbol słuchawki telefonicznej informuje, że na poczcie znajduje się ogólnodostępny telefon. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-25",
+    "matchedVia": "source-exact"
+  },
+  "D-26": {
+    "id": "D-26",
+    "categoryId": "D",
+    "name": "Stacja obsługi technicznej",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-26",
+    "matchedVia": "source-exact"
+  },
+  "D-26a": {
+    "id": "D-26a",
+    "categoryId": "D",
+    "name": "Wulkanizacja",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-26a",
+    "matchedVia": "source-exact"
+  },
+  "D-26b": {
+    "id": "D-26b",
+    "categoryId": "D",
+    "name": "Myjnia",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-26b",
+    "matchedVia": "source-exact"
+  },
+  "D-26c": {
+    "id": "D-26c",
+    "categoryId": "D",
+    "name": "Toaleta publiczna",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Umieszczony w dolnej części znaku napis BUS informuje o możliwości opróżniania toalet zainstalowanych w pojazdach. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-26c",
+    "matchedVia": "source-exact"
+  },
+  "D-26d": {
+    "id": "D-26d",
+    "categoryId": "D",
+    "name": "Natrysk",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-26d",
+    "matchedVia": "source-exact"
+  },
+  "D-27": {
+    "id": "D-27",
+    "categoryId": "D",
+    "name": "Bufet lub kawiarnia",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-27",
+    "matchedVia": "source-exact"
+  },
+  "D-28": {
+    "id": "D-28",
+    "categoryId": "D",
+    "name": "Restauracja",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-28",
+    "matchedVia": "source-exact"
+  },
+  "D-29": {
+    "id": "D-29",
+    "categoryId": "D",
+    "name": "Hotel (motel)",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-29",
+    "matchedVia": "source-exact"
+  },
+  "D-30": {
+    "id": "D-30",
+    "categoryId": "D",
+    "name": "Obozowisko (camping)",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-30",
+    "matchedVia": "source-exact"
+  },
+  "D-31": {
+    "id": "D-31",
+    "categoryId": "D",
+    "name": "Obozowisko (camping) wyposażone w podłączenia elektryczne dla przyczep kempingowych",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-31",
+    "matchedVia": "source-exact"
+  },
+  "D-32": {
+    "id": "D-32",
+    "categoryId": "D",
+    "name": "Pole biwakowe",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-32",
+    "matchedVia": "source-exact"
+  },
+  "D-33": {
+    "id": "D-33",
+    "categoryId": "D",
+    "name": "Schronisko młodzieżowe",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-33",
+    "matchedVia": "source-exact"
+  },
+  "D-34": {
+    "id": "D-34",
+    "categoryId": "D",
+    "name": "Punkt informacji turystycznej",
+    "description": "Informuje o wskazanym na znaku obiekcie znajdującym się przy drodze. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-34",
+    "matchedVia": "source-exact"
+  },
+  "D-34a": {
+    "id": "D-34a",
+    "categoryId": "D",
+    "name": "Informacja radiowa o ruchu drogowym",
+    "description": "Iinformuje o stacjach radiowych podających informacje o warunkach ruchu drogowego.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-34a",
+    "matchedVia": "source-exact"
+  },
+  "D-35": {
+    "id": "D-35",
+    "categoryId": "D",
+    "name": "Przejście podziemne dla pieszych",
+    "description": "Informuje o możliwości przechodzenia pieszych pod jezdnią lub nad jezdnią w sposób wskazany na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-35",
+    "matchedVia": "source-exact"
+  },
+  "D-35a": {
+    "id": "D-35a",
+    "categoryId": "D",
+    "name": "Schody ruchome w dół",
+    "description": "Informuje o możliwości przechodzenia pieszych pod jezdnią lub nad jezdnią w sposób wskazany na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-35a",
+    "matchedVia": "source-exact"
+  },
+  "D-36": {
+    "id": "D-36",
+    "categoryId": "D",
+    "name": "Przejście nadziemne dla pieszych",
+    "description": "Informuje o możliwości przechodzenia pieszych pod jezdnią lub nad jezdnią w sposób wskazany na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-36",
+    "matchedVia": "source-exact"
+  },
+  "D-36a": {
+    "id": "D-36a",
+    "categoryId": "D",
+    "name": "Schody ruchome w górę",
+    "description": "Informuje o możliwości przechodzenia pieszych pod jezdnią lub nad jezdnią w sposób wskazany na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-36a",
+    "matchedVia": "source-exact"
+  },
+  "D-37": {
+    "id": "D-37",
+    "categoryId": "D",
+    "name": "Tunel",
+    "description": "Oznacza wjazd do tunelu. Nakazuje włączenie w pojeździe przednich świateł mijania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-37",
+    "matchedVia": "source-exact"
+  },
+  "D-38": {
+    "id": "D-38",
+    "categoryId": "D",
+    "name": "Koniec tunelu",
+    "description": "Oznacza wyjazd z tunelu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-38",
+    "matchedVia": "source-exact"
+  },
+  "D-39a": {
+    "id": "D-39a",
+    "categoryId": "D",
+    "name": "Stosuje się na drogach w pobliżu granicy państwa, albo na przejściu granicznych lub parkingu położonym w pobliżu tego przejścia granicznego w celu poinformowania osób wjeżdżających na terytorium Rzeczpospolitej Polskiej o opłatach wnoszonych za przejazd po drogach publicznych. Dopuszcza się umieszczenie na tarczy tego znaku w trzecim wierszu tekstu pod napisami w języku polskim i języku angielskim, napisu w języku państwa, do którego droga prowadzi przez przejście graniczne",
+    "description": "Stosuje się na drogach w pobliżu granicy państwa, albo na przejściu granicznych lub parkingu położonym w pobliżu tego przejścia granicznego w celu poinformowania osób wjeżdżających na terytorium Rzeczpospolitej Polskiej o opłatach wnoszonych za przejazd po drogach publicznych. Dopuszcza się umieszczenie na tarczy tego znaku w trzecim wierszu tekstu pod napisami w języku polskim i języku angielskim, napisu w języku państwa, do którego droga prowadzi przez przejście graniczne",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-39a",
+    "matchedVia": "source-exact"
+  },
+  "D-40": {
+    "id": "D-40",
+    "categoryId": "D",
+    "name": "Strefa zamieszkania",
+    "description": "Oznacza wjazd do strefy zamieszkania. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni. Informuje ponadto, że umieszczone w tej strefie urządzenia wymuszające powolną jazdę (progi zwalniające) mogą nie być oznakowane znakami ostrzegawczymi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-40",
+    "matchedVia": "source-exact"
+  },
+  "D-41": {
+    "id": "D-41",
+    "categoryId": "D",
+    "name": "Koniec strefy zamieszkania",
+    "description": "Oznacza wyjazd ze strefy zamieszkania. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-41",
+    "matchedVia": "source-exact"
+  },
+  "D-42": {
+    "id": "D-42",
+    "categoryId": "D",
+    "name": "Obszar zabudowany",
+    "description": "Oznacza wjazd na obszar zabudowany.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-42",
+    "matchedVia": "source-exact"
+  },
+  "D-43": {
+    "id": "D-43",
+    "categoryId": "D",
+    "name": "Koniec obszaru zabudowanego",
+    "description": "Oznacza wyjazd z obszaru zabudowanego.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-43",
+    "matchedVia": "source-exact"
+  },
+  "D-44": {
+    "id": "D-44",
+    "categoryId": "D",
+    "name": "Strefa parkowania",
+    "description": "Oznacza wjazd do strefy, w której za postój pojazdu jest pobierana opłata. W strefie tej zabroniony jest postój pojazdu bez wniesienia opłaty, z wyjątkiem postoju pojazdów osób lub jednostek, dla których ustalona została zerowa stawka opłaty, oraz postoju pojazdów komunikacji publicznej na wyznaczonych dla nich miejscach.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-44",
+    "matchedVia": "source-exact"
+  },
+  "D-45": {
+    "id": "D-45",
+    "categoryId": "D",
+    "name": "Koniec strefy parkowania",
+    "description": "Oznacza wyjazd ze strefy parkowania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-45",
+    "matchedVia": "source-exact"
+  },
+  "D-46": {
+    "id": "D-46",
+    "categoryId": "D",
+    "name": "Droga wewnętrzna",
+    "description": "Oznacza początek ogólnodostępnej drogi niepublicznej; napis umieszczony na znaku wskazuje zarządcę tej drogi. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-46",
+    "matchedVia": "source-exact"
+  },
+  "D-47": {
+    "id": "D-47",
+    "categoryId": "D",
+    "name": "Koniec drogi wewnętrznej",
+    "description": "Oznacza wyjazd z drogi wewnętrznej na drogę publiczną. Znak może być umieszczony w innym miejscu niż po prawej stronie jezdni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-47",
+    "matchedVia": "source-exact"
+  },
+  "D-48": {
+    "id": "D-48",
+    "categoryId": "D",
+    "name": "Zmiana pierwszeństwa",
+    "description": "Uprzedza o mającej nastąpić lub niedawno wprowadzonej zmianie obowiązujących dotychczas zasad pierwszeństwa na najbliższym skrzyżowaniu; umieszczony pod znakiem napis określa datę wprowadzenia nowej zasady pierwszeństwa pokazanej znakiem A-5 lub A-7.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-48",
+    "matchedVia": "source-exact"
+  },
+  "D-49": {
+    "id": "D-49",
+    "categoryId": "D",
+    "name": "Pobór opłat",
+    "description": "Uprzedza o miejscu, w którym są pobierane opłaty za przejazd.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-49",
+    "matchedVia": "source-exact"
+  },
+  "D-50": {
+    "id": "D-50",
+    "categoryId": "D",
+    "name": "Zatoka",
+    "description": "Informuje o zatoce występującej w tunelu. Umieszczona pod znakiem tabliczka T-33 lub umieszczony na znaku napis SOS informuje, że w zatoce znajduje się telefon alarmowy i gaśnica.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-50",
+    "matchedVia": "source-exact"
+  },
+  "D-51": {
+    "id": "D-51",
+    "categoryId": "D",
+    "name": "Automatyczna kontrola prędkości",
+    "description": "Uprzedza o miejscu lub odcinku drogi, na którym prędkość jazdy jest kontrolowana i rejestrowana przez urządzenia działające samoczynnie.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-51",
+    "matchedVia": "source-exact"
+  },
+  "D-51aa": {
+    "id": "D-51aa",
+    "categoryId": "D",
+    "name": "Początek strefy objętej pomiarem średniej prędkości; „automatyczna kontrola średniej prędkości” uprzedza o początku odcinka drogi, na którym średnia prędkość jazdy jest kontrolowana i rejestrowana przez stacjonarne urządzenie rejestrujące.",
+    "description": "Początek strefy objętej pomiarem średniej prędkości; „automatyczna kontrola średniej prędkości” uprzedza o początku odcinka drogi, na którym średnia prędkość jazdy jest kontrolowana i rejestrowana przez stacjonarne urządzenie rejestrujące.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-51a",
+    "matchedVia": "source-alias"
+  },
+  "D-51ab": {
+    "id": "D-51ab",
+    "categoryId": "D",
+    "name": "Początek strefy objętej pomiarem średniej prędkości; „automatyczna kontrola średniej prędkości” uprzedza o początku odcinka drogi, na którym średnia prędkość jazdy jest kontrolowana i rejestrowana przez stacjonarne urządzenie rejestrujące.",
+    "description": "Początek strefy objętej pomiarem średniej prędkości; „automatyczna kontrola średniej prędkości” uprzedza o początku odcinka drogi, na którym średnia prędkość jazdy jest kontrolowana i rejestrowana przez stacjonarne urządzenie rejestrujące.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-51a",
+    "matchedVia": "source-alias"
+  },
+  "D-51b": {
+    "id": "D-51b",
+    "categoryId": "D",
+    "name": "Koniec strefy objętej pomiarem średniej prędkości; informuje o końcu odcinka drogi, na którym średnia prędkość jazdy jest kontrolowana i rejestrowana przez stacjonarne urządzenie rejestrujące.",
+    "description": "Koniec strefy objętej pomiarem średniej prędkości; informuje o końcu odcinka drogi, na którym średnia prędkość jazdy jest kontrolowana i rejestrowana przez stacjonarne urządzenie rejestrujące.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-51b",
+    "matchedVia": "source-exact"
+  },
+  "D-52": {
+    "id": "D-52",
+    "categoryId": "D",
+    "name": "strefa ruchu",
+    "description": "Stosuje się w celu oznakowania ustalonej strefy ruchu. Znak ten umieszcza się na początku strefy ruchu na wszystkich drogach doprowadzających do niej ruch. Decyzję o ustaleniu takiej strefy podejmuje zarządca (właściciel) terenu, na którym położona jest strefa ruchu. W strefie ruchu stosuje się znaki takie jak na drogach wewnętrznych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-52",
+    "matchedVia": "source-exact"
+  },
+  "D-53": {
+    "id": "D-53",
+    "categoryId": "D",
+    "name": "koniec strefy ruchu",
+    "description": "Stosuje się w celu wskazania wyjazdu z drogi wewnętrznej położonej w strefie ruchu na drogę publiczną zarządzaną przez administrację rządową lub samorządową. Znak ten umieszcza się na wszystkich drogach wylotowych ze strefy oznakowanej znakami D-52 , w tym samym przekroju poprzecznym drogi co znak D-52 . Znak ten może być umieszczony po lewej stronie jezdni, na odwrotnej stronie znaku D-52 . Znak zakazu umieszczony pod znakiem D-52 - strefa ruchu oznacza, że zakaz obowiązuje do znaku D-53 -koniec strefy ruchu, z wyjątkiem odcinka drogi, na którym został on zmieniony lub odwołany innym znakiem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-53",
+    "matchedVia": "source-exact"
+  },
+  "D-54": {
+    "id": "D-54",
+    "categoryId": "D",
+    "name": "Znak ten wyznacza strefy czystego transportu. Oznacza, że w wyznaczonych rewirach będą mogły poruszać się jedynie samochody elektryczne, napędzane na wodór i gaz ziemny CGN. Znak powinien być umieszczony przy każdym wjeździe do strefy czystego transportu.",
+    "description": "Znak ten wyznacza strefy czystego transportu. Oznacza, że w wyznaczonych rewirach będą mogły poruszać się jedynie samochody elektryczne, napędzane na wodór i gaz ziemny CGN. Znak powinien być umieszczony przy każdym wjeździe do strefy czystego transportu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-54",
+    "matchedVia": "source-exact"
+  },
+  "D-55": {
+    "id": "D-55",
+    "categoryId": "D",
+    "name": "Znak ten wyznacza wyjazd ze strefy czystego transportu. Znak powinien być umieszczony przy każdym wyjeździe ze strefy czystego transportu.",
+    "description": "Znak ten wyznacza wyjazd ze strefy czystego transportu. Znak powinien być umieszczony przy każdym wyjeździe ze strefy czystego transportu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "D-55",
+    "matchedVia": "source-exact"
+  },
+  "F-1": {
+    "id": "F-1",
+    "categoryId": "F",
+    "name": "Przejście graniczne",
+    "description": "Informuje o czynnym przejściu granicznym.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-1",
+    "matchedVia": "source-exact"
+  },
+  "F-2": {
+    "id": "F-2",
+    "categoryId": "F",
+    "name": "Przekraczanie granicy zabronione",
+    "description": "Informuje, że ruch przez granicę jest zamknięty.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-2",
+    "matchedVia": "source-exact"
+  },
+  "F-2a": {
+    "id": "F-2a",
+    "categoryId": "F",
+    "name": "Granica państwa",
+    "description": "Informuje o miejscu przekroczenia granicy Rzeczpospolitej Polskiej.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-2a",
+    "matchedVia": "source-exact"
+  },
+  "F-3": {
+    "id": "F-3",
+    "categoryId": "F",
+    "name": "Granica obszaru administracyjnego",
+    "description": "Z napisami \"województwo\", \"powiat\" lub \"gmina\" i umieszczonymi nazwami, informuje o wjeździe odpowiednio na obszar województwa, powiatu i gminy, albo gminy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-3",
+    "matchedVia": "source-exact"
+  },
+  "F-3a": {
+    "id": "F-3a",
+    "categoryId": "F",
+    "name": "Granica obszaru administracyjnego",
+    "description": "stosuje się na granicy powiatu.",
+    "source": "eli.gov.pl",
+    "sourceCode": "F-3a",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "F-3b": {
+    "id": "F-3b",
+    "categoryId": "F",
+    "name": "Granica obszaru administracyjnego",
+    "description": "stosuje się na granicy gminy.",
+    "source": "eli.gov.pl",
+    "sourceCode": "F-3b",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "F-3c": {
+    "id": "F-3c",
+    "categoryId": "F",
+    "name": "Granica obszaru administracyjnego",
+    "description": "Dla miast na prawach powiatu stosuje się znak F-3c (rys.",
+    "source": "eli.gov.pl",
+    "sourceCode": "F-3c",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "F-4": {
+    "id": "F-4",
+    "categoryId": "F",
+    "name": "Nazwa rzeki",
+    "description": "Podaje nazwę rzeki lub innego cieku wodnego, nad którym przebiega droga.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-4",
+    "matchedVia": "source-exact"
+  },
+  "F-5": {
+    "id": "F-5",
+    "categoryId": "F",
+    "name": "Uprzedzenie o zakazie",
+    "description": "Uprzedza o znaku zakazu umieszczonym na drodze w odległości wskazanej na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-5",
+    "matchedVia": "source-exact"
+  },
+  "F-6": {
+    "id": "F-6",
+    "categoryId": "F",
+    "name": "Znak uprzedzający, umieszczany przed skrzyżowaniem",
+    "description": "Uprzedza o wskazanym na nim odpowiednim znakiem niebezpieczeństwie lub zakazie występującym za skrzyżowaniem na wskazanej drodze.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-6",
+    "matchedVia": "source-exact"
+  },
+  "F-6a": {
+    "id": "F-6a",
+    "categoryId": "F",
+    "name": "Znak uprzedzający, umieszczany przed skrzyżowaniem",
+    "description": "przeddrogowskazowej, należy zastosować odpowiednią odmianę znaku F-6a ze znakiem A-9 lub A-10.",
+    "source": "eli.gov.pl",
+    "sourceCode": "F-6a",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "F-7": {
+    "id": "F-7",
+    "categoryId": "F",
+    "name": "Sposób jazdy w związku z zakazem skręcania w lewo",
+    "description": "Wskazuje dojazd do drogi, w którą skręcanie w lewo jest zabronione.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-7",
+    "matchedVia": "source-exact"
+  },
+  "F-8": {
+    "id": "F-8",
+    "categoryId": "F",
+    "name": "Objazd w związku z zamknięciem drogi",
+    "description": "Wskazuje wyznaczony objazd; jeżeli na znaku F-8 umieszczono znak zakazujący wjazdu określonych pojazdów, oznacza to, że objazd dotyczy pojazdów wskazanych na znaku zakazu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-8",
+    "matchedVia": "source-exact"
+  },
+  "F-9": {
+    "id": "F-9",
+    "categoryId": "F",
+    "name": "Znak prowadzący na drodze objazdowej",
+    "description": "Wskazuje kierunek ruchu pojazdów na wyznaczonym objeździe.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-9",
+    "matchedVia": "source-exact"
+  },
+  "F-10": {
+    "id": "F-10",
+    "categoryId": "F",
+    "name": "Kierunki na pasach ruchu",
+    "description": "Wskazuje dozwolone, zgodnie ze strzałkami umieszczonymi na znaku, kierunki jazdy z poszczególnych pasów ruchu. Umieszczona na znaku strzałka zezwalająca na skręcanie w lewo ze skrajnego lewego pasa ruchu oznacza także zezwolenie na zawracanie chyba, że jest to zabronione znakiem B-23 lub ruch jest kierowany sygnalizatorem S-3.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-10",
+    "matchedVia": "source-exact"
+  },
+  "F-11d": {
+    "id": "F-11d",
+    "categoryId": "F",
+    "name": "Kierunki na pasie ruchu",
+    "description": "Wkazuje dozwolone, zgodnie ze strzałkami umieszczonymi na znaku, kierunki jazdy z pasa ruchu, nad którym znak został umieszczony. Umieszczona na znaku strzałka zezwalająca na skręcanie w lewo ze skrajnego lewego pasa ruchu oznacza także zezwolenie na zawracanie, chyba że jest to zabronione znakiem B-23 lub ruch jest kierowany sygnalizatorem S-3.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-11",
+    "matchedVia": "source-alias"
+  },
+  "F-12a": {
+    "id": "F-12a",
+    "categoryId": "F",
+    "name": "Znak wskazujący przejazd tranzytowy umieszczany przed skrzyżowaniem",
+    "description": "Wskazuje zgodnie ze strzałką kierunek przejazdu tranzytowego pojazdów wskazanych umieszczonym na znaku symbolem pojazdu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-12",
+    "matchedVia": "source-alias"
+  },
+  "F-13a": {
+    "id": "F-13a",
+    "categoryId": "F",
+    "name": "Przejazd tranzytowy",
+    "description": "Wskazuje zgodnie ze strzałką kierunek przejazdu tranzytowego pojazdów wskazanych umieszczonym na znaku symbolem pojazdu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-13",
+    "matchedVia": "source-alias"
+  },
+  "F-14a": {
+    "id": "F-14a",
+    "categoryId": "F",
+    "name": "Tablica wskaźnikowa na autostradzie umieszczana w odległości 300 m przed pasem wyłączania",
+    "description": "Informuje o zbliżaniu się do początku pasa prowadzącego do wyjazdu z autostrady (pasa wyłączania).",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-14a",
+    "matchedVia": "source-exact"
+  },
+  "F-14b": {
+    "id": "F-14b",
+    "categoryId": "F",
+    "name": "Tablica wskaźnikowa na autostradzie umieszczana w odległości 200 m przed pasem wyłączania",
+    "description": "Informuje o zbliżaniu się do początku pasa prowadzącego do wyjazdu z autostrady (pasa wyłączania).",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-14b",
+    "matchedVia": "source-exact"
+  },
+  "F-14c": {
+    "id": "F-14c",
+    "categoryId": "F",
+    "name": "Tablica wskaźnikowa na autostradzie umieszczana w odległości 100 m przed pasem wyłączania",
+    "description": "Informuje o zbliżaniu się do początku pasa prowadzącego do wyjazdu z autostrady (pasa wyłączania).",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-14c",
+    "matchedVia": "source-exact"
+  },
+  "F-15a": {
+    "id": "F-15a",
+    "categoryId": "F",
+    "name": "Niesymetryczny podział jezdni dla przeciwnych kierunków ruchu",
+    "description": "Wskazuje pasy ruchu przeznaczone do jazdy w podanych kierunkach.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-15",
+    "matchedVia": "source-alias"
+  },
+  "F-16": {
+    "id": "F-16",
+    "categoryId": "F",
+    "name": "Koniec pasa ruchu na jezdni dwukierunkowej",
+    "description": "Uprzedza o końcu wewnętrznego pasa ruchu na jezdni wskazanej na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-16",
+    "matchedVia": "source-exact"
+  },
+  "F-17": {
+    "id": "F-17",
+    "categoryId": "F",
+    "name": "Koniec pasa ruchu na jezdni jednokierunkowej",
+    "description": "Uprzedza o końcu wewnętrznego pasa ruchu na jezdni wskazanej na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-17",
+    "matchedVia": "source-exact"
+  },
+  "F-18": {
+    "id": "F-18",
+    "categoryId": "F",
+    "name": "Przeciwny kierunek dla określonych pojazdów",
+    "description": "Wskazuje lewy pas ruchu przeznaczony tylko dla pojazdów określonych na znaku, poruszających się w kierunku przeciwnym.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-18",
+    "matchedVia": "source-exact"
+  },
+  "F-19": {
+    "id": "F-19",
+    "categoryId": "F",
+    "name": "Pas ruchu dla określonych pojazdów",
+    "description": "Wskazuje wyznaczony na jezdni pas ruchu przeznaczony dla pojazdów wskazanych na znaku.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-19",
+    "matchedVia": "source-exact"
+  },
+  "F-20": {
+    "id": "F-20",
+    "categoryId": "F",
+    "name": "Część drogi (pas ruchu) dla określonych pojazdów",
+    "description": "Wskazuje drogę lub jej część przeznaczoną dla pojazdów, których symbol został umieszczony na znaku. Zamiast symbolu pojazdu o dopuszczalnej masie całkowitej do 3,5 t na znaku może być umieszczony symbol pojazdu stosowany na tabliczkach od T-23a do T-23j, odpowiednio do sposobu przeznaczenia drogi lub jej części.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-20",
+    "matchedVia": "source-exact"
+  },
+  "F-21": {
+    "id": "F-21",
+    "categoryId": "F",
+    "name": "Ruch skierowany na sąsiednią jezdnię",
+    "description": "Wskazuje zjazd na sąsiednią jezdnię w związku z tymczasową organizacją ruchu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-21",
+    "matchedVia": "source-exact"
+  },
+  "F-22": {
+    "id": "F-22",
+    "categoryId": "F",
+    "name": "Ograniczenia na pasie ruchu",
+    "description": "Wskazuje pas ruchu, na którym jest zabroniony ruch pojazdów określonych symbolem znaku zakazu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "F-22",
+    "matchedVia": "source-exact"
+  },
+  "G-1a": {
+    "id": "G-1a",
+    "categoryId": "G",
+    "name": "Słupek wskaźnikowy z trzema kreskami umieszczany po prawej stronie jezdni",
+    "description": "Informuje o zbliżaniu się do przejazdu kolejowego. Jest umieszczany pod znakiem A-9 lub A-10.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "G-1a",
+    "matchedVia": "source-exact"
+  },
+  "G-1b": {
+    "id": "G-1b",
+    "categoryId": "G",
+    "name": "Słupek wskaźnikowy z dwiema kreskami umieszczany po prawej stronie jezdni",
+    "description": "Informuje o zbliżaniu się do przejazdu kolejowego. Jest umieszczany w 2/3 odległości pomiędzy znakiem ostrzegawczym A-9 lub A-10 a przejazdem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "G-1b",
+    "matchedVia": "source-exact"
+  },
+  "G-1c": {
+    "id": "G-1c",
+    "categoryId": "G",
+    "name": "Słupek wskaźnikowy z jedną kreską umieszczany po prawej stronie jezdni",
+    "description": "Informuje o zbliżaniu się do przejazdu kolejowego. Jest umieszczany w 1/3 odległości pomiędzy znakiem ostrzegawczym A-9 lub A-10 a przejazdem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "G-1c",
+    "matchedVia": "source-exact"
+  },
+  "G-1d": {
+    "id": "G-1d",
+    "categoryId": "G",
+    "name": "Słupek wskaźnikowy z trzema kreskami umieszczany po lewej stronie jezdni",
+    "description": "Informuje o zbliżaniu się do przejazdu kolejowego. Jest umieszczany pod znakiem A-9 lub A-10.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "G-1d",
+    "matchedVia": "source-exact"
+  },
+  "G-1e": {
+    "id": "G-1e",
+    "categoryId": "G",
+    "name": "Słupek wskaźnikowy z dwiema kreskami umieszczany po lewej stronie jezdni",
+    "description": "Informuje o zbliżaniu się do przejazdu kolejowego. Jest umieszczany w 2/3 odległości pomiędzy znakiem ostrzegawczym A-9 lub A-10 a przejazdem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "G-1e",
+    "matchedVia": "source-exact"
+  },
+  "G-1f": {
+    "id": "G-1f",
+    "categoryId": "G",
+    "name": "Słupek wskaźnikowy z jedną kreską umieszczany po lewej stronie jezdni",
+    "description": "Informuje o zbliżaniu się do przejazdu kolejowego. Jest umieszczany w 1/3 odległości pomiędzy znakiem ostrzegawczym A-9 lub A-10 a przejazdem.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "G-1f",
+    "matchedVia": "source-exact"
+  },
+  "G-2": {
+    "id": "G-2",
+    "categoryId": "G",
+    "name": "Sieć pod napięciem",
+    "description": "Oznacza, że nad przejazdem kolejowym zawieszona jest sieć trakcyjna. Do dnia 31.12.2005 umieszczona przed przejazdem kolejowym tablica z białym tłem, na której umieszczono symbol czaszki i napis \"Baczność! Nie dotykać przewodów!\" miała takie samo znaczenie jak znak G-2.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "G-2",
+    "matchedVia": "source-exact"
+  },
+  "G-3": {
+    "id": "G-3",
+    "categoryId": "G",
+    "name": "Krzyż św. Andrzeja przed przejazdem kolejowym jednotorowym",
+    "description": "Wyznacza miejsce zatrzymania się w związku z ruchem pociągu lub innego pojazdu szynowego na przejeździe kolejowym bez zapór lub półzapór; informuje, że na przejeździe występuje jeden tor. Nie wymusza zatrzymania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "G-3",
+    "matchedVia": "source-exact"
+  },
+  "G-4": {
+    "id": "G-4",
+    "categoryId": "G",
+    "name": "Krzyż św. Andrzeja przed przejazdem kolejowym wielotorowym",
+    "description": "Wyznacza miejsce zatrzymania się w związku z ruchem pociągu lub innego pojazdu szynowego na przejeździe kolejowym bez zapór lub półzapór; informuje, że na przejeździe występuje wiecej niż jeden tor. Nie wymusza zatrzymania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "G-4",
+    "matchedVia": "source-exact"
+  },
+  "T-1": {
+    "id": "T-1",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca odległość znaku ostrzegawczego od miejsca niebezpiecznego.",
+    "description": "Tabliczka wskazująca odległość znaku ostrzegawczego od miejsca niebezpiecznego.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-1",
+    "matchedVia": "source-exact"
+  },
+  "T-1a": {
+    "id": "T-1a",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca odległość znaku informacyjnego od początku (końca) drogi lub pasa ruchu.",
+    "description": "Tabliczka wskazująca odległość znaku informacyjnego od początku (końca) drogi lub pasa ruchu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-1a",
+    "matchedVia": "source-exact"
+  },
+  "T-1b": {
+    "id": "T-1b",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca długość tunelu lub odcinek drogi do końca tunelu.",
+    "description": "Tabliczka wskazująca długość tunelu lub odcinek drogi do końca tunelu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-1b",
+    "matchedVia": "source-exact"
+  },
+  "T-2": {
+    "id": "T-2",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca długość odcinka drogi, na którym powtarza się lub występuje niebezpieczeństwo.",
+    "description": "Tabliczka wskazująca długość odcinka drogi, na którym powtarza się lub występuje niebezpieczeństwo.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-2",
+    "matchedVia": "source-exact"
+  },
+  "T-3": {
+    "id": "T-3",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca koniec odcinka, na którym powtarza się lub występuje niebezpieczeństwo.",
+    "description": "Tabliczka wskazująca koniec odcinka, na którym powtarza się lub występuje niebezpieczeństwo.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-3",
+    "matchedVia": "source-exact"
+  },
+  "T-3a": {
+    "id": "T-3a",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca koniec miejsca przeznaczonego na postój.",
+    "description": "Tabliczka wskazująca koniec miejsca przeznaczonego na postój.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-3a",
+    "matchedVia": "source-exact"
+  },
+  "T-4": {
+    "id": "T-4",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca liczbę zakrętów.",
+    "description": "Tabliczka wskazująca liczbę zakrętów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-4",
+    "matchedVia": "source-exact"
+  },
+  "T-5": {
+    "id": "T-5",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca początek drogi krętej.",
+    "description": "Tabliczka wskazująca początek drogi krętej.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-5",
+    "matchedVia": "source-exact"
+  },
+  "T-6a": {
+    "id": "T-6a",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca rzeczywisty przebieg drogi z pierwszeństwem przez skrzyżowanie (umieszczana na drodze z pierwszeństwem).",
+    "description": "Tabliczka wskazująca rzeczywisty przebieg drogi z pierwszeństwem przez skrzyżowanie (umieszczana na drodze z pierwszeństwem).",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-6a",
+    "matchedVia": "source-exact"
+  },
+  "T-6b": {
+    "id": "T-6b",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca układ dróg podporządkowanych (umieszczana na drodze z pierwszeństwem).",
+    "description": "Tabliczka wskazująca układ dróg podporządkowanych (umieszczana na drodze z pierwszeństwem).",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-6b",
+    "matchedVia": "source-exact"
+  },
+  "T-6c": {
+    "id": "T-6c",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca rzeczywisty przebieg drogi z pierwszeństwem przez skrzyżowanie (umieszczana na drodze podporządkowanej).",
+    "description": "Tabliczka wskazująca rzeczywisty przebieg drogi z pierwszeństwem przez skrzyżowanie (umieszczana na drodze podporządkowanej).",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-6c",
+    "matchedVia": "source-exact"
+  },
+  "T-6d": {
+    "id": "T-6d",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca prostopadły przebieg drogi z pierwszeństwem przez skrzyżowanie oraz układ dróg podporządkowanych (umieszczana na drodze podporządkowanej).",
+    "description": "Tabliczka wskazująca prostopadły przebieg drogi z pierwszeństwem przez skrzyżowanie oraz układ dróg podporządkowanych (umieszczana na drodze podporządkowanej).",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-6d",
+    "matchedVia": "source-exact"
+  },
+  "T-7": {
+    "id": "T-7",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca układ torów i drogi na przejeździe tramwajowym.",
+    "description": "Tabliczka wskazująca układ torów i drogi na przejeździe tramwajowym.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-7",
+    "matchedVia": "source-exact"
+  },
+  "T-8": {
+    "id": "T-8",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca miejsce, w którym ruch pojazdów został skierowany na tory tramwajowe.",
+    "description": "Tabliczka wskazująca miejsce, w którym ruch pojazdów został skierowany na tory tramwajowe.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-8",
+    "matchedVia": "source-exact"
+  },
+  "T-9": {
+    "id": "T-9",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca rzeczywistą wielkość spadku lub wzniesienia drogi.",
+    "description": "Tabliczka wskazująca rzeczywistą wielkość spadku lub wzniesienia drogi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-9",
+    "matchedVia": "source-exact"
+  },
+  "T-10": {
+    "id": "T-10",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca bocznicę kolejową lub tor o podobnym charakterze.",
+    "description": "Tabliczka wskazująca bocznicę kolejową lub tor o podobnym charakterze.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-10",
+    "matchedVia": "source-exact"
+  },
+  "T-11": {
+    "id": "T-11",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca przeprawę promową.",
+    "description": "Tabliczka wskazująca przeprawę promową.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-11",
+    "matchedVia": "source-exact"
+  },
+  "T-12": {
+    "id": "T-12",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca podłużny uskok nawierzchni.",
+    "description": "Tabliczka wskazująca podłużny uskok nawierzchni.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-12",
+    "matchedVia": "source-exact"
+  },
+  "T-13": {
+    "id": "T-13",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca odcinek drogi, na którym występują deformacje nawierzchni w postaci kolein.",
+    "description": "Tabliczka wskazująca odcinek drogi, na którym występują deformacje nawierzchni w postaci kolein.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-13",
+    "matchedVia": "source-exact"
+  },
+  "T-14": {
+    "id": "T-14",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca miejsce częstych wypadków o charakterze wskazanym na tabliczce.",
+    "description": "Tabliczka wskazująca miejsce częstych wypadków o charakterze wskazanym na tabliczce.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-14",
+    "matchedVia": "source-exact"
+  },
+  "T-14a": {
+    "id": "T-14a",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca miejsce częstych wypadków o charakterze wskazanym na tabliczce.",
+    "description": ", którą umieszcza się przed miejscem częstych zderzeń z poprzedzającymi pojazdami",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-14a",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-14b": {
+    "id": "T-14b",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca miejsce częstych wypadków o charakterze wskazanym na tabliczce.",
+    "description": ", którą umieszcza się przed miejscem częstych zderzeń czołowych pojazdów",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-14b",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-14c": {
+    "id": "T-14c",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca miejsce częstych wypadków o charakterze wskazanym na tabliczce.",
+    "description": ", którą umieszcza się przed miejscem częstych zderzeń z tramwajami",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-14c",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-14d": {
+    "id": "T-14d",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca miejsce częstych wypadków o charakterze wskazanym na tabliczce.",
+    "description": ", którą umieszcza się przed przejazdem kolejowym, na którym warunki powodują szczególne niebezpieczeństwo powstawania wypadków.",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-14d",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-15": {
+    "id": "T-15",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca miejsce częstych wypadków spowodowanych śliską nawierzchnią jezdni ze względu na opady deszczu.",
+    "description": "Tabliczka wskazująca miejsce częstych wypadków spowodowanych śliską nawierzchnią jezdni ze względu na opady deszczu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-15",
+    "matchedVia": "source-exact"
+  },
+  "T-16": {
+    "id": "T-16",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca miejsce wyjazdu pojazdów uprzywilejowanych wskazanych na tabliczce.",
+    "description": "Tabliczka wskazująca miejsce wyjazdu pojazdów uprzywilejowanych wskazanych na tabliczce.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-16",
+    "matchedVia": "source-exact"
+  },
+  "T-16a": {
+    "id": "T-16a",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca miejsce wyjazdu pojazdów uprzywilejowanych wskazanych na tabliczce.",
+    "description": ", jeżeli na drogę wyjeżdżają karetki pogotowia ratunkowego.",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-16a",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-17": {
+    "id": "T-17",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca granicę państwa.",
+    "description": "Tabliczka wskazująca granicę państwa.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-17",
+    "matchedVia": "source-exact"
+  },
+  "T-18": {
+    "id": "T-18",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca nieoczekiwaną zmianę kierunku ruchu o przebiegu wskazanym na tabliczce.",
+    "description": "Tabliczka wskazująca nieoczekiwaną zmianę kierunku ruchu o przebiegu wskazanym na tabliczce.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-18",
+    "matchedVia": "source-exact"
+  },
+  "T-18a": {
+    "id": "T-18a",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca nieoczekiwaną zmianę kierunku ruchu o przebiegu wskazanym na tabliczce.",
+    "description": ", gdy zmiana przebiegu drogi lub kierunku następuje najpierw w prawo, a potem w lewo",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-18a",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-18b": {
+    "id": "T-18b",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca nieoczekiwaną zmianę kierunku ruchu o przebiegu wskazanym na tabliczce.",
+    "description": ", gdy zmiana przebiegu drogi lub kierunku następuje w lewo",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-18b",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-18c": {
+    "id": "T-18c",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca nieoczekiwaną zmianę kierunku ruchu o przebiegu wskazanym na tabliczce.",
+    "description": ", gdy zmiana przebiegu drogi lub kierunku następuje w prawo.",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-18c",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-19": {
+    "id": "T-19",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca na malowanie znaków poziomych.",
+    "description": "Tabliczka wskazująca na malowanie znaków poziomych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-19",
+    "matchedVia": "source-exact"
+  },
+  "T-20": {
+    "id": "T-20",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca długość odcinka jezdni, na którym zakaz obowiązuje.",
+    "description": "Tabliczka wskazująca długość odcinka jezdni, na którym zakaz obowiązuje.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-20",
+    "matchedVia": "source-exact"
+  },
+  "T-21": {
+    "id": "T-21",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca odległość znaku od miejsca, od którego lub w którym zakaz obowiązuje.",
+    "description": "Tabliczka wskazująca odległość znaku od miejsca, od którego lub w którym zakaz obowiązuje.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-21",
+    "matchedVia": "source-exact"
+  },
+  "T-22": {
+    "id": "T-22",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak nie dotyczy rowerów jednośladowych.",
+    "description": "Tabliczka wskazująca, że znak nie dotyczy rowerów jednośladowych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-22",
+    "matchedVia": "source-exact"
+  },
+  "T-23a": {
+    "id": "T-23a",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak dotyczy motocykli.",
+    "description": "Tabliczka wskazująca, że znak dotyczy motocykli.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-23a",
+    "matchedVia": "source-exact"
+  },
+  "T-23b": {
+    "id": "T-23b",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak dotyczy samochodów ciężarowych, pojazdów specjalnych, pojazdów używanych do celów specjalnych, o dopuszczalnej masie całkowitej przekraczającej 3,5 t, oraz ciągników samochodowych.",
+    "description": "Tabliczka wskazująca, że znak dotyczy samochodów ciężarowych, pojazdów specjalnych, pojazdów używanych do celów specjalnych, o dopuszczalnej masie całkowitej przekraczającej 3,5 t, oraz ciągników samochodowych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-23b",
+    "matchedVia": "source-exact"
+  },
+  "T-23c": {
+    "id": "T-23c",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak dotyczy ciągników rolniczych i pojazdów wolnobieżnych.",
+    "description": "Tabliczka wskazująca, że znak dotyczy ciągników rolniczych i pojazdów wolnobieżnych.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-23c",
+    "matchedVia": "source-exact"
+  },
+  "T-23d": {
+    "id": "T-23d",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak dotyczy pojazdów silnikowych z przyczepą, z wyjątkiem pojazdów z przyczepą jednoosiową lub naczepą.",
+    "description": "Tabliczka wskazująca, że znak dotyczy pojazdów silnikowych z przyczepą, z wyjątkiem pojazdów z przyczepą jednoosiową lub naczepą.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-23d",
+    "matchedVia": "source-exact"
+  },
+  "T-23e": {
+    "id": "T-23e",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak dotyczy pojazdów z przyczepą kempingową.",
+    "description": "Tabliczka wskazująca, że znak dotyczy pojazdów z przyczepą kempingową.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-23e",
+    "matchedVia": "source-exact"
+  },
+  "T-23f": {
+    "id": "T-23f",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak dotyczy autobusów.",
+    "description": "Tabliczka wskazująca, że znak dotyczy autobusów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-23f",
+    "matchedVia": "source-exact"
+  },
+  "T-23g": {
+    "id": "T-23g",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak dotyczy trolejbusów.",
+    "description": "Tabliczka wskazująca, że znak dotyczy trolejbusów.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-23g",
+    "matchedVia": "source-exact"
+  },
+  "T-23h": {
+    "id": "T-23h",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak dotyczy pojazdów z materiałami niebezpiecznymi.",
+    "description": "Tabliczka wskazująca, że znak dotyczy pojazdów z materiałami niebezpiecznymi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-23h",
+    "matchedVia": "source-exact"
+  },
+  "T-23i": {
+    "id": "T-23i",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak dotyczy pojazdów z materiałami wybuchowymi lub łatwo zapalnymi.",
+    "description": "Tabliczka wskazująca, że znak dotyczy pojazdów z materiałami wybuchowymi lub łatwo zapalnymi.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-23i",
+    "matchedVia": "source-exact"
+  },
+  "T-23j": {
+    "id": "T-23j",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że znak dotyczy pojazdów z materiałami, które mogą skazić wodę.",
+    "description": "Tabliczka wskazująca, że znak dotyczy pojazdów z materiałami, które mogą skazić wodę.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-23j",
+    "matchedVia": "source-exact"
+  },
+  "T-24": {
+    "id": "T-24",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że pozostawiony pojazd zostanie usunięty na koszt właściciela.",
+    "description": "Tabliczka wskazująca, że pozostawiony pojazd zostanie usunięty na koszt właściciela.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-24",
+    "matchedVia": "source-exact"
+  },
+  "T-25b": {
+    "id": "T-25b",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca kontynuację zakazu postoju lub zatrzymywania.",
+    "description": "Tabliczka wskazująca kontynuację zakazu postoju lub zatrzymywania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-25b",
+    "matchedVia": "source-exact"
+  },
+  "T-25c": {
+    "id": "T-25c",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca odwołanie zakazu postoju lub zatrzymywania.",
+    "description": "Tabliczka wskazująca odwołanie zakazu postoju lub zatrzymywania.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-25c",
+    "matchedVia": "source-exact"
+  },
+  "T-26": {
+    "id": "T-26",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że zakaz postoju lub zatrzymywania dotyczy całej strony placu.",
+    "description": "Tabliczka wskazująca, że zakaz postoju lub zatrzymywania dotyczy całej strony placu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-26",
+    "matchedVia": "source-exact"
+  },
+  "T-27": {
+    "id": "T-27",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że przejście dla pieszych jest szczególnie uczęszczane przez dzieci.",
+    "description": "Tabliczka wskazująca, że przejście dla pieszych jest szczególnie uczęszczane przez dzieci.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-27",
+    "matchedVia": "source-exact"
+  },
+  "T-28": {
+    "id": "T-28",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że za przejazd drogą pobierana jest opłata.",
+    "description": "Tabliczka wskazująca, że za przejazd drogą pobierana jest opłata.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-28",
+    "matchedVia": "source-exact"
+  },
+  "T-28a": {
+    "id": "T-28a",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca, że za przejazd drogą pobierana jest opłata.",
+    "description": "się znak D-9 z tabliczką T-28a (rys.",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-28a",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-29": {
+    "id": "T-29",
+    "categoryId": "T",
+    "name": "Tabliczka informująca o miejscu przeznaczonym dla pojazdu samochodowego uprawnionej osoby niepełnosprawnej o obniżonej sprawności ruchowej.",
+    "description": "Tabliczka informująca o miejscu przeznaczonym dla pojazdu samochodowego uprawnionej osoby niepełnosprawnej o obniżonej sprawności ruchowej.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-29",
+    "matchedVia": "source-exact"
+  },
+  "T-30a": {
+    "id": "T-30a",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca sposób ustawienia pojazdu względem krawędzi jezdni, gdzie szara część oznacza jezdnię, a biała - chodnik.",
+    "description": "oznaczającą postój całego pojazdu na chodniku równolegle do krawężnika",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-30a",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-30b": {
+    "id": "T-30b",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca sposób ustawienia pojazdu względem krawędzi jezdni, gdzie szara część oznacza jezdnię, a biała - chodnik.",
+    "description": "oznaczającą postój całego pojazdu na chodniku prostopadle do krawężnika",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-30b",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-30c": {
+    "id": "T-30c",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca sposób ustawienia pojazdu względem krawędzi jezdni, gdzie szara część oznacza jezdnię, a biała - chodnik.",
+    "description": "oznaczającą postój całego pojazdu na chodniku skośnie do krawężnika",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-30c",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-30d": {
+    "id": "T-30d",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca sposób ustawienia pojazdu względem krawędzi jezdni, gdzie szara część oznacza jezdnię, a biała - chodnik.",
+    "description": "oznaczającą postój na chodniku kołami przedniej osi pojazdu prostopadle do krawężnika",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-30d",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-30e": {
+    "id": "T-30e",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca sposób ustawienia pojazdu względem krawędzi jezdni, gdzie szara część oznacza jezdnię, a biała - chodnik.",
+    "description": "oznaczającą postój na chodniku kołami przedniej osi pojazdu skośnie do krawężnika",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-30e",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-30f": {
+    "id": "T-30f",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca sposób ustawienia pojazdu względem krawędzi jezdni, gdzie szara część oznacza jezdnię, a biała - chodnik.",
+    "description": "oznaczającą postój całego pojazdu na jezdni prostopadle do krawężnika",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-30f",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-30g": {
+    "id": "T-30g",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca sposób ustawienia pojazdu względem krawędzi jezdni, gdzie szara część oznacza jezdnię, a biała - chodnik.",
+    "description": "oznaczającą postój całego pojazdu na jezdni skośnie do krawężnika",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-30g",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-30h": {
+    "id": "T-30h",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca sposób ustawienia pojazdu względem krawędzi jezdni, gdzie szara część oznacza jezdnię, a biała - chodnik.",
+    "description": "oznaczającą postój na chodniku kołami jednego boku pojazdu równolegle do krawężnika",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-30h",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-30i": {
+    "id": "T-30i",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca sposób ustawienia pojazdu względem krawędzi jezdni, gdzie szara część oznacza jezdnię, a biała - chodnik.",
+    "description": "oznaczającą postój całego pojazdu na jezdni równolegle do krawężnika.",
+    "source": "eli.gov.pl",
+    "sourceCode": "T-30i",
+    "matchedVia": "official-exact-with-source-alias-name"
+  },
+  "T-31a": {
+    "id": "T-31a",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca kategorię tunelu.",
+    "description": "Tabliczka wskazująca kategorię tunelu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-31",
+    "matchedVia": "source-alias"
+  },
+  "T-31b": {
+    "id": "T-31b",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca kategorię tunelu.",
+    "description": "Tabliczka wskazująca kategorię tunelu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-31",
+    "matchedVia": "source-alias"
+  },
+  "T-31c": {
+    "id": "T-31c",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca kategorię tunelu.",
+    "description": "Tabliczka wskazująca kategorię tunelu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-31",
+    "matchedVia": "source-alias"
+  },
+  "T-31d": {
+    "id": "T-31d",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca kategorię tunelu.",
+    "description": "Tabliczka wskazująca kategorię tunelu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-31",
+    "matchedVia": "source-alias"
+  },
+  "T-31e": {
+    "id": "T-31e",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca kategorię tunelu.",
+    "description": "Tabliczka wskazująca kategorię tunelu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-31",
+    "matchedVia": "source-alias"
+  },
+  "T-32": {
+    "id": "T-32",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca minimalny odstęp od poprzedzającego pojazdu.",
+    "description": "Tabliczka wskazująca minimalny odstęp od poprzedzającego pojazdu.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-32",
+    "matchedVia": "source-exact"
+  },
+  "T-33": {
+    "id": "T-33",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca umieszczenie w zatoce telefonu alarmowego i gaśnicy.",
+    "description": "Tabliczka wskazująca umieszczenie w zatoce telefonu alarmowego i gaśnicy.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-33",
+    "matchedVia": "source-exact"
+  },
+  "T-34": {
+    "id": "T-34",
+    "categoryId": "T",
+    "name": "Tabliczka wskazująca pobór opłaty elektronicznej za przejazd drogą publiczną. Tabliczkę T-34 umieszcza się na drogach krajowych objętych systemem elektronicznej opłaty drogowej pod znakiem z numerem autostrady E-15c, drogi ekspresowej E-15d lub innej drogi krajowej: E-15a, E-15f albo E-15g, występującym samodzielnie. Tabliczkę T-34 umieszcza się na drogach krajowych objętych systemem elektronicznej opłaty drogowej pod znakiem z numerem autostrady E-15c, drogi ekspresowej E-15d lub innej drogi krajowej: E-15a, E-15f albo E-15g, występującym samodzielnie.",
+    "description": "Tabliczka wskazująca pobór opłaty elektronicznej za przejazd drogą publiczną. Tabliczkę T-34 umieszcza się na drogach krajowych objętych systemem elektronicznej opłaty drogowej pod znakiem z numerem autostrady E-15c, drogi ekspresowej E-15d lub innej drogi krajowej: E-15a, E-15f albo E-15g, występującym samodzielnie. Tabliczkę T-34 umieszcza się na drogach krajowych objętych systemem elektronicznej opłaty drogowej pod znakiem z numerem autostrady E-15c, drogi ekspresowej E-15d lub innej drogi krajowej: E-15a, E-15f albo E-15g, występującym samodzielnie.",
+    "source": "prawo-jazdy-360",
+    "sourceCode": "T-34",
+    "matchedVia": "source-exact"
+  },
+  "W-1": {
+    "id": "W-1",
+    "categoryId": "W",
+    "name": "klasa obciążenia mostu o ruchu jednokierunkowym",
+    "description": "klasa obciążenia mostu o ruchu jednokierunkowym",
+    "source": "eli.gov.pl",
+    "sourceCode": "W-1",
+    "matchedVia": "official-exact"
+  },
+  "W-2": {
+    "id": "W-2",
+    "categoryId": "W",
+    "name": "klasa obciążenia mostu o ruchu dwukierunkowym",
+    "description": "klasa obciążenia mostu o ruchu dwukierunkowym",
+    "source": "eli.gov.pl",
+    "sourceCode": "W-2",
+    "matchedVia": "official-exact"
+  },
+  "W-3": {
+    "id": "W-3",
+    "categoryId": "W",
+    "name": "W-3",
+    "description": ", W-4 „klasa obciążenia mostu o ruchu dwukierunkowym dla pojazdów kołowych” (rys.",
+    "source": "eli.gov.pl",
+    "sourceCode": "W-3",
+    "matchedVia": "official-exact"
+  },
+  "W-4": {
+    "id": "W-4",
+    "categoryId": "W",
+    "name": "klasa obciążenia mostu o ruchu dwukierunkowym dla pojazdów kołowych",
+    "description": "klasa obciążenia mostu o ruchu dwukierunkowym dla pojazdów kołowych",
+    "source": "eli.gov.pl",
+    "sourceCode": "W-4",
+    "matchedVia": "official-exact"
+  },
+  "W-5": {
+    "id": "W-5",
+    "categoryId": "W",
+    "name": "klasa obciążenia mostu o ruchu dwukierunkowym dla pojazdów gąsienicowych",
+    "description": ".",
+    "source": "eli.gov.pl",
+    "sourceCode": "W-5",
+    "matchedVia": "official-exact"
+  },
+  "W-6": {
+    "id": "W-6",
+    "categoryId": "W",
+    "name": "szerokość mostu lub środka przeprawowego",
+    "description": "wskazujący wymiary skrajni obiektu stosuje się, jeżeli minimalna szerokość użytkowa jezdni między krawężnikami jest mniejsza niż wynikająca z klasy obiektu mostowego.",
+    "source": "eli.gov.pl",
+    "sourceCode": "W-6",
+    "matchedVia": "official-exact"
+  },
+  "W-7": {
+    "id": "W-7",
+    "categoryId": "W",
+    "name": "wysokość skrajni pionowej na moście lub w tunelu",
+    "description": "stosuje się, jeżeli wymiar skrajni pionowej na moście lub w tunelu jest mniejszy niż 4,5 m.",
+    "source": "eli.gov.pl",
+    "sourceCode": "W-7",
+    "matchedVia": "official-exact"
+  }
+}

@@ -1,13 +1,16 @@
 import type { RoadSignCategoryId } from "./types";
 import { getRoadSignsByCategory, ROAD_SIGN_CATEGORIES } from "./catalog";
-import { hasSignContent, listCuratedSignIds } from "./content/registry";
+import {
+  hasSignPracticeContent,
+  listPracticeSignIds,
+} from "./content/registry";
 import type { SignCategoryProgress } from "../../components/shell/SignCategoryProgressCard";
 
 export function getCategorySignProgress(
   categoryId: RoadSignCategoryId
 ): SignCategoryProgress {
   const total = getRoadSignsByCategory(categoryId).length;
-  const curatedInCategory = listCuratedSignIds().filter((signId) => {
+  const practiceSignsInCategory = listPracticeSignIds().filter((signId) => {
     const sign = getRoadSignsByCategory(categoryId).find((item) => item.id === signId);
     return sign != null;
   }).length;
@@ -15,7 +18,7 @@ export function getCategorySignProgress(
   return {
     correct: 0,
     wrong: 0,
-    seen: curatedInCategory > 0 ? curatedInCategory : 0,
+    seen: practiceSignsInCategory > 0 ? practiceSignsInCategory : 0,
     total,
   };
 }
@@ -37,7 +40,7 @@ export function getAllSignsProgress(): SignCategoryProgress {
 }
 
 export function getSignLearningStatus(signId: string): "new" | "mastered" | "wrong" {
-  if (hasSignContent(signId)) {
+  if (hasSignPracticeContent(signId)) {
     return "new";
   }
 

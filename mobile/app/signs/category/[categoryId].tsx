@@ -17,6 +17,7 @@ import {
   getRoadSignsByCategory,
   isRoadSignCategoryId,
 } from "../../../src/features/road-signs/catalog";
+import { buildCategorySignTestQuestions } from "../../../src/features/road-signs/category-test";
 import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
 
 export default function SignsCategoryScreen() {
@@ -34,6 +35,10 @@ export default function SignsCategoryScreen() {
 
   const signs = useMemo(
     () => getRoadSignsByCategory(resolvedCategoryId),
+    [resolvedCategoryId]
+  );
+  const hasCategoryTestQuestions = useMemo(
+    () => buildCategorySignTestQuestions(resolvedCategoryId).length > 0,
     [resolvedCategoryId]
   );
 
@@ -83,9 +88,11 @@ export default function SignsCategoryScreen() {
         <View style={styles.footer}>
           <Pressable
             accessibilityRole="button"
+            disabled={!hasCategoryTestQuestions}
             onPress={openCategoryTest}
             style={({ pressed }) => [
               styles.trainButton,
+              !hasCategoryTestQuestions ? styles.trainButtonDisabled : null,
               pressed ? styles.pressed : null,
             ]}
           >
@@ -128,6 +135,9 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       paddingVertical: spacing.md,
       borderRadius: radius.pill,
       backgroundColor: theme.accents.green.fill,
+    },
+    trainButtonDisabled: {
+      opacity: 0.5,
     },
     trainButtonLabel: {
       fontSize: responsiveFont(16),

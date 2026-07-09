@@ -6,6 +6,7 @@
   "scripts": {
     "dev:mobile": "corepack pnpm --filter @prawko/mobile start",
     "dev:web": "corepack pnpm --filter @prawko/web dev",
+    "data:road-signs:generate": "corepack pnpm --filter @prawko/mobile road-signs:generate",
     "data:questions": "corepack pnpm --filter @prawko/data-pipeline pipeline",
     "data:questions:inspect": "corepack pnpm --filter @prawko/data-pipeline inspect",
     "data:questions:validate": "corepack pnpm --filter @prawko/data-pipeline validate",

@@ -7,7 +7,6 @@ import {
 } from "react-native";
 
 import { useResponsiveStyles } from "../../portable-ui";
-import { getSignContent } from "./content/registry";
 import { getSignAssetComponent } from "./content/signAssets";
 import type { RoadSign } from "./types";
 
@@ -20,8 +19,7 @@ type SignImageProps = {
 
 export function SignImage({ sign, size = 72, style, imageStyle }: SignImageProps) {
   const styles = useStyles();
-  const content = getSignContent(sign.id);
-  const SvgComponent = getSignAssetComponent(content?.assetKey);
+  const SvgComponent = getSignAssetComponent(sign.id);
   const dynamicStyles = useMemo(
     () => ({
       wrap: {
