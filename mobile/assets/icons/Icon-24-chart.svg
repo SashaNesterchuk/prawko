@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="Icon-24-chart.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="namedview4"
+     pagecolor="#ffffff"
+     bordercolor="#111111"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#d1d1d1" />
+  <path
+     fill="currentColor"
+     d="M 4,3 A 1,1 0 0 0 3,4 v 14.222656 c 0,0.736329 0.293778,1.442216 0.8144531,1.962891 C 4.3351141,20.706208 5.0410152,21 5.7773437,21 H 20 a 1,1 0 0 0 1,-1 1,1 0 0 0 -1,-1 H 5.7773437 C 5.5706723,19 5.3746546,18.917623 5.2285156,18.771484 5.0823908,18.62536 5,18.429328 5,18.222656 V 4 A 1,1 0 0 0 4,3 Z"
+     id="path1" />
+  <path
+     fill="currentColor"
+     d="m 17,8 a 1,1 0 0 0 -1,1 v 7 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 V 9 A 1,1 0 0 0 17,8 Z"
+     id="path2" />
+  <path
+     fill="currentColor"
+     d="m 13,5 a 1,1 0 0 0 -1,1 v 10 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 V 6 A 1,1 0 0 0 13,5 Z"
+     id="path3" />
+  <path
+     fill="currentColor"
+     d="m 9,13 a 1,1 0 0 0 -1,1 v 2 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 V 14 A 1,1 0 0 0 9,13 Z"
+     id="path4" />
+</svg>

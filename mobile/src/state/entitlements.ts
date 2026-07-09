@@ -1,4 +1,4 @@
-import { APP_FEATURES, type AppFeature } from "@prawko/config";
+import { APP_FEATURES, FEATURE_FLAGS, type AppFeature } from "@prawko/config";
 import { create } from "zustand";
 
 import { getCurrentUserFromState, useAppShellStore } from "./app-shell";
@@ -167,4 +167,32 @@ export function useHasFeatureAccess(feature: AppFeature) {
     remoteFeatureEntitlements[feature] ||
     purchaseFeatureEntitlements[feature]
   );
+}
+
+export function useHasPlusAccess() {
+  const currentUser = useAppShellStore((state) => getCurrentUserFromState(state));
+  const purchaseFeatureEntitlements = useEntitlementStore(
+    (state) => state.revenueCatFeatureEntitlements
+  );
+
+  if (FEATURE_FLAGS.devPlusAccess) {
+    return true;
+  }
+
+  if (currentUser?.provider === "mock") {
+    return true;
+  }
+
+  return (
+    purchaseFeatureEntitlements.premium_access ||
+    purchaseFeatureEntitlements.ai_question_chat
+  );
+}
+
+export function useShouldShowAds() {
+  return !useHasPlusAccess();
+}
+
+export function useHasAiChatAccess() {
+  return useHasPlusAccess();
 }

@@ -20,14 +20,79 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="modals/ai-chat"
+          name="topics/index"
           options={{
-            presentation: "modal",
-            animation: "slide_from_bottom",
+            animation: "slide_from_right",
           }}
         />
         <Stack.Screen
-          name="modals/paywall"
+          name="mistakes/index"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="practice/index"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="signs/index"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="signs/search"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="signs/category/[categoryId]"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="signs/category/[categoryId]/test"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="signs/[signId]/index"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="signs/[signId]/practice"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="statistics/index"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="topic/[topicId]"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="paywall"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="modals/ai-chat"
           options={{
             presentation: "modal",
             animation: "slide_from_bottom",

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="Icon-24-Sun.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#111111"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#d1d1d1" />
+  <path
+     fill="currentColor"
+     d="m 12,7 c -2.7495796,0 -5,2.2504204 -5,5 0,2.749549 2.2504084,5 5,5 2.749561,0 5,-2.250439 5,-5 0,-2.7495916 -2.250451,-5 -5,-5 z m 0,2 c 1.668651,0 3,1.331312 3,3 0,1.668639 -1.331361,3 -3,3 -1.668688,0 -3,-1.331349 -3,-3 0,-1.6687 1.3313,-3 3,-3 z"
+     id="path1" />
+  <path
+     fill="currentColor"
+     d="m 12,1 a 1,1 0 0 0 -1,1 v 2 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 V 2 A 1,1 0 0 0 12,1 Z M 4.9003906,3.9003906 a 1,1 0 0 0 -0.7070312,0.2929688 1,1 0 0 0 0,1.4140625 L 5.59375,7.0078125 a 1,1 0 0 0 1.4140625,0 1,1 0 0 0 0,-1.4140625 L 5.6074219,4.1933594 A 1,1 0 0 0 4.9003906,3.9003906 Z m 14.1992184,0 A 1,1 0 0 0 18.392578,4.1933594 L 16.992187,5.59375 a 1,1 0 0 0 0,1.4140625 1,1 0 0 0 1.414063,0 l 1.400391,-1.4003906 a 1,1 0 0 0 0,-1.4140625 1,1 0 0 0 -0.707032,-0.2929688 z M 2,11 a 1,1 0 0 0 -1,1 1,1 0 0 0 1,1 H 4 A 1,1 0 0 0 5,12 1,1 0 0 0 4,11 Z m 18,0 a 1,1 0 0 0 -1,1 1,1 0 0 0 1,1 h 2 a 1,1 0 0 0 1,-1 1,1 0 0 0 -1,-1 z M 5.59375,16.992187 4.1933594,18.392578 a 1,1 0 0 0 0,1.414063 1,1 0 0 0 1.4140625,0 L 7.0078125,18.40625 a 1,1 0 0 0 0,-1.414063 1,1 0 0 0 -1.4140625,0 z m 11.398437,0 a 1,1 0 0 0 0,1.414063 l 1.400391,1.400391 a 1,1 0 0 0 1.414063,0 1,1 0 0 0 0,-1.414063 L 18.40625,16.992187 a 1,1 0 0 0 -1.414063,0 z M 12,19 a 1,1 0 0 0 -1,1 v 2 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 v -2 a 1,1 0 0 0 -1,-1 z"
+     id="path2" />
+</svg>

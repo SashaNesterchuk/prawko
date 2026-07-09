@@ -1,45 +1,33 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AppButton } from "../../src/components/shell/AppButton";
-import { AppCard } from "../../src/components/shell/AppCard";
-import { AppScreen } from "../../src/components/shell/AppScreen";
+import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
 import {
-  EmptyStateView,
-  LoadingStateView,
-} from "../../src/components/shell/StateViews";
-import {
-  buildExamRouteParams,
-} from "../../src/features/exam/exam-routes";
-import { fetchExamSessionSnapshot } from "../../src/features/exam/supabase-exam";
-import {
-  getLocalizedText,
-  getQuestionById,
-  getQuestionChoices,
-} from "../../src/features/questions/question-engine";
-import {
-  buildQuestionRouteParams,
-  isUuidString,
-} from "../../src/features/questions/question-routes";
-import { useAppShellStore } from "../../src/state/app-shell";
-import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
+  fetchExamSessionSnapshot,
+  isExamSessionId,
+} from "../../src/features/exam/exam-session";
 import type { RemoteExamSnapshot } from "../../src/features/exam/types";
+import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import { useAdInterstitialActions } from "../../src/features/ads/show-interstitial";
+import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
 
 export default function ExamResultScreen() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<{
     sessionId?: string | string[];
   }>();
-  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const questionCatalogVersion = useQuestionCatalogVersion();
+  const { maybeShowInterstitial } = useAdInterstitialActions();
   const [snapshot, setSnapshot] = useState<RemoteExamSnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const rawSessionId = getSingleParam(params.sessionId);
-  const sessionId = isUuidString(rawSessionId) ? rawSessionId : null;
+  const sessionId = isExamSessionId(rawSessionId) ? rawSessionId : null;
 
   useEffect(() => {
     if (!sessionId) {
@@ -76,6 +64,14 @@ export default function ExamResultScreen() {
   }, [sessionId]);
 
   useEffect(() => {
+    if (!snapshot || snapshot.session.status === "active") {
+      return;
+    }
+
+    maybeShowInterstitial("after_exam_complete");
+  }, [maybeShowInterstitial, snapshot]);
+
+  useEffect(() => {
     if (!snapshot || snapshot.session.status !== "active") {
       return;
     }
@@ -104,97 +100,130 @@ export default function ExamResultScreen() {
     return snapshot.session.passed ? "passed" : "failed";
   }, [snapshot]);
 
-  const wrongEntries = useMemo(() => {
-    if (!snapshot) {
-      return [];
-    }
-
-    return snapshot.answers
-      .filter((answer) => !answer.isCorrect)
-      .map((answer) => {
-        const question = getQuestionById(answer.questionSourceId);
-        const answerLabels = question
-          ? Object.fromEntries(
-              getQuestionChoices(question, preferredLocale).map((choice) => [
-                choice.id,
-                choice.label,
-              ])
-            )
-          : {};
-
-        return {
-          answer,
-          answerLabels,
-          question,
-        };
-      });
-  }, [preferredLocale, questionCatalogVersion, snapshot]);
+  const wrongCount = snapshot?.session.wrongAnswersCount ?? 0;
+  const passed = resultStatus === "passed";
+  const resultAccent = passed ? greenWaveAccent.green : greenWaveAccent.amber;
 
   if (isLoading) {
     return (
-      <AppScreen
-        title={t("exam.resultTitle")}
-        subtitle={t("exam.resultLoading")}
-        scroll={false}
-      >
-        <LoadingStateView
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <StatusBar style="dark" />
+        <CenteredState
           title={t("states.loadingTitle")}
           description={t("exam.resultLoading")}
         />
-      </AppScreen>
+      </SafeAreaView>
     );
   }
 
   if (!snapshot) {
     return (
-      <AppScreen
-        title={t("exam.resultTitle")}
-        subtitle={t("exam.resultMissingTitle")}
-        footer={
-          <View style={{ gap: 10 }}>
-            <AppButton
-              label={t("exam.backToPracticeCta")}
-              onPress={() => router.replace("/(tabs)/practice")}
-            />
-          </View>
-        }
-      >
-        <EmptyStateView
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <StatusBar style="dark" />
+        <CenteredState
           title={t("exam.resultMissingTitle")}
           description={errorMessage ?? t("exam.resultMissingBody")}
+          actionLabel={t("exam.backToPracticeCta")}
+          onAction={() => router.replace("/practice")}
         />
-      </AppScreen>
+      </SafeAreaView>
     );
   }
 
+  const totalPoints = snapshot.session.totalPointsTarget || 1;
+  const scorePercent = Math.round(
+    (snapshot.session.scorePoints / totalPoints) * 100
+  );
   const restartParams = buildExamRouteParams({
     mode: snapshot.session.mode,
     questionLimit: snapshot.session.totalQuestionsTarget,
     studyPlanTaskId: getStudyPlanTaskId(snapshot.session.metadata),
   });
 
+  const titleKey =
+    resultStatus === "passed"
+      ? "exam.resultGoodTitle"
+      : resultStatus === "failed"
+        ? "exam.resultNeedsWorkTitle"
+        : `exam.outcomes.${resultStatus}.title`;
+
+  const bodyKey =
+    resultStatus === "passed"
+      ? "exam.resultGoodBody"
+      : resultStatus === "failed"
+        ? "exam.resultNeedsWorkBody"
+        : `exam.outcomes.${resultStatus}.subtitle`;
+
+  const bodyParams =
+    resultStatus === "passed" || resultStatus === "failed"
+      ? undefined
+      : {
+          score: snapshot.session.scorePoints,
+          total: snapshot.session.totalPointsTarget,
+        };
+
   return (
-    <AppScreen
-      title={t("exam.resultTitle")}
-      subtitle={t(`exam.outcomes.${resultStatus}.subtitle`, {
-        score: snapshot.session.scorePoints,
-        total: snapshot.session.totalPointsTarget,
-      })}
-      footer={
-        <View style={{ gap: 10 }}>
-          <AppButton
-            label={t("exam.retryCta")}
-            onPress={() =>
-              router.replace({
-                pathname: "/exam",
-                params: restartParams,
-              })
-            }
-          />
-          {wrongEntries.length > 0 ? (
-            <AppButton
-              variant="secondary"
-              label={t("exam.reviewWrongAnswersCta")}
+    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+      <StatusBar style="dark" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
+            hitSlop={8}
+            onPress={() => router.replace("/practice")}
+            style={styles.headerButton}
+          >
+            <MaterialCommunityIcons
+              name="close"
+              size={24}
+              color={greenWave.color.ink}
+            />
+          </Pressable>
+        </View>
+
+        <View style={styles.bodyArea}>
+          <View style={styles.successBadge}>
+            <MaterialCommunityIcons
+              name={passed ? "check" : "restart"}
+              size={40}
+              color={resultAccent.ink}
+            />
+          </View>
+
+          <Text style={styles.resultTitle}>{t(titleKey, bodyParams)}</Text>
+
+          <Text style={[styles.resultPercent, { color: resultAccent.ink }]}>
+            {scorePercent}%
+          </Text>
+
+          <Text style={styles.resultCount}>
+            {t("exam.scoreOfTotal", {
+              score: snapshot.session.scorePoints,
+              total: snapshot.session.totalPointsTarget,
+            })}
+          </Text>
+
+          <Text style={styles.resultSubcount}>
+            {t("exam.correctOfTotal", {
+              correct: snapshot.session.correctAnswersCount,
+              total: snapshot.session.totalQuestionsAnswered,
+            })}
+          </Text>
+
+          <Text style={styles.passThreshold}>
+            {t("exam.passThresholdLine", {
+              pass: snapshot.session.passPoints,
+            })}
+          </Text>
+
+          <Text style={styles.resultBody}>
+            {t(bodyKey, bodyParams)}
+          </Text>
+
+          {wrongCount > 0 ? (
+            <Pressable
+              accessibilityRole="button"
               onPress={() =>
                 router.replace({
                   pathname: "/question",
@@ -203,113 +232,85 @@ export default function ExamResultScreen() {
                   }),
                 })
               }
-            />
+              style={styles.reviewCard}
+            >
+              <View style={styles.reviewIconBox}>
+                <MaterialCommunityIcons
+                  name="book-open-variant"
+                  size={24}
+                  color={greenWave.color.ink}
+                />
+              </View>
+              <View style={styles.reviewCardText}>
+                <Text style={styles.reviewTitle}>
+                  {t("exam.reviewWeakCardTitle")}
+                </Text>
+                <Text style={styles.reviewSubtitle}>
+                  {t("exam.reviewWeakCardSubtitle", { count: wrongCount })}
+                </Text>
+              </View>
+            </Pressable>
           ) : null}
-          <AppButton
-            variant="ghost"
-            label={t("exam.backToPracticeCta")}
-            onPress={() => router.replace("/(tabs)/practice")}
-          />
         </View>
-      }
-    >
-      <View style={{ gap: 12 }}>
-        <AppCard accent={resultStatus === "passed"}>
-          <Text style={badgeText}>{t(`exam.outcomes.${resultStatus}.title`)}</Text>
-          <Text style={scoreText}>
-            {snapshot.session.scorePoints}/{snapshot.session.totalPointsTarget}
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={() =>
+            router.replace({
+              pathname: "/exam",
+              params: restartParams,
+            })
+          }
+          style={({ pressed }) => [
+            styles.primaryButton,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <Text style={styles.primaryButtonText}>
+            {passed ? t("exam.continuePractice") : t("exam.retryCta")}
           </Text>
-          <Text style={bodyText}>
-            {t("exam.resultBody", {
-              answered: snapshot.session.totalQuestionsAnswered,
-              correct: snapshot.session.correctAnswersCount,
-              total: snapshot.session.totalQuestionsTarget,
-              wrong: snapshot.session.wrongAnswersCount,
-            })}
-          </Text>
-        </AppCard>
+        </Pressable>
 
-        <AppCard>
-          <Text style={sectionTitle}>{t("exam.resultBreakdownTitle")}</Text>
-          <View style={summaryGrid}>
-            <MetricItem
-              label={t("exam.metricCorrect")}
-              value={snapshot.session.correctAnswersCount.toString()}
-            />
-            <MetricItem
-              label={t("exam.metricWrong")}
-              value={snapshot.session.wrongAnswersCount.toString()}
-            />
-            <MetricItem
-              label={t("exam.metricAnswered")}
-              value={snapshot.session.totalQuestionsAnswered.toString()}
-            />
-            <MetricItem
-              label={t("exam.metricPassTarget")}
-              value={snapshot.session.passPoints.toString()}
-            />
-          </View>
-        </AppCard>
-
-        {wrongEntries.length > 0 ? (
-          <>
-            <AppCard>
-              <Text style={sectionTitle}>{t("exam.wrongAnswersTitle")}</Text>
-              <Text style={bodyText}>{t("exam.wrongAnswersBody")}</Text>
-            </AppCard>
-
-            {wrongEntries.map(({ answer, answerLabels, question }) => (
-              <AppCard key={`${answer.questionSourceId}-${answer.order}`}>
-                <Text style={questionTitle}>
-                  {question
-                    ? getLocalizedText(question.prompt, preferredLocale)
-                    : t("exam.questionUnavailable")}
-                </Text>
-                <Text style={answerLine}>
-                  {t("exam.yourAnswerLine", {
-                    answer:
-                      answerLabels[answer.answerGiven] ??
-                      answer.answerGiven.toUpperCase(),
-                  })}
-                </Text>
-                <Text style={answerLine}>
-                  {t("exam.correctAnswerLine", {
-                    answer: question
-                      ? answerLabels[question.correctAnswer] ??
-                        question.correctAnswer.toUpperCase()
-                      : "?",
-                  })}
-                </Text>
-                {question ? (
-                  <Text style={bodyText}>
-                    {getLocalizedText(question.explanation, preferredLocale)}
-                  </Text>
-                ) : null}
-              </AppCard>
-            ))}
-          </>
-        ) : (
-          <AppCard>
-            <Text style={sectionTitle}>{t("exam.noWrongAnswersTitle")}</Text>
-            <Text style={bodyText}>{t("exam.noWrongAnswersBody")}</Text>
-          </AppCard>
-        )}
+        <Pressable
+          accessibilityRole="button"
+          style={styles.ghostButton}
+          onPress={() => router.replace("/practice")}
+        >
+          <Text style={styles.ghostText}>{t("exam.later")}</Text>
+        </Pressable>
       </View>
-    </AppScreen>
+    </SafeAreaView>
   );
 }
 
-function MetricItem({
-  label,
-  value,
+function CenteredState({
+  actionLabel,
+  description,
+  onAction,
+  title,
 }: {
-  label: string;
-  value: string;
+  actionLabel?: string;
+  description: string;
+  onAction?: () => void;
+  title: string;
 }) {
   return (
-    <View style={metricItem}>
-      <Text style={metricValue}>{value}</Text>
-      <Text style={metricLabel}>{label}</Text>
+    <View style={styles.centeredState}>
+      <Text style={styles.centeredTitle}>{title}</Text>
+      <Text style={styles.centeredBody}>{description}</Text>
+      {actionLabel && onAction ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onAction}
+          style={({ pressed }) => [
+            styles.primaryButton,
+            styles.centeredAction,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <Text style={styles.primaryButtonText}>{actionLabel}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -340,74 +341,174 @@ function getErrorMessage(error: unknown) {
     : "Unable to load exam result.";
 }
 
-const badgeText = {
-  color: "#4E5A52",
-  fontSize: 12,
-  fontWeight: "800" as const,
-  letterSpacing: 0.6,
-  lineHeight: 18,
-  marginBottom: 8,
-  textTransform: "uppercase" as const,
-};
-
-const scoreText = {
-  color: "#1E5B4F",
-  fontSize: 34,
-  fontWeight: "800" as const,
-  lineHeight: 40,
-  marginBottom: 8,
-};
-
-const sectionTitle = {
-  color: "#182018",
-  fontSize: 18,
-  fontWeight: "700" as const,
-  lineHeight: 25,
-  marginBottom: 8,
-};
-
-const bodyText = {
-  color: "#4E5A52",
-  fontSize: 14,
-  lineHeight: 22,
-};
-
-const summaryGrid = {
-  flexDirection: "row" as const,
-  flexWrap: "wrap" as const,
-  gap: 12,
-};
-
-const metricItem = {
-  minWidth: "46%" as const,
-  gap: 2,
-};
-
-const metricValue = {
-  color: "#182018",
-  fontSize: 24,
-  fontWeight: "800" as const,
-  lineHeight: 30,
-};
-
-const metricLabel = {
-  color: "#4E5A52",
-  fontSize: 13,
-  lineHeight: 20,
-};
-
-const questionTitle = {
-  color: "#182018",
-  fontSize: 16,
-  fontWeight: "700" as const,
-  lineHeight: 24,
-  marginBottom: 10,
-};
-
-const answerLine = {
-  color: "#4E5A52",
-  fontSize: 13,
-  fontWeight: "700" as const,
-  lineHeight: 20,
-  marginBottom: 6,
-};
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: greenWave.color.paper,
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: greenWave.spacing.xl,
+    paddingBottom: greenWave.spacing.xl,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerButton: {
+    width: 40,
+    height: 40,
+    marginLeft: -greenWave.spacing.sm,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: greenWave.radius.md,
+  },
+  bodyArea: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  successBadge: {
+    width: 96,
+    height: 96,
+    borderRadius: greenWave.radius.pill,
+    backgroundColor: greenWave.color.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: greenWave.spacing.xl,
+  },
+  resultTitle: {
+    fontSize: 32,
+    lineHeight: 36,
+    fontWeight: "700",
+    letterSpacing: -0.64,
+    textAlign: "center",
+    color: greenWave.color.ink,
+    marginBottom: greenWave.spacing.lg,
+  },
+  resultPercent: {
+    fontSize: 52,
+    lineHeight: 54,
+    fontWeight: "700",
+    letterSpacing: -0.52,
+    textAlign: "center",
+    marginBottom: greenWave.spacing.md,
+  },
+  resultCount: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+    color: greenWave.color.ink,
+    fontWeight: "600",
+    marginBottom: greenWave.spacing.xs,
+  },
+  resultSubcount: {
+    fontSize: 12,
+    lineHeight: 16,
+    textAlign: "center",
+    color: greenWave.color.inkSecondary,
+    marginBottom: greenWave.spacing.sm,
+  },
+  passThreshold: {
+    fontSize: 12,
+    lineHeight: 16,
+    textAlign: "center",
+    color: greenWave.color.inkMuted,
+    marginBottom: greenWave.spacing.lg,
+  },
+  resultBody: {
+    fontSize: 18,
+    lineHeight: 28,
+    textAlign: "center",
+    color: greenWave.color.inkSecondary,
+    marginBottom: greenWave.spacing.xl,
+  },
+  reviewCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: greenWave.spacing.md,
+    padding: greenWave.spacing.lg,
+    borderRadius: greenWave.radius.xl,
+    backgroundColor: greenWave.color.surface,
+    alignSelf: "stretch",
+  },
+  reviewIconBox: {
+    padding: greenWave.spacing.sm,
+    borderRadius: greenWave.radius.md,
+    backgroundColor: greenWave.color.paper,
+  },
+  reviewCardText: {
+    flex: 1,
+  },
+  reviewTitle: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "600",
+    letterSpacing: -0.16,
+    color: greenWave.color.ink,
+  },
+  reviewSubtitle: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: greenWave.color.inkMuted,
+  },
+  primaryButton: {
+    borderRadius: greenWave.radius.pill,
+    paddingHorizontal: greenWave.spacing.xl,
+    paddingVertical: greenWave.spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: greenWaveAccent.green.fill,
+    shadowColor: greenWave.color.shadow,
+    shadowOpacity: 0.1,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 4,
+  },
+  primaryButtonText: {
+    fontSize: 20,
+    lineHeight: 28,
+    fontWeight: "600",
+    letterSpacing: -0.2,
+    color: greenWave.color.onAccent,
+  },
+  pressed: {
+    opacity: 0.9,
+  },
+  ghostButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: greenWave.spacing.lg,
+    paddingVertical: greenWave.spacing.md,
+  },
+  ghostText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: greenWave.color.inkSecondary,
+  },
+  centeredState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: greenWave.spacing.xl,
+    gap: greenWave.spacing.sm,
+  },
+  centeredTitle: {
+    fontSize: 20,
+    lineHeight: 28,
+    fontWeight: "600",
+    letterSpacing: -0.2,
+    textAlign: "center",
+    color: greenWave.color.ink,
+  },
+  centeredBody: {
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: "center",
+    color: greenWave.color.inkSecondary,
+  },
+  centeredAction: {
+    marginTop: greenWave.spacing.lg,
+    alignSelf: "stretch",
+  },
+});

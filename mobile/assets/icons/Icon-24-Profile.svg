@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="Icon-24-Profile.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#111111"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#d1d1d1" />
+  <path
+     fill="currentColor"
+     d="M 12,3 C 9.2504204,3 7,5.2504204 7,8 c 0,2.749549 2.2504084,5 5,5 2.749561,0 5,-2.250439 5,-5 0,-2.7495916 -2.250451,-5 -5,-5 z m 0,2 c 1.668651,0 3,1.3313116 3,3 0,1.6686386 -1.331361,3 -3,3 C 10.331312,11 9,9.6686506 9,8 9,6.3312996 10.3313,5 12,5 Z"
+     id="path1" />
+  <path
+     fill="currentColor"
+     d="M 12,12 C 9.6134232,12 7.3242639,12.949275 5.6367187,14.636719 3.9491436,16.324294 3,18.613465 3,21 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 C 5,19.143135 5.7377564,17.363806 7.0507812,16.050781 8.3638161,14.737825 10.143117,14 12,14 c 1.856849,0 3.636183,0.737833 4.949219,2.050781 C 18.262167,17.363817 19,19.143151 19,21 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 C 21,18.613449 20.050733,16.324283 18.363281,14.636719 16.675717,12.949267 14.386551,12 12,12 Z"
+     id="path2" />
+</svg>

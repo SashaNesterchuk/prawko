@@ -12,6 +12,7 @@
     "data:media:audit": "corepack pnpm --filter @prawko/data-pipeline media:audit",
     "data:media:build": "corepack pnpm --filter @prawko/data-pipeline media:build",
     "data:media:upload": "corepack pnpm --filter @prawko/data-pipeline media:upload",
+    "data:storage:clear": "corepack pnpm --filter @prawko/data-pipeline storage:clear",
     "data:questions:sync": "corepack pnpm --filter @prawko/data-pipeline questions:sync",
     "typecheck": "corepack pnpm -r typecheck",
     "supabase:start": "corepack pnpm exec supabase start",

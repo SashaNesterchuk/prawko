@@ -7,6 +7,7 @@ import { pathExists } from "./utils";
 const DEFAULT_ENV_FILES = [
   path.join(REPO_ROOT, ".env.local"),
   path.join(REPO_ROOT, ".env"),
+  path.join(REPO_ROOT, "mobile", ".env.local"),
   path.join(REPO_ROOT, ".env.example"),
 ];
 

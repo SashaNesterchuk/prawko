@@ -26,6 +26,12 @@ export const mobileEnv = {
     process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY ?? "",
   revenueCatGoogleApiKey:
     process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY ?? "",
+  admobIosAppId: process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID ?? "",
+  admobAndroidAppId: process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID ?? "",
+  admobIosInterstitialUnitId:
+    process.env.EXPO_PUBLIC_ADMOB_IOS_INTERSTITIAL_UNIT_ID ?? "",
+  admobAndroidInterstitialUnitId:
+    process.env.EXPO_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_UNIT_ID ?? "",
   enableMockAuth: parseBooleanEnv(
     process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH,
     false

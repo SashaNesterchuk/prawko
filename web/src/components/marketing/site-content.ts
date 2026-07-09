@@ -1,7 +1,5 @@
 import {
-  AI_LIMITS,
   EXAM_RULES,
-  FREE_TIER_LIMITS,
   STUDY_PLAN_LIMITS,
   SUPPORTED_LOCALES,
 } from "@prawko/config";
@@ -59,9 +57,9 @@ export const landingStats = [
     detail: "Designed for dense exam sprints, not endless subscriptions",
   },
   {
-    label: "Free AI cap",
-    value: `${AI_LIMITS.freeQuestionChatPerDay} questions a day`,
-    detail: "Enough to prove value before the paywall",
+    label: "Plus upgrade",
+    value: "18 PLN one-time",
+    detail: "No ads and unlimited AI question chat",
   },
 ] as const;
 
@@ -171,51 +169,27 @@ export const taskTypes = [
 
 export const pricingTiers = [
   {
-    badge: "Starter",
-    title: "Free preview",
+    badge: "Free",
+    title: "Free with ads",
     price: "0 PLN",
-    subtitle: "Enough to feel the product before paying",
-    features: [
-      `${FREE_TIER_LIMITS.questionPracticePerDay} questions per day`,
-      "Daily plan preview",
-      "AI explanations with daily cap",
-      "No unlimited simulator access",
-    ],
-  },
-  {
-    badge: "Core offer",
-    title: "Exam Sprint",
-    price: "Pilot offer",
-    subtitle: "Built for the dense final 14 days before the exam",
+    subtitle: "All core learning — study plan, practice, and exam simulator",
     features: [
       "Unlimited question practice",
-      "Full simulator access",
-      "Adaptive weak-spot modes",
-      "AI explanation flow inside the app",
+      "Full exam simulator",
+      "Study plan and progress tracking",
+      "Short video ads during sessions",
     ],
   },
   {
-    badge: "Flexible",
-    title: "Premium 30",
-    price: "Pilot offer",
-    subtitle: "For students who want a longer runway and calmer pacing",
+    badge: "Plus",
+    title: "Prawko Plus",
+    price: "18 PLN",
+    subtitle: "One-time purchase — no ads and AI assistant",
     features: [
-      "Everything in Sprint",
-      "Longer plan horizon",
-      "More room for skipped-day adjustment",
-      "Better fit for first-time learners",
-    ],
-  },
-  {
-    badge: "B2B",
-    title: "School access",
-    price: "Custom",
-    subtitle: "Issued as codes by driving schools",
-    features: [
-      "Bulk code distribution",
-      "Predictable access window",
-      "Bilingual student onboarding",
-      "Pilot rollout for immigrant-focused schools",
+      "Everything in Free",
+      "No video ads",
+      "AI assistant for every question",
+      "One-time payment, no subscription",
     ],
   },
 ] as const;

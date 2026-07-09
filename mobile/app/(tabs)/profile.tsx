@@ -1,54 +1,159 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
 import { router } from "expo-router";
+import * as Notifications from "expo-notifications";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Switch, Text, View } from "react-native";
+import {
+  Alert,
+  Linking,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
-import { AppButton } from "../../src/components/shell/AppButton";
-import { AppCard } from "../../src/components/shell/AppCard";
-import { AppScreen } from "../../src/components/shell/AppScreen";
+import { ProfilePremiumBanner } from "../../src/components/shell/ProfilePremiumBanner";
+import {
+  ProfileSettingsGroup,
+  ProfileSettingsRow,
+} from "../../src/components/shell/ProfileSettingsGroup";
+import { ProfileStatsCard } from "../../src/components/shell/ProfileStatsCard";
+import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
-import { formatPlanDate } from "../../src/features/study-plan/generate-local-study-plan";
+import { fetchRecentExamSessions } from "../../src/features/exam/supabase-exam";
+import {
+  buildWeekActivity,
+  formatProfileExamDate,
+  getProfileStatMetrics,
+} from "../../src/features/profile/profile-stats";
+import {
+  getDaysUntilExamFromDate,
+} from "../../src/features/study-plan/generate-local-study-plan";
 import { getMobileSupabaseClient } from "../../src/lib/supabase";
 import {
-  useHasFeatureAccess,
-  usePurchaseAccess,
-  useRevenueCatConfigured,
-  useSchoolAccess,
+  useHasPlusAccess,
 } from "../../src/state/entitlements";
 import {
   useCurrentStudyPlan,
-  useCurrentUser,
   useAppShellStore,
 } from "../../src/state/app-shell";
-import {
-  useQuestionCatalogCount,
-  useQuestionCatalogLastError,
-  useQuestionCatalogStatus,
-} from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
+import { resetAppToFreshStart } from "../../src/state/reset-app";
+import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
+
+const SUPPORT_EMAIL = "support@prawko.app";
 
 export default function ProfileTabScreen() {
   const { t } = useTranslation();
-  const currentUser = useCurrentUser();
-  const currentStudyPlan = useCurrentStudyPlan();
-  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const preferredCategory = useAppShellStore(
-    (state) => state.preferredCategory
-  );
-  const enablePjmTracks = useAppShellStore((state) => state.enablePjmTracks);
-  const setEnablePjmTracks = useAppShellStore((state) => state.setEnablePjmTracks);
+  const { bottom: safeBottom } = useSafeAreaInsets();
+  const isFocused = useIsFocused();
   const authMode = useAppShellStore((state) => state.authMode);
+  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const signOutLocal = useAppShellStore((state) => state.signOutLocal);
-  const resetShell = useAppShellStore((state) => state.resetShell);
-  const schoolAccess = useSchoolAccess();
-  const purchaseAccess = usePurchaseAccess();
-  const revenueCatConfigured = useRevenueCatConfigured();
-  const hasAiQuestionChatAccess = useHasFeatureAccess("ai_question_chat");
-  const hasExamAccess = useHasFeatureAccess("exam_simulator");
+  const currentStudyPlan = useCurrentStudyPlan();
+  const attempts = useQuestionProgressStore((state) => state.attempts);
   const resetProgress = useQuestionProgressStore((state) => state.resetProgress);
-  const questionCatalogCount = useQuestionCatalogCount();
-  const questionCatalogError = useQuestionCatalogLastError();
-  const questionCatalogStatus = useQuestionCatalogStatus();
+  const hasPlusAccess = useHasPlusAccess();
+  const [examCount, setExamCount] = useState(0);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+
+    void Notifications.getPermissionsAsync()
+      .then(({ status }) => {
+        setNotificationsEnabled(status === "granted");
+      })
+      .catch(() => {
+        setNotificationsEnabled(false);
+      });
+  }, [isFocused]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+
+    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
+      setExamCount(0);
+      return;
+    }
+
+    let cancelled = false;
+
+    void fetchRecentExamSessions(100)
+      .then((sessions) => {
+        if (!cancelled) {
+          setExamCount(sessions.length);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setExamCount(0);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authMode, isFocused]);
+
+  const metrics = useMemo(
+    () => getProfileStatMetrics(attempts, examCount),
+    [attempts, examCount]
+  );
+
+  const weekDays = useMemo(
+    () => buildWeekActivity(attempts, preferredLocale),
+    [attempts, preferredLocale]
+  );
+
+  const examDate = currentStudyPlan?.examDate ?? null;
+  const daysUntilExam =
+    examDate != null ? getDaysUntilExamFromDate(examDate) : null;
+  const localeLabel = t(`languages.${preferredLocale}.label`);
+
+  const handleToggleNotifications = async (nextValue: boolean) => {
+    if (nextValue) {
+      try {
+        const { status } = await Notifications.requestPermissionsAsync();
+        setNotificationsEnabled(status === "granted");
+      } catch {
+        setNotificationsEnabled(false);
+      }
+      return;
+    }
+
+    Alert.alert(
+      t("profile.notificationsDisableTitle"),
+      t("profile.notificationsDisableMessage")
+    );
+  };
+
+  const handleResetAll = () => {
+    Alert.alert(t("profile.resetTitle"), t("profile.resetMessage"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("profile.resetConfirm"),
+        style: "destructive",
+        onPress: () => {
+          void (async () => {
+            await resetAppToFreshStart();
+            router.replace("/(onboarding)/category");
+          })();
+        },
+      },
+    ]);
+  };
 
   const handleSignOut = async () => {
     if (authMode === "supabase" && isMobileSupabaseConfigured) {
@@ -69,217 +174,240 @@ export default function ProfileTabScreen() {
     router.replace("/(onboarding)/access");
   };
 
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: t("profile.shareMessage"),
+      });
+    } catch {
+      // user dismissed
+    }
+  };
+
+  const handleFeedback = () => {
+    void Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t("profile.feedbackEmailSubject"))}`);
+  };
+
+  const handleSupport = () => {
+    void Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
+  };
+
   return (
-    <AppScreen
-      title={t("tabs.profileTitle")}
-      subtitle={t("tabs.profileSubtitle")}
-    >
-      <View style={{ gap: 12 }}>
-        <AppCard accent>
-          <Text style={{ fontSize: 13, fontWeight: "700", marginBottom: 8 }}>
-            {t("profile.currentUser")}
-          </Text>
-          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 4 }}>
-            {currentUser?.fullName ?? t("common.student")}
-          </Text>
-          <Text style={{ fontSize: 14, lineHeight: 22 }}>
-            {currentUser?.email ?? "demo@prawko.app"}
-          </Text>
-        </AppCard>
-
-        <AppCard>
-          <Text style={{ fontSize: 13, fontWeight: "700", marginBottom: 8 }}>
-            {t("profile.preferences")}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {t("profile.localeValue", { locale: preferredLocale.toUpperCase() })}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {t("profile.categoryValue", { category: preferredCategory })}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {t("profile.authValue", { authMode })}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {t("profile.supabaseValue", {
-              status: isMobileSupabaseConfigured
-                ? t("common.configured")
-                : t("common.missing"),
-            })}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {t("profile.revenueCatValue", {
-              status: revenueCatConfigured
-                ? t("common.configured")
-                : t("common.missing"),
-            })}
-          </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              gap: 12,
-              marginTop: 8,
+    <GreenWaveScreen>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <StatusBar style="dark" />
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: 96 + safeBottom },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          <ProfileStatsCard
+            title={t("profile.statsTitle")}
+            detailsLabel={t("profile.statsDetails")}
+            metrics={metrics}
+            metricLabels={{
+              sessions: t("profile.statSessions"),
+              accuracy: t("profile.statAccuracy"),
+              exams: t("profile.statExams"),
+              streak: t("profile.statStreak"),
             }}
-          >
-            <View style={{ flex: 1, gap: 4 }}>
-              <Text style={{ fontSize: 15, lineHeight: 22, fontWeight: "700" }}>
-                {t("profile.pjmTracksTitle")}
-              </Text>
-              <Text style={{ fontSize: 14, lineHeight: 21, opacity: 0.8 }}>
-                {t("profile.pjmTracksDescription")}
-              </Text>
-            </View>
-            <Switch
-              accessibilityLabel={t("profile.pjmTracksTitle")}
-              value={enablePjmTracks}
-              onValueChange={setEnablePjmTracks}
-            />
-          </View>
-        </AppCard>
+            weekDays={weekDays}
+            onPressDetails={() => router.push("/practice")}
+          />
 
-        <AppCard>
-          <Text style={{ fontSize: 13, fontWeight: "700", marginBottom: 8 }}>
-            {t("profile.access")}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {t("profile.aiAccessValue", {
-              status: t(
-                hasAiQuestionChatAccess
-                  ? "profile.accessStatuses.enabled"
-                  : "profile.accessStatuses.locked"
-              ),
-            })}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {t("profile.examAccessValue", {
-              status: t(
-                hasExamAccess
-                  ? "profile.accessStatuses.enabled"
-                  : "profile.accessStatuses.locked"
-              ),
-            })}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {schoolAccess
-              ? t("profile.schoolAccessValue", {
-                  school:
-                    schoolAccess.schoolName ?? t("profile.schoolPartnerFallback"),
-                  date: schoolAccess.accessEndsAt
-                    ? formatPlanDate(schoolAccess.accessEndsAt.slice(0, 10))
-                    : t("profile.accessNoExpiry"),
-                })
-              : t("profile.schoolAccessMissing")}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {purchaseAccess
-              ? t("profile.purchaseAccessValue", {
-                  date: purchaseAccess.latestExpirationDate
-                    ? formatPlanDate(
-                        purchaseAccess.latestExpirationDate.slice(0, 10)
-                      )
-                    : t("profile.accessNoExpiry"),
-                })
-              : t("profile.purchaseAccessMissing")}
-          </Text>
-        </AppCard>
-
-        <AppCard>
-          <Text style={{ fontSize: 13, fontWeight: "700", marginBottom: 8 }}>
-            {t("profile.catalog")}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {t("profile.catalogStatusValue", {
-              status: t(`profile.catalogStatuses.${questionCatalogStatus}`),
-            })}
-          </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
-            {t("profile.catalogCountValue", {
-              count: questionCatalogCount,
-            })}
-          </Text>
-          {questionCatalogError ? (
-            <Text style={{ fontSize: 15, lineHeight: 24 }}>
-              {t("profile.catalogErrorValue", {
-                error: questionCatalogError,
-              })}
-            </Text>
-          ) : null}
-        </AppCard>
-
-        {currentStudyPlan ? (
-          <AppCard accent>
-            <Text style={{ fontSize: 13, fontWeight: "700", marginBottom: 8 }}>
-              {t("profile.currentPlan")}
-            </Text>
-            <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 4 }}>
-              {currentStudyPlan.title}
-            </Text>
-            <Text style={{ fontSize: 14, lineHeight: 22 }}>
-              {t("profile.planDateValue", {
-                date: formatPlanDate(currentStudyPlan.examDate),
-              })}
-            </Text>
-            <Text style={{ fontSize: 14, lineHeight: 22 }}>
-              {t("profile.planDaysValue", {
-                days: currentStudyPlan.daysPlanned,
-              })}
-            </Text>
-          </AppCard>
-        ) : null}
-
-        <View style={{ gap: 10 }}>
-          {currentStudyPlan ? (
-            <AppButton
-              variant="secondary"
-              label={t("profile.viewPlan")}
-              onPress={() => router.push("/(onboarding)/preview")}
+          {!hasPlusAccess ? (
+            <ProfilePremiumBanner
+              title={t("profile.premiumTitle")}
+              description={t("profile.premiumDescription")}
+              onPress={() => router.push("/paywall")}
             />
           ) : null}
-          {currentStudyPlan ? (
-            <AppButton
-              variant="secondary"
-              label={t("home.adjustPlan")}
+
+          <ProfileSettingsGroup>
+            <ProfileSettingsRow
+              title={t("profile.examDateTitle")}
+              subtitle={
+                daysUntilExam != null
+                  ? t("profile.examDateSubtitle", { days: Math.max(0, daysUntilExam) })
+                  : undefined
+              }
+              value={
+                examDate != null
+                  ? formatProfileExamDate(examDate, preferredLocale)
+                  : t("profile.examDateMissing")
+              }
+              icon={
+                <Ionicons
+                  color={greenWave.color.inkSecondary}
+                  name="calendar-outline"
+                  size={24}
+                />
+              }
               onPress={() => router.push("/modals/plan-adjust")}
             />
-          ) : null}
-          <AppButton
-            variant="secondary"
-            label={t("profile.openAi")}
-            onPress={() => router.push("/modals/ai-chat")}
-          />
-          <AppButton
-            variant="secondary"
-            label={t("profile.manageAccess")}
-            onPress={() => router.push("/modals/access-center")}
-          />
-          <AppButton
-            variant="secondary"
-            label={t("profile.openPaywall")}
-            onPress={() => router.push("/modals/paywall")}
-          />
-          <AppButton
-            variant="ghost"
-            label={t("profile.signOut")}
-            onPress={() => void handleSignOut()}
-          />
-          <AppButton
-            variant="ghost"
-            label={t("profile.resetShell")}
-            onPress={() => {
-              resetShell();
-              resetProgress();
-              Toast.show({
-                type: "success",
-                text1: t("toasts.shellResetTitle"),
-                text2: t("toasts.shellResetSubtitle"),
-              });
-              router.replace("/");
-            }}
-          />
-        </View>
-      </View>
-    </AppScreen>
+            <ProfileSettingsRow
+              title={t("profile.categoryTitle")}
+              value={preferredCategory}
+              icon={
+                <Ionicons
+                  color={greenWave.color.inkSecondary}
+                  name="car-outline"
+                  size={24}
+                />
+              }
+              onPress={() => router.push("/(onboarding)/category")}
+            />
+            <ProfileSettingsRow
+              title={t("profile.languageTitle")}
+              value={localeLabel}
+              icon={
+                <Ionicons
+                  color={greenWave.color.inkSecondary}
+                  name="language-outline"
+                  size={24}
+                />
+              }
+              onPress={() => router.push("/(onboarding)/language")}
+            />
+            <ProfileSettingsRow
+              title={t("profile.notificationsTitle")}
+              icon={
+                <Ionicons
+                  color={greenWave.color.inkSecondary}
+                  name="notifications-outline"
+                  size={24}
+                />
+              }
+              trailing="switch"
+              switchValue={notificationsEnabled}
+              onSwitchChange={(value) => void handleToggleNotifications(value)}
+            />
+            <ProfileSettingsRow
+              title={t("profile.offlineTitle")}
+              icon={
+                <Ionicons
+                  color={greenWave.color.inkSecondary}
+                  name="cloud-download-outline"
+                  size={24}
+                />
+              }
+              trailing="premium"
+              isLast
+              onPress={() =>
+                hasPlusAccess
+                  ? router.push("/modals/access-center")
+                  : router.push("/paywall")
+              }
+            />
+          </ProfileSettingsGroup>
+
+          <ProfileSettingsGroup>
+            <ProfileSettingsRow
+              title={t("profile.feedbackTitle")}
+              icon={
+                <Ionicons
+                  color={greenWave.color.inkSecondary}
+                  name="chatbubble-ellipses-outline"
+                  size={24}
+                />
+              }
+              trailing="none"
+              onPress={handleFeedback}
+            />
+            <ProfileSettingsRow
+              title={t("profile.supportTitle")}
+              icon={
+                <Ionicons
+                  color={greenWave.color.inkSecondary}
+                  name="help-circle-outline"
+                  size={24}
+                />
+              }
+              trailing="none"
+              onPress={handleSupport}
+            />
+            <ProfileSettingsRow
+              title={t("profile.shareTitle")}
+              icon={
+                <Ionicons
+                  color={greenWave.color.inkSecondary}
+                  name="share-social-outline"
+                  size={24}
+                />
+              }
+              trailing="none"
+              isLast
+              onPress={() => void handleShare()}
+            />
+          </ProfileSettingsGroup>
+
+          <Pressable
+            accessibilityRole="button"
+            onLongPress={() => void handleSignOut()}
+            onPress={handleResetAll}
+            style={({ pressed }) => [
+              styles.resetCard,
+              pressed ? styles.pressed : null,
+            ]}
+          >
+            <View style={styles.resetIconWrap}>
+              <Ionicons
+                color={greenWaveAccent.red.ink}
+                name="refresh-outline"
+                size={24}
+              />
+            </View>
+            <Text style={styles.resetTitle}>{t("profile.resetProgress")}</Text>
+          </Pressable>
+        </ScrollView>
+      </SafeAreaView>
+    </GreenWaveScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    padding: greenWave.spacing.xl,
+    gap: greenWave.spacing.xl,
+  },
+  resetCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: greenWave.spacing.md,
+    padding: greenWave.spacing.lg,
+    borderRadius: greenWave.radius.xl,
+    backgroundColor: greenWave.color.surface,
+    shadowColor: greenWave.color.shadow,
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+  resetIconWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: greenWave.spacing.sm,
+    borderRadius: greenWave.radius.md,
+    backgroundColor: greenWaveAccent.red.soft,
+  },
+  resetTitle: {
+    flex: 1,
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "600",
+    letterSpacing: -0.16,
+    color: greenWaveAccent.red.ink,
+  },
+});

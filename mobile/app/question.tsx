@@ -1,20 +1,25 @@
 import { router, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
 
-import { FREE_TIER_LIMITS, type SupportedLocale } from "@prawko/config";
+import { type SupportedLocale } from "@prawko/config";
 
 import { AppButton } from "../src/components/shell/AppButton";
-import { AppCard } from "../src/components/shell/AppCard";
 import { AppScreen } from "../src/components/shell/AppScreen";
+import { IconPlaceholder } from "../src/components/shell/IconPlaceholder";
 import {
   EmptyStateView,
   LoadingStateView,
 } from "../src/components/shell/StateViews";
+import { TrainingExitDialog } from "../src/components/shell/TrainingExitDialog";
+import { greenWave, greenWaveAccent } from "../src/theme/green-wave";
 import { isMobileSupabaseConfigured } from "../src/config/env";
-import { fetchRemoteDailyUsageSnapshot } from "../src/features/entitlements/supabase-daily-usage";
+import { recordQuestionAnsweredForAds } from "../src/features/ads/ad-session-policy";
+import { useAdInterstitialActions } from "../src/features/ads/show-interstitial";
 import { useErrorLogger } from "../src/providers/ErrorLoggingProvider";
 import {
   buildQuestionRouteParams,
@@ -28,36 +33,19 @@ import {
   getQuestionChoices,
   getQuestionSessionSummary,
   getQuestionUserState,
-  isQuestionReviewDue,
   isQuestionSessionMode,
   isTopicBlockId,
 } from "../src/features/questions/question-engine";
 import type { LocalQuestion } from "../src/features/questions/types";
 import { recordQuestionAttemptBySourceId } from "../src/features/questions/supabase-question-attempts";
-import {
-  syncQuestionBookmarkState,
-  syncQuestionHardState,
-} from "../src/features/questions/supabase-question-state";
+import { syncQuestionBookmarkState } from "../src/features/questions/supabase-question-state";
 import { useAppShellStore } from "../src/state/app-shell";
-import { useHasFeatureAccess } from "../src/state/entitlements";
-import {
-  useFreeTierQuestionUsageHydrated,
-  useFreeTierQuestionUsageStore,
-  useUsedFreeQuestionAnswersToday,
-} from "../src/state/free-tier-usage";
 import { useQuestionCatalogVersion } from "../src/state/question-catalog";
 import {
   useActiveQuestionSession,
   useQuestionProgressHydrated,
   useQuestionProgressStore,
 } from "../src/state/question-progress";
-
-const RESULT_COLORS = {
-  correctBorder: "#5D8A80",
-  correctSurface: "#E6F2EC",
-  wrongBorder: "#C2826B",
-  wrongSurface: "#F7E7DF",
-};
 
 export default function QuestionScreen() {
   const { t } = useTranslation();
@@ -75,12 +63,7 @@ export default function QuestionScreen() {
   );
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const supabaseUserId = useAppShellStore((state) => state.supabaseUser?.id ?? null);
-  const hasPremiumAccess = useHasFeatureAccess("premium_access");
-  const freeTierQuestionUsageHydrated = useFreeTierQuestionUsageHydrated();
-  const localUsedQuestionAnswersToday = useUsedFreeQuestionAnswersToday();
-  const consumeFreeQuestionAnswer = useFreeTierQuestionUsageStore(
-    (state) => state.consumeQuestionAnswer
-  );
+  const { maybeShowInterstitial } = useAdInterstitialActions();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionProgressHydrated = useQuestionProgressHydrated();
   const activeSession = useActiveQuestionSession();
@@ -89,17 +72,18 @@ export default function QuestionScreen() {
     (state) => state.answerCurrentQuestion
   );
   const advanceSession = useQuestionProgressStore((state) => state.advanceSession);
+  const clearActiveSession = useQuestionProgressStore(
+    (state) => state.clearActiveSession
+  );
   const toggleBookmark = useQuestionProgressStore((state) => state.toggleBookmark);
-  const toggleHard = useQuestionProgressStore((state) => state.toggleHard);
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
   const [displayLocale, setDisplayLocale] =
     useState<SupportedLocale>(preferredLocale);
-  const [remoteUsedQuestionAnswersToday, setRemoteUsedQuestionAnswersToday] =
-    useState<number | null>(null);
-  const [hasRemoteUsageResolved, setHasRemoteUsageResolved] = useState(false);
+  const [showExitDialog, setShowExitDialog] = useState(false);
   const questionStartedAtRef = useRef(Date.now());
+  const didShowSessionCompleteAdRef = useRef(false);
 
   const rawMode = getSingleParam(params.mode);
   const rawQuestionLimit = getSingleParam(params.questionLimit);
@@ -185,92 +169,125 @@ export default function QuestionScreen() {
   const currentQuestionState = currentQuestionId
     ? getQuestionUserState(questionUserState, currentQuestionId)
     : null;
-  const bookmarkedCount = activeSession
-    ? activeSession.questionIds.filter(
-      (questionId) => getQuestionUserState(questionUserState, questionId).isBookmarked
-    ).length
-    : 0;
   const questionChoices = currentQuestion
     ? getQuestionChoices(currentQuestion, displayLocale)
     : [];
   const isCompleted = Boolean(activeSession?.finishedAt && !activeSession.emptyReason);
   const isEmptyState = Boolean(activeSession?.emptyReason);
-  const hasUnlimitedQuestionPractice = hasPremiumAccess;
-  const shouldLoadRemoteQuestionUsage =
-    authMode === "supabase" &&
-    Boolean(supabaseUserId) &&
-    isMobileSupabaseConfigured &&
-    !hasUnlimitedQuestionPractice;
-  const usedQuestionAnswersToday = hasUnlimitedQuestionPractice
-    ? 0
-    : remoteUsedQuestionAnswersToday === null
-      ? localUsedQuestionAnswersToday
-      : Math.max(remoteUsedQuestionAnswersToday, localUsedQuestionAnswersToday);
-  const remainingFreeQuestionAnswers = Math.max(
-    0,
-    FREE_TIER_LIMITS.questionPracticePerDay - usedQuestionAnswersToday
-  );
-  const questionLimitReached =
-    !hasUnlimitedQuestionPractice && remainingFreeQuestionAnswers <= 0;
-  const styles = getStyles();
+  const trainerStyles = getTrainerStyles();
+
+  const handleAnswer = (choiceId: LocalQuestion["correctAnswer"]) => {
+    if (!currentQuestion) {
+      return;
+    }
+
+    const isFirstAnswer = !currentAnswer;
+    const answeredAttempt = answerCurrentQuestion(choiceId);
+
+    if (!answeredAttempt) {
+      return;
+    }
+
+    if (!isFirstAnswer) {
+      return;
+    }
+
+    recordQuestionAnsweredForAds();
+    maybeShowInterstitial("after_question_answer");
+
+    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
+      return;
+    }
+
+    const answerDurationMs = Math.max(
+      0,
+      Date.now() - questionStartedAtRef.current
+    );
+
+    void recordQuestionAttemptBySourceId({
+      questionSourceId: currentQuestion.id,
+      mode: sessionMode,
+      selectedAnswer: answeredAttempt.selectedAnswer,
+      isCorrect: answeredAttempt.isCorrect,
+      locale: displayLocale,
+      studyPlanId: currentStudyPlanRemoteId,
+      answerDurationMs,
+      explanationOpened: true,
+      aiChatUsed: false,
+      metadata: {
+        answered_at: answeredAttempt.answeredAt,
+        client_attempt_id: answeredAttempt.id,
+        client_session_id: answeredAttempt.sessionId,
+        displayed_locale: displayLocale,
+        source: "question_screen",
+        study_plan_task_id: activeSession?.request.studyPlanTaskId ?? null,
+        session_question_limit: activeSession?.request.questionLimit ?? null,
+        topic_block: currentQuestion.topicBlock,
+      },
+    }).catch((error) => {
+      console.warn(
+        `Failed to sync question attempt for ${currentQuestion.id}.`,
+        error
+      );
+    });
+  };
+
+  const handleToggleBookmark = (questionId: string) => {
+    const isBookmarked = toggleBookmark(questionId);
+
+    Toast.show({
+      type: "success",
+      text1: isBookmarked
+        ? t("toasts.bookmarkSavedTitle")
+        : t("toasts.bookmarkRemovedTitle"),
+      text2: isBookmarked
+        ? t("toasts.bookmarkSavedSubtitle")
+        : t("toasts.bookmarkRemovedSubtitle"),
+    });
+
+    if (authMode === "supabase" && isMobileSupabaseConfigured) {
+      void syncQuestionBookmarkState({
+        questionSourceId: questionId,
+        isBookmarked,
+        savedFromMode: sessionMode,
+        metadata: {
+          source: "mobile_question_screen",
+        },
+      }).catch((error) => {
+        console.warn(
+          `Failed to sync bookmark state for ${questionId}.`,
+          error
+        );
+      });
+    }
+  };
+
+  const handleRequestExit = () => {
+    setShowExitDialog(true);
+  };
+
+  const handleConfirmExit = () => {
+    setShowExitDialog(false);
+    clearActiveSession();
+    router.back();
+  };
+
+  useEffect(() => {
+    if (!isCompleted || didShowSessionCompleteAdRef.current) {
+      return;
+    }
+
+    didShowSessionCompleteAdRef.current = true;
+    maybeShowInterstitial("after_practice_session_complete");
+  }, [isCompleted, maybeShowInterstitial]);
+
+  useEffect(() => {
+    didShowSessionCompleteAdRef.current = false;
+  }, [sessionKey]);
 
   useEffect(() => {
     questionStartedAtRef.current = Date.now();
   }, [currentQuestionId]);
-
-  useEffect(() => {
-    if (!shouldLoadRemoteQuestionUsage) {
-      setRemoteUsedQuestionAnswersToday(null);
-      setHasRemoteUsageResolved(true);
-      return;
-    }
-
-    let cancelled = false;
-    setHasRemoteUsageResolved(false);
-
-    void fetchRemoteDailyUsageSnapshot()
-      .then((snapshot) => {
-        if (cancelled) {
-          return;
-        }
-
-        setRemoteUsedQuestionAnswersToday(snapshot.questionAttemptsUsedToday);
-        setHasRemoteUsageResolved(true);
-      })
-      .catch((error) => {
-        if (cancelled) {
-          return;
-        }
-
-        console.warn("Failed to fetch the remote daily question usage snapshot.", error);
-        captureError({
-          area: "question_practice",
-          error,
-          eventName: "remote_daily_usage_snapshot_failed",
-          message:
-            "Failed to fetch the remote daily question practice usage snapshot.",
-          metadata: {
-            user_id: supabaseUserId,
-          },
-          severity: "warning",
-        });
-        setRemoteUsedQuestionAnswersToday(null);
-        setHasRemoteUsageResolved(true);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [captureError, shouldLoadRemoteQuestionUsage, supabaseUserId]);
-
-  function openQuestionPracticePaywall() {
-    router.push({
-      pathname: "/modals/paywall",
-      params: {
-        feature: "premium_access",
-      },
-    });
-  }
 
   const screenSubtitle = isCompleted
     ? t("question.summarySubtitle", {
@@ -348,15 +365,6 @@ export default function QuestionScreen() {
         />
       ) : null}
 
-      {/* Footer: practice limit paywall */}
-      {!isCompleted && !isEmptyState && questionLimitReached ? (
-        <AppButton
-          variant="secondary"
-          label={t("question.practiceUnlockCta")}
-          onPress={() => openQuestionPracticePaywall()}
-        />
-      ) : null}
-
       {/* Footer: close */}
       <AppButton
         variant="ghost"
@@ -366,12 +374,7 @@ export default function QuestionScreen() {
     </View>
   );
 
-  if (
-    !questionProgressHydrated ||
-    !freeTierQuestionUsageHydrated ||
-    (shouldLoadRemoteQuestionUsage && !hasRemoteUsageResolved) ||
-    !activeSession
-  ) {
+  if (!questionProgressHydrated || !activeSession) {
     return (
       <AppScreen scroll={false}>
         <LoadingStateView
@@ -394,43 +397,102 @@ export default function QuestionScreen() {
   }
 
   if (isCompleted) {
+    const total = summary.total || 1;
+    const percent = Math.round((summary.correct / total) * 100);
+    const passed = percent >= 70;
+    const resultAccent = passed ? greenWaveAccent.green : greenWaveAccent.amber;
+
     return (
-      <AppScreen subtitle={screenSubtitle} footer={footer}>
-        <View style={{ gap: 12 }}>
-          {/* Session summary metric block */}
-          <AppCard accent>
-            <Text style={styles.summaryMetric}>
-              {summary.correct}/{summary.total}
+      <SafeAreaView style={trainerStyles.safeArea} edges={["top", "bottom"]}>
+        <StatusBar style="dark" />
+        <View style={trainerStyles.resultContainer}>
+          <View style={trainerStyles.resultHeader}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("common.close")}
+              hitSlop={8}
+              onPress={() => router.back()}
+              style={trainerStyles.headerButton}
+            >
+              <IconPlaceholder color={greenWave.color.ink} />
+            </Pressable>
+          </View>
+
+          <View style={trainerStyles.resultBodyArea}>
+            <View style={trainerStyles.successBadge}>
+              <IconPlaceholder color={resultAccent.ink} size={40} />
+            </View>
+
+            <Text style={trainerStyles.resultTitle}>
+              {passed
+                ? t("question.resultGoodTitle")
+                : t("question.resultNeedsWorkTitle")}
             </Text>
-            <Text style={styles.summaryLabel}>{t("question.correctLabel")}</Text>
-            <Text style={styles.summaryBody}>
-              {t("question.summaryBody", {
-                wrong: summary.wrong,
-                saved: bookmarkedCount,
+
+            <Text style={[trainerStyles.resultPercent, { color: resultAccent.ink }]}>
+              {percent}%
+            </Text>
+
+            <Text style={trainerStyles.resultCount}>
+              {t("question.correctOfTotal", {
+                correct: summary.correct,
+                total: summary.total,
               })}
             </Text>
-          </AppCard>
 
-          {/* Session summary breakdown block */}
-          <AppCard>
-            <Text style={styles.sectionTitle}>{t("question.summaryBreakdown")}</Text>
-            <View style={styles.summaryGrid}>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryItemValue}>{summary.answered}</Text>
-                <Text style={styles.summaryItemLabel}>{t("question.answeredLabel")}</Text>
+            <Text style={trainerStyles.resultBody}>
+              {passed
+                ? t("question.resultGoodBody")
+                : t("question.resultNeedsWorkBody")}
+            </Text>
+
+            <View style={trainerStyles.nextCard}>
+              <View style={trainerStyles.nextIconBox}>
+                <IconPlaceholder color={greenWave.color.ink} />
               </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryItemValue}>{summary.wrong}</Text>
-                <Text style={styles.summaryItemLabel}>{t("question.wrongLabel")}</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryItemValue}>{bookmarkedCount}</Text>
-                <Text style={styles.summaryItemLabel}>{t("question.savedLabel")}</Text>
+              <View style={trainerStyles.nextCardText}>
+                <Text style={trainerStyles.nextTitle}>
+                  {t("question.nextCategoryTitle")}
+                </Text>
+                <Text style={trainerStyles.nextSubtitle}>
+                  {t("question.nextCategorySubtitle")}
+                </Text>
               </View>
             </View>
-          </AppCard>
+          </View>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() =>
+              router.replace({
+                pathname: "/question",
+                params: buildQuestionRouteParams({
+                  mode: activeSession?.request.mode ?? sessionMode,
+                  questionLimit: activeSession?.request.questionLimit,
+                  studyPlanTaskId: activeSession?.request.studyPlanTaskId,
+                  topic: activeSession?.request.topic,
+                }),
+              })
+            }
+            style={({ pressed }) => [
+              trainerStyles.primaryButton,
+              pressed ? trainerStyles.pressed : null,
+            ]}
+          >
+            <Text style={trainerStyles.primaryButtonText}>
+              {t("question.continueTraining")}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            style={trainerStyles.reportButton}
+            onPress={() => router.back()}
+          >
+            <Text style={trainerStyles.reportText}>{t("question.later")}</Text>
+          </Pressable>
         </View>
-      </AppScreen>
+      </SafeAreaView>
     );
   }
 
@@ -445,172 +507,258 @@ export default function QuestionScreen() {
     );
   }
 
-  return (
-    <AppScreen subtitle={screenSubtitle} footer={footer}>
-      <View style={{ gap: 12 }}>
-        {/* Question media block */}
-        {currentQuestion.media ? (
-          <View style={styles.mediaBleed}>
-            <QuestionMediaCard
-              locale={displayLocale}
-              media={currentQuestion.media}
+  const hasAnswered = Boolean(currentAnswer);
+  const isCorrectAnswer = Boolean(currentAnswer?.isCorrect);
+  const feedbackAccent = isCorrectAnswer
+    ? greenWaveAccent.green
+    : greenWaveAccent.red;
+  const isBooleanQuestion = currentQuestion.answerType === "boolean";
+  const totalQuestions = summary.total || activeSession.questionIds.length;
+  const currentStep = activeSession.currentIndex + 1;
+  const STEP_WINDOW = 24;
+  const stepWindowStart =
+    activeSession.questionIds.length > STEP_WINDOW
+      ? Math.min(
+        Math.max(0, activeSession.currentIndex - Math.floor(STEP_WINDOW / 2)),
+        activeSession.questionIds.length - STEP_WINDOW
+      )
+      : 0;
+  const visibleSteps = activeSession.questionIds
+    .slice(stepWindowStart, stepWindowStart + STEP_WINDOW)
+    .map((questionId, offset) => ({
+      questionId,
+      index: stepWindowStart + offset,
+    }));
+  const explanationText = getLocalizedText(
+    currentQuestion.explanation,
+    displayLocale
+  );
+  const scopeKey = `question.scopes.${currentQuestion.scope}`;
+  const scopeLabel = t(scopeKey);
+
+  const renderOption = (choice: { id: string; label: string }) => {
+    const isSelected = currentAnswer?.selectedAnswer === choice.id;
+    const isCorrectChoice = currentQuestion.correctAnswer === choice.id;
+    const revealCorrect = hasAnswered && isCorrectChoice;
+    const revealWrong = hasAnswered && isSelected && !isCorrectChoice;
+    const dimmed = hasAnswered && !isSelected && !isCorrectChoice;
+    const filled = (isSelected && isCorrectChoice) || revealWrong;
+
+    const containerStyle = [
+      isBooleanQuestion
+        ? trainerStyles.booleanOption
+        : trainerStyles.option,
+      filled
+        ? { backgroundColor: feedbackAccentForChoice(isCorrectChoice).fill }
+        : null,
+      revealCorrect && !filled
+        ? {
+          borderWidth: 2,
+          borderColor: greenWaveAccent.green.fill,
+        }
+        : null,
+      dimmed ? trainerStyles.optionDimmed : null,
+    ];
+
+    const textColor = filled
+      ? greenWave.color.onAccent
+      : revealCorrect
+        ? greenWaveAccent.green.ink
+        : greenWave.color.ink;
+
+    return (
+      <Pressable
+        key={choice.id}
+        accessibilityRole="button"
+        accessibilityLabel={choice.label}
+        disabled={hasAnswered}
+        onPress={() =>
+          handleAnswer(choice.id as LocalQuestion["correctAnswer"])
+        }
+        style={containerStyle}
+      >
+        {!isBooleanQuestion ? (
+          revealCorrect || revealWrong ? (
+            <IconPlaceholder
+              color={filled ? greenWave.color.onAccent : greenWaveAccent.green.fill}
             />
-          </View>
-        ) : null}
-
-        {/* Question prompt block */}
-        <AppCard>
-          <Text style={styles.promptText}>
-            {getLocalizedText(currentQuestion.prompt, displayLocale)}
-          </Text>
-          <Text style={styles.pointsText}>
-            {t("question.pointsLabel", { points: currentQuestion.points })}
-          </Text>
-        </AppCard>
-
-        {/* Practice limit block */}
-        {questionLimitReached ? (
-          <AppCard>
-            <Text style={styles.sectionTitle}>
-              {t("question.practiceLimitReachedTitle")}
-            </Text>
-            <Text style={styles.feedbackBody}>
-              {t("question.practiceLimitReachedBody", {
-                count: FREE_TIER_LIMITS.questionPracticePerDay,
-              })}
-            </Text>
-            <View style={{ marginTop: 10 }}>
-              <AppButton
-                label={t("question.practiceUnlockCta")}
-                onPress={() => openQuestionPracticePaywall()}
-              />
+          ) : (
+            <View style={trainerStyles.optionBadge}>
+              <Text style={trainerStyles.optionBadgeText}>
+                {choice.id.toUpperCase()}
+              </Text>
             </View>
-          </AppCard>
+          )
         ) : null}
+        <Text
+          style={[
+            isBooleanQuestion
+              ? trainerStyles.booleanOptionText
+              : trainerStyles.optionText,
+            { color: textColor },
+            filled || revealCorrect ? trainerStyles.optionTextStrong : null,
+          ]}
+        >
+          {choice.label}
+        </Text>
+      </Pressable>
+    );
+  };
 
-        {/* Answer choices block */}
-        <View style={styles.answerChoicesRow}>
-          {questionChoices.map((choice) => {
-            const isSelected = currentAnswer?.selectedAnswer === choice.id;
-            const isCorrectChoice = currentQuestion.correctAnswer === choice.id;
-            const hasAnswered = Boolean(currentAnswer);
-            const shouldShowCorrect =
-              hasAnswered && isSelected && isCorrectChoice;
-            const shouldShowWrong =
-              hasAnswered && isSelected && !isCorrectChoice;
-            const shouldShowActive = isSelected && !hasAnswered;
-            const choiceButtonLabel = getChoiceButtonLabel(
-              currentQuestion.answerType,
-              choice.id,
-              choice.label
-            );
-
-            return (
-              <Pressable
-                key={choice.id}
-                accessibilityRole="button"
-                accessibilityLabel={choice.label}
-                onPress={() => {
-                  if (questionLimitReached) {
-                    openQuestionPracticePaywall();
-                    return;
-                  }
-
-                  const isFirstAnswer = !currentAnswer;
-                  const answeredAttempt = answerCurrentQuestion(choice.id);
-
-                  if (!answeredAttempt) {
-                    return;
-                  }
-
-                  if (!isFirstAnswer) {
-                    return;
-                  }
-
-                  if (!hasUnlimitedQuestionPractice) {
-                    const nextLocalUsedQuestionAnswers =
-                      localUsedQuestionAnswersToday + 1;
-
-                    consumeFreeQuestionAnswer();
-
-                    if (shouldLoadRemoteQuestionUsage) {
-                      setRemoteUsedQuestionAnswersToday((current) =>
-                        current === null
-                          ? nextLocalUsedQuestionAnswers
-                          : Math.max(current + 1, nextLocalUsedQuestionAnswers)
-                      );
-                    }
-                  }
-
-                  if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
-                    return;
-                  }
-
-                  const answerDurationMs = Math.max(
-                    0,
-                    Date.now() - questionStartedAtRef.current
-                  );
-
-                  void recordQuestionAttemptBySourceId({
-                    questionSourceId: currentQuestion.id,
-                    mode: sessionMode,
-                    selectedAnswer: answeredAttempt.selectedAnswer,
-                    isCorrect: answeredAttempt.isCorrect,
-                    locale: displayLocale,
-                    studyPlanId: currentStudyPlanRemoteId,
-                    answerDurationMs,
-                    explanationOpened: true,
-                    aiChatUsed: false,
-                    metadata: {
-                      answered_at: answeredAttempt.answeredAt,
-                      client_attempt_id: answeredAttempt.id,
-                      client_session_id: answeredAttempt.sessionId,
-                      displayed_locale: displayLocale,
-                      source: "question_screen",
-                      study_plan_task_id:
-                        activeSession.request.studyPlanTaskId ?? null,
-                      session_question_limit:
-                        activeSession.request.questionLimit ?? null,
-                      topic_block: currentQuestion.topicBlock,
-                    },
-                  }).catch((error) => {
-                    console.warn(
-                      `Failed to sync question attempt for ${currentQuestion.id}.`,
-                      error
-                    );
-                  });
-                }}
-                style={[
-                  styles.answerCard,
-                  shouldShowCorrect
-                    ? {
-                      backgroundColor: RESULT_COLORS.correctSurface,
-                      borderColor: RESULT_COLORS.correctBorder,
-                    }
-                    : null,
-                  shouldShowWrong
-                    ? {
-                      backgroundColor: RESULT_COLORS.wrongSurface,
-                      borderColor: RESULT_COLORS.wrongBorder,
-                    }
-                    : null,
-                  questionLimitReached ? styles.answerCardDisabled : null,
-                  shouldShowActive ? styles.answerCardActive : null,
-                ]}
-              >
-                <Text style={styles.answerButtonLabel}>{choiceButtonLabel}</Text>
-              </Pressable>
-            );
-          })}
+  return (
+    <SafeAreaView style={trainerStyles.safeArea} edges={["top", "bottom"]}>
+      <StatusBar style="dark" />
+      <View style={trainerStyles.container}>
+        {/* Header */}
+        <View style={trainerStyles.header}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
+            onPress={handleRequestExit}
+            style={trainerStyles.headerButton}
+          >
+            <IconPlaceholder color={greenWave.color.ink} />
+          </Pressable>
+          <View style={trainerStyles.headerCenter}>
+            <Text style={trainerStyles.headerTitle}>
+              {t("question.trainerTitle")}
+            </Text>
+            <Text style={trainerStyles.headerCounter}>
+              {currentStep} / {totalQuestions}
+            </Text>
+          </View>
         </View>
 
-        {/* Actions block */}
-        <AppCard>
-          <Text style={styles.sectionTitle}>{t("question.actionsTitle")}</Text>
-          <View style={{ gap: 10 }}>
-            <AppButton
-              variant="secondary"
-              label={t("question.askAi")}
+        {/* Stepper */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={trainerStyles.stepperScroll}
+          contentContainerStyle={trainerStyles.stepper}
+        >
+          {visibleSteps.map(({ questionId, index }) => {
+            const answer = activeSession.answers[questionId];
+            const stepState = answer
+              ? answer.isCorrect
+                ? "correct"
+                : "wrong"
+              : index === activeSession.currentIndex
+                ? "current"
+                : "upcoming";
+
+            const pillStyle =
+              stepState === "correct"
+                ? { backgroundColor: greenWaveAccent.green.fill }
+                : stepState === "wrong"
+                  ? { backgroundColor: greenWaveAccent.red.fill }
+                  : stepState === "current"
+                    ? { backgroundColor: greenWave.color.ink }
+                    : { backgroundColor: greenWave.color.track };
+
+            const isFilled = stepState !== "upcoming";
+
+            return (
+              <View
+                key={questionId}
+                style={[trainerStyles.stepPill, pillStyle]}
+              >
+                <Text
+                  style={[
+                    trainerStyles.stepPillText,
+                    {
+                      color: isFilled
+                        ? greenWave.color.onAccent
+                        : greenWave.color.inkSecondary,
+                    },
+                  ]}
+                >
+                  {index + 1}
+                </Text>
+              </View>
+            );
+          })}
+        </ScrollView>
+
+        {/* Meta row */}
+        <View style={trainerStyles.metaRow}>
+          <Text style={trainerStyles.metaText}>{scopeLabel}</Text>
+          <Text style={trainerStyles.metaText}>
+            {t("question.pointsLabel", { points: currentQuestion.points })}
+          </Text>
+        </View>
+
+        {/* Question body */}
+        <ScrollView
+          style={trainerStyles.body}
+          contentContainerStyle={trainerStyles.bodyContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {currentQuestion.media ? (
+            <View style={trainerStyles.mediaBleed}>
+              <QuestionMediaCard
+                locale={displayLocale}
+                media={currentQuestion.media}
+              />
+            </View>
+          ) : null}
+
+          <Text style={trainerStyles.prompt}>
+            {getLocalizedText(currentQuestion.prompt, displayLocale)}
+          </Text>
+
+          <View
+            style={
+              isBooleanQuestion
+                ? trainerStyles.booleanOptions
+                : trainerStyles.options
+            }
+          >
+            {questionChoices.map(renderOption)}
+          </View>
+        </ScrollView>
+
+        {/* Footer */}
+        {hasAnswered ? (
+          <View
+            style={[
+              trainerStyles.feedbackCard,
+              { backgroundColor: feedbackAccent.soft },
+            ]}
+          >
+            <View style={trainerStyles.feedbackHeader}>
+              <IconPlaceholder color={feedbackAccent.ink} />
+              <Text
+                style={[
+                  trainerStyles.feedbackTitle,
+                  { color: feedbackAccent.ink },
+                ]}
+              >
+                {isCorrectAnswer
+                  ? t("question.resultCorrect")
+                  : t("question.resultWrong")}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() => handleToggleBookmark(currentQuestionId)}
+              >
+                <IconPlaceholder
+                  color={
+                    currentQuestionState.isBookmarked
+                      ? greenWaveAccent.amber.fill
+                      : greenWave.color.inkMuted
+                  }
+                />
+              </Pressable>
+            </View>
+
+            {explanationText ? (
+              <Text style={trainerStyles.feedbackBody}>{explanationText}</Text>
+            ) : null}
+
+            <Pressable
+              accessibilityRole="button"
+              style={trainerStyles.explainRow}
               onPress={() =>
                 router.push({
                   pathname: "/modals/ai-chat",
@@ -621,144 +769,72 @@ export default function QuestionScreen() {
                   },
                 })
               }
-            />
-            <AppButton
-              variant="secondary"
-              label={
-                currentQuestionState.isBookmarked
-                  ? t("question.removeBookmark")
-                  : t("question.bookmark")
-              }
-              onPress={() => {
-                const isBookmarked = toggleBookmark(currentQuestionId);
+            >
+              <Text style={trainerStyles.explainText}>
+                {isCorrectAnswer
+                  ? t("question.explainOthers")
+                  : t("question.explainMistake")}
+              </Text>
+              <View style={trainerStyles.aiBadge}>
+                <IconPlaceholder color={greenWave.color.onAccent} size={14} />
+              </View>
+            </Pressable>
 
-                Toast.show({
-                  type: "success",
-                  text1: isBookmarked
-                    ? t("toasts.bookmarkSavedTitle")
-                    : t("toasts.bookmarkRemovedTitle"),
-                  text2: isBookmarked
-                    ? t("toasts.bookmarkSavedSubtitle")
-                    : t("toasts.bookmarkRemovedSubtitle"),
-                });
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => advanceSession()}
+              style={({ pressed }) => [
+                trainerStyles.primaryButton,
+                pressed ? trainerStyles.pressed : null,
+              ]}
+            >
+              <Text style={trainerStyles.primaryButtonText}>
+                {summary.answered >= summary.total
+                  ? t("question.finish")
+                  : isCorrectAnswer
+                    ? t("question.nextQuestion")
+                    : t("question.gotIt")}
+              </Text>
+            </Pressable>
 
-                if (authMode === "supabase" && isMobileSupabaseConfigured) {
-                  void syncQuestionBookmarkState({
-                    questionSourceId: currentQuestionId,
-                    isBookmarked,
-                    savedFromMode: sessionMode,
-                    metadata: {
-                      source: "mobile_question_screen",
-                    },
-                  }).catch((error) => {
-                    console.warn(
-                      `Failed to sync bookmark state for ${currentQuestionId}.`,
-                      error
-                    );
-                  });
-                }
-              }}
-            />
-            <AppButton
-              variant="ghost"
-              label={
-                currentQuestionState.isHard
-                  ? t("question.unmarkHard")
-                  : t("question.markHard")
-              }
-              onPress={() => {
-                const isHard = toggleHard(currentQuestionId);
-
-                Toast.show({
-                  type: "success",
-                  text1: isHard
-                    ? t("toasts.hardMarkedTitle")
-                    : t("toasts.hardUnmarkedTitle"),
-                  text2: isHard
-                    ? t("toasts.hardMarkedSubtitle")
-                    : t("toasts.hardUnmarkedSubtitle"),
-                });
-
-                if (authMode === "supabase" && isMobileSupabaseConfigured) {
-                  void syncQuestionHardState({
-                    questionSourceId: currentQuestionId,
-                    isHard,
-                    reviewDueAt: isHard ? new Date().toISOString() : null,
-                  }).catch((error) => {
-                    console.warn(
-                      `Failed to sync hard state for ${currentQuestionId}.`,
-                      error
-                    );
-                  });
-                }
-              }}
-            />
+            <Pressable
+              accessibilityRole="button"
+              style={trainerStyles.reportButton}
+              onPress={() => router.back()}
+            >
+              <Text style={trainerStyles.reportText}>
+                {t("question.reportProblem")}
+              </Text>
+            </Pressable>
           </View>
-        </AppCard>
-
-        {/* Progress card is not need */}
-        {/* <AppCard>
-          <Text style={styles.sectionTitle}>{t("question.progressTitle")}</Text>
-          <View style={styles.metaPills}>
-            <MetaPill
-              label={t("question.seenLabel", {
-                count: currentQuestionState.timesSeen,
-              })}
-            />
-            <MetaPill
-              label={t("question.correctCountLabel", {
-                count: currentQuestionState.timesCorrect,
-              })}
-            />
-            <MetaPill
-              label={t("question.wrongCountLabel", {
-                count: currentQuestionState.timesWrong,
-              })}
-            />
-            {currentQuestionState.isBookmarked ? (
-              <MetaPill label={t("question.savedTag")} accent />
-            ) : null}
-            {currentQuestionState.isHard ? (
-              <MetaPill label={t("question.hardTag")} accent />
-            ) : null}
-            {isQuestionReviewDue(currentQuestionState) ? (
-              <MetaPill label={t("question.reviewDue")} accent />
-            ) : null}
-          </View>
-        </AppCard> */}
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            style={trainerStyles.reportButton}
+            onPress={() => router.back()}
+          >
+            <Text style={trainerStyles.reportText}>
+              {t("question.reportProblem")}
+            </Text>
+          </Pressable>
+        )}
       </View>
-    </AppScreen>
+
+      <TrainingExitDialog
+        body={t("question.exitConfirmBody")}
+        continueLabel={t("question.exitConfirmContinue")}
+        finishLabel={t("question.exitConfirmFinish")}
+        onContinue={() => setShowExitDialog(false)}
+        onFinish={handleConfirmExit}
+        title={t("question.exitConfirmTitle")}
+        visible={showExitDialog}
+      />
+    </SafeAreaView>
   );
 }
 
-function getChoiceButtonLabel(
-  answerType: LocalQuestion["answerType"],
-  choiceId: string,
-  fullLabel: string
-) {
-  if (answerType === "boolean") {
-    return fullLabel;
-  }
-
-  return choiceId.toUpperCase();
-}
-
-function MetaPill({
-  accent = false,
-  label,
-}: {
-  accent?: boolean;
-  label: string;
-}) {
-  const styles = getStyles();
-
-  return (
-    <View style={[styles.metaPill, accent ? styles.metaPillAccent : null]}>
-      <Text style={[styles.metaPillText, accent ? styles.metaPillTextAccent : null]}>
-        {label}
-      </Text>
-    </View>
-  );
+function feedbackAccentForChoice(isCorrectChoice: boolean) {
+  return isCorrectChoice ? greenWaveAccent.green : greenWaveAccent.red;
 }
 
 function getSingleParam(value: string | string[] | undefined) {
@@ -779,135 +855,306 @@ function parsePositiveInteger(value: string | undefined) {
   return Number.isFinite(normalized) && normalized > 0 ? normalized : undefined;
 }
 
-const getStyles = () =>
+const getTrainerStyles = () =>
   StyleSheet.create({
-    mediaBleed: {
-      marginHorizontal: -20,
-    },
-    answerButtonLabel: {
-      fontSize: 16,
-      lineHeight: 22,
-      fontWeight: "800",
-      color: "#182018",
-      textAlign: "center",
-    },
-    answerCard: {
+    safeArea: {
       flex: 1,
-      minHeight: 52,
+      backgroundColor: greenWave.color.paper,
+    },
+    container: {
+      flex: 1,
+      paddingHorizontal: greenWave.spacing.xl,
+      paddingBottom: greenWave.spacing.xl,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: greenWave.spacing.sm,
+    },
+    headerButton: {
+      width: 40,
+      height: 40,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 12,
-      paddingVertical: 14,
-      borderWidth: 1,
-      borderColor: "#D8D1C6",
-      borderRadius: 20,
-      backgroundColor: "#FFFDF8",
     },
-    answerChoicesRow: {
+    headerCenter: {
+      flex: 1,
       flexDirection: "row",
-      gap: 10,
+      alignItems: "center",
+      justifyContent: "space-between",
     },
-    answerCardDisabled: {
-      opacity: 0.52,
-    },
-    answerCardActive: {
-      borderColor: "#5D8A80",
-      backgroundColor: "#F3F0E6",
-    },
-    feedbackBody: {
-      fontSize: 15,
-      lineHeight: 24,
-      color: "#182018",
-    },
-    metaPill: {
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      borderRadius: 999,
-      backgroundColor: "#EDE4D3",
-    },
-    metaPillAccent: {
-      backgroundColor: "#DCEBE5",
-    },
-    metaPillText: {
-      fontSize: 12,
-      lineHeight: 18,
-      fontWeight: "700",
-      color: "#4E5A52",
-    },
-    metaPillTextAccent: {
-      color: "#1E5B4F",
-    },
-    metaPills: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 8,
-    },
-    pointsText: {
-      marginTop: 10,
-      fontSize: 14,
-      lineHeight: 20,
-      fontWeight: "700",
-      color: "#1E5B4F",
-    },
-    progressCard: {
-      gap: 8,
-    },
-    promptText: {
-      fontSize: 21,
-      lineHeight: 30,
-      fontWeight: "800",
-      color: "#182018",
-    },
-    sectionTitle: {
+    headerTitle: {
       fontSize: 16,
       lineHeight: 24,
-      fontWeight: "800",
-      marginBottom: 10,
-      color: "#182018",
+      color: greenWave.color.ink,
     },
-    summaryBody: {
-      fontSize: 14,
-      lineHeight: 22,
-      color: "#4E5A52",
+    headerCounter: {
+      fontSize: 12,
+      lineHeight: 16,
+      color: greenWave.color.inkSecondary,
     },
-    summaryGrid: {
+    stepperScroll: {
+      flexGrow: 0,
+      marginTop: greenWave.spacing.md,
+    },
+    stepper: {
+      gap: greenWave.spacing.xs,
+      alignItems: "center",
+    },
+    stepPill: {
+      minWidth: 36,
+      height: 32,
+      paddingHorizontal: greenWave.spacing.md,
+      borderRadius: greenWave.radius.pill,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    stepPillText: {
+      fontSize: 16,
+      lineHeight: 24,
+    },
+    metaRow: {
       flexDirection: "row",
-      gap: 10,
-      flexWrap: "wrap",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingTop: greenWave.spacing.xl,
+      paddingBottom: greenWave.spacing.sm,
     },
-    summaryItem: {
-      minWidth: 92,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      borderRadius: 18,
-      backgroundColor: "#F4EFE8",
-      gap: 4,
+    metaText: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: greenWave.color.inkSecondary,
     },
-    summaryItemLabel: {
-      fontSize: 13,
-      lineHeight: 18,
-      color: "#4E5A52",
+    body: {
+      flex: 1,
     },
-    summaryItemValue: {
-      fontSize: 22,
+    bodyContent: {
+      paddingBottom: greenWave.spacing.md,
+    },
+    mediaBleed: {
+      marginHorizontal: -greenWave.spacing.xl,
+      marginBottom: greenWave.spacing.md,
+    },
+    prompt: {
+      fontSize: 16,
+      lineHeight: 24,
+      fontWeight: "500",
+      letterSpacing: -0.16,
+      color: greenWave.color.ink,
+      marginBottom: greenWave.spacing.md,
+    },
+    options: {
+      gap: greenWave.spacing.xs,
+    },
+    option: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: greenWave.spacing.md,
+      padding: greenWave.spacing.md,
+      borderRadius: 12,
+      backgroundColor: greenWave.color.surface,
+    },
+    optionDimmed: {
+      opacity: 0.4,
+    },
+    optionBadge: {
+      width: 24,
+      height: 24,
+      borderRadius: greenWave.radius.pill,
+      borderWidth: 2,
+      borderColor: greenWave.color.line,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    optionBadgeText: {
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: "600",
+      color: greenWave.color.inkMuted,
+    },
+    optionText: {
+      flex: 1,
+      fontSize: 14,
+      lineHeight: 20,
+      color: greenWave.color.ink,
+    },
+    optionTextStrong: {
+      fontWeight: "600",
+    },
+    booleanOptions: {
+      flexDirection: "row",
+      gap: greenWave.spacing.xs,
+    },
+    booleanOption: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: greenWave.spacing.md,
+      paddingVertical: greenWave.spacing.xl,
+      borderRadius: 12,
+      backgroundColor: greenWave.color.surface,
+    },
+    booleanOptionText: {
+      fontSize: 14,
+      lineHeight: 20,
+      textAlign: "center",
+      color: greenWave.color.ink,
+    },
+    feedbackCard: {
+      borderTopLeftRadius: greenWave.radius.xxl,
+      borderTopRightRadius: greenWave.radius.xxl,
+      padding: greenWave.spacing.xl,
+      marginHorizontal: -greenWave.spacing.xl,
+      marginBottom: -greenWave.spacing.xl,
+      gap: greenWave.spacing.md,
+    },
+    feedbackHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: greenWave.spacing.md,
+    },
+    feedbackTitle: {
+      flex: 1,
+      fontSize: 20,
       lineHeight: 28,
-      fontWeight: "800",
-      color: "#182018",
+      fontWeight: "600",
+      letterSpacing: -0.2,
     },
-    summaryLabel: {
-      fontSize: 13,
-      lineHeight: 18,
+    feedbackBody: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: greenWave.color.inkSecondary,
+    },
+    explainRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: greenWave.spacing.sm,
+      paddingVertical: greenWave.spacing.sm,
+    },
+    explainText: {
+      fontSize: 16,
+      lineHeight: 24,
+      color: greenWaveAccent.blue.ink,
+    },
+    aiBadge: {
+      width: 24,
+      height: 24,
+      borderRadius: greenWave.radius.pill,
+      backgroundColor: greenWaveAccent.green.fill,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    primaryButton: {
+      borderRadius: greenWave.radius.pill,
+      paddingHorizontal: greenWave.spacing.xl,
+      paddingVertical: greenWave.spacing.md,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: greenWaveAccent.green.fill,
+    },
+    primaryButtonText: {
+      fontSize: 20,
+      lineHeight: 28,
+      fontWeight: "600",
+      letterSpacing: -0.2,
+      color: greenWave.color.onAccent,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+    reportButton: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: greenWave.spacing.lg,
+      paddingVertical: greenWave.spacing.md,
+    },
+    reportText: {
+      fontSize: 16,
+      lineHeight: 24,
+      color: greenWave.color.inkSecondary,
+    },
+    resultContainer: {
+      flex: 1,
+      paddingHorizontal: greenWave.spacing.xl,
+      paddingBottom: greenWave.spacing.xl,
+    },
+    resultHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    resultBodyArea: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    successBadge: {
+      width: 96,
+      height: 96,
+      borderRadius: greenWave.radius.pill,
+      backgroundColor: greenWave.color.paper,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: greenWave.spacing.xl,
+    },
+    resultTitle: {
+      fontSize: 32,
+      lineHeight: 36,
       fontWeight: "700",
-      marginBottom: 6,
-      color: "#4E5A52",
-      textTransform: "uppercase",
-      letterSpacing: 0.8,
+      letterSpacing: -0.64,
+      textAlign: "center",
+      color: greenWave.color.ink,
+      marginBottom: greenWave.spacing.lg,
     },
-    summaryMetric: {
-      fontSize: 34,
-      lineHeight: 40,
-      fontWeight: "800",
-      marginBottom: 2,
-      color: "#182018",
+    resultPercent: {
+      fontSize: 52,
+      lineHeight: 54,
+      fontWeight: "700",
+      letterSpacing: -0.52,
+      textAlign: "center",
+      marginBottom: greenWave.spacing.md,
+    },
+    resultCount: {
+      fontSize: 12,
+      lineHeight: 16,
+      textAlign: "center",
+      color: greenWave.color.inkSecondary,
+      marginBottom: greenWave.spacing.lg,
+    },
+    resultBody: {
+      fontSize: 18,
+      lineHeight: 28,
+      textAlign: "center",
+      color: greenWave.color.inkSecondary,
+      marginBottom: greenWave.spacing.xl,
+    },
+    nextCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: greenWave.spacing.md,
+      padding: greenWave.spacing.lg,
+      borderRadius: greenWave.radius.xl,
+      backgroundColor: greenWave.color.surface,
+      alignSelf: "stretch",
+    },
+    nextIconBox: {
+      padding: greenWave.spacing.sm,
+      borderRadius: greenWave.radius.md,
+      backgroundColor: greenWave.color.paper,
+    },
+    nextCardText: {
+      flex: 1,
+    },
+    nextTitle: {
+      fontSize: 16,
+      lineHeight: 24,
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: greenWave.color.ink,
+    },
+    nextSubtitle: {
+      fontSize: 12,
+      lineHeight: 16,
+      color: greenWave.color.inkMuted,
     },
   });

@@ -10,6 +10,7 @@
     "media:audit": "tsx src/cli.ts media:audit",
     "media:build": "tsx src/cli.ts media:build",
     "media:upload": "tsx src/cli.ts media:upload",
+    "storage:clear": "tsx src/cli.ts storage:clear",
     "questions:sync": "tsx src/cli.ts questions:sync",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

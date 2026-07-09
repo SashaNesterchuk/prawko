@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AI_LIMITS, type SupportedLocale } from "@prawko/config";
+import { type SupportedLocale } from "@prawko/config";
 import type { QuestionChatMessage } from "@prawko/schemas";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -15,7 +15,6 @@ type AiConversation = {
 };
 
 type AiChatState = {
-  assistantResponsesByDate: Record<string, number>;
   conversations: Record<string, AiConversation>;
   hasHydrated: boolean;
   latestConversationByQuestionId: Record<string, string>;
@@ -25,20 +24,17 @@ type AiChatState = {
     message: QuestionChatMessage;
     questionId: string;
   }) => void;
-  consumeAssistantResponse: () => number;
   ensureConversation: (input: {
     locale: SupportedLocale;
     questionId: string;
     seedMessage?: QuestionChatMessage;
   }) => AiConversation;
-  getRemainingAssistantResponses: () => number;
   setHasHydrated: (value: boolean) => void;
 };
 
 export const useAiChatStore = create<AiChatState>()(
   persist(
     (set, get) => ({
-      assistantResponsesByDate: {},
       conversations: {},
       hasHydrated: false,
       latestConversationByQuestionId: {},
@@ -69,20 +65,6 @@ export const useAiChatStore = create<AiChatState>()(
             },
           };
         }),
-      consumeAssistantResponse: () => {
-        const state = get();
-        const todayKey = getTodayKey();
-        const nextUsed = (state.assistantResponsesByDate[todayKey] ?? 0) + 1;
-
-        set({
-          assistantResponsesByDate: {
-            ...state.assistantResponsesByDate,
-            [todayKey]: nextUsed,
-          },
-        });
-
-        return Math.max(0, AI_LIMITS.freeQuestionChatPerDay - nextUsed);
-      },
       ensureConversation: ({ locale, questionId, seedMessage }) => {
         const state = get();
         const existingConversationId = state.latestConversationByQuestionId[questionId];
@@ -114,18 +96,12 @@ export const useAiChatStore = create<AiChatState>()(
 
         return nextConversation;
       },
-      getRemainingAssistantResponses: () => {
-        const usedToday = get().assistantResponsesByDate[getTodayKey()] ?? 0;
-
-        return Math.max(0, AI_LIMITS.freeQuestionChatPerDay - usedToday);
-      },
       setHasHydrated: (value) => set({ hasHydrated: value }),
     }),
     {
       name: "prawko-ai-chat",
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        assistantResponsesByDate: state.assistantResponsesByDate,
         conversations: state.conversations,
         latestConversationByQuestionId: state.latestConversationByQuestionId,
       }),
@@ -164,8 +140,4 @@ function createEmptyConversation(input: {
     messages: [],
     updatedAt: new Date().toISOString(),
   };
-}
-
-function getTodayKey() {
-  return new Date().toISOString().slice(0, 10);
 }

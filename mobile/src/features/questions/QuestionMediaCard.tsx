@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import {
@@ -15,7 +16,7 @@ import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
 import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
 import { useAppShellStore } from "../../state/app-shell";
-import { useTheme } from "../../providers/ThemeProvider";
+import { greenWave } from "../../theme/green-wave";
 import {
   buildQuestionMediaViewerParams,
   getQuestionDeliveryAssetUrl,
@@ -23,7 +24,7 @@ import {
 } from "./question-media";
 import type { QuestionMedia } from "./types";
 
-const MEDIA_ASPECT_RATIO = 4 / 3;
+const MEDIA_HEIGHT = 220;
 
 export function QuestionMediaCard({
   locale,
@@ -35,13 +36,11 @@ export function QuestionMediaCard({
   const { t } = useTranslation();
   const { captureError } = useErrorLogger();
   const enablePjmTracks = useAppShellStore((state) => state.enablePjmTracks);
-  const theme = useTheme();
   const { width: windowWidth } = useWindowDimensions();
-  const styles = useMemo(
-    () => getStyles(theme, windowWidth),
-    [theme, windowWidth]
-  );
+  const styles = useMemo(() => getStyles(windowWidth), [windowWidth]);
   const [previewFailed, setPreviewFailed] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const didLogPreviewFailureRef = useRef(false);
 
   const previewUrl = getQuestionMediaPreviewUrl(media);
@@ -67,155 +66,139 @@ export function QuestionMediaCard({
     });
   };
 
-  return (
-    <View style={styles.root}>
-      {hasPreview ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t("question.media.openPreviewAccessibility", {
-            type: t(`question.mediaTypes.${media.type}`),
-          })}
-          disabled={!assetUrl}
-          onPress={() => openViewer(media.asset, primaryLabel)}
-          style={({ pressed }) => [
-            styles.mediaFrame,
-            pressed ? styles.mediaPressed : null,
-          ]}
-        >
-          <Image
-            source={{ uri: previewUrl ?? undefined }}
-            resizeMode="contain"
-            style={styles.preview}
-            onError={() => {
-              setPreviewFailed(true);
-
-              if (didLogPreviewFailureRef.current) {
-                return;
-              }
-
-              didLogPreviewFailureRef.current = true;
-              captureError({
-                area: "question_media",
-                eventName: "question_media_preview_failed",
-                message: "Question media preview failed to load.",
-                metadata: {
-                  locale,
-                  media_key: media.asset.mediaKey,
-                  media_type: media.type,
-                  source_kind: media.asset.sourceKind,
-                  storage_bucket: media.asset.storageBucket,
-                  storage_path: media.asset.storagePath,
-                },
-                severity: "warning",
-              });
-            }}
-          />
-
-          {isVideo ? (
-            <View pointerEvents="none" style={styles.playBadge}>
-              <View style={styles.playTriangle} />
-            </View>
-          ) : null}
-
-          <View
-            pointerEvents="none"
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            style={styles.openHintBadge}
-          >
-            <ExpandMediaIcon />
-          </View>
-
-          {enablePjmTracks && pjmActions.length > 0 ? (
-            <View style={styles.pjmOverlay}>
-              {pjmActions.map((action) => {
-                const isEnabled = Boolean(getQuestionDeliveryAssetUrl(action.asset));
-
-                return (
-                  <Pressable
-                    key={`${action.shortLabel}:${action.asset.mediaKey}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={action.label}
-                    disabled={!isEnabled}
-                    onPress={(event) => {
-                      event.stopPropagation();
-                      openViewer(action.asset, action.label);
-                    }}
-                    style={({ pressed }) => [
-                      styles.pjmIconButton,
-                      !isEnabled ? styles.pjmIconButtonDisabled : null,
-                      pressed && isEnabled ? styles.pjmIconButtonPressed : null,
-                    ]}
-                  >
-                    <Text style={styles.pjmIconGlyph}>{action.shortLabel}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          ) : null}
-        </Pressable>
-      ) : (
-        <View style={[styles.mediaFrame, styles.previewFallback]}>
-          <Text style={styles.previewFallbackTitle}>
-            {t("question.media.previewUnavailable")}
-          </Text>
-          <Text style={styles.previewFallbackBody}>
-            {previewUrl
-              ? t("question.media.previewLoadFailed")
-              : t("question.media.previewNotConfigured")}
-          </Text>
-        </View>
-      )}
-    </View>
-  );
-}
-
-function ExpandMediaIcon() {
-  const cornerStyle = {
-    position: "absolute" as const,
-    width: 7,
-    height: 7,
-    borderColor: "#F8F6F0",
+  const retry = () => {
+    setPreviewFailed(false);
+    setIsLoaded(false);
+    setReloadKey((value) => value + 1);
   };
 
+  if (!hasPreview) {
+    return (
+      <View style={styles.root}>
+        <View style={[styles.frame, styles.errorFrame]}>
+          <Text style={styles.errorTitle}>
+            {t("question.media.mediaUnavailableTitle")}
+          </Text>
+          <Text style={styles.errorBody}>
+            {t("question.media.mediaUnavailableBody")}
+          </Text>
+          {previewUrl ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={retry}
+              style={({ pressed }) => [
+                styles.retryButton,
+                pressed ? styles.pressed : null,
+              ]}
+            >
+              <MaterialCommunityIcons
+                name="refresh"
+                size={18}
+                color={greenWave.color.inkSecondary}
+              />
+              <Text style={styles.retryLabel}>{t("question.media.retry")}</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+
   return (
-    <View style={{ width: 18, height: 18 }}>
-      <View
-        style={{
-          ...cornerStyle,
-          top: 0,
-          left: 0,
-          borderTopWidth: 2,
-          borderLeftWidth: 2,
-        }}
-      />
-      <View
-        style={{
-          ...cornerStyle,
-          top: 0,
-          right: 0,
-          borderTopWidth: 2,
-          borderRightWidth: 2,
-        }}
-      />
-      <View
-        style={{
-          ...cornerStyle,
-          bottom: 0,
-          left: 0,
-          borderBottomWidth: 2,
-          borderLeftWidth: 2,
-        }}
-      />
-      <View
-        style={{
-          ...cornerStyle,
-          bottom: 0,
-          right: 0,
-          borderBottomWidth: 2,
-          borderRightWidth: 2,
-        }}
-      />
+    <View style={styles.root}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t("question.media.openPreviewAccessibility", {
+          type: t(`question.mediaTypes.${media.type}`),
+        })}
+        disabled={!assetUrl}
+        onPress={() => openViewer(media.asset, primaryLabel)}
+        style={({ pressed }) => [
+          styles.frame,
+          pressed ? styles.mediaPressed : null,
+        ]}
+      >
+        {!isLoaded ? <View style={styles.skeleton} pointerEvents="none" /> : null}
+
+        <Image
+          key={reloadKey}
+          source={{ uri: previewUrl ?? undefined }}
+          resizeMode="cover"
+          style={styles.preview}
+          onLoad={() => setIsLoaded(true)}
+          onError={() => {
+            setPreviewFailed(true);
+
+            if (didLogPreviewFailureRef.current) {
+              return;
+            }
+
+            didLogPreviewFailureRef.current = true;
+            captureError({
+              area: "question_media",
+              eventName: "question_media_preview_failed",
+              message: "Question media preview failed to load.",
+              metadata: {
+                locale,
+                media_key: media.asset.mediaKey,
+                media_type: media.type,
+                source_kind: media.asset.sourceKind,
+                storage_bucket: media.asset.storageBucket,
+                storage_path: media.asset.storagePath,
+              },
+              severity: "warning",
+            });
+          }}
+        />
+
+        {isVideo ? (
+          <View pointerEvents="none" style={styles.playBadge}>
+            <MaterialCommunityIcons
+              name="play"
+              size={28}
+              color={greenWave.color.ink}
+            />
+          </View>
+        ) : (
+          <View pointerEvents="none" style={styles.cornerButton}>
+            <MaterialCommunityIcons
+              name="magnify-plus-outline"
+              size={22}
+              color={greenWave.color.ink}
+            />
+          </View>
+        )}
+
+        {enablePjmTracks && pjmActions.length > 0 ? (
+          <View style={styles.pjmOverlay}>
+            {pjmActions.map((action) => {
+              const isEnabled = Boolean(
+                getQuestionDeliveryAssetUrl(action.asset)
+              );
+
+              return (
+                <Pressable
+                  key={`${action.shortLabel}:${action.asset.mediaKey}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={action.label}
+                  disabled={!isEnabled}
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    openViewer(action.asset, action.label);
+                  }}
+                  style={({ pressed }) => [
+                    styles.pjmIconButton,
+                    !isEnabled ? styles.pjmIconButtonDisabled : null,
+                    pressed && isEnabled ? styles.pjmIconButtonPressed : null,
+                  ]}
+                >
+                  <Text style={styles.pjmIconGlyph}>{action.shortLabel}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+      </Pressable>
     </View>
   );
 }
@@ -259,38 +242,41 @@ function buildPjmActions(
   return actions;
 }
 
-const getStyles = (
-  theme: ReturnType<typeof useTheme>,
-  windowWidth: number
-) => {
-  const mediaHeight = Math.round(windowWidth / MEDIA_ASPECT_RATIO);
-
-  return StyleSheet.create({
-    mediaFrame: {
+const getStyles = (windowWidth: number) =>
+  StyleSheet.create({
+    root: {
       width: windowWidth,
       alignSelf: "center",
-      height: mediaHeight,
-      borderRadius: 0,
+    },
+    frame: {
+      width: windowWidth,
+      height: MEDIA_HEIGHT,
+      alignSelf: "center",
+      borderRadius: greenWave.radius.xl,
       overflow: "hidden",
-      backgroundColor: theme.colors.cardMuted,
-      borderWidth: 1,
-      borderColor: theme.colors.borderSoft,
+      backgroundColor: greenWave.color.paper,
     },
     mediaPressed: {
       opacity: 0.96,
     },
-    openHintBadge: {
+    skeleton: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: greenWave.color.track,
+    },
+    preview: {
+      width: "100%",
+      height: "100%",
+    },
+    cornerButton: {
       position: "absolute",
-      top: 10,
-      left: 10,
+      top: 12,
+      right: 12,
       width: 40,
       height: 40,
-      borderRadius: 20,
+      borderRadius: 999,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: "rgba(24, 32, 24, 0.78)",
-      borderWidth: 1,
-      borderColor: "rgba(248, 246, 240, 0.35)",
+      backgroundColor: "rgba(255,255,255,0.82)",
     },
     playBadge: {
       position: "absolute",
@@ -303,18 +289,45 @@ const getStyles = (
       borderRadius: 28,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: "rgba(24, 32, 24, 0.55)",
+      backgroundColor: "rgba(255,255,255,0.82)",
     },
-    playTriangle: {
-      width: 0,
-      height: 0,
-      marginLeft: 4,
-      borderTopWidth: 11,
-      borderBottomWidth: 11,
-      borderLeftWidth: 18,
-      borderTopColor: "transparent",
-      borderBottomColor: "transparent",
-      borderLeftColor: "#F8F6F0",
+    errorFrame: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 24,
+      gap: greenWave.spacing.sm,
+      backgroundColor: greenWave.color.track,
+    },
+    errorTitle: {
+      fontSize: 16,
+      lineHeight: 24,
+      fontWeight: "600",
+      color: greenWave.color.ink,
+      textAlign: "center",
+    },
+    errorBody: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: greenWave.color.inkMuted,
+      textAlign: "center",
+    },
+    retryButton: {
+      marginTop: greenWave.spacing.sm,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: greenWave.spacing.sm,
+      paddingHorizontal: greenWave.spacing.lg,
+      paddingVertical: greenWave.spacing.md,
+      borderRadius: greenWave.radius.pill,
+      backgroundColor: greenWave.color.surface,
+    },
+    retryLabel: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: greenWave.color.inkSecondary,
+    },
+    pressed: {
+      opacity: 0.85,
     },
     pjmIconButton: {
       width: 40,
@@ -341,40 +354,12 @@ const getStyles = (
     },
     pjmOverlay: {
       position: "absolute",
-      right: 10,
-      bottom: 10,
+      right: 12,
+      bottom: 12,
       flexDirection: "row",
       flexWrap: "wrap",
       justifyContent: "flex-end",
       gap: 8,
       maxWidth: "70%",
     },
-    preview: {
-      width: "100%",
-      height: "100%",
-    },
-    previewFallback: {
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 18,
-      gap: 6,
-    },
-    previewFallbackBody: {
-      fontSize: 14,
-      lineHeight: 21,
-      color: theme.colors.textSecondary,
-      textAlign: "center",
-    },
-    previewFallbackTitle: {
-      fontSize: 15,
-      lineHeight: 22,
-      fontWeight: "700",
-      color: theme.colors.textPrimary,
-      textAlign: "center",
-    },
-    root: {
-      width: windowWidth,
-      alignSelf: "center",
-    },
   });
-};

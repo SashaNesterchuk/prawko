@@ -23,7 +23,6 @@ type AppUser = {
 
 type OnboardingProgress = {
   categoryDone: boolean;
-  examIntroSeen: boolean;
   languageDone: boolean;
   levelDone: boolean;
   minutesDone: boolean;
@@ -42,8 +41,8 @@ type StudyPlanSetupDraft = {
 export type OnboardingRoute =
   | "/(onboarding)/language"
   | "/(onboarding)/category"
-  | "/(onboarding)/exam-intro"
   | "/(onboarding)/exam-schedule"
+  | "/(onboarding)/notifications"
   | "/(onboarding)/minutes"
   | "/(onboarding)/level"
   | "/(onboarding)/school-code"
@@ -77,7 +76,6 @@ type AppShellState = {
     plan: GeneratedStudyPlan | null;
     remoteId: string | null;
   }) => void;
-  markExamIntroSeen: () => void;
   resetShell: () => void;
   saveCurrentStudyPlan: (plan: GeneratedStudyPlan) => void;
   setExamSchedule: (payload: {
@@ -114,7 +112,6 @@ type PersistedAppShellState = Pick<
 
 const defaultOnboardingProgress: OnboardingProgress = {
   categoryDone: false,
-  examIntroSeen: false,
   languageDone: false,
   levelDone: false,
   minutesDone: false,
@@ -133,7 +130,6 @@ const defaultStudyPlanSetup: StudyPlanSetupDraft = {
 function createCompletedOnboardingProgress(): OnboardingProgress {
   return {
     categoryDone: true,
-    examIntroSeen: true,
     languageDone: true,
     levelDone: true,
     minutesDone: true,
@@ -244,13 +240,6 @@ export const useAppShellStore = create<AppShellState>()(
                 schoolCode: plan.schoolCode ?? "",
               }
             : state.studyPlanSetup,
-        })),
-      markExamIntroSeen: () =>
-        set((state) => ({
-          onboardingProgress: {
-            ...state.onboardingProgress,
-            examIntroSeen: true,
-          },
         })),
       resetShell: () =>
         set({
@@ -406,16 +395,8 @@ export function getCurrentUserFromState(state: AppShellState) {
 }
 
 export function getNextOnboardingRoute(state: AppShellState): OnboardingRoute {
-  if (!state.onboardingProgress.languageDone) {
-    return "/(onboarding)/language";
-  }
-
   if (!state.onboardingProgress.categoryDone) {
     return "/(onboarding)/category";
-  }
-
-  if (!state.onboardingProgress.examIntroSeen) {
-    return "/(onboarding)/exam-intro";
   }
 
   if (
@@ -426,29 +407,7 @@ export function getNextOnboardingRoute(state: AppShellState): OnboardingRoute {
     return "/(onboarding)/exam-schedule";
   }
 
-  if (
-    !state.onboardingProgress.minutesDone ||
-    state.studyPlanSetup.minutesPerDay === null
-  ) {
-    return "/(onboarding)/minutes";
-  }
-
-  if (
-    !state.onboardingProgress.levelDone ||
-    state.studyPlanSetup.level === null
-  ) {
-    return "/(onboarding)/level";
-  }
-
-  if (!state.onboardingProgress.schoolCodeDone) {
-    return "/(onboarding)/school-code";
-  }
-
-  if (!getCurrentUserFromState(state)) {
-    return "/(onboarding)/access";
-  }
-
-  return "/(onboarding)/preview";
+  return "/(onboarding)/notifications";
 }
 
 export function useCurrentUser() {

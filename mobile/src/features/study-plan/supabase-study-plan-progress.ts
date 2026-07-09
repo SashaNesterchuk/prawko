@@ -1,4 +1,8 @@
 import type { StudyPlanTaskType, TopicBlockId } from "@prawko/config";
+import type {
+  GeneratedStudyPlan,
+  GeneratedStudyPlanDay,
+} from "@prawko/schemas";
 
 import { isMobileSupabaseConfigured } from "../../config/env";
 import type {
@@ -270,6 +274,62 @@ export function getWarsawIsoDate(date: Date = new Date()) {
   }
 
   return `${year}-${month}-${day}`;
+}
+
+export function buildLocalTodayPlan(
+  studyPlan: GeneratedStudyPlan | null,
+  planDate: string = getWarsawIsoDate()
+) {
+  if (!studyPlan) {
+    return null;
+  }
+
+  const day = resolveLocalStudyPlanDay(studyPlan.days, planDate);
+
+  if (!day) {
+    return null;
+  }
+
+  return {
+    dayNumber: day.dayNumber,
+    dayStatus: day.minimumMode ? "in_progress" : "pending",
+    planDate,
+    studyPlanDayId: day.id,
+    studyPlanId: studyPlan.id,
+    tasks: day.tasks.map((task, index) => ({
+      description: task.description,
+      estimatedMinutes: task.estimatedMinutes,
+      id: task.id,
+      questionCountCompleted: 0,
+      questionCountTarget: task.questionCountTarget ?? null,
+      sortOrder: index + 1,
+      status: "pending",
+      title: task.title,
+      topicBlock: task.topicBlock ?? null,
+      taskType: task.taskType,
+    })),
+  } satisfies RemoteTodayPlan;
+}
+
+function resolveLocalStudyPlanDay(
+  days: GeneratedStudyPlanDay[],
+  planDate: string
+) {
+  const exactDay = days.find((day) => day.planDate === planDate);
+
+  if (exactDay) {
+    return exactDay;
+  }
+
+  const sortedDays = [...days].sort((left, right) =>
+    left.planDate.localeCompare(right.planDate)
+  );
+
+  return (
+    sortedDays.find((day) => day.planDate > planDate) ??
+    sortedDays[sortedDays.length - 1] ??
+    null
+  );
 }
 
 function mapTodayPlanRows(rows: RemoteTodayPlanRow[]) {

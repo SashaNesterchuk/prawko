@@ -7,14 +7,7 @@ import Toast from "react-native-toast-message";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { AppTextInput } from "../../src/components/shell/AppTextInput";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
-import {
-  fetchRemoteEntitlementSnapshot,
-  getSchoolCodeRedeemErrorMessage,
-  normalizeSchoolCode,
-  redeemSchoolCode,
-} from "../../src/features/entitlements/supabase-entitlements";
 import {
   getRevenueCatErrorMessage,
   restoreRevenueCatPurchases,
@@ -25,9 +18,9 @@ import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import {
   useEntitlementStore,
+  useHasPlusAccess,
   usePurchaseAccess,
   useRevenueCatConfigured,
-  useSchoolAccess,
 } from "../../src/state/entitlements";
 import { useAppShellStore, useCurrentUser } from "../../src/state/app-shell";
 
@@ -53,134 +46,23 @@ export default function AccessCenterModalScreen() {
   const styles = getStyles(theme);
   const currentUser = useCurrentUser();
   const authMode = useAppShellStore((state) => state.authMode);
-  const storedSchoolCode = useAppShellStore((state) => state.studyPlanSetup.schoolCode);
-  const setSchoolCode = useAppShellStore((state) => state.setSchoolCode);
-  const schoolAccess = useSchoolAccess();
+  const hasPlusAccess = useHasPlusAccess();
   const purchaseAccess = usePurchaseAccess();
   const revenueCatConfigured = useRevenueCatConfigured();
-  const hydrateRemoteEntitlements = useEntitlementStore(
-    (state) => state.hydrateRemoteEntitlements
-  );
   const hydrateRevenueCatSnapshot = useEntitlementStore(
     (state) => state.hydrateRevenueCatSnapshot
-  );
-  const setEntitlementStatus = useEntitlementStore(
-    (state) => state.setEntitlementStatus
   );
   const setRevenueCatStatus = useEntitlementStore(
     (state) => state.setRevenueCatStatus
   );
-  const [schoolCode, setSchoolCodeValue] = useState(storedSchoolCode);
-  const [isRedeeming, setIsRedeeming] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
-  const [redeemFeedback, setRedeemFeedback] = useState<FeedbackState>(null);
   const [restoreFeedback, setRestoreFeedback] = useState<FeedbackState>(null);
 
   const hasRealAuth =
     authMode === "supabase" && Boolean(currentUser) && isMobileSupabaseConfigured;
-  const schoolAccessEndsAt = schoolAccess?.accessEndsAt
-    ? formatPlanDate(schoolAccess.accessEndsAt.slice(0, 10))
-    : null;
   const purchaseAccessEndsAt = purchaseAccess?.latestExpirationDate
     ? formatPlanDate(purchaseAccess.latestExpirationDate.slice(0, 10))
     : null;
-
-  async function handleRedeemSchoolCode() {
-    const normalizedCode = normalizeSchoolCode(schoolCode);
-
-    if (!normalizedCode) {
-      setRedeemFeedback({
-        kind: "error",
-        message: t("paywall.redeemMissingCode"),
-      });
-      return;
-    }
-
-    if (!hasRealAuth) {
-      setRedeemFeedback({
-        kind: "error",
-        message: t("paywall.redeemRequiresAuth"),
-      });
-      return;
-    }
-
-    setIsRedeeming(true);
-    setRedeemFeedback(null);
-    setRestoreFeedback(null);
-    setEntitlementStatus("loading");
-    track("school_code_redeem_started", {
-      auth_mode: authMode,
-      code_length: normalizedCode.length,
-      source: "access_center",
-    });
-
-    try {
-      const redemption = await redeemSchoolCode(normalizedCode);
-      const snapshot = await fetchRemoteEntitlementSnapshot();
-
-      hydrateRemoteEntitlements(snapshot);
-      setSchoolCode(normalizedCode);
-      setSchoolCodeValue(normalizedCode);
-      track("school_code_redeemed", {
-        granted_features_count: redemption.grantedFeatures.length,
-        source: "access_center",
-        was_already_member: redemption.wasAlreadyMember,
-      });
-      setRedeemFeedback({
-        kind: "success",
-        message: t(
-          redemption.wasAlreadyMember
-            ? "paywall.redeemAlreadyActive"
-            : "paywall.redeemSuccess",
-          {
-            school: redemption.schoolName,
-          }
-        ),
-      });
-      Toast.show({
-        type: "success",
-        text1: t("toasts.schoolCodeRedeemedTitle"),
-        text2: t(
-          redemption.wasAlreadyMember
-            ? "toasts.schoolCodeAlreadyActiveSubtitle"
-            : "toasts.schoolCodeRedeemedSubtitle",
-          {
-            school: redemption.schoolName,
-          }
-        ),
-      });
-    } catch (error) {
-      const message = getSchoolCodeRedeemErrorMessage(error);
-
-      captureError({
-        area: "school_access",
-        error,
-        eventName: "access_center_school_code_redeem_failed",
-        message: "Failed to redeem a school code from the access center.",
-        metadata: {
-          code_length: normalizedCode.length,
-          source: "access_center",
-        },
-      });
-      setEntitlementStatus("ready");
-      track("school_code_redeem_failed", {
-        auth_mode: authMode,
-        message,
-        source: "access_center",
-      });
-      setRedeemFeedback({
-        kind: "error",
-        message,
-      });
-      Toast.show({
-        type: "error",
-        text1: t("toasts.schoolCodeRedeemFailedTitle"),
-        text2: message,
-      });
-    } finally {
-      setIsRedeeming(false);
-    }
-  }
 
   async function handleRestorePurchase() {
     if (!currentUser || authMode !== "supabase") {
@@ -201,7 +83,6 @@ export default function AccessCenterModalScreen() {
 
     setIsRestoring(true);
     setRestoreFeedback(null);
-    setRedeemFeedback(null);
     setRevenueCatStatus("loading");
     track("purchase_restore_started", {
       source: "access_center",
@@ -212,7 +93,10 @@ export default function AccessCenterModalScreen() {
 
       hydrateRevenueCatSnapshot(snapshot);
 
-      if (!snapshot.featureEntitlements.premium_access) {
+      if (
+        !snapshot.featureEntitlements.premium_access &&
+        !snapshot.featureEntitlements.ai_question_chat
+      ) {
         track("purchase_restore_empty", {
           source: "access_center",
         });
@@ -302,7 +186,7 @@ export default function AccessCenterModalScreen() {
           <AppButton
             variant="secondary"
             label={t("accessCenter.openPaywall")}
-            onPress={() => router.push("/modals/paywall")}
+            onPress={() => router.push("/paywall")}
           />
           <AppButton
             variant="ghost"
@@ -335,14 +219,9 @@ export default function AccessCenterModalScreen() {
           <Text style={styles.bodyText}>{t("accessCenter.statusSubtitle")}</Text>
           <View style={styles.statusList}>
             <Text style={styles.statusLine}>
-              {schoolAccess
-                ? t("profile.schoolAccessValue", {
-                    school:
-                      schoolAccess.schoolName ?? t("profile.schoolPartnerFallback"),
-                    date:
-                      schoolAccessEndsAt ?? t("profile.accessNoExpiry"),
-                  })
-                : t("profile.schoolAccessMissing")}
+              {hasPlusAccess
+                ? t("profile.plusAccessActive")
+                : t("profile.plusAccessMissing")}
             </Text>
             <Text style={styles.statusLine}>
               {purchaseAccess
@@ -362,42 +241,6 @@ export default function AccessCenterModalScreen() {
               />
             </View>
           ) : null}
-        </AppCard>
-
-        <AppCard>
-          <Text style={styles.sectionLabel}>{t("paywall.redeemTitle")}</Text>
-          <Text style={styles.bodyText}>{t("accessCenter.redeemBody")}</Text>
-          <View style={styles.formStack}>
-            <AppTextInput
-              autoCapitalize="characters"
-              autoCorrect={false}
-              editable={!isRedeeming}
-              label={t("paywall.redeemInputLabel")}
-              onChangeText={(value) => {
-                setSchoolCodeValue(value);
-                setRedeemFeedback(null);
-              }}
-              placeholder={t("paywall.redeemInputPlaceholder")}
-              value={schoolCode}
-            />
-          </View>
-          {redeemFeedback ? (
-            <StatusCard
-              kind={redeemFeedback.kind}
-              message={redeemFeedback.message}
-            />
-          ) : null}
-          <View style={{ marginTop: 16 }}>
-            <AppButton
-              disabled={isRedeeming}
-              label={t(
-                isRedeeming
-                  ? "paywall.redeemCtaLoading"
-                  : "paywall.redeemCta"
-              )}
-              onPress={() => void handleRedeemSchoolCode()}
-            />
-          </View>
         </AppCard>
 
         <AppCard>
@@ -426,7 +269,7 @@ export default function AccessCenterModalScreen() {
             <AppButton
               variant="ghost"
               label={t("accessCenter.openOffers")}
-              onPress={() => router.push("/modals/paywall")}
+              onPress={() => router.push("/paywall")}
             />
           </View>
         </AppCard>

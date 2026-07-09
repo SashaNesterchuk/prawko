@@ -1,0 +1,76 @@
+import type { ReactNode } from "react";
+import { StyleSheet, View } from "react-native";
+
+import { greenWave, type GreenWaveAccent } from "../../theme/green-wave";
+import { ActionTile } from "./ActionTile";
+
+export type ActionTileItem = {
+  key: string;
+  title: string;
+  subtitle: string;
+  accent?: GreenWaveAccent;
+  premium?: boolean;
+  icon?: ReactNode;
+  onPress?: () => void;
+};
+
+type ActionTileGridProps = {
+  items: ActionTileItem[];
+  columns?: number;
+};
+
+export function ActionTileGrid({ items, columns = 2 }: ActionTileGridProps) {
+  const rows = chunk(items, Math.max(1, columns));
+
+  return (
+    <View style={styles.grid}>
+      {rows.map((row, rowIndex) => (
+        <View key={`row-${rowIndex}`} style={styles.row}>
+          {row.map((item) => (
+            <ActionTile
+              key={item.key}
+              title={item.title}
+              subtitle={item.subtitle}
+              accent={item.accent}
+              premium={item.premium}
+              icon={item.icon}
+              onPress={item.onPress}
+            />
+          ))}
+          {row.length < columns
+            ? Array.from({ length: columns - row.length }).map((_, fillerIndex) => (
+                <View key={`filler-${rowIndex}-${fillerIndex}`} style={styles.filler} />
+              ))
+            : null}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const result: T[][] = [];
+
+  for (let index = 0; index < items.length; index += size) {
+    result.push(items.slice(index, index + size));
+  }
+
+  return result;
+}
+
+const styles = StyleSheet.create({
+  grid: {
+    width: "100%",
+    flexDirection: "column",
+    gap: greenWave.spacing.sm,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: greenWave.spacing.sm,
+  },
+  filler: {
+    flex: 1,
+    minWidth: 100,
+  },
+});

@@ -23,7 +23,7 @@ export async function requestQuestionChat(
       if (error) {
         const status = getHttpStatus(error);
 
-        if (status === 429) {
+        if (status === 429 || status === 403) {
           throw new QuestionChatLimitError();
         }
       }

@@ -1,0 +1,6 @@
+{
+  "native": true,
+  "replaceAttrValues": {
+    "currentColor": "{props.color}"
+  }
+}

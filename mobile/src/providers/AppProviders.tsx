@@ -3,6 +3,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Toast from "react-native-toast-message";
 
+import { AdProvider } from "../features/ads/AdProvider";
+import { AppResumeAdListener } from "../features/ads/AppResumeAdListener";
 import "../i18n";
 import { AnalyticsProvider } from "./AnalyticsProvider";
 import { ErrorLoggingProvider } from "./ErrorLoggingProvider";
@@ -29,8 +31,11 @@ export function AppProviders({ children }: PropsWithChildren) {
                       <LocaleSyncProvider>
                         <UserProvider>
                           <QuestionCatalogProvider>
-                            {children}
-                            <Toast />
+                            <AdProvider>
+                              <AppResumeAdListener />
+                              {children}
+                              <Toast />
+                            </AdProvider>
                           </QuestionCatalogProvider>
                         </UserProvider>
                       </LocaleSyncProvider>

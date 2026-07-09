@@ -25,7 +25,7 @@ export type RevenueCatSnapshot = {
 const ENTITLEMENT_ALIASES: Record<AppFeature, string[]> = {
   premium_access: ["premium_access", "premium", "pro", "full_access"],
   ai_explanations: ["ai_explanations", "premium_access", "premium"],
-  ai_question_chat: ["ai_question_chat", "ai_chat", "premium_access", "premium"],
+  ai_question_chat: ["ai_question_chat", "ai_chat", "plus", "premium_access", "premium"],
   exam_simulator: ["exam_simulator", "exam", "premium_access", "premium"],
 };
 

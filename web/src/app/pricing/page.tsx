@@ -25,8 +25,8 @@ export default function PricingPage() {
     <SiteShell activePath="/pricing">
       <PageHero
         eyebrow="Offers"
-        title="Price the value around the exam sprint, not around endless months."
-        description="This project is optimized for short, dense preparation windows. The pricing surface reflects that reality: free preview, direct sprint purchase, longer premium, and school-issued access."
+        title="Free to learn. Plus when you want comfort and AI."
+        description="Core prep stays free with short video ads. Prawko Plus is a one-time purchase that removes ads and unlocks the AI question assistant."
         actions={[
           {
             href: links.googlePlayUrl,
@@ -34,8 +34,8 @@ export default function PricingPage() {
             variant: "primary",
           },
           {
-            href: links.schoolInquiryUrl,
-            label: "Ask about school pilot",
+            href: "/faq",
+            label: "Read the FAQ",
             variant: "secondary",
           },
         ]}
@@ -44,8 +44,8 @@ export default function PricingPage() {
       <section className="section">
         <SectionTitle
           eyebrow="Plans"
-          title="Keep the first menu simple."
-          description="A student should immediately understand whether they want to try the product, buy a short sprint, or unlock access from a school code."
+          title="Two simple options."
+          description="Students should immediately understand what is free, what Plus adds, and that there is no subscription."
         />
         <PricingGrid items={pricingTiers} />
       </section>
@@ -53,16 +53,16 @@ export default function PricingPage() {
       <section className="section split-section">
         <div className="content-card">
           <SectionTitle
-            eyebrow="Why this structure"
-            title="The lifecycle is short, so the main offer should be short too."
-            description="Pure subscription logic is weak here because the user often disappears right after the exam. The sprint package is the sharper default, while school codes keep the B2B door open."
+            eyebrow="Free tier"
+            title="The full prep loop stays open."
+            description="Study plan, unlimited practice, exam simulator, and pre-generated explanations remain available to every learner."
           />
         </div>
         <div className="content-card">
           <SectionTitle
-            eyebrow="Included value"
-            title="Paid access exists to unlock the real prep loop."
-            description="Unlimited question flow, adaptive repeat modes, full simulator access, and in-product AI explanation are the parts that change outcome quality."
+            eyebrow="Plus"
+            title="Pay once for no ads and AI chat."
+            description="Plus is positioned as comfort and curiosity support — not as unlocking the exam itself."
           />
         </div>
       </section>
@@ -70,25 +70,25 @@ export default function PricingPage() {
       <section className="section">
         <SectionTitle
           eyebrow="What the product sells"
-          title="It is still one product, not four separate promises."
-          description="The same core learning engine powers the free preview, the sprint offer, and school distribution. The differences are entitlement and support layers, not parallel products."
+          title="It is still one product, not two separate apps."
+          description="The same learning engine powers free and Plus users. The difference is ads and AI assistant access."
         />
         <FeatureGrid items={landingHighlights} />
       </section>
 
       <ActionBand
-        title="Need school pricing instead of self-serve?"
-        description="Use the school flow when a driving school wants to hand out time-boxed access codes to a cohort."
+        title="Ready to start preparing?"
+        description="Download the app, build your study plan, and upgrade to Plus when you want an ad-free experience with AI help."
         actions={[
           {
-            href: "/schools",
-            label: "See school page",
-            variant: "ghost",
+            href: links.googlePlayUrl,
+            label: "Get the app",
+            variant: "primary",
           },
           {
-            href: links.schoolInquiryUrl,
-            label: "Start pilot conversation",
-            variant: "primary",
+            href: "/support",
+            label: "Contact support",
+            variant: "ghost",
           },
         ]}
       />

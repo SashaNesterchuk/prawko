@@ -1,67 +1,59 @@
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import Toast from "react-native-toast-message";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppButton } from "../../src/components/shell/AppButton";
-import { AppCard } from "../../src/components/shell/AppCard";
-import { AppScreen } from "../../src/components/shell/AppScreen";
+import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
+import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
+import { DailyWarmupCard } from "../../src/components/shell/DailyWarmupCard";
+import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { ReadinessIndexCard } from "../../src/components/shell/ReadinessIndexCard";
+import { StatusPromptCard } from "../../src/components/shell/StatusPromptCard";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
-import {
-  buildExamRouteParams,
-} from "../../src/features/exam/exam-routes";
-import {
-  getExamQuestionTarget,
-  isExamSimulatorMode,
-} from "../../src/features/exam/exam-config";
+import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
+import { getQuestionDisplayStats } from "../../src/features/questions/question-engine";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
-import {
-  formatPlanDate,
-} from "../../src/features/study-plan/generate-local-study-plan";
 import {
   fetchRemoteHomeProgress,
   getWarsawIsoDate,
-  skipTodayPlanDayRemotely,
   type RemoteReadinessSummary,
-  type RemoteTodayPlan,
-  type RemoteTodayPlanTask,
-  updateRemoteStudyPlanTaskStatus,
 } from "../../src/features/study-plan/supabase-study-plan-progress";
-import { createTaskSessionBinding } from "../../src/features/study-plan/today-task-bindings";
-import { useTheme } from "../../src/providers/ThemeProvider";
-import {
-  useCurrentStudyPlan,
-  useCurrentUser,
-  useAppShellStore,
-} from "../../src/state/app-shell";
-import { useHasFeatureAccess } from "../../src/state/entitlements";
+import { useAppShellStore } from "../../src/state/app-shell";
+import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
+import { useQuestionProgressStore } from "../../src/state/question-progress";
+import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
+import { Icon, IconName } from "../../src/components/icons";
+
+function HomeActionIcon({
+  accent,
+  name,
+}: {
+  accent: keyof typeof greenWaveAccent;
+  name: IconName;
+}) {
+  return (
+    <Icon
+      color={greenWaveAccent[accent].fill}
+      name={name}
+      size={24}
+    />
+  );
+}
 
 export default function HomeTabScreen() {
   const { t } = useTranslation();
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const { bottom: safeBottom } = useSafeAreaInsets();
   const authMode = useAppShellStore((state) => state.authMode);
-  const hasExamAccess = useHasFeatureAccess("exam_simulator");
-  const user = useCurrentUser();
-  const currentStudyPlan = useCurrentStudyPlan();
-  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const currentStudyPlanRemoteId = useAppShellStore(
-    (state) => state.currentStudyPlanRemoteId
-  );
-  const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const isFocused = useIsFocused();
-  const [remoteReadinessSummary, setRemoteReadinessSummary] =
-    useState<RemoteReadinessSummary | null>(null);
-  const [remoteTodayPlan, setRemoteTodayPlan] = useState<RemoteTodayPlan | null>(
-    null
+  const questionCatalogVersion = useQuestionCatalogVersion();
+  const questionUserState = useQuestionProgressStore(
+    (state) => state.questionUserState
   );
-  const [isRemoteLoading, setIsRemoteLoading] = useState(false);
-  const [isSkippingDay, setIsSkippingDay] = useState(false);
-  const [taskSyncError, setTaskSyncError] = useState<string | null>(null);
-  const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
-  const todayIsoDate = getWarsawIsoDate();
+  const [readinessSummary, setReadinessSummary] =
+    useState<RemoteReadinessSummary | null>(null);
 
   useEffect(() => {
     if (!isFocused) {
@@ -69,775 +61,193 @@ export default function HomeTabScreen() {
     }
 
     if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
-      setRemoteReadinessSummary(null);
-      setRemoteTodayPlan(null);
-      setIsRemoteLoading(false);
-      setTaskSyncError(null);
+      setReadinessSummary(null);
       return;
     }
 
     let cancelled = false;
 
-    setIsRemoteLoading(true);
-    setTaskSyncError(null);
-
-    void fetchRemoteHomeProgress(todayIsoDate)
-      .then(({ readinessSummary, todayPlan }) => {
-        if (cancelled) {
-          return;
+    void fetchRemoteHomeProgress(getWarsawIsoDate())
+      .then(({ readinessSummary: summary }) => {
+        if (!cancelled) {
+          setReadinessSummary(summary);
         }
-
-        setRemoteReadinessSummary(readinessSummary);
-        setRemoteTodayPlan(todayPlan);
       })
       .catch((error) => {
-        if (cancelled) {
-          return;
-        }
-
-        console.warn("Failed to fetch remote study plan progress.", error);
-        setRemoteReadinessSummary(null);
-        setRemoteTodayPlan(null);
-        setTaskSyncError(t("home.remoteProgressFallback"));
-      })
-      .finally(() => {
         if (!cancelled) {
-          setIsRemoteLoading(false);
+          console.warn("Failed to fetch readiness summary for Home.", error);
+          setReadinessSummary(null);
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [authMode, currentStudyPlanRemoteId, isFocused, t, todayIsoDate]);
+  }, [authMode, isFocused]);
 
-  const localTodayPlan = useMemo(() => {
-    if (!currentStudyPlan) {
-      return null;
-    }
-
-    const today = currentStudyPlan.days.find((day) => day.planDate === todayIsoDate);
-
-    if (!today) {
-      return null;
-    }
-
-    return {
-      dayNumber: today.dayNumber,
-      dayStatus: today.minimumMode ? "in_progress" : "pending",
-      planDate: today.planDate,
-      studyPlanDayId: today.id,
-      studyPlanId: currentStudyPlan.id,
-      tasks: today.tasks.map((task, index) => ({
-        description: task.description,
-        estimatedMinutes: task.estimatedMinutes,
-        id: task.id,
-        questionCountCompleted: 0,
-        questionCountTarget: task.questionCountTarget ?? null,
-        sortOrder: index + 1,
-        status: "pending",
-        title: task.title,
-        topicBlock: task.topicBlock ?? null,
-        taskType: task.taskType,
-      })),
-    } satisfies RemoteTodayPlan;
-  }, [currentStudyPlan, todayIsoDate]);
-
-  const today = remoteTodayPlan ?? localTodayPlan;
-  const readinessScore =
-    remoteReadinessSummary?.readinessScore ??
-    (currentStudyPlan
-      ? Math.min(
-          92,
-          40 +
-            currentStudyPlan.summary.miniTestDays * 4 +
-            currentStudyPlan.summary.fullExamDays * 6
-        )
-      : 0);
-  const summaryExamDate =
-    remoteReadinessSummary?.examDate ?? currentStudyPlan?.examDate ?? null;
-  const completedTasks =
-    today?.tasks.filter((task) => task.status === "completed").length ?? 0;
-  const totalTasks = today?.tasks.length ?? 0;
-  const canToggleRemoteTasks =
-    authMode === "supabase" &&
-    isMobileSupabaseConfigured &&
-    Boolean(remoteTodayPlan);
-  const hasPlan = Boolean(
-    currentStudyPlan ||
-      currentStudyPlanRemoteId ||
-      remoteReadinessSummary?.activeStudyPlanId ||
-      remoteTodayPlan
-  );
-  const missedPlanDays = useMemo(() => {
-    if (!today || !remoteReadinessSummary) {
-      return 0;
-    }
-
-    return Math.max(
-      0,
-      (today.dayNumber - 1) - remoteReadinessSummary.completedPlanDays
-    );
-  }, [remoteReadinessSummary, today]);
-  const nextTodayTask = useMemo(
-    () =>
-      today?.tasks.find((task) => {
-        if (task.status !== "pending" && task.status !== "in_progress") {
-          return false;
-        }
-
-        return Boolean(
-          createTaskSessionBinding(task, {
-            includeStudyPlanTaskId: canToggleRemoteTasks,
-          })
-        );
-      }) ?? null,
-    [canToggleRemoteTasks, today]
-  );
-  const canSkipToday =
-    canToggleRemoteTasks &&
-    Boolean(today) &&
-    completedTasks === 0 &&
-    totalTasks > 0 &&
-    today!.tasks.some(
-      (task) => task.status === "pending" || task.status === "in_progress"
-    );
-  const canAdjustPlan = Boolean(
-    summaryExamDate &&
-    currentStudyPlan &&
-      studyPlanSetup.level &&
-      studyPlanSetup.minutesPerDay !== null
+  const stats = useMemo(
+    () => getQuestionDisplayStats(questionUserState),
+    [questionCatalogVersion, questionUserState]
   );
 
-  async function refreshRemoteProgress() {
-    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
-      return;
-    }
+  const localReadiness =
+    stats.total > 0 ? Math.round((stats.seen / stats.total) * 100) : 0;
+  const readiness = Math.round(
+    readinessSummary?.readinessScore ?? localReadiness
+  );
+  const wrongAnswers = stats.wrongAnswers;
+  const dueReviews = readinessSummary?.dueReviews ?? stats.reviewDue;
+  const examPassed =
+    readinessSummary != null && readinessSummary.daysUntilExam <= 0;
+  const recentExamPassed =
+    readinessSummary?.recentExamStatus === "completed";
 
-    const { readinessSummary, todayPlan } = await fetchRemoteHomeProgress(
-      getWarsawIsoDate()
-    );
-
-    setRemoteReadinessSummary(readinessSummary);
-    setRemoteTodayPlan(todayPlan);
-  }
-
-  function handleTaskOpen(task: RemoteTodayPlanTask) {
-    const binding = createTaskSessionBinding(task, {
-      includeStudyPlanTaskId: canToggleRemoteTasks,
-    });
-
-    if (!binding) {
-      return;
-    }
-
-    if (isExamSimulatorMode(binding.mode)) {
-      if (!hasExamAccess) {
-        router.push({
-          pathname: "/modals/paywall",
-          params: {
-            feature: "exam_simulator",
-          },
+  const readinessSubtitle =
+    readiness >= 85
+      ? t("dash.readinessHigh", { defaultValue: "Майже готово, тримай темп" })
+      : readiness >= 40
+        ? t("dash.readinessMid", {
+          defaultValue: "Солідний прогрес, ще трохи повторень",
+        })
+        : t("dash.readinessLow", {
+          defaultValue: "Гарний старт, продовжуй практику",
         });
-        return;
-      }
 
-      router.push({
-        pathname: "/exam",
-        params: buildExamRouteParams({
-          mode: binding.mode,
-          questionLimit:
-            binding.mode === "exam"
-              ? undefined
-              : getExamQuestionTarget(binding.mode, binding.questionLimit),
-          studyPlanTaskId: binding.studyPlanTaskId,
+  const warmupBadgeLabel =
+    dueReviews > 0
+      ? t("dash.warmupBadge", {
+        defaultValue: "Повторень: {{count}}",
+        count: dueReviews,
+      })
+      : undefined;
+
+  const tiles: ActionTileItem[] = [
+    {
+      key: "trainer",
+      accent: "green",
+      title: t("dash.tileTrainerTitle", { defaultValue: "Тренер" }),
+      subtitle: t("dash.tileTrainerSubtitle", {
+        defaultValue: "Вільне тестування",
+      }),
+      icon: <HomeActionIcon accent="green" name="trainer" />,
+      onPress: () =>
+        router.push({
+          pathname: "/question",
+          params: buildQuestionRouteParams({ mode: "learning" }),
         }),
-      });
-      return;
-    }
-
-    router.push({
-      pathname: "/question",
-      params: buildQuestionRouteParams(binding),
-    });
-  }
-
-  async function handleTaskToggle(task: RemoteTodayPlanTask) {
-    if (!canToggleRemoteTasks || updatingTaskId) {
-      return;
-    }
-
-    const nextStatus = task.status === "completed" ? "pending" : "completed";
-
-    setTaskSyncError(null);
-    setUpdatingTaskId(task.id);
-
-    try {
-      await updateRemoteStudyPlanTaskStatus({
-        taskId: task.id,
-        status: nextStatus,
-        questionCountCompleted:
-          nextStatus === "completed" ? task.questionCountTarget ?? null : 0,
-      });
-
-      const { readinessSummary, todayPlan } = await fetchRemoteHomeProgress(
-        getWarsawIsoDate()
-      );
-
-      setRemoteReadinessSummary(readinessSummary);
-      setRemoteTodayPlan(todayPlan);
-    } catch (error) {
-      console.warn("Failed to update study plan task status.", error);
-      setTaskSyncError(t("home.taskSyncFailed"));
-    } finally {
-      setUpdatingTaskId(null);
-    }
-  }
-
-  async function handleSkipToday() {
-    if (!canSkipToday || isSkippingDay) {
-      return;
-    }
-
-    setIsSkippingDay(true);
-    setTaskSyncError(null);
-
-    try {
-      await skipTodayPlanDayRemotely(todayIsoDate);
-      await refreshRemoteProgress();
-
-      Toast.show({
-        type: "success",
-        text1: t("toasts.daySkippedTitle"),
-        text2: t("toasts.daySkippedSubtitle"),
-      });
-    } catch (error) {
-      console.warn("Failed to skip today's study plan day.", error);
-      setTaskSyncError(t("home.skipDayFailed"));
-      Toast.show({
-        type: "error",
-        text1: t("toasts.daySkipFailedTitle"),
-        text2: t("toasts.daySkipFailedSubtitle"),
-      });
-    } finally {
-      setIsSkippingDay(false);
-    }
-  }
+    },
+    {
+      key: "exam",
+      accent: "blue",
+      title: t("dash.tileExamTitle", { defaultValue: "Іспит" }),
+      subtitle: t("dash.tileExamSubtitle", {
+        defaultValue: recentExamPassed ? "Симуляція 1/1" : "Симуляція 0/1",
+      }),
+      icon: <HomeActionIcon accent="blue" name="exam" />,
+      onPress: () =>
+        router.push({
+          pathname: "/exam",
+          params: buildExamRouteParams({ mode: "exam" }),
+        }),
+    },
+    {
+      key: "mistakes",
+      accent: "red",
+      title: t("dash.tileMistakesTitle", { defaultValue: "Помилки" }),
+      subtitle: t("dash.tileMistakesSubtitle", {
+        defaultValue: "{{count}} для повторення",
+        count: wrongAnswers,
+      }),
+      icon: <HomeActionIcon accent="red" name="problem" />,
+      onPress: () => router.push("/mistakes"),
+    },
+    {
+      key: "signs",
+      accent: "amber",
+      title: t("dash.tileSignsTitle", { defaultValue: "Знаки" }),
+      subtitle: t("dash.tileSignsSubtitle", {
+        defaultValue: "Швидкий тренажер",
+      }),
+      icon: <HomeActionIcon accent="amber" name="roadSign" />,
+      onPress: () => router.push("/(tabs)/signs"),
+    },
+  ];
 
   return (
-    <AppScreen
-      title={t("tabs.homeTitle")}
-      subtitle={t("tabs.homeSubtitle", {
-        name: user?.fullName ?? t("common.student"),
-      })}
-    >
-      <View style={{ gap: 12 }}>
-        <AppCard accent>
-          <Text style={styles.sectionLabel}>{t("home.summaryTitle")}</Text>
-          <Text style={styles.summaryScore}>
-            {summaryExamDate ? `${readinessScore}%` : "0%"}
-          </Text>
-          <Text style={styles.bodyText}>
-            {summaryExamDate
-              ? t("home.summaryBody", {
-                  date: formatPlanDate(summaryExamDate),
-                  locale: preferredLocale.toUpperCase(),
-                })
-              : t("home.summaryEmpty")}
-          </Text>
-          {missedPlanDays > 0 ? (
-            <Text style={[styles.metaText, { marginTop: 8 }]}>
-              {t("home.summaryMissedDays", {
-                days: missedPlanDays,
-              })}
-            </Text>
-          ) : null}
-          {remoteReadinessSummary ? (
-            <View style={styles.summaryMeta}>
-              <Text style={styles.metaText}>
-                {t("home.summaryAttempts", {
-                  accuracy: remoteReadinessSummary.accuracyPercent,
-                  count: remoteReadinessSummary.totalAttempts,
-                })}
-              </Text>
-              <Text style={styles.metaText}>
-                {t("home.summaryReviews", {
-                  due: remoteReadinessSummary.dueReviews,
-                  weak: remoteReadinessSummary.unresolvedWeakSpots,
-                })}
-              </Text>
-              <Text style={styles.metaText}>
-                {t("home.summaryPlanProgress", {
-                  completed: remoteReadinessSummary.completedPlanDays,
-                  days: Math.max(0, remoteReadinessSummary.daysUntilExam),
-                  total: remoteReadinessSummary.totalPlanDays,
-                })}
-              </Text>
-            </View>
-          ) : null}
-        </AppCard>
-
-        {remoteReadinessSummary ? (
-          <AppCard>
-            <Text style={styles.sectionLabel}>{t("home.breakdownTitle")}</Text>
-            <Text style={styles.bodyText}>{t("home.breakdownBody")}</Text>
-            <View style={styles.breakdownList}>
-              <ReadinessBreakdownRow
-                hint={t("home.breakdownAccuracyHint", {
-                  percent: formatScoreMetric(
-                    remoteReadinessSummary.accuracyPercent
-                  ),
-                })}
-                label={t("home.breakdownAccuracyLabel")}
-                value={t("home.breakdownPointsValue", {
-                  max: 45,
-                  points: remoteReadinessSummary.accuracyComponent,
-                })}
-              />
-              <ReadinessBreakdownRow
-                hint={t("home.breakdownPlanHint", {
-                  completed: remoteReadinessSummary.completedPlanDays,
-                  percent: formatScoreMetric(
-                    remoteReadinessSummary.planCompletionPercent
-                  ),
-                  total: remoteReadinessSummary.totalPlanDays,
-                })}
-                label={t("home.breakdownPlanLabel")}
-                value={t("home.breakdownPointsValue", {
-                  max: 25,
-                  points: remoteReadinessSummary.planComponent,
-                })}
-              />
-              <ReadinessBreakdownRow
-                hint={
-                  remoteReadinessSummary.recentExamMode &&
-                  remoteReadinessSummary.recentExamScorePercent !== null
-                    ? t("home.breakdownExamHint", {
-                        mode: t(`modes.${remoteReadinessSummary.recentExamMode}`),
-                        percent: formatScoreMetric(
-                          remoteReadinessSummary.recentExamScorePercent
-                        ),
-                      })
-                    : t("home.breakdownExamMissing")
-                }
-                label={t("home.breakdownExamLabel")}
-                value={t("home.breakdownPointsValue", {
-                  max: 20,
-                  points: remoteReadinessSummary.recentExamComponent,
-                })}
-              />
-              <ReadinessBreakdownRow
-                hint={t("home.breakdownReviewHint", {
-                  count: remoteReadinessSummary.dueReviews,
-                })}
-                label={t("home.breakdownReviewLabel")}
-                value={t("home.breakdownPointsValue", {
-                  max: 5,
-                  points: remoteReadinessSummary.reviewHygieneComponent,
-                })}
-              />
-              <ReadinessBreakdownRow
-                hint={t("home.breakdownWeakHint", {
-                  count: remoteReadinessSummary.unresolvedWeakSpots,
-                })}
-                label={t("home.breakdownWeakLabel")}
-                value={t("home.breakdownPointsValue", {
-                  max: 5,
-                  points: remoteReadinessSummary.weakSpotComponent,
-                })}
-              />
-            </View>
-          </AppCard>
-        ) : null}
-
-        <AppCard>
-          <Text style={styles.sectionLabel}>{t("home.todayTasksTitle")}</Text>
-          {today ? (
-            <View style={styles.taskList}>
-              <Text style={styles.bodyText}>
-                {t("home.todayDate", {
-                  date: formatPlanDate(today.planDate),
-                })}
-              </Text>
-              <Text style={styles.metaText}>
-                {t("home.todayProgress", {
-                  completed: completedTasks,
-                  total: totalTasks,
-                })}
-              </Text>
-              {taskSyncError ? (
-                <Text style={styles.errorText}>{taskSyncError}</Text>
-              ) : null}
-              {today.tasks.map((task, index) => {
-                const isCompleted = task.status === "completed";
-                const isTaskUpdating = updatingTaskId === task.id;
-                const binding = createTaskSessionBinding(task, {
-                  includeStudyPlanTaskId: canToggleRemoteTasks,
-                });
-                const canOpenTask = Boolean(binding);
-                const taskHint = isTaskUpdating
-                  ? t("home.taskSyncing")
-                  : canOpenTask
-                    ? t("home.taskTapToOpen")
-                    : isCompleted
-                      ? t("home.taskTapToReopen")
-                      : t("home.taskTapToComplete");
-                const taskToggleLabel = isCompleted
-                  ? t("home.taskReopenAction")
-                  : t("home.taskCompleteAction");
-                const content = (
-                  <View style={styles.taskRow}>
-                    <View
-                      style={[
-                        styles.taskCheck,
-                        isCompleted ? styles.taskCheckCompleted : null,
-                      ]}
-                    >
-                      {isCompleted ? <View style={styles.taskCheckInner} /> : null}
-                    </View>
-                    <View style={styles.taskCopy}>
-                      <Text
-                        style={[
-                          styles.taskTitle,
-                          isCompleted ? styles.taskTitleCompleted : null,
-                        ]}
-                      >
-                        {formatTodayTaskLine(task, index)}
-                      </Text>
-                      {task.description ? (
-                        <Text style={styles.taskDescription}>{task.description}</Text>
-                      ) : null}
-                    </View>
-                  </View>
-                );
-
-                return (
-                  <View key={task.id} style={styles.taskCard}>
-                    {canOpenTask ? (
-                      <Pressable
-                        accessibilityRole="button"
-                        disabled={isTaskUpdating}
-                        onPress={() => handleTaskOpen(task)}
-                        style={({ pressed }) => [
-                          styles.taskPressable,
-                          pressed ? styles.taskPressablePressed : null,
-                          isTaskUpdating ? styles.taskPressableDisabled : null,
-                        ]}
-                      >
-                        {content}
-                      </Pressable>
-                    ) : (
-                      <View style={styles.taskStaticBody}>{content}</View>
-                    )}
-
-                    <View style={styles.taskFooter}>
-                      <Text style={styles.taskHint}>{taskHint}</Text>
-                      {canToggleRemoteTasks ? (
-                        <Pressable
-                          accessibilityRole="button"
-                          disabled={isTaskUpdating || Boolean(updatingTaskId)}
-                          onPress={() => void handleTaskToggle(task)}
-                          style={({ pressed }) => [
-                            styles.taskStatusButton,
-                            pressed ? styles.taskStatusButtonPressed : null,
-                            isTaskUpdating || Boolean(updatingTaskId)
-                              ? styles.taskStatusButtonDisabled
-                              : null,
-                          ]}
-                        >
-                          <Text style={styles.taskStatusButtonLabel}>
-                            {taskToggleLabel}
-                          </Text>
-                        </Pressable>
-                      ) : null}
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          ) : (
-            <View style={styles.taskList}>
-              {taskSyncError ? (
-                <Text style={styles.errorText}>{taskSyncError}</Text>
-              ) : null}
-              <Text style={styles.bodyText}>
-                {isRemoteLoading
-                  ? t("home.todayTasksLoading")
-                  : t("home.todayTasksEmpty")}
-              </Text>
-            </View>
-          )}
-        </AppCard>
-
-        <View style={{ gap: 10 }}>
-          <AppButton
-            label={
-              nextTodayTask
-                ? t("home.openTodayTask")
-                : hasPlan
-                  ? t("home.continueLearning")
-                  : t("home.openPlanPreview")
-            }
-            onPress={() =>
-              nextTodayTask
-                ? handleTaskOpen(nextTodayTask)
-                : router.push(
-                    hasPlan ? "/(tabs)/learn" : "/(onboarding)/preview"
-                  )
-            }
+    <GreenWaveScreen>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <StatusBar style="dark" />
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: 96 + safeBottom },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          <ReadinessIndexCard
+            progress={readiness}
+            title={t("dash.readinessTitle", {
+              defaultValue: "Індекс готовності",
+            })}
+            ringLabel={t("dash.readinessRingLabel", {
+              defaultValue: "готовність",
+            })}
+            subtitle={readinessSubtitle}
+            detailsLabel={t("dash.readinessDetails", { defaultValue: "Деталі" })}
+            onPress={() => router.push("/statistics")}
           />
-          {canAdjustPlan ? (
-            <AppButton
-              variant="secondary"
-              disabled={isSkippingDay}
-              label={t("home.adjustPlan")}
+
+          <View style={styles.stack}>
+            <DailyWarmupCard
+              title={t("dash.warmupTitle", {
+                defaultValue: "Щоденна розминка",
+              })}
+              description={t("dash.warmupDescription", {
+                defaultValue: "Повтори слабкі місця та часті помилки.",
+              })}
+              badgeLabel={warmupBadgeLabel}
+              buttonLabel={t("dash.warmupButton", { defaultValue: "Повторити" })}
               onPress={() =>
                 router.push({
-                  pathname: "/modals/plan-adjust",
-                  params: {
-                    missedDays: String(missedPlanDays),
-                  },
+                  pathname: "/question",
+                  params: buildQuestionRouteParams({ mode: "weak_spots" }),
                 })
               }
             />
-          ) : null}
-          {canSkipToday ? (
-            <AppButton
-              variant="ghost"
-              disabled={isSkippingDay}
-              label={
-                isSkippingDay
-                  ? t("home.skipDayLoading")
-                  : t("home.skipDay")
-              }
-              onPress={() => void handleSkipToday()}
+
+            <ActionTileGrid items={tiles} />
+          </View>
+
+          {examPassed ? (
+            <StatusPromptCard
+              eyebrow={t("dash.statusEyebrow", {
+                defaultValue: "Онови свій статус",
+              })}
+              title={t("dash.statusTitle", {
+                defaultValue: "Як пройшов іспит?",
+              })}
+              onPress={() => router.push("/practice")}
             />
           ) : null}
-          <AppButton
-            variant="secondary"
-            label={t("home.openPractice")}
-            onPress={() => router.push("/(tabs)/practice")}
-          />
-          <AppButton
-            variant="ghost"
-            label={t("home.openAiModal")}
-            onPress={() => router.push("/modals/ai-chat")}
-          />
-        </View>
-      </View>
-    </AppScreen>
+        </ScrollView>
+      </SafeAreaView>
+    </GreenWaveScreen>
   );
 }
 
-function formatTodayTaskLine(task: RemoteTodayPlanTask, index: number) {
-  const targetPart =
-    typeof task.questionCountTarget === "number" && task.questionCountTarget > 0
-      ? ` / ${task.questionCountTarget}`
-      : "";
-  const progressPart =
-    task.questionCountCompleted > 0 || targetPart
-      ? ` (${task.questionCountCompleted}${targetPart})`
-      : "";
-  const minutesPart =
-    typeof task.estimatedMinutes === "number" && task.estimatedMinutes > 0
-      ? ` - ${task.estimatedMinutes}m`
-      : "";
-
-  return `${index + 1}. ${task.title}${progressPart}${minutesPart}`;
-}
-
-function formatScoreMetric(value: number) {
-  return Number.isInteger(value) ? `${value}` : value.toFixed(1);
-}
-
-function ReadinessBreakdownRow({
-  hint,
-  label,
-  value,
-}: {
-  hint: string;
-  label: string;
-  value: string;
-}) {
-  return (
-    <View style={breakdownRowStyles.container}>
-      <View style={breakdownRowStyles.copy}>
-        <Text style={breakdownRowStyles.label}>{label}</Text>
-        <Text style={breakdownRowStyles.hint}>{hint}</Text>
-      </View>
-      <Text style={breakdownRowStyles.value}>{value}</Text>
-    </View>
-  );
-}
-
-const breakdownRowStyles = StyleSheet.create({
-  container: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-  },
-  copy: {
+const styles = StyleSheet.create({
+  safeArea: {
     flex: 1,
-    gap: 2,
   },
-  hint: {
-    color: "#6B746C",
-    fontSize: 12,
-    lineHeight: 18,
+  scroll: {
+    flex: 1,
   },
-  label: {
-    color: "#182018",
-    fontSize: 14,
-    fontWeight: "700",
-    lineHeight: 20,
+  content: {
+    padding: greenWave.spacing.xl,
+    gap: greenWave.spacing.xl,
   },
-  value: {
-    color: "#1E5B4F",
-    fontSize: 14,
-    fontWeight: "800",
-    lineHeight: 20,
+  stack: {
+    gap: greenWave.spacing.sm,
   },
 });
-
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
-    breakdownList: {
-      gap: 10,
-      marginTop: 12,
-    },
-    bodyText: {
-      color: theme.colors.textPrimary,
-      fontSize: 14,
-      lineHeight: 22,
-    },
-    errorText: {
-      color: "#A44E37",
-      fontSize: 13,
-      lineHeight: 20,
-    },
-    metaText: {
-      color: theme.colors.textSecondary,
-      fontSize: 13,
-      lineHeight: 20,
-    },
-    sectionLabel: {
-      color: theme.colors.textSecondary,
-      fontSize: 13,
-      fontWeight: "700",
-      marginBottom: 8,
-    },
-    summaryMeta: {
-      gap: 6,
-      marginTop: 10,
-    },
-    summaryScore: {
-      color: theme.colors.textPrimary,
-      fontSize: 26,
-      fontWeight: "800",
-      marginBottom: 6,
-    },
-    taskCheck: {
-      alignItems: "center",
-      borderColor: theme.colors.borderStrong,
-      borderRadius: 10,
-      borderWidth: 1,
-      height: 20,
-      justifyContent: "center",
-      marginTop: 2,
-      width: 20,
-    },
-    taskCheckCompleted: {
-      backgroundColor: theme.colors.accentMuted,
-      borderColor: theme.colors.accentMuted,
-    },
-    taskCard: {
-      borderColor: theme.colors.borderSoft,
-      borderRadius: theme.radius.large,
-      borderWidth: 1,
-      overflow: "hidden",
-    },
-    taskCheckInner: {
-      backgroundColor: theme.colors.onAccent,
-      borderRadius: 4,
-      height: 8,
-      width: 8,
-    },
-    taskCopy: {
-      flex: 1,
-      gap: 4,
-    },
-    taskDescription: {
-      color: theme.colors.textSecondary,
-      fontSize: 13,
-      lineHeight: 20,
-    },
-    taskFooter: {
-      alignItems: "center",
-      borderTopColor: theme.colors.borderSoft,
-      borderTopWidth: 1,
-      flexDirection: "row",
-      gap: 10,
-      justifyContent: "space-between",
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-    },
-    taskHint: {
-      color: theme.colors.textMuted,
-      fontSize: 12,
-      flex: 1,
-      lineHeight: 18,
-    },
-    taskList: {
-      gap: 8,
-    },
-    taskPressable: {
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-    },
-    taskPressableDisabled: {
-      opacity: 0.72,
-    },
-    taskPressablePressed: {
-      opacity: 0.86,
-    },
-    taskRow: {
-      alignItems: "flex-start",
-      flexDirection: "row",
-      gap: 12,
-    },
-    taskStaticBody: {
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-    },
-    taskStatusButton: {
-      alignItems: "center",
-      backgroundColor: theme.colors.cardMuted,
-      borderColor: theme.colors.borderStrong,
-      borderRadius: 999,
-      borderWidth: 1,
-      justifyContent: "center",
-      minHeight: 34,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-    },
-    taskStatusButtonDisabled: {
-      opacity: 0.6,
-    },
-    taskStatusButtonLabel: {
-      color: theme.colors.textPrimary,
-      fontSize: 12,
-      fontWeight: "700",
-    },
-    taskStatusButtonPressed: {
-      opacity: 0.85,
-    },
-    taskTitle: {
-      color: theme.colors.textPrimary,
-      fontSize: 15,
-      lineHeight: 22,
-    },
-    taskTitleCompleted: {
-      textDecorationLine: "line-through",
-    },
-  });

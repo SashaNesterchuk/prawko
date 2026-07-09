@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.1"
+   width="861.62622"
+   height="611.13129"
+   id="svg2">
+   <title
+     id="title4720">Tabliczka T-31a</title>
+  <defs
+     id="defs4">
+    <marker
+       refX="0"
+       refY="0"
+       orient="auto"
+       id="marker7728"
+       style="overflow:visible">
+      <path
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         transform="matrix(1.1,0,0,1.1,1.1,0)"
+         id="path7730"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+    </marker>
+    <marker
+       refX="0"
+       refY="0"
+       orient="auto"
+       id="marker7006-9"
+       style="overflow:visible">
+      <path
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         transform="matrix(1.1,0,0,1.1,1.1,0)"
+         id="path7008-64"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+    </marker>
+  </defs>
+  <g
+     transform="translate(579.38455,-103.9394)"
+     id="layer1">
+    <g
+       transform="matrix(2.0903068,0,0,2.0903068,1887.8524,2311.2785)"
+       id="g4604">
+      <g
+         transform="matrix(0,0.816467,0.7309682,0,-3209.7511,-207.56971)"
+         id="g4606"
+         style="fill:#ffff00;fill-opacity:0.573394;stroke:#000000;stroke-opacity:1">
+        <g
+           transform="translate(218.945,96.7782)"
+           id="g4608"
+           style="fill:#ffff00;fill-opacity:0.573394;stroke:#000000;stroke-opacity:1">
+          <g
+             transform="translate(334.143,296.362)"
+             id="g4610"
+             style="fill:#ffff00;fill-opacity:0.573394;stroke:#000000;stroke-opacity:1">
+            <g
+               transform="matrix(0.985222,0,0,0.976563,-278.802,-85.064)"
+               id="g4612"
+               style="fill:#ffff00;fill-opacity:0.573394;stroke:#000000;stroke-opacity:1">
+              <g
+                 transform="matrix(1,0,0,0.995024,0,2.04826)"
+                 id="g4614"
+                 style="fill:#ffff00;fill-opacity:0.573394;stroke:#000000;stroke-opacity:1" />
+            </g>
+          </g>
+        </g>
+      </g>
+      <rect
+         width="405.22263"
+         height="285.37985"
+         rx="13.991096"
+         ry="13.991096"
+         x="-1176.8362"
+         y="-1052.5022"
+         id="rect4616"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:7;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <g
+         transform="scale(0.98449192,1.0157524)"
+         id="text4618"
+         style="font-size:316.35006714px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Drogowskaz;-inkscape-font-specification:Drogowskaz Bold">
+        <path
+           d="m -1012.3958,-875.9242 26.3333,-79.00031 26.33327,79.00031 -52.66657,0 z m -32.9169,98.75037 19.75,-59.25022 79.00035,0 19.75008,59.25022 39.50015,0 -79.00031,-237.00087 -39.50017,0 -79.0003,237.00087 39.5002,0 z"
+           id="path3726"
+           style="font-size:316px" />
+      </g>
+    </g>
+  </g>
+</svg>

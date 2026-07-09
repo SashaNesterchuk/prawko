@@ -8,7 +8,6 @@ const CORS_HEADERS = {
   "Content-Type": "application/json",
 } as const;
 
-const FREE_DAILY_LIMIT = 8;
 const PREGENERATED_EXPLANATION_MODEL = "pre-generated-explanation-v1";
 
 type SupportedLocale = "pl" | "ua" | "en";
@@ -123,20 +122,15 @@ Deno.serve(async (request) => {
     }
     userId = user.id;
 
-    const hasEntitlement = await checkAiEntitlement(userClient);
+    const hasEntitlement = await checkPlusAiEntitlement(userClient);
 
     if (!hasEntitlement) {
-      const usedToday = await getDailyQuestionChatCount(serviceClient, user.id);
-
-      if (usedToday >= FREE_DAILY_LIMIT) {
-        return jsonResponse(
-          {
-            error: "free_limit_reached",
-            remainingFreeMessages: 0,
-          },
-          429
-        );
-      }
+      return jsonResponse(
+        {
+          error: "plus_required",
+        },
+        403
+      );
     }
 
     const nextMessageOrder = await getNextMessageOrder(
@@ -225,13 +219,7 @@ Deno.serve(async (request) => {
       userId: user.id,
     });
 
-    const remainingFreeMessages = hasEntitlement
-      ? null
-      : Math.max(
-          0,
-          FREE_DAILY_LIMIT -
-            (await getDailyQuestionChatCount(serviceClient, user.id))
-        );
+    const remainingFreeMessages = null;
 
     return jsonResponse({
       conversationId: normalizedConversationId,
@@ -351,39 +339,24 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
-async function checkAiEntitlement(userClient: ReturnType<typeof createClient>) {
+async function checkPlusAiEntitlement(userClient: ReturnType<typeof createClient>) {
   try {
-    const { data, error } = await userClient.rpc("has_active_entitlement", {
-      p_feature: "ai_question_chat",
-    });
+    const { data, error } = await userClient
+      .from("feature_entitlements")
+      .select("feature_key")
+      .eq("status", "active")
+      .eq("source_type", "purchase")
+      .in("feature_key", ["ai_question_chat", "premium_access"])
+      .limit(1);
 
     if (error) {
       return false;
     }
 
-    return Boolean(data);
+    return Boolean(data && data.length > 0);
   } catch {
     return false;
   }
-}
-
-async function getDailyQuestionChatCount(
-  adminClient: ReturnType<typeof createClient>,
-  userId: string
-) {
-  const startOfDayIso = new Date().toISOString().slice(0, 10);
-  const { count } = await adminClient
-    .from("ai_messages")
-    .select("*", {
-      count: "exact",
-      head: true,
-    })
-    .eq("user_id", userId)
-    .eq("message_kind", "question_chat")
-    .eq("message_role", "assistant")
-    .gte("created_at", `${startOfDayIso}T00:00:00.000Z`);
-
-  return count ?? 0;
 }
 
 async function getNextMessageOrder(

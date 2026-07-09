@@ -7,6 +7,7 @@ import type { PipelineOptions } from "./types";
 import { runInspect, runPipeline, runValidate } from "./pipeline";
 import { executeMediaBuild, uploadBuiltMedia } from "./media-build";
 import { syncQuestionsToSupabase } from "./question-sync";
+import { clearQuestionMediaStorage } from "./storage-clear";
 import { pathExists, readJsonFile, resolveRepoPath } from "./utils";
 
 function hasPipelineSourceOverrides(options: PipelineOptions): boolean {
@@ -181,6 +182,14 @@ async function main() {
     return;
   }
 
+  if (command === "storage:clear") {
+    const result = await clearQuestionMediaStorage({
+      dryRun: Boolean(options.dryRun),
+    });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
   if (command === "questions:sync") {
     if (!options.inputPath && !hasPipelineSourceOverrides(options)) {
       options.inputPath = await resolveGeneratedQuestionExportPath() ?? undefined;
@@ -195,7 +204,7 @@ async function main() {
   }
 
   throw new Error(
-    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, questions:sync.`
+    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, storage:clear, questions:sync.`
   );
 }
 

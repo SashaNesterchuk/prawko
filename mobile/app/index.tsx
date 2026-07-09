@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { AppScreen } from "../src/components/shell/AppScreen";
 import { LoadingStateView } from "../src/components/shell/StateViews";
 import {
-  useCurrentUser,
   useHasHydrated,
   useNextOnboardingRoute,
   useAppShellStore,
@@ -17,7 +16,6 @@ export default function IndexScreen() {
   const onboardingCompleted = useAppShellStore(
     (state) => state.onboardingCompleted
   );
-  const currentUser = useCurrentUser();
   const nextOnboardingRoute = useNextOnboardingRoute();
 
   if (!hasHydrated || !sessionResolved) {
@@ -33,10 +31,6 @@ export default function IndexScreen() {
 
   if (!onboardingCompleted) {
     return <Redirect href={nextOnboardingRoute} />;
-  }
-
-  if (!currentUser) {
-    return <Redirect href="/(onboarding)/access" />;
   }
 
   return <Redirect href="/(tabs)" />;

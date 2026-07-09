@@ -305,6 +305,79 @@ export function getQuestionDisplayStats(userStates: QuestionUserStateMap) {
   };
 }
 
+export function getOverallLearningStats(userStates: QuestionUserStateMap) {
+  const questionBank = getQuestionBank();
+  const states = questionBank.map((question) =>
+    getQuestionUserState(userStates, question.id)
+  );
+  const answered = states.reduce((sum, state) => sum + state.timesSeen, 0);
+  const correct = states.reduce((sum, state) => sum + state.timesCorrect, 0);
+  const wrong = states.reduce((sum, state) => sum + state.timesWrong, 0);
+  const readiness =
+    questionBank.length === 0
+      ? 0
+      : Math.round(
+          (states.filter((state) => state.timesCorrect > 0).length /
+            questionBank.length) *
+            100
+        );
+
+  return {
+    total: questionBank.length,
+    answered,
+    correct,
+    wrong,
+    readiness,
+  };
+}
+
+export function getOverallMistakesStats(userStates: QuestionUserStateMap) {
+  const questionBank = getQuestionBank();
+  const states = questionBank.map((question) =>
+    getQuestionUserState(userStates, question.id)
+  );
+  const wrong = states.filter((state) => isQuestionUnresolvedWrong(state)).length;
+  const total = questionBank.length;
+  const answered = states.reduce((sum, state) => sum + state.timesSeen, 0);
+  const correct = Math.max(0, total - wrong);
+  const readiness =
+    total === 0 ? 100 : Math.round(((total - wrong) / total) * 100);
+
+  return {
+    total,
+    answered,
+    correct,
+    wrong,
+    readiness,
+  };
+}
+
+export function getTopicMistakeProgress(
+  topicBlock: TopicBlockId,
+  userStates: QuestionUserStateMap
+) {
+  const questions = getQuestionBank().filter(
+    (question) => question.topicBlock === topicBlock
+  );
+  const states = questions.map((question) =>
+    getQuestionUserState(userStates, question.id)
+  );
+  const wrong = states.filter((state) => isQuestionUnresolvedWrong(state)).length;
+  const seen = states.filter((state) => state.timesSeen > 0).length;
+  const correct = Math.max(0, seen - wrong);
+  const total = questions.length;
+  const progress =
+    total === 0 ? 100 : Math.round(((total - wrong) / total) * 100);
+
+  return {
+    total,
+    seen,
+    correct,
+    wrong,
+    progress,
+  };
+}
+
 export function getTopicProgress(
   topicBlock: TopicBlockId,
   userStates: QuestionUserStateMap
@@ -317,6 +390,7 @@ export function getTopicProgress(
   );
   const seen = states.filter((state) => state.timesSeen > 0).length;
   const correct = states.filter((state) => state.timesCorrect > 0).length;
+  const wrong = states.filter((state) => state.timesWrong > 0).length;
   const weak = states.filter((state) => isWeakSpotState(state)).length;
   const mastered = states.filter((state) => isQuestionMastered(state)).length;
 
@@ -324,11 +398,20 @@ export function getTopicProgress(
     total: questions.length,
     seen,
     correct,
+    wrong,
     weak,
     mastered,
     progress:
       questions.length === 0 ? 0 : Math.round((correct / questions.length) * 100),
   };
+}
+
+export function getExamQuestionIds(
+  userStates: QuestionUserStateMap,
+  desiredTotal: number,
+  now: Date = new Date()
+) {
+  return getExamPreviewQuestionIds(userStates, now, desiredTotal);
 }
 
 export function buildQuestionSession(
@@ -376,7 +459,7 @@ function getQuestionIdsForMode(
       );
     case "wrong_answers":
       return applyQuestionLimit(
-        getWrongAnswerQuestionIds(userStates, now),
+        getWrongAnswerQuestionIds(userStates, now, request.topic),
         questionLimit
       );
     case "saved":
@@ -471,9 +554,12 @@ function getSavedQuestionIds(userStates: QuestionUserStateMap, now: Date) {
 
 function getWrongAnswerQuestionIds(
   userStates: QuestionUserStateMap,
-  now: Date
+  now: Date,
+  topic?: TopicBlockId
 ) {
-  const questionBank = getQuestionBank();
+  const questionBank = topic
+    ? getQuestionBank().filter((question) => question.topicBlock === topic)
+    : getQuestionBank();
   return getWrongQuestions(questionBank, userStates, now).map(
     (question) => question.id
   );

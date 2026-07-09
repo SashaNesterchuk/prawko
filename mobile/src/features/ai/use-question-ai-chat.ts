@@ -19,7 +19,7 @@ export function useQuestionAiChat(input: {
   locale: SupportedLocale;
   questionId: string | null;
   selectedAnswer?: QuestionOptionValue;
-  unlimitedAssistantResponses?: boolean;
+  hasAiChatAccess: boolean;
 }) {
   const aiChatHydrated = useAiChatHydrated();
   const conversation = useAiConversation(input.questionId);
@@ -27,15 +27,9 @@ export function useQuestionAiChat(input: {
   const questionCatalogVersion = useQuestionCatalogVersion();
   const ensureConversation = useAiChatStore((state) => state.ensureConversation);
   const appendMessage = useAiChatStore((state) => state.appendMessage);
-  const consumeAssistantResponse = useAiChatStore(
-    (state) => state.consumeAssistantResponse
-  );
-  const remainingAssistantResponses = useAiChatStore((state) =>
-    state.getRemainingAssistantResponses()
-  );
   const [draft, setDraft] = useState("");
   const [errorCode, setErrorCode] = useState<
-    "missing_question" | "limit_reached" | "send_failed" | null
+    "missing_question" | "plus_required" | "send_failed" | null
   >(null);
   const [isSending, setIsSending] = useState(false);
 
@@ -57,7 +51,7 @@ export function useQuestionAiChat(input: {
   );
 
   useEffect(() => {
-    if (!aiChatHydrated || !questionContext || conversation) {
+    if (!aiChatHydrated || !questionContext || conversation || !input.hasAiChatAccess) {
       return;
     }
 
@@ -70,6 +64,7 @@ export function useQuestionAiChat(input: {
     aiChatHydrated,
     conversation,
     ensureConversation,
+    input.hasAiChatAccess,
     input.locale,
     questionContext,
   ]);
@@ -82,12 +77,12 @@ export function useQuestionAiChat(input: {
       return;
     }
 
-    if (!prompt || isSending) {
+    if (!input.hasAiChatAccess) {
+      setErrorCode("plus_required");
       return;
     }
 
-    if (!input.unlimitedAssistantResponses && remainingAssistantResponses <= 0) {
-      setErrorCode("limit_reached");
+    if (!prompt || isSending) {
       return;
     }
 
@@ -145,7 +140,6 @@ export function useQuestionAiChat(input: {
             model: response.model,
             provider: response.provider,
             question_id: questionContext.questionId,
-            remaining_free_messages: response.remainingFreeMessages ?? null,
           },
         });
       }
@@ -156,9 +150,6 @@ export function useQuestionAiChat(input: {
         message: response.message,
         questionId: questionContext.questionId,
       });
-      if (!input.unlimitedAssistantResponses) {
-        consumeAssistantResponse();
-      }
     } catch (error) {
       if (!(error instanceof QuestionChatLimitError)) {
         captureError({
@@ -173,7 +164,7 @@ export function useQuestionAiChat(input: {
         });
       }
       setErrorCode(
-        error instanceof QuestionChatLimitError ? "limit_reached" : "send_failed"
+        error instanceof QuestionChatLimitError ? "plus_required" : "send_failed"
       );
     } finally {
       setIsSending(false);
@@ -185,14 +176,8 @@ export function useQuestionAiChat(input: {
     conversation,
     draft,
     errorCode,
-    hasUnlimitedAssistantResponses: Boolean(input.unlimitedAssistantResponses),
     isSending,
-    limitReached:
-      !input.unlimitedAssistantResponses && remainingAssistantResponses <= 0,
     questionContext,
-    remainingAssistantResponses: input.unlimitedAssistantResponses
-      ? null
-      : remainingAssistantResponses,
     sendMessage,
     setDraft,
   };

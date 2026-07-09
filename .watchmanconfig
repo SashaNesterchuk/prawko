@@ -1,0 +1,11 @@
+{
+  "ignore_dirs": [
+    ".git",
+    "node_modules",
+    "Pods",
+    "build",
+    ".gradle",
+    ".expo",
+    "DerivedData"
+  ]
+}

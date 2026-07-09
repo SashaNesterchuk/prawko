@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.1"
+   width="861.62622"
+   height="611.13129"
+   id="svg2">
+  <title
+     id="title4720">Tabliczka T-31c</title>
+  <defs
+     id="defs4">
+    <marker
+       refX="0"
+       refY="0"
+       orient="auto"
+       id="marker7728"
+       style="overflow:visible">
+      <path
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         transform="matrix(1.1,0,0,1.1,1.1,0)"
+         id="path7730"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+    </marker>
+    <marker
+       refX="0"
+       refY="0"
+       orient="auto"
+       id="marker7006-9"
+       style="overflow:visible">
+      <path
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         transform="matrix(1.1,0,0,1.1,1.1,0)"
+         id="path7008-64"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+    </marker>
+  </defs>
+  <g
+     transform="translate(579.38455,-103.9394)"
+     id="layer1">
+    <g
+       transform="matrix(2.0902332,0,0,2.0902332,1887.76,2311.341)"
+       id="g4699">
+      <g
+         transform="matrix(0,0.816467,0.7309682,0,-3209.7511,-207.56971)"
+         id="g4701"
+         style="fill:#ffff00;fill-opacity:0.573394;stroke:#000000;stroke-opacity:1">
+        <g
+           transform="translate(218.945,96.7782)"
+           id="g4703"
+           style="fill:#ffff00;fill-opacity:0.573394;stroke:#000000;stroke-opacity:1">
+          <g
+             transform="translate(334.143,296.362)"
+             id="g4705"
+             style="fill:#ffff00;fill-opacity:0.573394;stroke:#000000;stroke-opacity:1">
+            <g
+               transform="matrix(0.985222,0,0,0.976563,-278.802,-85.064)"
+               id="g4707"
+               style="fill:#ffff00;fill-opacity:0.573394;stroke:#000000;stroke-opacity:1">
+              <g
+                 transform="matrix(1,0,0,0.995024,0,2.04826)"
+                 id="g4709"
+                 style="fill:#ffff00;fill-opacity:0.573394;stroke:#000000;stroke-opacity:1" />
+            </g>
+          </g>
+        </g>
+      </g>
+      <rect
+         width="405.22263"
+         height="285.37985"
+         rx="13.991096"
+         ry="13.991096"
+         x="-1176.8362"
+         y="-1052.5022"
+         id="rect4711"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:7;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <g
+         transform="scale(0.98449192,1.0157524)"
+         id="text4713"
+         style="font-size:316.35006714px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Drogowskaz;-inkscape-font-specification:Drogowskaz Bold">
+        <path
+           d="m -891.17672,-798.90854 -19.18276,-35.57111 c -7.57566,7.11732 -16.24896,12.6706 -26.01992,16.65986 -9.77128,3.98933 -20.2427,6.01711 -31.41428,6.08333 -23.7685,-0.60152 -43.54982,-8.79944 -59.34402,-24.59379 -15.7944,-15.79422 -23.9923,-35.57555 -24.5938,-59.34403 0.6015,-23.76825 8.7994,-43.54958 24.5938,-59.34404 15.7942,-15.79411 35.57552,-23.99203 59.34402,-24.59378 11.25653,0.068 21.80084,2.12532 31.63295,6.17209 9.83179,4.04716 18.54477,9.67718 26.13899,16.89008 l 19.21731,-35.59359 c -10.62561,-8.50648 -22.45754,-15.11068 -35.49584,-19.81268 -13.03864,-4.7015 -26.86977,-7.0868 -41.49341,-7.1561 -34.95362,0.8849 -64.04382,12.9407 -87.27062,36.16738 -23.227,23.22709 -35.2827,52.31728 -36.1674,87.27064 0.8847,34.9536 12.9404,64.04378 36.1674,87.27064 23.2268,23.22692 52.317,35.28269 87.27062,36.16733 14.53703,-0.0678 28.29204,-2.42604 41.26505,-7.07477 12.97267,-4.64873 24.75663,-11.18121 35.35191,-19.59746 z"
+           id="path4718"
+           style="font-size:316px" />
+      </g>
+    </g>
+  </g>
+</svg>

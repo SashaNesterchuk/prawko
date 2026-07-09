@@ -16,7 +16,7 @@ import {
   getAnswerTextFromContext,
 } from "../../src/features/ai/question-chat-context";
 import { useQuestionAiChat } from "../../src/features/ai/use-question-ai-chat";
-import { useHasFeatureAccess } from "../../src/state/entitlements";
+import { useHasAiChatAccess } from "../../src/state/entitlements";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useTheme } from "../../src/providers/ThemeProvider";
 
@@ -33,7 +33,7 @@ export default function AiChatModalScreen() {
   const questionId = getSingleParam(params.questionId) ?? null;
   const routeLocale = getSingleParam(params.locale);
   const selectedAnswer = getSingleParam(params.selectedAnswer);
-  const hasAiQuestionChatAccess = useHasFeatureAccess("ai_question_chat");
+  const hasAiChatAccess = useHasAiChatAccess();
   const locale: SupportedLocale =
     routeLocale && SUPPORTED_LOCALES.includes(routeLocale as SupportedLocale)
       ? (routeLocale as SupportedLocale)
@@ -43,25 +43,22 @@ export default function AiChatModalScreen() {
     conversation,
     draft,
     errorCode,
-    hasUnlimitedAssistantResponses,
     isSending,
-    limitReached,
     questionContext,
-    remainingAssistantResponses,
     sendMessage,
     setDraft,
   } = useQuestionAiChat({
-      locale,
-      questionId,
-      selectedAnswer: selectedAnswer as
-        | "A"
-        | "B"
-        | "C"
-        | "true"
-        | "false"
-        | undefined,
-      unlimitedAssistantResponses: hasAiQuestionChatAccess,
-    });
+    locale,
+    questionId,
+    selectedAnswer: selectedAnswer as
+      | "A"
+      | "B"
+      | "C"
+      | "true"
+      | "false"
+      | undefined,
+    hasAiChatAccess,
+  });
 
   if (!aiChatHydrated) {
     return (
@@ -106,6 +103,38 @@ export default function AiChatModalScreen() {
     );
   }
 
+  if (!hasAiChatAccess) {
+    return (
+      <AppScreen
+        title={t("modals.aiTitle")}
+        subtitle={t("modals.aiPlusGateSubtitle")}
+        footer={
+          <View style={{ gap: 10 }}>
+            <AppButton
+              label={t("modals.aiOpenPaywall")}
+              onPress={() =>
+                router.push({
+                  pathname: "/paywall",
+                  params: { feature: "ai_question_chat" },
+                })
+              }
+            />
+            <AppButton
+              variant="ghost"
+              label={t("common.close")}
+              onPress={() => router.back()}
+            />
+          </View>
+        }
+      >
+        <AppCard accent>
+          <Text style={styles.sectionTitle}>{t("modals.aiPlusGateTitle")}</Text>
+          <Text style={styles.messageBody}>{t("modals.aiPlusGateBody")}</Text>
+        </AppCard>
+      </AppScreen>
+    );
+  }
+
   const correctAnswerText = getAnswerTextFromContext(
     questionContext,
     questionContext.correctAnswer
@@ -135,22 +164,15 @@ export default function AiChatModalScreen() {
             autoCapitalize="sentences"
             multiline
             numberOfLines={4}
-            editable={!isSending && !limitReached}
+            editable={!isSending}
           />
           <AppButton
             label={
               isSending ? t("modals.aiSending") : t("modals.aiSend")
             }
             onPress={() => sendMessage()}
-            disabled={!draft.trim() || isSending || limitReached}
+            disabled={!draft.trim() || isSending}
           />
-          {limitReached ? (
-            <AppButton
-              variant="secondary"
-              label={t("modals.aiOpenPaywall")}
-              onPress={() => router.push("/modals/paywall")}
-            />
-          ) : null}
           <AppButton
             variant="ghost"
             label={t("common.close")}
@@ -176,16 +198,7 @@ export default function AiChatModalScreen() {
                 })}
               />
             ) : null}
-            <MetaPill
-              label={
-                hasUnlimitedAssistantResponses
-                  ? t("modals.aiUnlimited")
-                  : t("modals.aiFreeLeft", {
-                      count: remainingAssistantResponses ?? 0,
-                    })
-              }
-              accent
-            />
+            <MetaPill label={t("modals.aiUnlimited")} accent />
           </View>
         </AppCard>
 
@@ -298,11 +311,11 @@ const getStyles = (theme: ReturnType<typeof useTheme>) =>
     metaPillLabel: {
       fontSize: 12,
       lineHeight: 18,
-      fontWeight: "700",
+      fontWeight: "600",
       color: theme.colors.textSecondary,
     },
     metaPillLabelAccent: {
-      color: theme.colors.accent,
+      color: theme.colors.textPrimary,
     },
     metaRow: {
       flexDirection: "row",
@@ -311,34 +324,30 @@ const getStyles = (theme: ReturnType<typeof useTheme>) =>
       marginTop: 12,
     },
     prompt: {
-      fontSize: 18,
-      lineHeight: 28,
-      fontWeight: "800",
+      fontSize: 16,
+      lineHeight: 24,
+      fontWeight: "600",
       color: theme.colors.textPrimary,
     },
     sectionTitle: {
-      fontSize: 15,
-      lineHeight: 22,
-      fontWeight: "800",
-      marginBottom: 10,
+      fontSize: 16,
+      fontWeight: "700",
+      marginBottom: 8,
       color: theme.colors.textPrimary,
     },
     suggestionChip: {
-      paddingHorizontal: 14,
-      paddingVertical: 12,
+      backgroundColor: theme.colors.cardMuted,
       borderRadius: 999,
-      borderWidth: 1,
-      borderColor: theme.colors.borderSoft,
-      backgroundColor: theme.colors.surface,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
     },
     suggestionChipPressed: {
-      opacity: 0.8,
+      opacity: 0.86,
     },
     suggestionLabel: {
       fontSize: 14,
       lineHeight: 20,
       color: theme.colors.textPrimary,
-      fontWeight: "600",
     },
     suggestionWrap: {
       flexDirection: "row",

@@ -1,25 +1,36 @@
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
-import { Image, Linking, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { useTranslation } from "react-i18next";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AppButton } from "../../src/components/shell/AppButton";
-import { AppCard } from "../../src/components/shell/AppCard";
-import { AppScreen } from "../../src/components/shell/AppScreen";
-import { EmptyStateView } from "../../src/components/shell/StateViews";
+import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import {
   getQuestionMediaViewerAssetUrl,
   getQuestionMediaViewerPreviewUrl,
   type QuestionMediaViewerParams,
 } from "../../src/features/questions/question-media";
 import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
-import { useTheme } from "../../src/providers/ThemeProvider";
+import { greenWave } from "../../src/theme/green-wave";
 
 export default function MediaViewerModalScreen() {
   const { t } = useTranslation();
   const { captureError } = useErrorLogger();
-  const theme = useTheme();
-  const styles = useMemo(() => getStyles(theme), [theme]);
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
+  const styles = useMemo(
+    () => getStyles(windowWidth, windowHeight),
+    [windowHeight, windowWidth]
+  );
   const params = useLocalSearchParams<{
     label?: string | string[];
     mediaType?: string | string[];
@@ -29,11 +40,14 @@ export default function MediaViewerModalScreen() {
     storagePath?: string | string[];
   }>();
   const [previewFailed, setPreviewFailed] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const viewer = useMemo(() => parseViewerParams(params), [params]);
   const previewUrl = getQuestionMediaViewerPreviewUrl(viewer);
   const assetUrl = getQuestionMediaViewerAssetUrl(viewer);
   const hasPreview = Boolean(previewUrl) && !previewFailed;
+  const isVideo = viewer?.mediaType === "video";
   const title = viewer?.label ?? t("question.media.viewerTitle");
   const subtitle =
     viewer?.mediaType === "video"
@@ -63,69 +77,142 @@ export default function MediaViewerModalScreen() {
     }
   };
 
+  const retry = () => {
+    setPreviewFailed(false);
+    setIsLoaded(false);
+    setReloadKey((value) => value + 1);
+  };
+
   return (
-    <AppScreen
-      title={title}
-      subtitle={subtitle}
-      scroll={false}
-      footer={
-        <View style={{ gap: 10 }}>
-          {viewer?.mediaType === "video" ? (
-            <AppButton
-              label={t("question.media.viewerOpenExternal")}
-              onPress={() => void handleOpenExternally()}
-              disabled={!assetUrl}
-            />
-          ) : null}
-          <AppButton
-            variant="ghost"
-            label={t("common.close")}
+    <GreenWaveScreen>
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <StatusBar style="dark" />
+
+        <View style={styles.header}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
+            hitSlop={8}
             onPress={() => router.back()}
-          />
+            style={({ pressed }) => [
+              styles.headerButton,
+              pressed ? styles.pressed : null,
+            ]}
+          >
+            <Ionicons color={greenWave.color.ink} name="close" size={22} />
+          </Pressable>
+
+          <View style={styles.headerCopy}>
+            <Text style={styles.headerTitle} numberOfLines={1}>
+              {title}
+            </Text>
+            <Text style={styles.headerSubtitle} numberOfLines={2}>
+              {subtitle}
+            </Text>
+          </View>
         </View>
-      }
-    >
-      {!viewer ? (
-        <EmptyStateView
-          title={t("question.media.previewUnavailable")}
-          description={t("question.media.viewerMissingAsset")}
-        />
-      ) : (
-        <View style={styles.content}>
-          {hasPreview ? (
-            <AppCard>
+
+        <View style={styles.stage}>
+          {!viewer ? (
+            <View style={[styles.frame, styles.errorFrame]}>
+              <Text style={styles.errorTitle}>
+                {t("question.media.previewUnavailable")}
+              </Text>
+              <Text style={styles.errorBody}>
+                {t("question.media.viewerMissingAsset")}
+              </Text>
+            </View>
+          ) : !hasPreview ? (
+            <View style={[styles.frame, styles.errorFrame]}>
+              <Text style={styles.errorTitle}>
+                {t("question.media.mediaUnavailableTitle")}
+              </Text>
+              <Text style={styles.errorBody}>
+                {previewUrl
+                  ? t("question.media.viewerLoadFailed")
+                  : t("question.media.viewerMissingAsset")}
+              </Text>
+              {previewUrl ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={retry}
+                  style={({ pressed }) => [
+                    styles.retryButton,
+                    pressed ? styles.pressed : null,
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    color={greenWave.color.inkSecondary}
+                    name="refresh"
+                    size={18}
+                  />
+                  <Text style={styles.retryLabel}>
+                    {t("question.media.retry")}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+          ) : (
+            <View style={styles.frame}>
+              {!isLoaded ? (
+                <View pointerEvents="none" style={styles.skeleton} />
+              ) : null}
+
               <Image
+                key={reloadKey}
+                resizeMode={isVideo ? "cover" : "contain"}
                 source={{ uri: previewUrl ?? undefined }}
-                resizeMode={viewer.mediaType === "image" ? "contain" : "cover"}
                 style={styles.preview}
                 onError={() => setPreviewFailed(true)}
+                onLoad={() => setIsLoaded(true)}
               />
-            </AppCard>
-          ) : (
-            <AppCard>
-              <View style={styles.previewFallback}>
-                <Text style={styles.previewFallbackTitle}>
-                  {t("question.media.previewUnavailable")}
-                </Text>
-                <Text style={styles.previewFallbackBody}>
-                  {previewUrl
-                    ? t("question.media.viewerLoadFailed")
-                    : t("question.media.viewerMissingAsset")}
-                </Text>
-              </View>
-            </AppCard>
-          )}
 
-          {viewer.mediaType === "video" ? (
-            <AppCard>
-              <Text style={styles.helperBody}>
-                {t("question.media.videoHint")}
+              {isVideo ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t("question.media.viewerOpenExternal")}
+                  disabled={!assetUrl}
+                  onPress={() => void handleOpenExternally()}
+                  style={({ pressed }) => [
+                    styles.playBadge,
+                    pressed ? styles.pressed : null,
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    color={greenWave.color.ink}
+                    name="play"
+                    size={32}
+                  />
+                </Pressable>
+              ) : null}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.footer}>
+          {viewer && isVideo ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={!assetUrl}
+              onPress={() => void handleOpenExternally()}
+              style={({ pressed }) => [
+                styles.primaryButton,
+                !assetUrl ? styles.primaryButtonDisabled : null,
+                pressed && assetUrl ? styles.pressed : null,
+              ]}
+            >
+              <Text style={styles.primaryButtonText}>
+                {t("question.media.viewerOpenExternal")}
               </Text>
-            </AppCard>
+            </Pressable>
+          ) : null}
+
+          {isVideo ? (
+            <Text style={styles.videoHint}>{t("question.media.videoHint")}</Text>
           ) : null}
         </View>
-      )}
-    </AppScreen>
+      </SafeAreaView>
+    </GreenWaveScreen>
   );
 }
 
@@ -171,41 +258,152 @@ function getSingleParam(value: string | string[] | undefined) {
   return value;
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
-    content: {
-      gap: 12,
+const getStyles = (windowWidth: number, windowHeight: number) => {
+  const frameHeight = Math.min(Math.max(windowHeight * 0.56, 280), 520);
+
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
     },
-    helperBody: {
+    header: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: greenWave.spacing.sm,
+      paddingHorizontal: greenWave.spacing.xl,
+      paddingTop: greenWave.spacing.sm,
+      paddingBottom: greenWave.spacing.lg,
+    },
+    headerButton: {
+      width: 40,
+      height: 40,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: greenWave.radius.md,
+      backgroundColor: greenWave.color.surface,
+    },
+    headerCopy: {
+      flex: 1,
+      gap: greenWave.spacing.xs,
+      paddingTop: greenWave.spacing.xs,
+    },
+    headerTitle: {
+      fontSize: 20,
+      lineHeight: 28,
+      fontWeight: "700",
+      letterSpacing: -0.4,
+      color: greenWave.color.ink,
+    },
+    headerSubtitle: {
       fontSize: 14,
-      lineHeight: 21,
-      color: theme.colors.textSecondary,
+      lineHeight: 20,
+      color: greenWave.color.inkSecondary,
+    },
+    stage: {
+      flex: 1,
+      justifyContent: "center",
+      paddingHorizontal: greenWave.spacing.xl,
+    },
+    frame: {
+      width: windowWidth - greenWave.spacing.xl * 2,
+      height: frameHeight,
+      alignSelf: "center",
+      borderRadius: greenWave.radius.xl,
+      overflow: "hidden",
+      backgroundColor: greenWave.color.paper,
+      shadowColor: greenWave.color.shadow,
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 4,
     },
     preview: {
       width: "100%",
-      height: 360,
-      borderRadius: theme.radius.large,
-      backgroundColor: theme.colors.cardMuted,
+      height: "100%",
+      backgroundColor: greenWave.color.track,
     },
-    previewFallback: {
-      minHeight: 220,
-      borderRadius: theme.radius.large,
-      borderWidth: 1,
-      borderColor: theme.colors.borderSoft,
-      backgroundColor: theme.colors.cardMuted,
+    skeleton: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: greenWave.color.track,
+    },
+    playBadge: {
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      width: 72,
+      height: 72,
+      marginTop: -36,
+      marginLeft: -36,
+      borderRadius: 36,
+      alignItems: "center",
       justifyContent: "center",
-      gap: 8,
-      padding: 20,
+      backgroundColor: "rgba(255,255,255,0.88)",
     },
-    previewFallbackBody: {
-      fontSize: 14,
-      lineHeight: 21,
-      color: theme.colors.textSecondary,
+    errorFrame: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: greenWave.spacing.xl,
+      gap: greenWave.spacing.sm,
+      backgroundColor: greenWave.color.track,
     },
-    previewFallbackTitle: {
+    errorTitle: {
       fontSize: 16,
-      lineHeight: 22,
-      fontWeight: "700",
-      color: theme.colors.textPrimary,
+      lineHeight: 24,
+      fontWeight: "600",
+      color: greenWave.color.ink,
+      textAlign: "center",
+    },
+    errorBody: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: greenWave.color.inkMuted,
+      textAlign: "center",
+    },
+    retryButton: {
+      marginTop: greenWave.spacing.sm,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: greenWave.spacing.sm,
+      paddingHorizontal: greenWave.spacing.lg,
+      paddingVertical: greenWave.spacing.md,
+      borderRadius: greenWave.radius.pill,
+      backgroundColor: greenWave.color.surface,
+    },
+    retryLabel: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: greenWave.color.inkSecondary,
+    },
+    footer: {
+      gap: greenWave.spacing.sm,
+      paddingHorizontal: greenWave.spacing.xl,
+      paddingTop: greenWave.spacing.lg,
+      paddingBottom: greenWave.spacing.md,
+    },
+    primaryButton: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: greenWave.spacing.xl,
+      paddingVertical: greenWave.spacing.md,
+      borderRadius: greenWave.radius.pill,
+      backgroundColor: greenWave.color.ink,
+    },
+    primaryButtonDisabled: {
+      opacity: 0.45,
+    },
+    primaryButtonText: {
+      fontSize: 16,
+      lineHeight: 24,
+      fontWeight: "600",
+      color: greenWave.color.onAccent,
+    },
+    videoHint: {
+      fontSize: 12,
+      lineHeight: 16,
+      textAlign: "center",
+      color: greenWave.color.inkMuted,
+    },
+    pressed: {
+      opacity: 0.88,
     },
   });
+};

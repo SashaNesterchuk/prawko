@@ -141,6 +141,17 @@ export const FEATURE_FLAGS = {
   enableSchoolCodes: true,
   enableAiQuestionChat: true,
   enableExamSimulator: true,
+  enableAds: false,
+  enablePlusPurchase: false,
+  devPlusAccess: false,
+} as const;
+
+export const AD_POLICY = {
+  questionsBetweenInterstitials: 12,
+  minSecondsBetweenAds: 180,
+  maxAdsPerSession: 6,
+  sessionInactivityResetMinutes: 30,
+  appResumeBackgroundMinutes: 10,
 } as const;
 
 export const AI_LIMITS = {

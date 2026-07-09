@@ -1,0 +1,197 @@
+import { router, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
+import { SignDetailNav } from "../../../src/components/shell/SignDetailNav";
+import { SignDetailToolbar } from "../../../src/components/shell/SignDetailToolbar";
+import { SignStatusBadge } from "../../../src/components/shell/SignStatusBadge";
+import {
+  getRoadSignById,
+  getRoadSignCategory,
+  getRoadSignsByCategory,
+} from "../../../src/features/road-signs/catalog";
+import {
+  getSignDescription,
+  getSignDisplayName,
+  hasSignContent,
+} from "../../../src/features/road-signs/content/registry";
+import { SignImage } from "../../../src/features/road-signs/SignImage";
+import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
+import { greenWave } from "../../../src/theme/green-wave";
+
+export default function SignDetailScreen() {
+  const { t, i18n } = useTranslation();
+  const { bottom: safeBottom } = useSafeAreaInsets();
+  const { signId } = useLocalSearchParams<{ signId: string }>();
+  const sign = useMemo(
+    () => (signId ? getRoadSignById(signId) : undefined),
+    [signId]
+  );
+  const category = useMemo(
+    () => (sign ? getRoadSignCategory(sign.categoryId) : undefined),
+    [sign]
+  );
+
+  const categorySigns = useMemo(
+    () => (sign ? getRoadSignsByCategory(sign.categoryId) : []),
+    [sign]
+  );
+
+  const currentIndex = useMemo(
+    () => categorySigns.findIndex((item) => item.id === sign?.id),
+    [categorySigns, sign]
+  );
+
+  const displayName = sign
+    ? getSignDisplayName(sign.id, i18n.language, sign.code)
+    : "";
+  const description = sign
+    ? getSignDescription(sign.id, i18n.language) ??
+      t("signs.descriptionBody", {
+        category: category
+          ? t(`signs.categories.${category.id}.title`)
+          : "",
+        code: sign.code,
+      })
+    : "";
+
+  const learningStatus = sign ? getSignLearningStatus(sign.id) : "new";
+  const statusLabel =
+    learningStatus === "mastered"
+      ? t("signs.statusMastered")
+      : learningStatus === "wrong"
+        ? t("signs.statusWrong")
+        : t("signs.statusNew");
+
+  const goToSignAt = (index: number) => {
+    const target = categorySigns[index];
+
+    if (!target) {
+      return;
+    }
+
+    router.replace({
+      pathname: "/signs/[signId]",
+      params: { signId: target.id },
+    });
+  };
+
+  if (!sign) {
+    return (
+      <GreenWaveScreen>
+        <SafeAreaView style={styles.safeArea} edges={["top"]}>
+          <StatusBar style="dark" />
+          <View style={styles.missingState}>
+            <Text style={styles.missingTitle}>
+              {t("signs.notFoundTitle")}
+            </Text>
+          </View>
+        </SafeAreaView>
+      </GreenWaveScreen>
+    );
+  }
+
+  const canGoBack = currentIndex > 0;
+  const canGoForward = currentIndex >= 0 && currentIndex < categorySigns.length - 1;
+
+  return (
+    <GreenWaveScreen>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <StatusBar style="dark" />
+        <SignDetailToolbar
+          code={sign.code}
+          categoryLabel={
+            category ? t(`signs.categories.${category.id}.title`) : ""
+          }
+          currentIndex={Math.max(currentIndex, 0)}
+          totalCount={categorySigns.length}
+          closeLabel={t("common.close", { defaultValue: "Close" })}
+          onClose={() => router.back()}
+        />
+
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: 24 + safeBottom },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.imageWrap}>
+            <SignImage sign={sign} size={220} />
+          </View>
+
+          {hasSignContent(sign.id) ? (
+            <SignStatusBadge status={learningStatus} label={statusLabel} />
+          ) : null}
+
+          <Text style={styles.name}>{displayName}</Text>
+          <Text style={styles.description}>{description}</Text>
+        </ScrollView>
+
+        <View style={[styles.footer, { paddingBottom: greenWave.spacing.lg + safeBottom }]}>
+          <SignDetailNav
+            backLabel={t("signs.back")}
+            forwardLabel={t("signs.forward")}
+            canGoBack={canGoBack}
+            canGoForward={canGoForward}
+            onBack={() => goToSignAt(currentIndex - 1)}
+            onForward={() => goToSignAt(currentIndex + 1)}
+          />
+        </View>
+      </SafeAreaView>
+    </GreenWaveScreen>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: greenWave.spacing.xl,
+    paddingTop: greenWave.spacing.sm,
+    gap: greenWave.spacing.lg,
+  },
+  imageWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 240,
+  },
+  name: {
+    fontSize: 24,
+    lineHeight: 32,
+    fontWeight: "700",
+    letterSpacing: -0.48,
+    color: greenWave.color.ink,
+  },
+  description: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: greenWave.color.inkSecondary,
+  },
+  footer: {
+    paddingHorizontal: greenWave.spacing.xl,
+    paddingTop: greenWave.spacing.md,
+  },
+  missingState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: greenWave.spacing.xl,
+  },
+  missingTitle: {
+    fontSize: 18,
+    lineHeight: 28,
+    fontWeight: "600",
+    color: greenWave.color.ink,
+    textAlign: "center",
+  },
+});

@@ -1,29 +1,23 @@
 import { Redirect, Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppScreen } from "../../src/components/shell/AppScreen";
+import { FloatingTabBar } from "../../src/components/shell/FloatingTabBar";
 import { LoadingStateView } from "../../src/components/shell/StateViews";
-import { useTheme } from "../../src/providers/ThemeProvider";
+import { greenWave } from "../../src/theme/green-wave";
 import {
-  useCurrentUser,
   useHasHydrated,
   useNextOnboardingRoute,
   useAppShellStore,
 } from "../../src/state/app-shell";
 
-const TAB_BAR_CONTENT_HEIGHT = 56;
-
 export default function TabsLayout() {
   const { t } = useTranslation();
-  const theme = useTheme();
-  const { bottom: bottomInset } = useSafeAreaInsets();
   const hasHydrated = useHasHydrated();
   const sessionResolved = useAppShellStore((state) => state.sessionResolved);
   const onboardingCompleted = useAppShellStore(
     (state) => state.onboardingCompleted
   );
-  const currentUser = useCurrentUser();
   const nextOnboardingRoute = useNextOnboardingRoute();
 
   if (!hasHydrated || !sessionResolved) {
@@ -41,26 +35,24 @@ export default function TabsLayout() {
     return <Redirect href={nextOnboardingRoute} />;
   }
 
-  if (!currentUser) {
-    return <Redirect href="/(onboarding)/access" />;
-  }
-
   return (
     <Tabs
+      tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: theme.colors.accent,
-        tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.borderSoft,
-          height: TAB_BAR_CONTENT_HEIGHT + bottomInset,
-          paddingTop: 8,
-          paddingBottom: bottomInset > 0 ? bottomInset : 10,
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "transparent",
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
         },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "700",
+        tabBarBackground: () => null,
+        sceneStyle: {
+          backgroundColor: greenWave.color.paper,
         },
       }}
     >
@@ -73,8 +65,8 @@ export default function TabsLayout() {
         options={{ title: t("nav.learn"), tabBarLabel: t("nav.learn") }}
       />
       <Tabs.Screen
-        name="practice"
-        options={{ title: t("nav.practice"), tabBarLabel: t("nav.practice") }}
+        name="signs"
+        options={{ title: t("nav.signs"), tabBarLabel: t("nav.signs") }}
       />
       <Tabs.Screen
         name="profile"

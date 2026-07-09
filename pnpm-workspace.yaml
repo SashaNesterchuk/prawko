@@ -2,3 +2,5 @@ packages:
   - "mobile"
   - "web"
   - "packages/*"
+
+nodeLinker: hoisted
