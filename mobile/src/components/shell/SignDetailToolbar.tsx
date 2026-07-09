@@ -1,8 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { greenWave } from "../../theme/green-wave";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 type SignDetailToolbarProps = {
   code: string;
@@ -23,6 +27,10 @@ export function SignDetailToolbar({
   closeLabel = "Close",
   rightSlot,
 }: SignDetailToolbarProps) {
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles();
+
   return (
     <View style={styles.header}>
       {onClose ? (
@@ -32,7 +40,7 @@ export function SignDetailToolbar({
           onPress={onClose}
           style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
         >
-          <Ionicons color={greenWave.color.ink} name="close" size={22} />
+          <Ionicons color={theme.colors.ink} name="close" size={responsiveFont(22)} />
         </Pressable>
       ) : (
         <View style={styles.iconSpacer} />
@@ -52,7 +60,11 @@ export function SignDetailToolbar({
             accessibilityRole="button"
             style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
           >
-            <Ionicons color={greenWave.color.ink} name="bookmark-outline" size={20} />
+            <Ionicons
+              color={theme.colors.ink}
+              name="bookmark-outline"
+              size={responsiveFont(20)}
+            />
           </Pressable>
         )}
       </View>
@@ -60,53 +72,55 @@ export function SignDetailToolbar({
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingTop: greenWave.spacing.sm,
-    paddingBottom: greenWave.spacing.md,
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWave.color.surface,
-  },
-  iconSpacer: {
-    width: 40,
-    height: 40,
-  },
-  titleBlock: {
-    flex: 1,
-    gap: 2,
-  },
-  code: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "700",
-    color: greenWave.color.ink,
-  },
-  category: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkMuted,
-  },
-  metaBlock: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-  },
-  counter: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkMuted,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+    iconButton: {
+      width: spacing.exact(40),
+      height: spacing.exact(40),
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: radius.md,
+      backgroundColor: colors.surface,
+    },
+    iconSpacer: {
+      width: spacing.exact(40),
+      height: spacing.exact(40),
+    },
+    titleBlock: {
+      flex: 1,
+      gap: spacing.exact(2),
+    },
+    code: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "700",
+      color: colors.ink,
+    },
+    category: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      color: colors.inkMuted,
+    },
+    metaBlock: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    counter: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      color: colors.inkMuted,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+  }));
+}

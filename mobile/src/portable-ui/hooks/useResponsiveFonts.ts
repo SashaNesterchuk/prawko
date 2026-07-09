@@ -67,9 +67,12 @@ export function useResponsiveFonts(): ResponsiveFontHook {
     };
   }, [scalingInfo.normalizedScale]);
 
-  return {
-    responsiveFont,
-    scaleFactor: scalingInfo.normalizedScale,
-    deviceInfo: scalingInfo.deviceInfo,
-  };
+  return useMemo(
+    () => ({
+      responsiveFont,
+      scaleFactor: scalingInfo.normalizedScale,
+      deviceInfo: scalingInfo.deviceInfo,
+    }),
+    [responsiveFont, scalingInfo.deviceInfo, scalingInfo.normalizedScale]
+  );
 }

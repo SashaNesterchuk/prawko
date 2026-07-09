@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { FloatingTabBar } from "../../src/components/shell/FloatingTabBar";
 import { LoadingStateView } from "../../src/components/shell/StateViews";
-import { greenWave } from "../../src/theme/green-wave";
+import { useTheme } from "../../src/providers/ThemeProvider";
 import {
   useHasHydrated,
   useNextOnboardingRoute,
@@ -13,6 +13,7 @@ import {
 
 export default function TabsLayout() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const hasHydrated = useHasHydrated();
   const sessionResolved = useAppShellStore((state) => state.sessionResolved);
   const onboardingCompleted = useAppShellStore(
@@ -45,14 +46,14 @@ export default function TabsLayout() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "transparent",
+          backgroundColor: theme.colors.transparent,
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
         },
         tabBarBackground: () => null,
         sceneStyle: {
-          backgroundColor: greenWave.color.paper,
+          backgroundColor: theme.colors.paper,
         },
       }}
     >

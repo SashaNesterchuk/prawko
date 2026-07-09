@@ -7,6 +7,7 @@ import Toast from "react-native-toast-message";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   formatPlanDate,
@@ -22,6 +23,7 @@ import {
 
 export default function PreviewScreen() {
   const { t } = useTranslation();
+  const styles = useStyles();
   const currentUser = useCurrentUser();
   const currentStudyPlan = useCurrentStudyPlan();
   const nextOnboardingRoute = useNextOnboardingRoute();
@@ -116,7 +118,7 @@ export default function PreviewScreen() {
       title={t("onboarding.previewTitle")}
       subtitle={t("onboarding.previewSubtitle")}
       footer={
-        <View style={{ gap: 10 }}>
+        <View style={styles.footerStack}>
           <AppButton
             label={t("onboarding.startPlan")}
             disabled={isStartingPlan}
@@ -131,28 +133,28 @@ export default function PreviewScreen() {
         </View>
       }
     >
-      <View style={{ gap: 12 }}>
+      <View style={styles.cardStack}>
         <AppCard accent>
-          <Text style={{ fontSize: 24, fontWeight: "800", marginBottom: 8 }}>
+          <Text style={styles.summaryTitle}>
             {generatedPlan.title}
           </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
+          <Text style={styles.summaryLine}>
             {t("onboarding.previewDate", {
               date: formatPlanDate(generatedPlan.examDate),
             })}
           </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
+          <Text style={styles.summaryLine}>
             {t("onboarding.previewMinutes", {
               minutes: generatedPlan.minutesPerDay,
             })}
           </Text>
-          <Text style={{ fontSize: 15, lineHeight: 24 }}>
+          <Text style={styles.summaryLine}>
             {t("onboarding.previewLevel", {
               level: t(`levels.${generatedPlan.level}.label`),
             })}
           </Text>
           {generatedPlan.schoolCode ? (
-            <Text style={{ fontSize: 15, lineHeight: 24 }}>
+            <Text style={styles.summaryLine}>
               {t("onboarding.previewSchoolCode", {
                 code: generatedPlan.schoolCode,
               })}
@@ -160,32 +162,32 @@ export default function PreviewScreen() {
           ) : null}
         </AppCard>
 
-        <View style={{ flexDirection: "row", gap: 12 }}>
+        <View style={styles.metricsRow}>
           <AppCard accent>
-            <Text style={{ fontSize: 13, fontWeight: "700", marginBottom: 8 }}>
+            <Text style={styles.metricLabel}>
               {t("onboarding.previewMiniTests")}
             </Text>
-            <Text style={{ fontSize: 28, fontWeight: "800" }}>
+            <Text style={styles.metricValue}>
               {generatedPlan.summary.miniTestDays}
             </Text>
           </AppCard>
           <AppCard accent>
-            <Text style={{ fontSize: 13, fontWeight: "700", marginBottom: 8 }}>
+            <Text style={styles.metricLabel}>
               {t("onboarding.previewFullExams")}
             </Text>
-            <Text style={{ fontSize: 28, fontWeight: "800" }}>
+            <Text style={styles.metricValue}>
               {generatedPlan.summary.fullExamDays}
             </Text>
           </AppCard>
         </View>
 
         <AppCard>
-          <Text style={{ fontSize: 16, fontWeight: "700", marginBottom: 8 }}>
+          <Text style={styles.sectionTitle}>
             {t("onboarding.previewMinimumMode", {
               days: generatedPlan.summary.minimumModeDays,
             })}
           </Text>
-          <Text style={{ fontSize: 14, lineHeight: 22 }}>
+          <Text style={styles.sectionBody}>
             {t("onboarding.previewWeakSpots", {
               days: generatedPlan.summary.weakSpotDays,
             })}
@@ -194,22 +196,22 @@ export default function PreviewScreen() {
 
         {generatedPlan.days.slice(0, 5).map((day) => (
           <AppCard key={day.id}>
-            <Text style={{ fontSize: 17, fontWeight: "700", marginBottom: 4 }}>
+            <Text style={styles.dayTitle}>
               {t("onboarding.previewDayTitle", {
                 dayNumber: day.dayNumber,
                 date: formatPlanDate(day.planDate),
                 })}
             </Text>
             {day.focusTopic ? (
-              <Text style={{ fontSize: 14, lineHeight: 22, marginBottom: 8 }}>
+              <Text style={styles.dayFocus}>
                 {t("onboarding.previewFocus", {
                   topic: t(`topics.${day.focusTopic}`),
                 })}
               </Text>
             ) : null}
-            <View style={{ gap: 6 }}>
+            <View style={styles.taskList}>
               {day.tasks.map((task) => (
-                <Text key={task.id} style={{ fontSize: 14, lineHeight: 22 }}>
+                <Text key={task.id} style={styles.taskText}>
                   - {task.title} - {task.estimatedMinutes}m
                 </Text>
               ))}
@@ -219,7 +221,7 @@ export default function PreviewScreen() {
 
         {generatedPlan.days.length > 5 ? (
           <AppCard>
-            <Text style={{ fontSize: 15, lineHeight: 24 }}>
+            <Text style={styles.summaryLine}>
               {t("onboarding.previewMoreDays", {
                 days: generatedPlan.days.length - 5,
               })}
@@ -229,4 +231,63 @@ export default function PreviewScreen() {
       </View>
     </AppScreen>
   );
+}
+
+function useStyles() {
+  return useResponsiveStyles(({ responsiveFont, spacing }) => ({
+    footerStack: {
+      gap: spacing.exact(10),
+    },
+    cardStack: {
+      gap: spacing.exact(12),
+    },
+    summaryTitle: {
+      fontSize: responsiveFont(24),
+      fontWeight: "800",
+      marginBottom: spacing.exact(8),
+    },
+    summaryLine: {
+      fontSize: responsiveFont(15),
+      lineHeight: responsiveFont(24),
+    },
+    metricsRow: {
+      flexDirection: "row",
+      gap: spacing.exact(12),
+    },
+    metricLabel: {
+      fontSize: responsiveFont(13),
+      fontWeight: "700",
+      marginBottom: spacing.exact(8),
+    },
+    metricValue: {
+      fontSize: responsiveFont(28),
+      fontWeight: "800",
+    },
+    sectionTitle: {
+      fontSize: responsiveFont(16),
+      fontWeight: "700",
+      marginBottom: spacing.exact(8),
+    },
+    sectionBody: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+    },
+    dayTitle: {
+      fontSize: responsiveFont(17),
+      fontWeight: "700",
+      marginBottom: spacing.exact(4),
+    },
+    dayFocus: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+      marginBottom: spacing.exact(8),
+    },
+    taskList: {
+      gap: spacing.exact(6),
+    },
+    taskText: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+    },
+  }));
 }

@@ -2,13 +2,14 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ACTIVE_CATEGORIES, type DrivingCategory } from "@prawko/config";
 
+import { useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
+import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
-import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
 
 type CategoryIconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
@@ -42,6 +43,9 @@ function chunkPairs<T>(items: T[]): T[][] {
 
 export default function CategoryScreen() {
   const { t } = useTranslation();
+  const styles = useStyles();
+  const { accents, colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const preferredCategory = useAppShellStore(
     (state) => state.preferredCategory
   );
@@ -53,6 +57,8 @@ export default function CategoryScreen() {
   );
 
   const rows = chunkPairs(CATEGORIES);
+  const badgeIconSize = responsiveFont(26);
+  const chipIconSize = responsiveFont(22);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
@@ -62,8 +68,8 @@ export default function CategoryScreen() {
           <View style={styles.iconBadge}>
             <MaterialCommunityIcons
               name="book-open-variant"
-              size={26}
-              color={greenWaveAccent.amber.fill}
+              size={badgeIconSize}
+              color={accents.amber.fill}
             />
           </View>
 
@@ -108,11 +114,11 @@ export default function CategoryScreen() {
                       </Text>
                       <MaterialCommunityIcons
                         name={option.icon}
-                        size={22}
+                        size={chipIconSize}
                         color={
                           isSelected
-                            ? greenWave.color.onAccent
-                            : greenWave.color.ink
+                            ? colors.onAccent
+                            : colors.textPrimary
                         }
                       />
                     </Pressable>
@@ -149,123 +155,127 @@ export default function CategoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: greenWave.color.paper,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingBottom: greenWave.spacing.xl,
-  },
-  body: {
-    flex: 1,
-    paddingTop: greenWave.spacing.sm,
-  },
-  iconBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: greenWave.radius.lg,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: greenWave.color.surface,
-  },
-  title: {
-    marginTop: 32,
-    fontSize: 32,
-    lineHeight: 38,
-    fontWeight: "700",
-    letterSpacing: -0.64,
-    color: greenWave.color.ink,
-  },
-  subtitle: {
-    marginTop: greenWave.spacing.lg,
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: "400",
-    color: greenWave.color.inkSecondary,
-  },
-  grid: {
-    marginTop: 32,
-    gap: 10,
-  },
-  gridRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  chip: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: greenWave.spacing.lg,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: greenWave.color.line,
-    backgroundColor: greenWave.color.surface,
-  },
-  chipSelected: {
-    backgroundColor: greenWaveAccent.green.fill,
-    borderColor: greenWaveAccent.green.fill,
-  },
-  chipLocked: {
-    opacity: 0.45,
-  },
-  chipPressed: {
-    opacity: 0.85,
-  },
-  chipLabel: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  chipLabelSelected: {
-    color: greenWave.color.onAccent,
-  },
-  footer: {
-    gap: greenWave.spacing.lg,
-  },
-  paging: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    paddingVertical: greenWave.spacing.md,
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: greenWave.color.line,
-  },
-  dotActive: {
-    width: 22,
-    backgroundColor: greenWaveAccent.green.fill,
-  },
-  cta: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.green.fill,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.1,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 14 },
-    elevation: 6,
-  },
-  ctaPressed: {
-    opacity: 0.9,
-  },
-  ctaLabel: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    color: greenWave.color.onAccent,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+      safeArea: {
+        flex: 1,
+        backgroundColor: colors.background,
+      },
+      content: {
+        flex: 1,
+        paddingHorizontal: spacing.exact(24),
+        paddingBottom: spacing.exact(24),
+      },
+      body: {
+        flex: 1,
+        paddingTop: spacing.exact(8),
+      },
+      iconBadge: {
+        width: spacing.exact(56),
+        height: spacing.exact(56),
+        borderRadius: radius.lg,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: colors.surface,
+      },
+      title: {
+        marginTop: spacing.exact(32),
+        fontSize: responsiveFont(32),
+        lineHeight: responsiveFont(38),
+        fontWeight: "700",
+        letterSpacing: -0.64,
+        color: colors.textPrimary,
+      },
+      subtitle: {
+        marginTop: spacing.exact(16),
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(28),
+        fontWeight: "400",
+        color: colors.textSecondary,
+      },
+      grid: {
+        marginTop: spacing.exact(32),
+        gap: spacing.exact(10),
+      },
+      gridRow: {
+        flexDirection: "row",
+        gap: spacing.exact(10),
+      },
+      chip: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: spacing.exact(20),
+        paddingVertical: spacing.exact(16),
+        borderRadius: spacing.exact(12),
+        borderWidth: 1.5,
+        borderColor: colors.line,
+        backgroundColor: colors.surface,
+      },
+      chipSelected: {
+        backgroundColor: accents.green.fill,
+        borderColor: accents.green.fill,
+      },
+      chipLocked: {
+        opacity: 0.45,
+      },
+      chipPressed: {
+        opacity: 0.85,
+      },
+      chipLabel: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "600",
+        letterSpacing: -0.16,
+        color: colors.textPrimary,
+      },
+      chipLabelSelected: {
+        color: colors.onAccent,
+      },
+      footer: {
+        gap: spacing.exact(16),
+      },
+      paging: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.exact(7),
+        paddingVertical: spacing.exact(12),
+      },
+      dot: {
+        width: spacing.exact(7),
+        height: spacing.exact(7),
+        borderRadius: spacing.exact(4),
+        backgroundColor: colors.line,
+      },
+      dotActive: {
+        width: spacing.exact(22),
+        backgroundColor: accents.green.fill,
+      },
+      cta: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: spacing.exact(16),
+        borderRadius: radius.pill,
+        backgroundColor: accents.green.fill,
+        shadowColor: colors.shadow,
+        shadowOpacity: 0.1,
+        shadowRadius: spacing.exact(18),
+        shadowOffset: { width: 0, height: spacing.exact(14) },
+        elevation: 6,
+      },
+      ctaPressed: {
+        opacity: 0.9,
+      },
+      ctaLabel: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: colors.onAccent,
+      },
+    })
+  );
+}

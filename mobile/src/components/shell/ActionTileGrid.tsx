@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
-import { greenWave, type GreenWaveAccent } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
+import { type GreenWaveAccent } from "../../theme/green-wave";
 import { ActionTile } from "./ActionTile";
 
 export type ActionTileItem = {
@@ -20,6 +21,7 @@ type ActionTileGridProps = {
 };
 
 export function ActionTileGrid({ items, columns = 2 }: ActionTileGridProps) {
+  const styles = useStyles();
   const rows = chunk(items, Math.max(1, columns));
 
   return (
@@ -58,19 +60,21 @@ function chunk<T>(items: T[], size: number): T[][] {
   return result;
 }
 
-const styles = StyleSheet.create({
-  grid: {
-    width: "100%",
-    flexDirection: "column",
-    gap: greenWave.spacing.sm,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "stretch",
-    gap: greenWave.spacing.sm,
-  },
-  filler: {
-    flex: 1,
-    minWidth: 100,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ spacing }) => ({
+    grid: {
+      width: "100%",
+      flexDirection: "column",
+      gap: spacing.sm,
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "stretch",
+      gap: spacing.sm,
+    },
+    filler: {
+      flex: 1,
+      minWidth: spacing.exact(100),
+    },
+  }));
+}

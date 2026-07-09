@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
@@ -10,14 +10,18 @@ import { SignListItem } from "../../src/components/shell/SignListItem";
 import { SignSearchField } from "../../src/components/shell/SignSearchField";
 import { SignsScreenHeader } from "../../src/components/shell/SignsScreenHeader";
 import {
+  useResponsiveSpacing,
+  useResponsiveStyles,
+} from "../../src/portable-ui";
+import {
   ROAD_SIGN_CATEGORIES,
   searchRoadSigns,
 } from "../../src/features/road-signs/catalog";
-import { greenWave } from "../../src/theme/green-wave";
 
 export default function SignsSearchScreen() {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
+  const styles = useStyles({ safeBottom });
   const [query, setQuery] = useState("");
 
   const results = useMemo(() => searchRoadSigns(query), [query]);
@@ -57,10 +61,7 @@ export default function SignsSearchScreen() {
 
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: 24 + safeBottom },
-          ]}
+          contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -116,67 +117,70 @@ export default function SignsSearchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  searchWrap: {
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingBottom: greenWave.spacing.md,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: greenWave.spacing.xl,
-    gap: greenWave.spacing.lg,
-  },
-  section: {
-    gap: greenWave.spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  resultList: {
-    gap: greenWave.spacing.sm,
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingTop: greenWave.spacing.xl,
-    paddingHorizontal: greenWave.spacing.lg,
-  },
-  emptyTitle: {
-    fontSize: 24,
-    lineHeight: 32,
-    fontWeight: "700",
-    letterSpacing: -0.48,
-    color: greenWave.color.ink,
-    textAlign: "center",
-  },
-  emptyDescription: {
-    marginTop: greenWave.spacing.md,
-    fontSize: 16,
-    lineHeight: 24,
-    color: greenWave.color.inkSecondary,
-    textAlign: "center",
-  },
-  hintState: {
-    paddingTop: greenWave.spacing.lg,
-  },
-  hintTitle: {
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-  },
-  hintDescription: {
-    marginTop: greenWave.spacing.sm,
-    fontSize: 14,
-    lineHeight: 22,
-    color: greenWave.color.inkMuted,
-  },
-});
+function useStyles({ safeBottom }: { safeBottom: number }) {
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
+    safeArea: {
+      flex: 1,
+    },
+    searchWrap: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.md,
+    },
+    scroll: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.exact(24) + safeBottom,
+      gap: spacing.lg,
+    },
+    section: {
+      gap: spacing.sm,
+    },
+    sectionTitle: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: colors.ink,
+    },
+    resultList: {
+      gap: spacing.sm,
+    },
+    emptyState: {
+      alignItems: "center",
+      paddingTop: spacing.xl,
+      paddingHorizontal: spacing.lg,
+    },
+    emptyTitle: {
+      fontSize: responsiveFont(24),
+      lineHeight: responsiveFont(32),
+      fontWeight: "700",
+      letterSpacing: -0.48,
+      color: colors.ink,
+      textAlign: "center",
+    },
+    emptyDescription: {
+      marginTop: spacing.md,
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      color: colors.inkSecondary,
+      textAlign: "center",
+    },
+    hintState: {
+      paddingTop: spacing.lg,
+    },
+    hintTitle: {
+      fontSize: responsiveFont(18),
+      lineHeight: responsiveFont(28),
+      fontWeight: "600",
+      color: colors.ink,
+    },
+    hintDescription: {
+      marginTop: spacing.sm,
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+      color: colors.inkMuted,
+    },
+  }));
+}

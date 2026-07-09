@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 import { resolveTopicReadinessStatus } from "./TopicReadinessCard";
 
 type StatisticsTopicProgressRowProps = {
@@ -16,16 +17,21 @@ export function StatisticsTopicProgressRow({
   total,
   progress,
 }: StatisticsTopicProgressRowProps) {
+  const theme = useTheme();
   const normalized = Math.max(0, Math.min(progress, 100));
   const status = resolveTopicReadinessStatus(seen, normalized);
   const barColor =
     status === "good"
-      ? greenWaveAccent.green.fill
+      ? theme.accents.green.fill
       : status === "normal"
-        ? greenWaveAccent.amber.fill
+        ? theme.accents.amber.fill
         : status === "bad"
-          ? greenWaveAccent.red.fill
-          : greenWave.color.track;
+          ? theme.accents.red.fill
+          : theme.colors.track;
+  const styles = useStyles({
+    fillColor: barColor,
+    fillWidth: `${normalized}%`,
+  });
 
   return (
     <View style={styles.row}>
@@ -38,17 +44,7 @@ export function StatisticsTopicProgressRow({
 
       <View style={styles.barGroup}>
         <View style={styles.track}>
-          {seen > 0 ? (
-            <View
-              style={[
-                styles.fill,
-                {
-                  width: `${normalized}%`,
-                  backgroundColor: barColor,
-                },
-              ]}
-            />
-          ) : null}
+          {seen > 0 ? <View style={styles.fill} /> : null}
         </View>
         <Text style={styles.percent}>{`${normalized}%`}</Text>
       </View>
@@ -56,50 +52,60 @@ export function StatisticsTopicProgressRow({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-  },
-  copy: {
-    flex: 1,
-    minWidth: 96,
-    gap: greenWave.spacing.xs,
-  },
-  title: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "500",
-    color: greenWave.color.ink,
-  },
-  meta: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkMuted,
-  },
-  barGroup: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-  },
-  track: {
-    flex: 1,
-    height: 4,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.track,
-    overflow: "hidden",
-  },
-  fill: {
-    height: 4,
-    borderRadius: greenWave.radius.pill,
-  },
-  percent: {
-    width: 40,
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: "right",
-    color: greenWave.color.ink,
-  },
-});
+function useStyles({
+  fillColor,
+  fillWidth,
+}: {
+  fillColor: string;
+  fillWidth: string;
+}) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    copy: {
+      flex: 1,
+      minWidth: spacing.exact(96),
+      gap: spacing.xs,
+    },
+    title: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "500",
+      color: colors.ink,
+    },
+    meta: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      color: colors.inkMuted,
+    },
+    barGroup: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    track: {
+      flex: 1,
+      height: spacing.exact(4),
+      borderRadius: radius.pill,
+      backgroundColor: colors.track,
+      overflow: "hidden",
+    },
+    fill: {
+      width: fillWidth,
+      height: spacing.exact(4),
+      borderRadius: radius.pill,
+      backgroundColor: fillColor,
+    },
+    percent: {
+      width: spacing.exact(40),
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      textAlign: "right",
+      color: colors.ink,
+    },
+  }));
+}

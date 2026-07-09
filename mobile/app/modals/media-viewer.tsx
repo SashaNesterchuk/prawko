@@ -6,7 +6,6 @@ import {
   Image,
   Linking,
   Pressable,
-  StyleSheet,
   Text,
   View,
   useWindowDimensions,
@@ -16,21 +15,24 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../src/portable-ui";
+import {
   getQuestionMediaViewerAssetUrl,
   getQuestionMediaViewerPreviewUrl,
   type QuestionMediaViewerParams,
 } from "../../src/features/questions/question-media";
 import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
-import { greenWave } from "../../src/theme/green-wave";
+import { useTheme } from "../../src/providers/ThemeProvider";
 
 export default function MediaViewerModalScreen() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const { captureError } = useErrorLogger();
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
-  const styles = useMemo(
-    () => getStyles(windowWidth, windowHeight),
-    [windowHeight, windowWidth]
-  );
+  const styles = useStyles({ windowHeight, windowWidth });
   const params = useLocalSearchParams<{
     label?: string | string[];
     mediaType?: string | string[];
@@ -53,6 +55,9 @@ export default function MediaViewerModalScreen() {
     viewer?.mediaType === "video"
       ? t("question.media.viewerVideoBody")
       : t("question.media.viewerImageBody");
+  const closeIconSize = responsiveFont(22);
+  const refreshIconSize = responsiveFont(18);
+  const playIconSize = responsiveFont(32);
 
   const handleOpenExternally = async () => {
     if (!viewer || !assetUrl) {
@@ -99,7 +104,7 @@ export default function MediaViewerModalScreen() {
               pressed ? styles.pressed : null,
             ]}
           >
-            <Ionicons color={greenWave.color.ink} name="close" size={22} />
+            <Ionicons color={colors.textPrimary} name="close" size={closeIconSize} />
           </Pressable>
 
           <View style={styles.headerCopy}>
@@ -142,9 +147,9 @@ export default function MediaViewerModalScreen() {
                   ]}
                 >
                   <MaterialCommunityIcons
-                    color={greenWave.color.inkSecondary}
+                    color={colors.textSecondary}
                     name="refresh"
-                    size={18}
+                    size={refreshIconSize}
                   />
                   <Text style={styles.retryLabel}>
                     {t("question.media.retry")}
@@ -179,9 +184,9 @@ export default function MediaViewerModalScreen() {
                   ]}
                 >
                   <MaterialCommunityIcons
-                    color={greenWave.color.ink}
+                    color={colors.textPrimary}
                     name="play"
-                    size={32}
+                    size={playIconSize}
                   />
                 </Pressable>
               ) : null}
@@ -258,152 +263,168 @@ function getSingleParam(value: string | string[] | undefined) {
   return value;
 }
 
-const getStyles = (windowWidth: number, windowHeight: number) => {
-  const frameHeight = Math.min(Math.max(windowHeight * 0.56, 280), 520);
+function useStyles({
+  windowHeight,
+  windowWidth,
+}: {
+  windowHeight: number;
+  windowWidth: number;
+}) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => {
+    const horizontalPadding = spacing.exact(24);
+    const frameHeight = Math.min(
+      Math.max(windowHeight * 0.56, spacing.exact(280)),
+      spacing.exact(520)
+    );
 
-  return StyleSheet.create({
-    safeArea: {
-      flex: 1,
-    },
-    header: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      gap: greenWave.spacing.sm,
-      paddingHorizontal: greenWave.spacing.xl,
-      paddingTop: greenWave.spacing.sm,
-      paddingBottom: greenWave.spacing.lg,
-    },
-    headerButton: {
-      width: 40,
-      height: 40,
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: greenWave.radius.md,
-      backgroundColor: greenWave.color.surface,
-    },
-    headerCopy: {
-      flex: 1,
-      gap: greenWave.spacing.xs,
-      paddingTop: greenWave.spacing.xs,
-    },
-    headerTitle: {
-      fontSize: 20,
-      lineHeight: 28,
-      fontWeight: "700",
-      letterSpacing: -0.4,
-      color: greenWave.color.ink,
-    },
-    headerSubtitle: {
-      fontSize: 14,
-      lineHeight: 20,
-      color: greenWave.color.inkSecondary,
-    },
-    stage: {
-      flex: 1,
-      justifyContent: "center",
-      paddingHorizontal: greenWave.spacing.xl,
-    },
-    frame: {
-      width: windowWidth - greenWave.spacing.xl * 2,
-      height: frameHeight,
-      alignSelf: "center",
-      borderRadius: greenWave.radius.xl,
-      overflow: "hidden",
-      backgroundColor: greenWave.color.paper,
-      shadowColor: greenWave.color.shadow,
-      shadowOpacity: 0.08,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 8 },
-      elevation: 4,
-    },
-    preview: {
-      width: "100%",
-      height: "100%",
-      backgroundColor: greenWave.color.track,
-    },
-    skeleton: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: greenWave.color.track,
-    },
-    playBadge: {
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      width: 72,
-      height: 72,
-      marginTop: -36,
-      marginLeft: -36,
-      borderRadius: 36,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "rgba(255,255,255,0.88)",
-    },
-    errorFrame: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: greenWave.spacing.xl,
-      gap: greenWave.spacing.sm,
-      backgroundColor: greenWave.color.track,
-    },
-    errorTitle: {
-      fontSize: 16,
-      lineHeight: 24,
-      fontWeight: "600",
-      color: greenWave.color.ink,
-      textAlign: "center",
-    },
-    errorBody: {
-      fontSize: 14,
-      lineHeight: 20,
-      color: greenWave.color.inkMuted,
-      textAlign: "center",
-    },
-    retryButton: {
-      marginTop: greenWave.spacing.sm,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: greenWave.spacing.sm,
-      paddingHorizontal: greenWave.spacing.lg,
-      paddingVertical: greenWave.spacing.md,
-      borderRadius: greenWave.radius.pill,
-      backgroundColor: greenWave.color.surface,
-    },
-    retryLabel: {
-      fontSize: 14,
-      fontWeight: "600",
-      color: greenWave.color.inkSecondary,
-    },
-    footer: {
-      gap: greenWave.spacing.sm,
-      paddingHorizontal: greenWave.spacing.xl,
-      paddingTop: greenWave.spacing.lg,
-      paddingBottom: greenWave.spacing.md,
-    },
-    primaryButton: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: greenWave.spacing.xl,
-      paddingVertical: greenWave.spacing.md,
-      borderRadius: greenWave.radius.pill,
-      backgroundColor: greenWave.color.ink,
-    },
-    primaryButtonDisabled: {
-      opacity: 0.45,
-    },
-    primaryButtonText: {
-      fontSize: 16,
-      lineHeight: 24,
-      fontWeight: "600",
-      color: greenWave.color.onAccent,
-    },
-    videoHint: {
-      fontSize: 12,
-      lineHeight: 16,
-      textAlign: "center",
-      color: greenWave.color.inkMuted,
-    },
-    pressed: {
-      opacity: 0.88,
-    },
+    return {
+      safeArea: {
+        flex: 1,
+      },
+      header: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: spacing.exact(8),
+        paddingHorizontal: horizontalPadding,
+        paddingTop: spacing.exact(8),
+        paddingBottom: spacing.exact(16),
+      },
+      headerButton: {
+        width: spacing.exact(40),
+        height: spacing.exact(40),
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: radius.md,
+        backgroundColor: colors.surface,
+      },
+      headerCopy: {
+        flex: 1,
+        gap: spacing.exact(4),
+        paddingTop: spacing.exact(4),
+      },
+      headerTitle: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "700",
+        letterSpacing: -0.4,
+        color: colors.textPrimary,
+      },
+      headerSubtitle: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textSecondary,
+      },
+      stage: {
+        flex: 1,
+        justifyContent: "center",
+        paddingHorizontal: horizontalPadding,
+      },
+      frame: {
+        width: windowWidth - horizontalPadding * 2,
+        height: frameHeight,
+        alignSelf: "center",
+        borderRadius: radius.xl,
+        overflow: "hidden",
+        backgroundColor: colors.paper,
+        shadowColor: colors.shadow,
+        shadowOpacity: 0.08,
+        shadowRadius: spacing.exact(12),
+        shadowOffset: { width: 0, height: spacing.exact(8) },
+        elevation: 4,
+      },
+      preview: {
+        width: "100%",
+        height: "100%",
+        backgroundColor: colors.track,
+      },
+      skeleton: {
+        position: "absolute",
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        backgroundColor: colors.track,
+      },
+      playBadge: {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        width: spacing.exact(72),
+        height: spacing.exact(72),
+        marginTop: -spacing.exact(36),
+        marginLeft: -spacing.exact(36),
+        borderRadius: spacing.exact(36),
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: colors.glassHeavy,
+      },
+      errorFrame: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: horizontalPadding,
+        gap: spacing.exact(8),
+        backgroundColor: colors.track,
+      },
+      errorTitle: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "600",
+        color: colors.textPrimary,
+        textAlign: "center",
+      },
+      errorBody: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textMuted,
+        textAlign: "center",
+      },
+      retryButton: {
+        marginTop: spacing.exact(8),
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(8),
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(12),
+        borderRadius: radius.pill,
+        backgroundColor: colors.surface,
+      },
+      retryLabel: {
+        fontSize: responsiveFont(14),
+        fontWeight: "600",
+        color: colors.textSecondary,
+      },
+      footer: {
+        gap: spacing.exact(8),
+        paddingHorizontal: horizontalPadding,
+        paddingTop: spacing.exact(16),
+        paddingBottom: spacing.exact(12),
+      },
+      primaryButton: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(24),
+        paddingVertical: spacing.exact(12),
+        borderRadius: radius.pill,
+        backgroundColor: colors.textPrimary,
+      },
+      primaryButtonDisabled: {
+        opacity: 0.45,
+      },
+      primaryButtonText: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "600",
+        color: colors.onAccent,
+      },
+      videoHint: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        textAlign: "center",
+        color: colors.textMuted,
+      },
+      pressed: {
+        opacity: 0.88,
+      },
+    };
   });
-};
+}

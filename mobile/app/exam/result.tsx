@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
@@ -14,10 +14,16 @@ import {
 import type { RemoteExamSnapshot } from "../../src/features/exam/types";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import { useAdInterstitialActions } from "../../src/features/ads/show-interstitial";
-import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../src/portable-ui";
+import { useTheme } from "../../src/providers/ThemeProvider";
 
 export default function ExamResultScreen() {
   const { t } = useTranslation();
+  const { accents, colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const params = useLocalSearchParams<{
     sessionId?: string | string[];
   }>();
@@ -102,7 +108,11 @@ export default function ExamResultScreen() {
 
   const wrongCount = snapshot?.session.wrongAnswersCount ?? 0;
   const passed = resultStatus === "passed";
-  const resultAccent = passed ? greenWaveAccent.green : greenWaveAccent.amber;
+  const resultAccent = passed ? accents.green : accents.amber;
+  const styles = useStyles({ resultPercentColor: resultAccent.ink });
+  const headerIconSize = responsiveFont(24);
+  const statusIconSize = responsiveFont(40);
+  const reviewIconSize = responsiveFont(24);
 
   if (isLoading) {
     return (
@@ -176,8 +186,8 @@ export default function ExamResultScreen() {
           >
             <MaterialCommunityIcons
               name="close"
-              size={24}
-              color={greenWave.color.ink}
+              size={headerIconSize}
+              color={colors.textPrimary}
             />
           </Pressable>
         </View>
@@ -186,16 +196,14 @@ export default function ExamResultScreen() {
           <View style={styles.successBadge}>
             <MaterialCommunityIcons
               name={passed ? "check" : "restart"}
-              size={40}
+              size={statusIconSize}
               color={resultAccent.ink}
             />
           </View>
 
           <Text style={styles.resultTitle}>{t(titleKey, bodyParams)}</Text>
 
-          <Text style={[styles.resultPercent, { color: resultAccent.ink }]}>
-            {scorePercent}%
-          </Text>
+          <Text style={styles.resultPercent}>{scorePercent}%</Text>
 
           <Text style={styles.resultCount}>
             {t("exam.scoreOfTotal", {
@@ -237,8 +245,8 @@ export default function ExamResultScreen() {
               <View style={styles.reviewIconBox}>
                 <MaterialCommunityIcons
                   name="book-open-variant"
-                  size={24}
-                  color={greenWave.color.ink}
+                  size={reviewIconSize}
+                  color={colors.textPrimary}
                 />
               </View>
               <View style={styles.reviewCardText}>
@@ -294,6 +302,8 @@ function CenteredState({
   onAction?: () => void;
   title: string;
 }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.centeredState}>
       <Text style={styles.centeredTitle}>{title}</Text>
@@ -341,174 +351,183 @@ function getErrorMessage(error: unknown) {
     : "Unable to load exam result.";
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: greenWave.color.paper,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingBottom: greenWave.spacing.xl,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerButton: {
-    width: 40,
-    height: 40,
-    marginLeft: -greenWave.spacing.sm,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: greenWave.radius.md,
-  },
-  bodyArea: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  successBadge: {
-    width: 96,
-    height: 96,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.surface,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: greenWave.spacing.xl,
-  },
-  resultTitle: {
-    fontSize: 32,
-    lineHeight: 36,
-    fontWeight: "700",
-    letterSpacing: -0.64,
-    textAlign: "center",
-    color: greenWave.color.ink,
-    marginBottom: greenWave.spacing.lg,
-  },
-  resultPercent: {
-    fontSize: 52,
-    lineHeight: 54,
-    fontWeight: "700",
-    letterSpacing: -0.52,
-    textAlign: "center",
-    marginBottom: greenWave.spacing.md,
-  },
-  resultCount: {
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: "center",
-    color: greenWave.color.ink,
-    fontWeight: "600",
-    marginBottom: greenWave.spacing.xs,
-  },
-  resultSubcount: {
-    fontSize: 12,
-    lineHeight: 16,
-    textAlign: "center",
-    color: greenWave.color.inkSecondary,
-    marginBottom: greenWave.spacing.sm,
-  },
-  passThreshold: {
-    fontSize: 12,
-    lineHeight: 16,
-    textAlign: "center",
-    color: greenWave.color.inkMuted,
-    marginBottom: greenWave.spacing.lg,
-  },
-  resultBody: {
-    fontSize: 18,
-    lineHeight: 28,
-    textAlign: "center",
-    color: greenWave.color.inkSecondary,
-    marginBottom: greenWave.spacing.xl,
-  },
-  reviewCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: greenWave.color.surface,
-    alignSelf: "stretch",
-  },
-  reviewIconBox: {
-    padding: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWave.color.paper,
-  },
-  reviewCardText: {
-    flex: 1,
-  },
-  reviewTitle: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  reviewSubtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkMuted,
-  },
-  primaryButton: {
-    borderRadius: greenWave.radius.pill,
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingVertical: greenWave.spacing.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: greenWaveAccent.green.fill,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.1,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 14 },
-    elevation: 4,
-  },
-  primaryButtonText: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    color: greenWave.color.onAccent,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-  ghostButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingVertical: greenWave.spacing.md,
-  },
-  ghostText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: greenWave.color.inkSecondary,
-  },
-  centeredState: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: greenWave.spacing.xl,
-    gap: greenWave.spacing.sm,
-  },
-  centeredTitle: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    textAlign: "center",
-    color: greenWave.color.ink,
-  },
-  centeredBody: {
-    fontSize: 14,
-    lineHeight: 22,
-    textAlign: "center",
-    color: greenWave.color.inkSecondary,
-  },
-  centeredAction: {
-    marginTop: greenWave.spacing.lg,
-    alignSelf: "stretch",
-  },
-});
+function useStyles({
+  resultPercentColor,
+}: {
+  resultPercentColor?: string;
+} = {}) {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+      safeArea: {
+        flex: 1,
+        backgroundColor: colors.paper,
+      },
+      container: {
+        flex: 1,
+        paddingHorizontal: spacing.exact(24),
+        paddingBottom: spacing.exact(24),
+      },
+      header: {
+        flexDirection: "row",
+        alignItems: "center",
+      },
+      headerButton: {
+        width: spacing.exact(40),
+        height: spacing.exact(40),
+        marginLeft: -spacing.exact(8),
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: radius.md,
+      },
+      bodyArea: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      successBadge: {
+        width: spacing.exact(96),
+        height: spacing.exact(96),
+        borderRadius: radius.pill,
+        backgroundColor: colors.surface,
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: spacing.exact(24),
+      },
+      resultTitle: {
+        fontSize: responsiveFont(32),
+        lineHeight: responsiveFont(36),
+        fontWeight: "700",
+        letterSpacing: -0.64,
+        textAlign: "center",
+        color: colors.textPrimary,
+        marginBottom: spacing.exact(16),
+      },
+      resultPercent: {
+        fontSize: responsiveFont(52),
+        lineHeight: responsiveFont(54),
+        fontWeight: "700",
+        letterSpacing: -0.52,
+        textAlign: "center",
+        marginBottom: spacing.exact(12),
+        color: resultPercentColor ?? colors.textPrimary,
+      },
+      resultCount: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        textAlign: "center",
+        color: colors.textPrimary,
+        fontWeight: "600",
+        marginBottom: spacing.exact(4),
+      },
+      resultSubcount: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        textAlign: "center",
+        color: colors.textSecondary,
+        marginBottom: spacing.exact(8),
+      },
+      passThreshold: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        textAlign: "center",
+        color: colors.textMuted,
+        marginBottom: spacing.exact(16),
+      },
+      resultBody: {
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(28),
+        textAlign: "center",
+        color: colors.textSecondary,
+        marginBottom: spacing.exact(24),
+      },
+      reviewCard: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(12),
+        padding: spacing.exact(16),
+        borderRadius: radius.xl,
+        backgroundColor: colors.surface,
+        alignSelf: "stretch",
+      },
+      reviewIconBox: {
+        padding: spacing.exact(8),
+        borderRadius: radius.md,
+        backgroundColor: colors.paper,
+      },
+      reviewCardText: {
+        flex: 1,
+      },
+      reviewTitle: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "600",
+        letterSpacing: -0.16,
+        color: colors.textPrimary,
+      },
+      reviewSubtitle: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textMuted,
+      },
+      primaryButton: {
+        borderRadius: radius.pill,
+        paddingHorizontal: spacing.exact(24),
+        paddingVertical: spacing.exact(12),
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: accents.green.fill,
+        shadowColor: colors.shadow,
+        shadowOpacity: 0.1,
+        shadowRadius: spacing.exact(18),
+        shadowOffset: { width: 0, height: spacing.exact(14) },
+        elevation: 4,
+      },
+      primaryButtonText: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: colors.onAccent,
+      },
+      pressed: {
+        opacity: 0.9,
+      },
+      ghostButton: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(12),
+      },
+      ghostText: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        color: colors.textSecondary,
+      },
+      centeredState: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(24),
+        gap: spacing.exact(8),
+      },
+      centeredTitle: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        textAlign: "center",
+        color: colors.textPrimary,
+      },
+      centeredBody: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(22),
+        textAlign: "center",
+        color: colors.textSecondary,
+      },
+      centeredAction: {
+        marginTop: spacing.exact(16),
+        alignSelf: "stretch",
+      },
+    })
+  );
+}

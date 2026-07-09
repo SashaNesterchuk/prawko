@@ -11,7 +11,6 @@ import {
   Pressable,
   ScrollView,
   Share,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -37,6 +36,11 @@ import {
 } from "../../src/features/study-plan/generate-local-study-plan";
 import { getMobileSupabaseClient } from "../../src/lib/supabase";
 import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../src/portable-ui";
+import { useTheme } from "../../src/providers/ThemeProvider";
+import {
   useHasPlusAccess,
 } from "../../src/state/entitlements";
 import {
@@ -45,13 +49,15 @@ import {
 } from "../../src/state/app-shell";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 import { resetAppToFreshStart } from "../../src/state/reset-app";
-import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
 
 const SUPPORT_EMAIL = "support@prawko.app";
 
 export default function ProfileTabScreen() {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
+  const { accents, colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles({ safeBottom });
   const isFocused = useIsFocused();
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
@@ -121,6 +127,7 @@ export default function ProfileTabScreen() {
   const daysUntilExam =
     examDate != null ? getDaysUntilExamFromDate(examDate) : null;
   const localeLabel = t(`languages.${preferredLocale}.label`);
+  const iconSize = responsiveFont(24);
 
   const handleToggleNotifications = async (nextValue: boolean) => {
     if (nextValue) {
@@ -198,10 +205,7 @@ export default function ProfileTabScreen() {
         <StatusBar style="dark" />
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: 96 + safeBottom },
-          ]}
+          contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
           <ProfileStatsCard
@@ -241,9 +245,9 @@ export default function ProfileTabScreen() {
               }
               icon={
                 <Ionicons
-                  color={greenWave.color.inkSecondary}
+                  color={colors.textSecondary}
                   name="calendar-outline"
-                  size={24}
+                  size={iconSize}
                 />
               }
               onPress={() => router.push("/modals/plan-adjust")}
@@ -253,9 +257,9 @@ export default function ProfileTabScreen() {
               value={preferredCategory}
               icon={
                 <Ionicons
-                  color={greenWave.color.inkSecondary}
+                  color={colors.textSecondary}
                   name="car-outline"
-                  size={24}
+                  size={iconSize}
                 />
               }
               onPress={() => router.push("/(onboarding)/category")}
@@ -265,9 +269,9 @@ export default function ProfileTabScreen() {
               value={localeLabel}
               icon={
                 <Ionicons
-                  color={greenWave.color.inkSecondary}
+                  color={colors.textSecondary}
                   name="language-outline"
-                  size={24}
+                  size={iconSize}
                 />
               }
               onPress={() => router.push("/(onboarding)/language")}
@@ -276,9 +280,9 @@ export default function ProfileTabScreen() {
               title={t("profile.notificationsTitle")}
               icon={
                 <Ionicons
-                  color={greenWave.color.inkSecondary}
+                  color={colors.textSecondary}
                   name="notifications-outline"
-                  size={24}
+                  size={iconSize}
                 />
               }
               trailing="switch"
@@ -289,9 +293,9 @@ export default function ProfileTabScreen() {
               title={t("profile.offlineTitle")}
               icon={
                 <Ionicons
-                  color={greenWave.color.inkSecondary}
+                  color={colors.textSecondary}
                   name="cloud-download-outline"
-                  size={24}
+                  size={iconSize}
                 />
               }
               trailing="premium"
@@ -309,9 +313,9 @@ export default function ProfileTabScreen() {
               title={t("profile.feedbackTitle")}
               icon={
                 <Ionicons
-                  color={greenWave.color.inkSecondary}
+                  color={colors.textSecondary}
                   name="chatbubble-ellipses-outline"
-                  size={24}
+                  size={iconSize}
                 />
               }
               trailing="none"
@@ -321,9 +325,9 @@ export default function ProfileTabScreen() {
               title={t("profile.supportTitle")}
               icon={
                 <Ionicons
-                  color={greenWave.color.inkSecondary}
+                  color={colors.textSecondary}
                   name="help-circle-outline"
-                  size={24}
+                  size={iconSize}
                 />
               }
               trailing="none"
@@ -333,9 +337,9 @@ export default function ProfileTabScreen() {
               title={t("profile.shareTitle")}
               icon={
                 <Ionicons
-                  color={greenWave.color.inkSecondary}
+                  color={colors.textSecondary}
                   name="share-social-outline"
-                  size={24}
+                  size={iconSize}
                 />
               }
               trailing="none"
@@ -355,9 +359,9 @@ export default function ProfileTabScreen() {
           >
             <View style={styles.resetIconWrap}>
               <Ionicons
-                color={greenWaveAccent.red.ink}
+                color={accents.red.ink}
                 name="refresh-outline"
-                size={24}
+                size={iconSize}
               />
             </View>
             <Text style={styles.resetTitle}>{t("profile.resetProgress")}</Text>
@@ -368,46 +372,51 @@ export default function ProfileTabScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    padding: greenWave.spacing.xl,
-    gap: greenWave.spacing.xl,
-  },
-  resetCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: greenWave.color.surface,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  resetIconWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWaveAccent.red.soft,
-  },
-  resetTitle: {
-    flex: 1,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWaveAccent.red.ink,
-  },
-});
+function useStyles({ safeBottom }: { safeBottom: number }) {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+      safeArea: {
+        flex: 1,
+      },
+      scroll: {
+        flex: 1,
+      },
+      content: {
+        padding: spacing.exact(24),
+        paddingBottom: spacing.exact(96) + safeBottom,
+        gap: spacing.exact(24),
+      },
+      resetCard: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(12),
+        padding: spacing.exact(16),
+        borderRadius: radius.xl,
+        backgroundColor: colors.surface,
+        shadowColor: colors.shadow,
+        shadowOpacity: 0.05,
+        shadowRadius: spacing.exact(12),
+        shadowOffset: { width: 0, height: spacing.exact(2) },
+        elevation: 2,
+      },
+      pressed: {
+        opacity: 0.85,
+      },
+      resetIconWrap: {
+        alignItems: "center",
+        justifyContent: "center",
+        padding: spacing.exact(8),
+        borderRadius: radius.md,
+        backgroundColor: accents.red.soft,
+      },
+      resetTitle: {
+        flex: 1,
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "600",
+        letterSpacing: -0.16,
+        color: accents.red.ink,
+      },
+    })
+  );
+}

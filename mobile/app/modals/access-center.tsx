@@ -1,12 +1,13 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { Linking, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   getRevenueCatErrorMessage,
@@ -15,7 +16,6 @@ import {
 import { formatPlanDate } from "../../src/features/study-plan/generate-local-study-plan";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
-import { useTheme } from "../../src/providers/ThemeProvider";
 import {
   useEntitlementStore,
   useHasPlusAccess,
@@ -31,19 +31,11 @@ type FeedbackState =
     }
   | null;
 
-const STATUS_COLORS = {
-  errorBorder: "#C2826B",
-  errorSurface: "#F7E7DF",
-  successBorder: "#5D8A80",
-  successSurface: "#E6F2EC",
-};
-
 export default function AccessCenterModalScreen() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
   const { captureError } = useErrorLogger();
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
   const currentUser = useCurrentUser();
   const authMode = useAppShellStore((state) => state.authMode);
   const hasPlusAccess = useHasPlusAccess();
@@ -182,7 +174,7 @@ export default function AccessCenterModalScreen() {
       title={t("accessCenter.title")}
       subtitle={t("accessCenter.subtitle")}
       footer={
-        <View style={{ gap: 10 }}>
+        <View style={styles.footerStack}>
           <AppButton
             variant="secondary"
             label={t("accessCenter.openPaywall")}
@@ -196,7 +188,7 @@ export default function AccessCenterModalScreen() {
         </View>
       }
     >
-      <View style={{ gap: 12 }}>
+      <View style={styles.contentStack}>
         {!hasRealAuth ? (
           <AppCard accent>
             <Text style={styles.sectionLabel}>
@@ -205,7 +197,7 @@ export default function AccessCenterModalScreen() {
             <Text style={styles.bodyText}>
               {t("accessCenter.authRequiredBody")}
             </Text>
-            <View style={{ marginTop: 12 }}>
+            <View style={styles.inlineAction}>
               <AppButton
                 label={t("accessCenter.openSignIn")}
                 onPress={() => router.replace("/(onboarding)/access")}
@@ -233,7 +225,7 @@ export default function AccessCenterModalScreen() {
             </Text>
           </View>
           {purchaseAccess?.managementUrl ? (
-            <View style={{ marginTop: 12 }}>
+            <View style={styles.inlineAction}>
               <AppButton
                 variant="secondary"
                 label={t("accessCenter.manageSubscription")}
@@ -255,7 +247,7 @@ export default function AccessCenterModalScreen() {
               message={restoreFeedback.message}
             />
           ) : null}
-          <View style={{ gap: 10, marginTop: 16 }}>
+          <View style={styles.restoreActions}>
             <AppButton
               variant="secondary"
               disabled={isRestoring || !revenueCatConfigured}
@@ -285,8 +277,7 @@ function StatusCard({
   kind: "error" | "success";
   message: string;
 }) {
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
 
   return (
     <View
@@ -307,62 +298,72 @@ function StatusCard({
   );
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
-    bodyText: {
-      color: theme.colors.textSecondary,
-      fontSize: 14,
-      lineHeight: 22,
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    footerStack: {
+      gap: spacing.exact(10),
     },
-    formStack: {
-      gap: 12,
-      marginTop: 16,
+    contentStack: {
+      gap: spacing.exact(12),
+    },
+    inlineAction: {
+      marginTop: spacing.exact(12),
+    },
+    restoreActions: {
+      gap: spacing.exact(10),
+      marginTop: spacing.exact(16),
+    },
+    bodyText: {
+      color: colors.textSecondary,
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
     },
     helperText: {
-      color: theme.colors.textMuted,
-      fontSize: 13,
-      lineHeight: 20,
-      marginTop: 12,
+      color: colors.textMuted,
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(20),
+      marginTop: spacing.exact(12),
     },
     sectionLabel: {
-      color: theme.colors.textPrimary,
-      fontSize: 18,
+      color: colors.textPrimary,
+      fontSize: responsiveFont(18),
       fontWeight: "700",
-      marginBottom: 6,
+      marginBottom: spacing.exact(6),
     },
     statusCard: {
-      borderRadius: theme.radius.large,
+      borderRadius: radius.large,
       borderWidth: 1,
-      marginTop: 16,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
+      marginTop: spacing.exact(16),
+      paddingHorizontal: spacing.exact(14),
+      paddingVertical: spacing.exact(12),
     },
     statusError: {
-      backgroundColor: STATUS_COLORS.errorSurface,
-      borderColor: STATUS_COLORS.errorBorder,
+      backgroundColor: colors.statusErrorSurface,
+      borderColor: colors.statusErrorBorder,
     },
     statusErrorText: {
-      color: STATUS_COLORS.errorBorder,
+      color: colors.statusErrorBorder,
     },
     statusSuccess: {
-      backgroundColor: STATUS_COLORS.successSurface,
-      borderColor: STATUS_COLORS.successBorder,
+      backgroundColor: colors.statusSuccessSurface,
+      borderColor: colors.statusSuccessBorder,
     },
     statusSuccessText: {
-      color: STATUS_COLORS.successBorder,
+      color: colors.statusSuccessBorder,
     },
     statusLine: {
-      color: theme.colors.textPrimary,
-      fontSize: 15,
-      lineHeight: 24,
+      color: colors.textPrimary,
+      fontSize: responsiveFont(15),
+      lineHeight: responsiveFont(24),
     },
     statusList: {
-      gap: 4,
-      marginTop: 12,
+      gap: spacing.exact(4),
+      marginTop: spacing.exact(12),
     },
     statusText: {
-      fontSize: 14,
+      fontSize: responsiveFont(14),
       fontWeight: "600",
-      lineHeight: 22,
+      lineHeight: responsiveFont(22),
     },
-  });
+  }));
+}

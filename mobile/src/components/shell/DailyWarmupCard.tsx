@@ -1,7 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 type DailyWarmupCardProps = {
   title: string;
@@ -18,6 +22,8 @@ export function DailyWarmupCard({
   badgeLabel,
   onPress,
 }: DailyWarmupCardProps) {
+  const styles = useStyles();
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -49,85 +55,90 @@ export function DailyWarmupCard({
 }
 
 function BoltIcon() {
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+
   return (
     <Ionicons
-      color={greenWaveAccent.amber.fill}
+      color={theme.accents.amber.fill}
       name="flash-outline"
-      size={24}
+      size={responsiveFont(24)}
     />
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    width: "100%",
-    flexDirection: "column",
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: greenWave.color.surface,
-    overflow: "hidden",
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: greenWave.spacing.sm,
-  },
-  titleGroup: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.xs,
-  },
-  title: {
-    flexShrink: 1,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  badge: {
-    paddingHorizontal: greenWave.spacing.sm,
-    paddingVertical: greenWave.spacing.xs,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.green.soft,
-  },
-  badgeLabel: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWaveAccent.green.ink,
-  },
-  description: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "400",
-    color: greenWave.color.inkSecondary,
-  },
-  button: {
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingVertical: greenWave.spacing.md,
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWaveAccent.green.soft,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  buttonLabel: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWaveAccent.green.ink,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      width: "100%",
+      flexDirection: "column",
+      gap: spacing.md,
+      padding: spacing.lg,
+      borderRadius: radius.xl,
+      backgroundColor: colors.surface,
+      overflow: "hidden",
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(6),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 1,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: spacing.sm,
+    },
+    titleGroup: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.xs,
+    },
+    title: {
+      flexShrink: 1,
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: colors.ink,
+    },
+    badge: {
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: radius.pill,
+      backgroundColor: theme.accents.green.soft,
+    },
+    badgeLabel: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: theme.accents.green.ink,
+    },
+    description: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "400",
+      color: colors.inkSecondary,
+    },
+    button: {
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      borderRadius: radius.md,
+      backgroundColor: theme.accents.green.soft,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    buttonLabel: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: theme.accents.green.ink,
+    },
+  }));
+}

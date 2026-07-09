@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
 
 type JourneyCardProps = {
   eyebrow: string;
@@ -24,6 +24,7 @@ export function JourneyCard({
   onPress,
 }: JourneyCardProps) {
   const clamped = Math.max(0, Math.min(progress, 100));
+  const styles = useStyles({ progressWidth: `${clamped}%` });
 
   return (
     <View style={styles.card}>
@@ -46,7 +47,7 @@ export function JourneyCard({
         </View>
 
         <View style={styles.track}>
-          <View style={[styles.fill, { width: `${clamped}%` }]} />
+          <View style={styles.fill} />
         </View>
       </View>
 
@@ -78,6 +79,8 @@ export function JourneyCard({
 }
 
 function BookIcon() {
+  const styles = useStyles();
+
   return (
     <View style={styles.bookIcon}>
       <View style={styles.bookPage} />
@@ -86,139 +89,150 @@ function BookIcon() {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    width: "100%",
-    flexDirection: "column",
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: "#ffffff",
-    overflow: "hidden",
-    shadowColor: "#221f1b",
-    shadowOpacity: 0.07,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-  header: {
-    width: "100%",
-    flexDirection: "column",
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.lg,
-    backgroundColor: greenWaveAccent.green.fill,
-    overflow: "hidden",
-  },
-  headerGradient: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: greenWaveAccent.green.ink,
-    opacity: 0.38,
-  },
-  eyebrowRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-  },
-  eyebrow: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: "#ffffff",
-  },
-  title: {
-    fontSize: 24,
-    lineHeight: 32,
-    fontWeight: "700",
-    letterSpacing: -0.48,
-    color: "#ffffff",
-  },
-  metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  metaText: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: "#ffffff",
-    opacity: 0.9,
-  },
-  track: {
-    width: "100%",
-    height: 8,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    overflow: "hidden",
-  },
-  fill: {
-    height: 8,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: "#ffffff",
-  },
-  footer: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-    padding: greenWave.spacing.lg,
-  },
-  nextCopy: {
-    flex: 1,
-    flexDirection: "column",
-    gap: greenWave.spacing.xs,
-  },
-  nextLabel: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWave.color.inkMuted,
-  },
-  nextValue: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWave.color.ink,
-  },
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.xs,
-    paddingLeft: greenWave.spacing.md,
-    paddingRight: greenWave.spacing.sm,
-    paddingVertical: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWaveAccent.blue.soft,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  buttonLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "400",
-    color: greenWaveAccent.blue.ink,
-  },
-  chevron: {
-    width: 7,
-    height: 7,
-    borderTopWidth: 2,
-    borderRightWidth: 2,
-    borderColor: greenWaveAccent.blue.ink,
-    transform: [{ rotate: "45deg" }],
-  },
-  bookIcon: {
-    width: 24,
-    height: 24,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 2,
-  },
-  bookPage: {
-    width: 8,
-    height: 16,
-    borderWidth: 1.5,
-    borderColor: "#ffffff",
-    borderRadius: 1.5,
-  },
-});
+function useStyles({
+  progressWidth,
+}: {
+  progressWidth?: string;
+} = {}) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      width: "100%",
+      flexDirection: "column",
+      borderRadius: radius.xl,
+      backgroundColor: colors.white,
+      overflow: "hidden",
+      shadowColor: colors.shadowWarm,
+      shadowOpacity: 0.07,
+      shadowRadius: spacing.exact(5),
+      shadowOffset: { width: 0, height: spacing.exact(4) },
+      elevation: 3,
+    },
+    header: {
+      width: "100%",
+      flexDirection: "column",
+      gap: spacing.md,
+      padding: spacing.lg,
+      backgroundColor: theme.accents.green.fill,
+      overflow: "hidden",
+    },
+    headerGradient: {
+      position: "absolute",
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      backgroundColor: theme.accents.green.ink,
+      opacity: 0.38,
+    },
+    eyebrowRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    eyebrow: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: colors.white,
+    },
+    title: {
+      fontSize: responsiveFont(24),
+      lineHeight: responsiveFont(32),
+      fontWeight: "700",
+      letterSpacing: -0.48,
+      color: colors.white,
+    },
+    metaRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    metaText: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.white,
+      opacity: 0.9,
+    },
+    track: {
+      width: "100%",
+      height: spacing.exact(8),
+      borderRadius: radius.pill,
+      backgroundColor: colors.glassSoft,
+      overflow: "hidden",
+    },
+    fill: {
+      width: progressWidth ?? "100%",
+      height: spacing.exact(8),
+      borderRadius: radius.pill,
+      backgroundColor: colors.white,
+    },
+    footer: {
+      width: "100%",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      padding: spacing.lg,
+    },
+    nextCopy: {
+      flex: 1,
+      flexDirection: "column",
+      gap: spacing.xs,
+    },
+    nextLabel: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.inkMuted,
+    },
+    nextValue: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.ink,
+    },
+    button: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.xs,
+      paddingLeft: spacing.md,
+      paddingRight: spacing.sm,
+      paddingVertical: spacing.sm,
+      borderRadius: radius.md,
+      backgroundColor: theme.accents.blue.soft,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    buttonLabel: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "400",
+      color: theme.accents.blue.ink,
+    },
+    chevron: {
+      width: spacing.exact(7),
+      height: spacing.exact(7),
+      borderTopWidth: 2,
+      borderRightWidth: 2,
+      borderColor: theme.accents.blue.ink,
+      transform: [{ rotate: "45deg" }],
+    },
+    bookIcon: {
+      width: spacing.exact(24),
+      height: spacing.exact(24),
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.exact(2),
+    },
+    bookPage: {
+      width: spacing.exact(8),
+      height: spacing.exact(16),
+      borderWidth: 1.5,
+      borderColor: colors.white,
+      borderRadius: 1.5,
+    },
+  }));
+}

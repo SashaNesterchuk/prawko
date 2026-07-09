@@ -1,34 +1,35 @@
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
-import { useTheme } from "../../providers/ThemeProvider";
+import { useResponsiveStyles } from "../../portable-ui";
 
 type ProgressBarProps = {
   progress: number;
 };
 
 export function ProgressBar({ progress }: ProgressBarProps) {
-  const theme = useTheme();
-  const styles = getStyles(theme);
   const normalized = Math.max(0, Math.min(progress, 100));
+  const styles = useStyles({ fillWidth: `${normalized}%` });
 
   return (
     <View style={styles.track}>
-      <View style={[styles.fill, { width: `${normalized}%` }]} />
+      <View style={styles.fill} />
     </View>
   );
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
+function useStyles({ fillWidth }: { fillWidth: string }) {
+  return useResponsiveStyles(({ colors, radius, spacing }) => ({
     track: {
-      height: 10,
-      borderRadius: 999,
-      backgroundColor: theme.colors.cardMuted,
+      height: spacing.exact(10),
+      borderRadius: radius.pill,
+      backgroundColor: colors.cardMuted,
       overflow: "hidden",
     },
     fill: {
+      width: fillWidth,
       height: "100%",
-      borderRadius: 999,
-      backgroundColor: theme.colors.accent,
+      borderRadius: radius.pill,
+      backgroundColor: colors.accent,
     },
-  });
+  }));
+}

@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 type StatusPromptCardProps = {
   eyebrow: string;
@@ -8,13 +9,13 @@ type StatusPromptCardProps = {
   onPress?: () => void;
 };
 
-const ACCENT = greenWaveAccent.amber;
-
 export function StatusPromptCard({
   eyebrow,
   title,
   onPress,
 }: StatusPromptCardProps) {
+  const styles = useStyles();
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -43,101 +44,123 @@ export function StatusPromptCard({
 }
 
 function CalendarIcon() {
+  const styles = useStyles();
+
   return (
     <View style={styles.icon}>
       <View style={styles.calBody} />
       <View style={styles.calHeader} />
-      <View style={[styles.calLeg, { left: 6 }]} />
-      <View style={[styles.calLeg, { right: 6 }]} />
+      <View style={styles.calLegLeft} />
+      <View style={styles.calLegRight} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: greenWave.color.surface,
-    borderWidth: 2,
-    borderColor: ACCENT.fill,
-    overflow: "hidden",
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  iconBox: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWave.color.paper,
-  },
-  copy: {
-    flex: 1,
-    flexDirection: "column",
-  },
-  eyebrow: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWave.color.inkMuted,
-  },
-  title: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  trailing: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.md,
-  },
-  chevron: {
-    width: 8,
-    height: 8,
-    borderTopWidth: 2,
-    borderRightWidth: 2,
-    borderColor: ACCENT.ink,
-    transform: [{ rotate: "45deg" }],
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  calBody: {
-    width: 18,
-    height: 15,
-    borderWidth: 2,
-    borderColor: ACCENT.ink,
-    borderRadius: 3,
-  },
-  calHeader: {
-    position: "absolute",
-    top: 4,
-    width: 18,
-    height: 4,
-    backgroundColor: ACCENT.ink,
-  },
-  calLeg: {
-    position: "absolute",
-    top: 1,
-    width: 2,
-    height: 4,
-    borderRadius: 1,
-    backgroundColor: ACCENT.ink,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      width: "100%",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+      padding: spacing.lg,
+      borderRadius: radius.xl,
+      backgroundColor: colors.surface,
+      borderWidth: 2,
+      borderColor: theme.accents.amber.fill,
+      overflow: "hidden",
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(12),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 2,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    iconBox: {
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.sm,
+      borderRadius: radius.md,
+      backgroundColor: colors.paper,
+    },
+    copy: {
+      flex: 1,
+      flexDirection: "column",
+    },
+    eyebrow: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.inkMuted,
+    },
+    title: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: colors.ink,
+    },
+    trailing: {
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.sm,
+      borderRadius: radius.md,
+    },
+    chevron: {
+      width: spacing.exact(8),
+      height: spacing.exact(8),
+      borderTopWidth: 2,
+      borderRightWidth: 2,
+      borderColor: theme.accents.amber.ink,
+      transform: [{ rotate: "45deg" }],
+    },
+    icon: {
+      width: spacing.exact(24),
+      height: spacing.exact(24),
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    calBody: {
+      width: spacing.exact(18),
+      height: spacing.exact(15),
+      borderWidth: 2,
+      borderColor: theme.accents.amber.ink,
+      borderRadius: spacing.exact(3),
+    },
+    calHeader: {
+      position: "absolute",
+      top: spacing.exact(4),
+      width: spacing.exact(18),
+      height: spacing.exact(4),
+      backgroundColor: theme.accents.amber.ink,
+    },
+    calLeg: {
+      position: "absolute",
+      top: spacing.exact(1),
+      width: spacing.exact(2),
+      height: spacing.exact(4),
+      borderRadius: spacing.exact(1),
+      backgroundColor: theme.accents.amber.ink,
+    },
+    calLegLeft: {
+      position: "absolute",
+      top: spacing.exact(1),
+      left: spacing.exact(6),
+      width: spacing.exact(2),
+      height: spacing.exact(4),
+      borderRadius: spacing.exact(1),
+      backgroundColor: theme.accents.amber.ink,
+    },
+    calLegRight: {
+      position: "absolute",
+      top: spacing.exact(1),
+      right: spacing.exact(6),
+      width: spacing.exact(2),
+      height: spacing.exact(4),
+      borderRadius: spacing.exact(1),
+      backgroundColor: theme.accents.amber.ink,
+    },
+  }));
+}

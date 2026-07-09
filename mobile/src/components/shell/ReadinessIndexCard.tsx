@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
 import { ProgressRing } from "./ProgressRing";
 
 type ReadinessIndexCardProps = {
@@ -24,6 +24,7 @@ export function ReadinessIndexCard({
   onPress,
   onPressDetails,
 }: ReadinessIndexCardProps) {
+  const styles = useStyles();
   const clamped = Math.max(0, Math.min(progress, 100));
   const handlePress = onPress ?? onPressDetails;
 
@@ -57,75 +58,77 @@ export function ReadinessIndexCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.lg,
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.xxl,
-    backgroundColor: greenWave.color.surface,
-    overflow: "hidden",
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  ringValue: {
-    fontSize: 32,
-    lineHeight: 32,
-    fontWeight: "700",
-    letterSpacing: -0.64,
-    color: greenWave.color.ink,
-  },
-  ringLabel: {
-    fontSize: 11,
-    lineHeight: 12,
-    fontWeight: "500",
-    textAlign: "center",
-    color: greenWave.color.inkSecondary,
-  },
-  copy: {
-    flex: 1,
-    flexDirection: "column",
-    gap: greenWave.spacing.sm,
-  },
-  title: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  subtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWave.color.inkSecondary,
-  },
-  detailsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: greenWave.spacing.sm,
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  detailsLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "400",
-    color: greenWaveAccent.blue.ink,
-  },
-  chevron: {
-    width: 8,
-    height: 8,
-    borderTopWidth: 2,
-    borderRightWidth: 2,
-    borderColor: greenWaveAccent.blue.ink,
-    transform: [{ rotate: "45deg" }],
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      width: "100%",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.lg,
+      padding: spacing.lg,
+      borderRadius: radius.xxl,
+      backgroundColor: colors.surface,
+      overflow: "hidden",
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(12),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 2,
+    },
+    ringValue: {
+      fontSize: responsiveFont(32),
+      lineHeight: responsiveFont(32),
+      fontWeight: "700",
+      letterSpacing: -0.64,
+      color: colors.ink,
+    },
+    ringLabel: {
+      fontSize: responsiveFont(11),
+      lineHeight: responsiveFont(12),
+      fontWeight: "500",
+      textAlign: "center",
+      color: colors.inkSecondary,
+    },
+    copy: {
+      flex: 1,
+      flexDirection: "column",
+      gap: spacing.sm,
+    },
+    title: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: colors.ink,
+    },
+    subtitle: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.inkSecondary,
+    },
+    detailsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: spacing.sm,
+    },
+    pressed: {
+      opacity: 0.7,
+    },
+    detailsLabel: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "400",
+      color: theme.accents.blue.ink,
+    },
+    chevron: {
+      width: spacing.exact(8),
+      height: spacing.exact(8),
+      borderTopWidth: 2,
+      borderRightWidth: 2,
+      borderColor: theme.accents.blue.ink,
+      transform: [{ rotate: "45deg" }],
+    },
+  }));
+}

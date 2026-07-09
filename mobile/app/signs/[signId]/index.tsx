@@ -2,13 +2,17 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
 import { SignDetailNav } from "../../../src/components/shell/SignDetailNav";
 import { SignDetailToolbar } from "../../../src/components/shell/SignDetailToolbar";
 import { SignStatusBadge } from "../../../src/components/shell/SignStatusBadge";
+import {
+  useResponsiveSpacing,
+  useResponsiveStyles,
+} from "../../../src/portable-ui";
 import {
   getRoadSignById,
   getRoadSignCategory,
@@ -21,11 +25,12 @@ import {
 } from "../../../src/features/road-signs/content/registry";
 import { SignImage } from "../../../src/features/road-signs/SignImage";
 import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
-import { greenWave } from "../../../src/theme/green-wave";
 
 export default function SignDetailScreen() {
   const { t, i18n } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
+  const spacing = useResponsiveSpacing();
+  const styles = useStyles({ safeBottom });
   const { signId } = useLocalSearchParams<{ signId: string }>();
   const sign = useMemo(
     () => (signId ? getRoadSignById(signId) : undefined),
@@ -115,14 +120,11 @@ export default function SignDetailScreen() {
 
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: 24 + safeBottom },
-          ]}
+          contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.imageWrap}>
-            <SignImage sign={sign} size={220} />
+            <SignImage sign={sign} size={spacing.exact(220)} />
           </View>
 
           {hasSignContent(sign.id) ? (
@@ -133,7 +135,7 @@ export default function SignDetailScreen() {
           <Text style={styles.description}>{description}</Text>
         </ScrollView>
 
-        <View style={[styles.footer, { paddingBottom: greenWave.spacing.lg + safeBottom }]}>
+        <View style={styles.footer}>
           <SignDetailNav
             backLabel={t("signs.back")}
             forwardLabel={t("signs.forward")}
@@ -148,50 +150,54 @@ export default function SignDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingTop: greenWave.spacing.sm,
-    gap: greenWave.spacing.lg,
-  },
-  imageWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 240,
-  },
-  name: {
-    fontSize: 24,
-    lineHeight: 32,
-    fontWeight: "700",
-    letterSpacing: -0.48,
-    color: greenWave.color.ink,
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: greenWave.color.inkSecondary,
-  },
-  footer: {
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingTop: greenWave.spacing.md,
-  },
-  missingState: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.xl,
-  },
-  missingTitle: {
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-    textAlign: "center",
-  },
-});
+function useStyles({ safeBottom }: { safeBottom: number }) {
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
+    safeArea: {
+      flex: 1,
+    },
+    scroll: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.exact(24) + safeBottom,
+      gap: spacing.lg,
+    },
+    imageWrap: {
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: spacing.exact(240),
+    },
+    name: {
+      fontSize: responsiveFont(24),
+      lineHeight: responsiveFont(32),
+      fontWeight: "700",
+      letterSpacing: -0.48,
+      color: colors.ink,
+    },
+    description: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      color: colors.inkSecondary,
+    },
+    footer: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.md,
+      paddingBottom: spacing.lg + safeBottom,
+    },
+    missingState: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.xl,
+    },
+    missingTitle: {
+      fontSize: responsiveFont(18),
+      lineHeight: responsiveFont(28),
+      fontWeight: "600",
+      color: colors.ink,
+      textAlign: "center",
+    },
+  }));
+}

@@ -1,6 +1,6 @@
 import { Redirect, router } from "expo-router";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
 
@@ -8,6 +8,7 @@ import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { AppTextInput } from "../../src/components/shell/AppTextInput";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import {
   isMobileSupabaseConfigured,
   isMockAuthEnabled,
@@ -25,7 +26,6 @@ import {
 } from "../../src/features/auth/email-password-auth";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
-import { useTheme } from "../../src/providers/ThemeProvider";
 import { useEntitlementStore } from "../../src/state/entitlements";
 import { useCurrentUser, useAppShellStore } from "../../src/state/app-shell";
 
@@ -36,19 +36,12 @@ type AuthFeedbackState = {
 } | null;
 
 const PASSWORD_MIN_LENGTH = 6;
-const STATUS_COLORS = {
-  errorBorder: "#C2826B",
-  errorSurface: "#F7E7DF",
-  successBorder: "#5D8A80",
-  successSurface: "#E6F2EC",
-};
 
 export default function AccessScreen() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
   const { captureError } = useErrorLogger();
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
   const currentUser = useCurrentUser();
   const onboardingCompleted = useAppShellStore(
     (state) => state.onboardingCompleted
@@ -316,7 +309,7 @@ export default function AccessScreen() {
           : "onboarding.accessSubtitleNoMock"
       )}
       footer={
-        <View style={{ gap: 10 }}>
+        <View style={styles.footerStack}>
           <AppButton
             variant="ghost"
             label={t("common.back")}
@@ -325,7 +318,7 @@ export default function AccessScreen() {
         </View>
       }
     >
-      <View style={{ gap: 12 }}>
+      <View style={styles.cardStack}>
         <AppCard accent={isMobileSupabaseConfigured}>
           <Text style={styles.eyebrow}>{t("profile.environment")}</Text>
           <Text style={styles.cardTitle}>{t("profile.supabaseStatus")}</Text>
@@ -513,8 +506,7 @@ function ModeChip({
   label: string;
   onPress: () => void;
 }) {
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
 
   return (
     <Pressable
@@ -537,100 +529,107 @@ function ModeChip({
   );
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    footerStack: {
+      gap: spacing.exact(10),
+    },
+    cardStack: {
+      gap: spacing.exact(12),
+    },
     actionStack: {
-      gap: 10,
-      marginTop: 16,
+      gap: spacing.exact(10),
+      marginTop: spacing.exact(16),
     },
     cardBody: {
-      color: theme.colors.textSecondary,
-      fontSize: 14,
-      lineHeight: 22,
+      color: colors.textSecondary,
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
     },
     cardTitle: {
-      color: theme.colors.textPrimary,
-      fontSize: 18,
+      color: colors.textPrimary,
+      fontSize: responsiveFont(18),
       fontWeight: "700",
-      marginBottom: 4,
+      marginBottom: spacing.exact(4),
     },
     eyebrow: {
-      color: theme.colors.textSecondary,
-      fontSize: 13,
+      color: colors.textSecondary,
+      fontSize: responsiveFont(13),
       fontWeight: "700",
-      marginBottom: 6,
+      marginBottom: spacing.exact(6),
       textTransform: "uppercase",
     },
     formStack: {
-      gap: 12,
-      marginTop: 16,
+      gap: spacing.exact(12),
+      marginTop: spacing.exact(16),
     },
     helperText: {
-      color: theme.colors.textMuted,
-      fontSize: 13,
-      lineHeight: 20,
-      marginTop: 12,
+      color: colors.textMuted,
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(20),
+      marginTop: spacing.exact(12),
     },
     mockAction: {
-      marginTop: 14,
+      marginTop: spacing.exact(14),
     },
     modeChip: {
-      backgroundColor: theme.colors.cardMuted,
-      borderColor: theme.colors.borderSoft,
-      borderRadius: 999,
+      backgroundColor: colors.cardMuted,
+      borderColor: colors.borderSoft,
+      borderRadius: radius.pill,
       borderWidth: 1,
       flex: 1,
-      minHeight: 44,
+      minHeight: spacing.exact(44),
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 14,
+      paddingHorizontal: spacing.exact(14),
     },
     modeChipActive: {
-      backgroundColor: theme.colors.accent,
-      borderColor: theme.colors.accent,
+      backgroundColor: colors.accent,
+      borderColor: colors.accent,
     },
     modeChipLabel: {
-      color: theme.colors.textPrimary,
-      fontSize: 14,
+      color: colors.textPrimary,
+      fontSize: responsiveFont(14),
       fontWeight: "700",
     },
     modeChipLabelActive: {
-      color: theme.colors.onAccent,
+      color: colors.onAccent,
     },
     modeRow: {
       flexDirection: "row",
-      gap: 10,
-      marginTop: 16,
+      gap: spacing.exact(10),
+      marginTop: spacing.exact(16),
     },
     planLine: {
-      color: theme.colors.textPrimary,
-      fontSize: 15,
-      lineHeight: 24,
+      color: colors.textPrimary,
+      fontSize: responsiveFont(15),
+      lineHeight: responsiveFont(24),
     },
     statusCard: {
-      borderRadius: theme.radius.large,
+      borderRadius: radius.large,
       borderWidth: 1,
-      marginTop: 16,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
+      marginTop: spacing.exact(16),
+      paddingHorizontal: spacing.exact(14),
+      paddingVertical: spacing.exact(12),
     },
     statusError: {
-      backgroundColor: STATUS_COLORS.errorSurface,
-      borderColor: STATUS_COLORS.errorBorder,
+      backgroundColor: colors.statusErrorSurface,
+      borderColor: colors.statusErrorBorder,
     },
     statusErrorText: {
-      color: STATUS_COLORS.errorBorder,
+      color: colors.statusErrorBorder,
     },
     statusSuccess: {
-      backgroundColor: STATUS_COLORS.successSurface,
-      borderColor: STATUS_COLORS.successBorder,
+      backgroundColor: colors.statusSuccessSurface,
+      borderColor: colors.statusSuccessBorder,
     },
     statusSuccessText: {
-      color: STATUS_COLORS.successBorder,
+      color: colors.statusSuccessBorder,
     },
     statusText: {
-      fontSize: 14,
+      fontSize: responsiveFont(14),
       fontWeight: "600",
-      lineHeight: 22,
+      lineHeight: responsiveFont(22),
     },
-  });
+  }));
+}

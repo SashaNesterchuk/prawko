@@ -1,16 +1,19 @@
 import { router } from "expo-router";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SignCategoryProgressCard } from "../../components/shell/SignCategoryProgressCard";
 import { SignsSummaryCard } from "../../components/shell/SignsSummaryCard";
+import {
+  useResponsiveSpacing,
+  useResponsiveStyles,
+} from "../../portable-ui";
 import { getTopicProgress } from "../questions/question-engine";
 import { buildQuestionRouteParams } from "../questions/question-routes";
 import { useQuestionCatalogVersion } from "../../state/question-catalog";
 import { useQuestionProgressStore } from "../../state/question-progress";
-import { greenWave } from "../../theme/green-wave";
 import {
   ROAD_SIGN_CATEGORIES,
   getRoadSignsByCategory,
@@ -33,6 +36,7 @@ export function SignsHomeContent({
 }: SignsHomeContentProps) {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
+  const spacing = useResponsiveSpacing();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
@@ -64,15 +68,13 @@ export function SignsHomeContent({
       }),
     });
 
-  const resolvedBottomPadding = bottomPadding ?? 96 + safeBottom;
+  const resolvedBottomPadding = bottomPadding ?? spacing.exact(96) + safeBottom;
+  const styles = useStyles({ contentBottomPadding: resolvedBottomPadding });
 
   return (
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={[
-        styles.content,
-        { paddingBottom: resolvedBottomPadding },
-      ]}
+      contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
       <SignsSummaryCard
@@ -106,16 +108,23 @@ export function SignsHomeContent({
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingTop: greenWave.spacing.sm,
-    gap: greenWave.spacing.sm,
-  },
-  categoryList: {
-    gap: greenWave.spacing.sm,
-  },
-});
+function useStyles({
+  contentBottomPadding,
+}: {
+  contentBottomPadding: number;
+}) {
+  return useResponsiveStyles(({ spacing }) => ({
+    scroll: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: contentBottomPadding,
+      gap: spacing.sm,
+    },
+    categoryList: {
+      gap: spacing.sm,
+    },
+  }));
+}

@@ -4,7 +4,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { TOPIC_BLOCK_IDS, type TopicBlockId } from "@prawko/config";
@@ -14,6 +14,11 @@ import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { JourneyCard } from "../../src/components/shell/JourneyCard";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../src/portable-ui";
+import { useTheme } from "../../src/providers/ThemeProvider";
 import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
 import { getTopicProgress } from "../../src/features/questions/question-engine";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
@@ -29,7 +34,6 @@ import {
 } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
-import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
 
 function resolveCurrentTopicId(
   questionUserState: ReturnType<
@@ -50,14 +54,17 @@ function LearnActionIcon({
   accent,
   name,
 }: {
-  accent: keyof typeof greenWaveAccent;
+  accent: keyof ReturnType<typeof useTheme>["accents"];
   name: keyof typeof Ionicons.glyphMap;
 }) {
+  const { accents } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+
   return (
     <Ionicons
-      color={greenWaveAccent[accent].fill}
+      color={accents[accent].fill}
       name={name}
-      size={24}
+      size={responsiveFont(24)}
     />
   );
 }
@@ -65,6 +72,7 @@ function LearnActionIcon({
 export default function LearnTabScreen() {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
+  const styles = useStyles({ safeBottom });
   const authMode = useAppShellStore((state) => state.authMode);
   const currentStudyPlanRemoteId = useAppShellStore(
     (state) => state.currentStudyPlanRemoteId
@@ -223,10 +231,7 @@ export default function LearnTabScreen() {
         <StatusBar style="dark" />
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: 96 + safeBottom },
-          ]}
+          contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
           <JourneyCard
@@ -273,18 +278,21 @@ export default function LearnTabScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    padding: greenWave.spacing.xl,
-    gap: greenWave.spacing.xl,
-  },
-  stack: {
-    gap: greenWave.spacing.sm,
-  },
-});
+function useStyles({ safeBottom }: { safeBottom: number }) {
+  return useResponsiveStyles(({ spacing }) => ({
+    safeArea: {
+      flex: 1,
+    },
+    scroll: {
+      flex: 1,
+    },
+    content: {
+      padding: spacing.exact(24),
+      paddingBottom: spacing.exact(96) + safeBottom,
+      gap: spacing.exact(24),
+    },
+    stack: {
+      gap: spacing.exact(8),
+    },
+  }));
+}

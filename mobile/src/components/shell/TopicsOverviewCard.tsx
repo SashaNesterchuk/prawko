@@ -1,9 +1,7 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-import {
-  greenWave,
-  greenWaveAccent,
-} from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 import { resolveTopicReadinessStatus } from "./TopicReadinessCard";
 
 type TopicsOverviewCardProps = {
@@ -25,38 +23,32 @@ export function TopicsOverviewCard({
   title = "Готовність",
   answeredLabel = "Всього відповідей",
 }: TopicsOverviewCardProps) {
+  const theme = useTheme();
   const clamped = Math.max(0, Math.min(readiness, 100));
   const status = resolveTopicReadinessStatus(answered, clamped);
   const statusColor =
     status === "not_started"
-      ? { fill: greenWave.color.track, ink: greenWave.color.inkMuted }
+      ? { fill: theme.colors.track, ink: theme.colors.inkMuted }
       : status === "good"
-        ? greenWaveAccent.green
+        ? theme.accents.green
         : status === "normal"
-          ? greenWaveAccent.amber
-          : greenWaveAccent.red;
+          ? theme.accents.amber
+          : theme.accents.red;
+  const styles = useStyles({
+    readinessFillColor: statusColor.fill,
+    readinessTextColor: statusColor.ink,
+    readinessWidth: `${clamped}%`,
+  });
 
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={[styles.readinessValue, { color: statusColor.ink }]}>
-          {clamped}%
-        </Text>
+        <Text style={styles.readinessValue}>{clamped}%</Text>
       </View>
 
       <View style={styles.track}>
-        {answered > 0 ? (
-          <View
-            style={[
-              styles.fill,
-              {
-                width: `${clamped}%`,
-                backgroundColor: statusColor.fill,
-              },
-            ]}
-          />
-        ) : null}
+        {answered > 0 ? <View style={styles.fill} /> : null}
       </View>
 
       <Text style={styles.answersLabel}>{answeredLabel}</Text>
@@ -82,90 +74,103 @@ export function TopicsOverviewCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.lg,
-    backgroundColor: greenWave.color.surface,
-    gap: greenWave.spacing.xs,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  title: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  readinessValue: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "400",
-  },
-  track: {
-    height: 4,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.track,
-    overflow: "hidden",
-    marginTop: greenWave.spacing.xs,
-  },
-  fill: {
-    height: 4,
-    borderRadius: greenWave.radius.pill,
-  },
-  answersLabel: {
-    marginTop: greenWave.spacing.sm,
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkMuted,
-  },
-  answersValue: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.ink,
-  },
-  statsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.lg,
-    marginTop: greenWave.spacing.sm,
-  },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.xs,
-  },
-  statIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: greenWave.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statIconGood: {
-    backgroundColor: greenWaveAccent.green.soft,
-  },
-  statIconBad: {
-    backgroundColor: greenWaveAccent.red.soft,
-  },
-  statIconLabel: {
-    fontSize: 10,
-    lineHeight: 12,
-    fontWeight: "700",
-    color: greenWave.color.ink,
-  },
-  statValue: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.ink,
-  },
-});
+function useStyles({
+  readinessFillColor,
+  readinessTextColor,
+  readinessWidth,
+}: {
+  readinessFillColor: string;
+  readinessTextColor: string;
+  readinessWidth: string;
+}) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      padding: spacing.lg,
+      borderRadius: radius.lg,
+      backgroundColor: colors.surface,
+      gap: spacing.xs,
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(6),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 1,
+    },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    title: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: colors.ink,
+    },
+    readinessValue: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "400",
+      color: readinessTextColor,
+    },
+    track: {
+      height: spacing.exact(4),
+      borderRadius: radius.pill,
+      backgroundColor: colors.track,
+      overflow: "hidden",
+      marginTop: spacing.xs,
+    },
+    fill: {
+      width: readinessWidth,
+      height: spacing.exact(4),
+      borderRadius: radius.pill,
+      backgroundColor: readinessFillColor,
+    },
+    answersLabel: {
+      marginTop: spacing.sm,
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      color: colors.inkMuted,
+    },
+    answersValue: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      color: colors.ink,
+    },
+    statsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.lg,
+      marginTop: spacing.sm,
+    },
+    statItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.xs,
+    },
+    statIcon: {
+      width: spacing.exact(18),
+      height: spacing.exact(18),
+      borderRadius: radius.pill,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    statIconGood: {
+      backgroundColor: theme.accents.green.soft,
+    },
+    statIconBad: {
+      backgroundColor: theme.accents.red.soft,
+    },
+    statIconLabel: {
+      fontSize: responsiveFont(10),
+      lineHeight: responsiveFont(12),
+      fontWeight: "700",
+      color: colors.ink,
+    },
+    statValue: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      color: colors.ink,
+    },
+  }));
+}

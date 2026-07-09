@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { TOPIC_BLOCK_IDS } from "@prawko/config";
@@ -17,17 +17,27 @@ import {
   getTopicMistakeProgress,
 } from "../../src/features/questions/question-engine";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../src/portable-ui";
+import { useTheme } from "../../src/providers/ThemeProvider";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
-import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
 
 export default function MistakesScreen() {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
+  const { accents, colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles({ safeBottom });
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
+  const iconSize = responsiveFont(24);
+  const headerIconSize = responsiveFont(22);
+  const emptyIconSize = responsiveFont(40);
 
   const overallStats = useMemo(
     () => getOverallMistakesStats(questionUserState),
@@ -65,9 +75,9 @@ export default function MistakesScreen() {
             style={({ pressed }) => [styles.backButton, pressed ? styles.pressed : null]}
           >
             <Ionicons
-              color={greenWave.color.ink}
+              color={colors.textPrimary}
               name="chevron-back"
-              size={22}
+              size={headerIconSize}
             />
           </Pressable>
           <Text style={styles.headerTitle}>
@@ -79,10 +89,7 @@ export default function MistakesScreen() {
 
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: 24 + safeBottom },
-          ]}
+          contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
           {hasMistakes ? (
@@ -120,9 +127,9 @@ export default function MistakesScreen() {
             <View style={styles.emptyState}>
               <View style={styles.emptyIconWrap}>
                 <Ionicons
-                  color={greenWaveAccent.green.fill}
+                  color={accents.green.fill}
                   name="thumbs-up-outline"
-                  size={40}
+                  size={emptyIconSize}
                 />
               </View>
 
@@ -147,9 +154,9 @@ export default function MistakesScreen() {
                   })}
                   icon={
                     <Ionicons
-                      color={greenWaveAccent.red.fill}
+                      color={accents.red.fill}
                       name="alert-circle-outline"
-                      size={24}
+                      size={iconSize}
                     />
                   }
                   onPress={() => openQuestionMode("hard_questions")}
@@ -165,9 +172,9 @@ export default function MistakesScreen() {
                   })}
                   icon={
                     <Ionicons
-                      color={greenWaveAccent.blue.fill}
+                      color={accents.blue.fill}
                       name="refresh-outline"
-                      size={24}
+                      size={iconSize}
                     />
                   }
                   onPress={() => openQuestionMode("seen_not_mastered")}
@@ -181,74 +188,77 @@ export default function MistakesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingTop: greenWave.spacing.sm,
-    paddingBottom: greenWave.spacing.md,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWave.color.surface,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    color: greenWave.color.ink,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    padding: greenWave.spacing.xl,
-    gap: greenWave.spacing.sm,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingTop: greenWave.spacing.xl,
-  },
-  emptyIconWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.xl,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.paper,
-  },
-  emptyTitle: {
-    marginTop: greenWave.spacing.xl,
-    fontSize: 32,
-    lineHeight: 32,
-    fontWeight: "700",
-    letterSpacing: -0.64,
-    color: greenWave.color.ink,
-    textAlign: "center",
-  },
-  emptyDescription: {
-    marginTop: greenWave.spacing.lg,
-    fontSize: 18,
-    lineHeight: 28,
-    color: greenWave.color.inkSecondary,
-    textAlign: "center",
-  },
-  emptyActions: {
-    width: "100%",
-    marginTop: greenWave.spacing.xl,
-    gap: greenWave.spacing.sm,
-  },
-});
+function useStyles({ safeBottom }: { safeBottom: number }) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    safeArea: {
+      flex: 1,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.exact(8),
+      paddingHorizontal: spacing.exact(16),
+      paddingTop: spacing.exact(8),
+      paddingBottom: spacing.exact(12),
+    },
+    backButton: {
+      width: spacing.exact(40),
+      height: spacing.exact(40),
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: radius.md,
+      backgroundColor: colors.surface,
+    },
+    headerTitle: {
+      flex: 1,
+      fontSize: responsiveFont(20),
+      lineHeight: responsiveFont(28),
+      fontWeight: "600",
+      letterSpacing: -0.2,
+      color: colors.textPrimary,
+    },
+    scroll: {
+      flex: 1,
+    },
+    content: {
+      padding: spacing.exact(24),
+      paddingBottom: spacing.exact(24) + safeBottom,
+      gap: spacing.exact(8),
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+    emptyState: {
+      alignItems: "center",
+      paddingTop: spacing.exact(24),
+    },
+    emptyIconWrap: {
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.exact(24),
+      borderRadius: radius.pill,
+      backgroundColor: colors.paper,
+    },
+    emptyTitle: {
+      marginTop: spacing.exact(24),
+      fontSize: responsiveFont(32),
+      lineHeight: responsiveFont(32),
+      fontWeight: "700",
+      letterSpacing: -0.64,
+      color: colors.textPrimary,
+      textAlign: "center",
+    },
+    emptyDescription: {
+      marginTop: spacing.exact(16),
+      fontSize: responsiveFont(18),
+      lineHeight: responsiveFont(28),
+      color: colors.textSecondary,
+      textAlign: "center",
+    },
+    emptyActions: {
+      width: "100%",
+      marginTop: spacing.exact(24),
+      gap: spacing.exact(8),
+    },
+  }));
+}

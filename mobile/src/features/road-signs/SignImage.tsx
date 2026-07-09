@@ -1,5 +1,12 @@
-import { Image, StyleSheet, View, type ImageStyle, type ViewStyle } from "react-native";
+import { useMemo } from "react";
+import {
+  Image,
+  View,
+  type ImageStyle,
+  type ViewStyle,
+} from "react-native";
 
+import { useResponsiveStyles } from "../../portable-ui";
 import { getSignContent } from "./content/registry";
 import { getSignAssetComponent } from "./content/signAssets";
 import type { RoadSign } from "./types";
@@ -12,31 +19,47 @@ type SignImageProps = {
 };
 
 export function SignImage({ sign, size = 72, style, imageStyle }: SignImageProps) {
+  const styles = useStyles();
   const content = getSignContent(sign.id);
   const SvgComponent = getSignAssetComponent(content?.assetKey);
+  const dynamicStyles = useMemo(
+    () => ({
+      wrap: {
+        width: size,
+        height: size,
+      },
+      image: {
+        width: size,
+        height: size,
+      },
+    }),
+    [size]
+  );
 
   if (SvgComponent) {
     return (
-      <View style={[styles.wrap, { width: size, height: size }, style]}>
+      <View style={[styles.wrap, dynamicStyles.wrap, style]}>
         <SvgComponent width={size} height={size} />
       </View>
     );
   }
 
   return (
-    <View style={[styles.wrap, { width: size, height: size }, style]}>
+    <View style={[styles.wrap, dynamicStyles.wrap, style]}>
       <Image
         resizeMode="contain"
         source={{ uri: sign.previewUrl }}
-        style={[{ width: size, height: size }, imageStyle]}
+        style={[dynamicStyles.image, imageStyle]}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(() => ({
+    wrap: {
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  }));
+}

@@ -3,6 +3,7 @@ import { Text, type TextProps, type TextStyle } from "react-native";
 import { useTheme } from "@react-navigation/native";
 
 import { useResponsiveFonts } from "../hooks/useResponsiveFonts";
+import { useResponsiveStyles } from "../hooks/useResponsiveStyles";
 import {
   getFontSizeMetrics,
   getTextSizeStyle,
@@ -240,58 +241,109 @@ function resolveSegmentWeight(segment: TextSegment): TextStyle {
   return getTextWeightStyle("regular");
 }
 
-export default function CText(props: CTextProps) {
-  const {
-    ignoreStyles = true,
-    textStyle,
-    style: propsStyle,
-    children,
+function useAlignmentStyles() {
+  return useResponsiveStyles(() => ({
+    center: {
+      textAlign: "center" as const,
+    },
+    right: {
+      textAlign: "right" as const,
+    },
+    left: {
+      textAlign: "left" as const,
+    },
+  }));
+}
+
+function useResolvedTextStyleParts({
+  center,
+  color,
+  left,
+  opacity,
+  responsive,
+  right,
+  sizeKey,
+  weightKey,
+}: {
+  center?: boolean;
+  color?: string;
+  left?: boolean;
+  opacity?: number;
+  responsive?: boolean;
+  right?: boolean;
+  sizeKey: TextSizeKey;
+  weightKey: FontWeightKey;
+}) {
+  const { colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const alignmentStyles = useAlignmentStyles();
+
+  return React.useMemo(() => {
+    const baseStyle = getTextSizeStyle(sizeKey);
+    const baseNumeric = getFontSizeMetrics(sizeKey);
+    const scaledBase =
+      responsive === false
+        ? undefined
+        : {
+            fontSize: responsiveFont(baseNumeric.fontSize),
+            lineHeight: responsiveFont(baseNumeric.lineHeight),
+          };
+    const weightStyle = getTextWeightStyle(weightKey);
+    const fontColor = {
+      color: color || colors.text,
+      opacity,
+    };
+    const alignmentStyle = center
+      ? alignmentStyles.center
+      : right
+        ? alignmentStyles.right
+        : left
+          ? alignmentStyles.left
+          : undefined;
+
+    return {
+      alignmentStyle,
+      baseStyle,
+      fontColor,
+      scaledBase,
+      weightStyle,
+    };
+  }, [
+    alignmentStyles.center,
+    alignmentStyles.left,
+    alignmentStyles.right,
+    center,
+    color,
+    colors.text,
+    left,
+    opacity,
     responsive,
-    ...rest
-  } = props;
+    responsiveFont,
+    right,
+    sizeKey,
+    weightKey,
+  ]);
+}
+
+function useResolvedStyledSegments({
+  children,
+  dynamic,
+  ignoreStyles,
+  responsive,
+  sizeKey,
+}: {
+  children: React.ReactNode;
+  dynamic?: TextStyle;
+  ignoreStyles: boolean;
+  responsive?: boolean;
+  sizeKey: TextSizeKey;
+}) {
   const { colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
 
-  const sizeProp = sizes.find((sizeKey) => props[sizeKey]);
-  const sizeKey = sizeProp ?? textStyle ?? "s16";
-  const baseStyle = getTextSizeStyle(sizeKey);
-  const baseNumeric = getFontSizeMetrics(sizeKey);
-  const scaledBase =
-    responsive === false
-      ? undefined
-      : {
-          fontSize: responsiveFont(baseNumeric.fontSize),
-          lineHeight: responsiveFont(baseNumeric.lineHeight),
-        };
-
-  const weightStyle = getTextWeightStyle(resolveWeightKey(props));
-  const fontColor = {
-    color: props.color || colors.text,
-    opacity: props.opacity,
-  };
-  const center = props.center ? { textAlign: "center" as const } : {};
-  const right = props.right ? { textAlign: "right" as const } : {};
-  const left = props.left ? { textAlign: "left" as const } : {};
-
-  if (typeof children === "string") {
-    if (ignoreStyles) {
-      return (
-        <Text
-          style={[
-            baseStyle,
-            scaledBase,
-            weightStyle,
-            center,
-            right,
-            left,
-            fontColor,
-            propsStyle,
-          ]}
-          {...rest}
-        >
-          {stripStyleTags(children)}
-        </Text>
-      );
+  return React.useMemo(() => {
+    if (typeof children !== "string" || ignoreStyles) {
+      return null;
     }
 
     const segments = parseTextWithTags(children);
@@ -310,16 +362,119 @@ export default function CText(props: CTextProps) {
         segment.opacity !== undefined
     );
 
-    if (segments.length === 1 && !hasStyledSegments) {
+    const resolvedSegments = segments
+      .filter((segment) => segment.text)
+      .map((segment, index) => {
+        const segmentSizeKey = segment.size ?? sizeKey;
+        const segmentSize = getTextSizeStyle(segmentSizeKey);
+        const segmentNumeric = getFontSizeMetrics(segmentSizeKey);
+        const segmentScaled =
+          responsive === false
+            ? undefined
+            : {
+                fontSize: responsiveFont(segmentNumeric.fontSize),
+                lineHeight: responsiveFont(segmentNumeric.lineHeight),
+              };
+        const segmentWeight = resolveSegmentWeight(segment);
+        const segmentColor = segment.color
+          ? {
+              color:
+                (colors as Record<string, string | undefined>)[segment.color] ??
+                segment.color,
+            }
+          : undefined;
+        const segmentOpacity =
+          segment.opacity !== undefined ? { opacity: segment.opacity } : undefined;
+
+        return {
+          key: `${index}-${segment.text}`,
+          style: [
+            segmentSize,
+            segmentScaled,
+            segmentWeight,
+            segmentColor,
+            segmentOpacity,
+            segment.dynamic ? dynamic : undefined,
+          ],
+          text: segment.text,
+        };
+      });
+
+    return {
+      hasStyledSegments,
+      resolvedSegments,
+    };
+  }, [children, colors, dynamic, ignoreStyles, responsive, responsiveFont, sizeKey]);
+}
+
+export default function CText(props: CTextProps) {
+  const {
+    ignoreStyles = true,
+    textStyle,
+    style: propsStyle,
+    children,
+    responsive,
+    ...rest
+  } = props;
+
+  const sizeProp = sizes.find((sizeKey) => props[sizeKey]);
+  const sizeKey = sizeProp ?? textStyle ?? "s16";
+  const weightKey = resolveWeightKey(props);
+  const {
+    alignmentStyle,
+    baseStyle,
+    fontColor,
+    scaledBase,
+    weightStyle,
+  } = useResolvedTextStyleParts({
+    center: props.center,
+    color: props.color,
+    left: props.left,
+    opacity: props.opacity,
+    responsive,
+    right: props.right,
+    sizeKey,
+    weightKey,
+  });
+  const styledSegments = useResolvedStyledSegments({
+    children,
+    dynamic: props.dynamic,
+    ignoreStyles,
+    responsive,
+    sizeKey,
+  });
+
+  if (typeof children === "string") {
+    if (ignoreStyles) {
       return (
         <Text
           style={[
             baseStyle,
             scaledBase,
             weightStyle,
-            center,
-            right,
-            left,
+            alignmentStyle,
+            fontColor,
+            propsStyle,
+          ]}
+          {...rest}
+        >
+          {stripStyleTags(children)}
+        </Text>
+      );
+    }
+
+    if (
+      styledSegments &&
+      styledSegments.resolvedSegments.length === 1 &&
+      !styledSegments.hasStyledSegments
+    ) {
+      return (
+        <Text
+          style={[
+            baseStyle,
+            scaledBase,
+            weightStyle,
+            alignmentStyle,
             fontColor,
             propsStyle,
           ]}
@@ -336,63 +491,31 @@ export default function CText(props: CTextProps) {
           baseStyle,
           scaledBase,
           weightStyle,
-          center,
-          right,
-          left,
+          alignmentStyle,
           fontColor,
           propsStyle,
         ]}
         {...rest}
       >
-        {segments.map((segment, index) => {
-          if (!segment.text) {
-            return null;
-          }
-
-          const segmentSizeKey = segment.size ?? sizeKey;
-          const segmentSize = getTextSizeStyle(segmentSizeKey);
-          const segmentNumeric = getFontSizeMetrics(segmentSizeKey);
-          const segmentScaled =
-            responsive === false
-              ? undefined
-              : {
-                  fontSize: responsiveFont(segmentNumeric.fontSize),
-                  lineHeight: responsiveFont(segmentNumeric.lineHeight),
-                };
-          const segmentWeight = resolveSegmentWeight(segment);
-          const segmentColor = segment.color
-            ? {
-                color:
-                  (colors as Record<string, string | undefined>)[segment.color] ??
-                  segment.color,
-              }
-            : {};
-          const segmentOpacity =
-            segment.opacity !== undefined ? { opacity: segment.opacity } : {};
-
-          return (
-            <Text
-              key={`${index}-${segment.text}`}
-              style={[
-                segmentSize,
-                segmentScaled,
-                segmentWeight,
-                segmentColor,
-                segmentOpacity,
-                segment.dynamic ? props.dynamic : undefined,
-              ]}
-            >
-              {segment.text}
-            </Text>
-          );
-        })}
+        {styledSegments?.resolvedSegments.map((segment) => (
+          <Text key={segment.key} style={segment.style}>
+            {segment.text}
+          </Text>
+        ))}
       </Text>
     );
   }
 
   return (
     <Text
-      style={[baseStyle, scaledBase, weightStyle, center, right, left, fontColor, propsStyle]}
+      style={[
+        baseStyle,
+        scaledBase,
+        weightStyle,
+        alignmentStyle,
+        fontColor,
+        propsStyle,
+      ]}
       {...rest}
     >
       {children}

@@ -1,30 +1,47 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-import { greenWave } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 export function IconPlaceholder({
-  color = greenWave.color.ink,
+  color,
   size = 24,
 }: {
   color?: string;
   size?: number;
 }) {
+  const theme = useTheme();
+  const styles = useStyles({
+    glyphColor: color ?? theme.colors.ink,
+    size,
+  });
+
   return (
-    <View style={[styles.root, { width: size, height: size }]}>
-      <Text style={[styles.glyph, { color, fontSize: Math.round(size * 0.72) }]}>
-        *
-      </Text>
+    <View style={styles.root}>
+      <Text style={styles.glyph}>*</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  glyph: {
-    fontWeight: "700",
-    lineHeight: undefined,
-  },
-});
+function useStyles({
+  glyphColor,
+  size,
+}: {
+  glyphColor: string;
+  size: number;
+}) {
+  return useResponsiveStyles(() => ({
+    root: {
+      width: size,
+      height: size,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    glyph: {
+      color: glyphColor,
+      fontSize: Math.round(size * 0.72),
+      fontWeight: "700",
+      lineHeight: undefined,
+    },
+  }));
+}

@@ -6,6 +6,7 @@ import Toast from "react-native-toast-message";
 import { AdProvider } from "../features/ads/AdProvider";
 import { AppResumeAdListener } from "../features/ads/AppResumeAdListener";
 import "../i18n";
+import { useResponsiveStyles } from "../portable-ui";
 import { AnalyticsProvider } from "./AnalyticsProvider";
 import { ErrorLoggingProvider } from "./ErrorLoggingProvider";
 import { LocaleSyncProvider } from "./LocaleSyncProvider";
@@ -18,8 +19,10 @@ import { ThemeProvider } from "./ThemeProvider";
 import { UserProvider } from "./UserProvider";
 
 export function AppProviders({ children }: PropsWithChildren) {
+  const styles = useStyles();
+
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <ThemeProvider>
           <AnalyticsProvider>
@@ -49,4 +52,12 @@ export function AppProviders({ children }: PropsWithChildren) {
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
+}
+
+function useStyles() {
+  return useResponsiveStyles(() => ({
+    root: {
+      flex: 1,
+    },
+  }));
 }

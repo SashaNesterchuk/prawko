@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
@@ -16,11 +16,15 @@ import {
   LoadingStateView,
 } from "../src/components/shell/StateViews";
 import { TrainingExitDialog } from "../src/components/shell/TrainingExitDialog";
-import { greenWave, greenWaveAccent } from "../src/theme/green-wave";
 import { isMobileSupabaseConfigured } from "../src/config/env";
 import { recordQuestionAnsweredForAds } from "../src/features/ads/ad-session-policy";
 import { useAdInterstitialActions } from "../src/features/ads/show-interstitial";
 import { useErrorLogger } from "../src/providers/ErrorLoggingProvider";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../src/portable-ui";
+import { useTheme } from "../src/providers/ThemeProvider";
 import {
   buildQuestionRouteParams,
   isUuidString,
@@ -49,6 +53,8 @@ import {
 
 export default function QuestionScreen() {
   const { t } = useTranslation();
+  const { accents, colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const { captureError } = useErrorLogger();
   const params = useLocalSearchParams<{
     mode?: string | string[];
@@ -174,7 +180,19 @@ export default function QuestionScreen() {
     : [];
   const isCompleted = Boolean(activeSession?.finishedAt && !activeSession.emptyReason);
   const isEmptyState = Boolean(activeSession?.emptyReason);
-  const trainerStyles = getTrainerStyles();
+  const sessionResultTotal = summary.total || 1;
+  const sessionResultPercent = Math.round((summary.correct / sessionResultTotal) * 100);
+  const sessionPassed = sessionResultPercent >= 70;
+  const sessionResultAccent = sessionPassed ? accents.green : accents.amber;
+  const currentAnswerCorrect = Boolean(currentAnswer?.isCorrect);
+  const feedbackAccent = currentAnswerCorrect ? accents.green : accents.red;
+  const trainerStyles = useTrainerStyles({
+    feedbackBackgroundColor: feedbackAccent.soft,
+    feedbackTitleColor: feedbackAccent.ink,
+    resultPercentColor: sessionResultAccent.ink,
+  });
+  const resultIconSize = responsiveFont(40);
+  const aiIconSize = responsiveFont(14);
 
   const handleAnswer = (choiceId: LocalQuestion["correctAnswer"]) => {
     if (!currentQuestion) {
@@ -307,7 +325,7 @@ export default function QuestionScreen() {
       });
 
   const footer = (
-    <View style={{ gap: 10 }}>
+    <View style={trainerStyles.footerStack}>
       {/* Footer: completed session actions */}
       {isCompleted ? (
         <>
@@ -397,11 +415,6 @@ export default function QuestionScreen() {
   }
 
   if (isCompleted) {
-    const total = summary.total || 1;
-    const percent = Math.round((summary.correct / total) * 100);
-    const passed = percent >= 70;
-    const resultAccent = passed ? greenWaveAccent.green : greenWaveAccent.amber;
-
     return (
       <SafeAreaView style={trainerStyles.safeArea} edges={["top", "bottom"]}>
         <StatusBar style="dark" />
@@ -414,24 +427,25 @@ export default function QuestionScreen() {
               onPress={() => router.back()}
               style={trainerStyles.headerButton}
             >
-              <IconPlaceholder color={greenWave.color.ink} />
+              <IconPlaceholder color={colors.textPrimary} />
             </Pressable>
           </View>
 
           <View style={trainerStyles.resultBodyArea}>
             <View style={trainerStyles.successBadge}>
-              <IconPlaceholder color={resultAccent.ink} size={40} />
+              <IconPlaceholder
+                color={sessionResultAccent.ink}
+                size={resultIconSize}
+              />
             </View>
 
             <Text style={trainerStyles.resultTitle}>
-              {passed
+              {sessionPassed
                 ? t("question.resultGoodTitle")
                 : t("question.resultNeedsWorkTitle")}
             </Text>
 
-            <Text style={[trainerStyles.resultPercent, { color: resultAccent.ink }]}>
-              {percent}%
-            </Text>
+            <Text style={trainerStyles.resultPercent}>{sessionResultPercent}%</Text>
 
             <Text style={trainerStyles.resultCount}>
               {t("question.correctOfTotal", {
@@ -441,14 +455,14 @@ export default function QuestionScreen() {
             </Text>
 
             <Text style={trainerStyles.resultBody}>
-              {passed
+              {sessionPassed
                 ? t("question.resultGoodBody")
                 : t("question.resultNeedsWorkBody")}
             </Text>
 
             <View style={trainerStyles.nextCard}>
               <View style={trainerStyles.nextIconBox}>
-                <IconPlaceholder color={greenWave.color.ink} />
+                <IconPlaceholder color={colors.textPrimary} />
               </View>
               <View style={trainerStyles.nextCardText}>
                 <Text style={trainerStyles.nextTitle}>
@@ -508,10 +522,7 @@ export default function QuestionScreen() {
   }
 
   const hasAnswered = Boolean(currentAnswer);
-  const isCorrectAnswer = Boolean(currentAnswer?.isCorrect);
-  const feedbackAccent = isCorrectAnswer
-    ? greenWaveAccent.green
-    : greenWaveAccent.red;
+  const isCorrectAnswer = currentAnswerCorrect;
   const isBooleanQuestion = currentQuestion.answerType === "boolean";
   const totalQuestions = summary.total || activeSession.questionIds.length;
   const currentStep = activeSession.currentIndex + 1;
@@ -536,75 +547,6 @@ export default function QuestionScreen() {
   const scopeKey = `question.scopes.${currentQuestion.scope}`;
   const scopeLabel = t(scopeKey);
 
-  const renderOption = (choice: { id: string; label: string }) => {
-    const isSelected = currentAnswer?.selectedAnswer === choice.id;
-    const isCorrectChoice = currentQuestion.correctAnswer === choice.id;
-    const revealCorrect = hasAnswered && isCorrectChoice;
-    const revealWrong = hasAnswered && isSelected && !isCorrectChoice;
-    const dimmed = hasAnswered && !isSelected && !isCorrectChoice;
-    const filled = (isSelected && isCorrectChoice) || revealWrong;
-
-    const containerStyle = [
-      isBooleanQuestion
-        ? trainerStyles.booleanOption
-        : trainerStyles.option,
-      filled
-        ? { backgroundColor: feedbackAccentForChoice(isCorrectChoice).fill }
-        : null,
-      revealCorrect && !filled
-        ? {
-          borderWidth: 2,
-          borderColor: greenWaveAccent.green.fill,
-        }
-        : null,
-      dimmed ? trainerStyles.optionDimmed : null,
-    ];
-
-    const textColor = filled
-      ? greenWave.color.onAccent
-      : revealCorrect
-        ? greenWaveAccent.green.ink
-        : greenWave.color.ink;
-
-    return (
-      <Pressable
-        key={choice.id}
-        accessibilityRole="button"
-        accessibilityLabel={choice.label}
-        disabled={hasAnswered}
-        onPress={() =>
-          handleAnswer(choice.id as LocalQuestion["correctAnswer"])
-        }
-        style={containerStyle}
-      >
-        {!isBooleanQuestion ? (
-          revealCorrect || revealWrong ? (
-            <IconPlaceholder
-              color={filled ? greenWave.color.onAccent : greenWaveAccent.green.fill}
-            />
-          ) : (
-            <View style={trainerStyles.optionBadge}>
-              <Text style={trainerStyles.optionBadgeText}>
-                {choice.id.toUpperCase()}
-              </Text>
-            </View>
-          )
-        ) : null}
-        <Text
-          style={[
-            isBooleanQuestion
-              ? trainerStyles.booleanOptionText
-              : trainerStyles.optionText,
-            { color: textColor },
-            filled || revealCorrect ? trainerStyles.optionTextStrong : null,
-          ]}
-        >
-          {choice.label}
-        </Text>
-      </Pressable>
-    );
-  };
-
   return (
     <SafeAreaView style={trainerStyles.safeArea} edges={["top", "bottom"]}>
       <StatusBar style="dark" />
@@ -617,7 +559,7 @@ export default function QuestionScreen() {
             onPress={handleRequestExit}
             style={trainerStyles.headerButton}
           >
-            <IconPlaceholder color={greenWave.color.ink} />
+            <IconPlaceholder color={colors.textPrimary} />
           </Pressable>
           <View style={trainerStyles.headerCenter}>
             <Text style={trainerStyles.headerTitle}>
@@ -646,35 +588,8 @@ export default function QuestionScreen() {
                 ? "current"
                 : "upcoming";
 
-            const pillStyle =
-              stepState === "correct"
-                ? { backgroundColor: greenWaveAccent.green.fill }
-                : stepState === "wrong"
-                  ? { backgroundColor: greenWaveAccent.red.fill }
-                  : stepState === "current"
-                    ? { backgroundColor: greenWave.color.ink }
-                    : { backgroundColor: greenWave.color.track };
-
-            const isFilled = stepState !== "upcoming";
-
             return (
-              <View
-                key={questionId}
-                style={[trainerStyles.stepPill, pillStyle]}
-              >
-                <Text
-                  style={[
-                    trainerStyles.stepPillText,
-                    {
-                      color: isFilled
-                        ? greenWave.color.onAccent
-                        : greenWave.color.inkSecondary,
-                    },
-                  ]}
-                >
-                  {index + 1}
-                </Text>
-              </View>
+              <QuestionStepPill key={questionId} index={index} stepState={stepState} />
             );
           })}
         </ScrollView>
@@ -713,26 +628,28 @@ export default function QuestionScreen() {
                 : trainerStyles.options
             }
           >
-            {questionChoices.map(renderOption)}
+            {questionChoices.map((choice) => (
+              <QuestionChoiceOption
+                key={choice.id}
+                choice={choice}
+                hasAnswered={hasAnswered}
+                isBooleanQuestion={isBooleanQuestion}
+                isCorrectChoice={currentQuestion.correctAnswer === choice.id}
+                isSelected={currentAnswer?.selectedAnswer === choice.id}
+                onPress={() =>
+                  handleAnswer(choice.id as LocalQuestion["correctAnswer"])
+                }
+              />
+            ))}
           </View>
         </ScrollView>
 
         {/* Footer */}
         {hasAnswered ? (
-          <View
-            style={[
-              trainerStyles.feedbackCard,
-              { backgroundColor: feedbackAccent.soft },
-            ]}
-          >
+          <View style={trainerStyles.feedbackCard}>
             <View style={trainerStyles.feedbackHeader}>
               <IconPlaceholder color={feedbackAccent.ink} />
-              <Text
-                style={[
-                  trainerStyles.feedbackTitle,
-                  { color: feedbackAccent.ink },
-                ]}
-              >
+              <Text style={trainerStyles.feedbackTitle}>
                 {isCorrectAnswer
                   ? t("question.resultCorrect")
                   : t("question.resultWrong")}
@@ -745,8 +662,8 @@ export default function QuestionScreen() {
                 <IconPlaceholder
                   color={
                     currentQuestionState.isBookmarked
-                      ? greenWaveAccent.amber.fill
-                      : greenWave.color.inkMuted
+                      ? accents.amber.fill
+                      : colors.textMuted
                   }
                 />
               </Pressable>
@@ -776,7 +693,7 @@ export default function QuestionScreen() {
                   : t("question.explainMistake")}
               </Text>
               <View style={trainerStyles.aiBadge}>
-                <IconPlaceholder color={greenWave.color.onAccent} size={14} />
+                <IconPlaceholder color={colors.onAccent} size={aiIconSize} />
               </View>
             </Pressable>
 
@@ -833,10 +750,6 @@ export default function QuestionScreen() {
   );
 }
 
-function feedbackAccentForChoice(isCorrectChoice: boolean) {
-  return isCorrectChoice ? greenWaveAccent.green : greenWaveAccent.red;
-}
-
 function getSingleParam(value: string | string[] | undefined) {
   if (Array.isArray(value)) {
     return value[0];
@@ -855,306 +768,452 @@ function parsePositiveInteger(value: string | undefined) {
   return Number.isFinite(normalized) && normalized > 0 ? normalized : undefined;
 }
 
-const getTrainerStyles = () =>
-  StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: greenWave.color.paper,
-    },
-    container: {
-      flex: 1,
-      paddingHorizontal: greenWave.spacing.xl,
-      paddingBottom: greenWave.spacing.xl,
-    },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: greenWave.spacing.sm,
-    },
-    headerButton: {
-      width: 40,
-      height: 40,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    headerCenter: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-    },
-    headerTitle: {
-      fontSize: 16,
-      lineHeight: 24,
-      color: greenWave.color.ink,
-    },
-    headerCounter: {
-      fontSize: 12,
-      lineHeight: 16,
-      color: greenWave.color.inkSecondary,
-    },
-    stepperScroll: {
-      flexGrow: 0,
-      marginTop: greenWave.spacing.md,
-    },
-    stepper: {
-      gap: greenWave.spacing.xs,
-      alignItems: "center",
-    },
-    stepPill: {
-      minWidth: 36,
-      height: 32,
-      paddingHorizontal: greenWave.spacing.md,
-      borderRadius: greenWave.radius.pill,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    stepPillText: {
-      fontSize: 16,
-      lineHeight: 24,
-    },
-    metaRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingTop: greenWave.spacing.xl,
-      paddingBottom: greenWave.spacing.sm,
-    },
-    metaText: {
-      fontSize: 14,
-      lineHeight: 20,
-      color: greenWave.color.inkSecondary,
-    },
-    body: {
-      flex: 1,
-    },
-    bodyContent: {
-      paddingBottom: greenWave.spacing.md,
-    },
-    mediaBleed: {
-      marginHorizontal: -greenWave.spacing.xl,
-      marginBottom: greenWave.spacing.md,
-    },
-    prompt: {
-      fontSize: 16,
-      lineHeight: 24,
-      fontWeight: "500",
-      letterSpacing: -0.16,
-      color: greenWave.color.ink,
-      marginBottom: greenWave.spacing.md,
-    },
-    options: {
-      gap: greenWave.spacing.xs,
-    },
-    option: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: greenWave.spacing.md,
-      padding: greenWave.spacing.md,
-      borderRadius: 12,
-      backgroundColor: greenWave.color.surface,
-    },
-    optionDimmed: {
-      opacity: 0.4,
-    },
-    optionBadge: {
-      width: 24,
-      height: 24,
-      borderRadius: greenWave.radius.pill,
-      borderWidth: 2,
-      borderColor: greenWave.color.line,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    optionBadgeText: {
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: "600",
-      color: greenWave.color.inkMuted,
-    },
-    optionText: {
-      flex: 1,
-      fontSize: 14,
-      lineHeight: 20,
-      color: greenWave.color.ink,
-    },
-    optionTextStrong: {
-      fontWeight: "600",
-    },
-    booleanOptions: {
-      flexDirection: "row",
-      gap: greenWave.spacing.xs,
-    },
-    booleanOption: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: greenWave.spacing.md,
-      paddingVertical: greenWave.spacing.xl,
-      borderRadius: 12,
-      backgroundColor: greenWave.color.surface,
-    },
-    booleanOptionText: {
-      fontSize: 14,
-      lineHeight: 20,
-      textAlign: "center",
-      color: greenWave.color.ink,
-    },
-    feedbackCard: {
-      borderTopLeftRadius: greenWave.radius.xxl,
-      borderTopRightRadius: greenWave.radius.xxl,
-      padding: greenWave.spacing.xl,
-      marginHorizontal: -greenWave.spacing.xl,
-      marginBottom: -greenWave.spacing.xl,
-      gap: greenWave.spacing.md,
-    },
-    feedbackHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: greenWave.spacing.md,
-    },
-    feedbackTitle: {
-      flex: 1,
-      fontSize: 20,
-      lineHeight: 28,
-      fontWeight: "600",
-      letterSpacing: -0.2,
-    },
-    feedbackBody: {
-      fontSize: 14,
-      lineHeight: 20,
-      color: greenWave.color.inkSecondary,
-    },
-    explainRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: greenWave.spacing.sm,
-      paddingVertical: greenWave.spacing.sm,
-    },
-    explainText: {
-      fontSize: 16,
-      lineHeight: 24,
-      color: greenWaveAccent.blue.ink,
-    },
-    aiBadge: {
-      width: 24,
-      height: 24,
-      borderRadius: greenWave.radius.pill,
-      backgroundColor: greenWaveAccent.green.fill,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    primaryButton: {
-      borderRadius: greenWave.radius.pill,
-      paddingHorizontal: greenWave.spacing.xl,
-      paddingVertical: greenWave.spacing.md,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: greenWaveAccent.green.fill,
-    },
-    primaryButtonText: {
-      fontSize: 20,
-      lineHeight: 28,
-      fontWeight: "600",
-      letterSpacing: -0.2,
-      color: greenWave.color.onAccent,
-    },
-    pressed: {
-      opacity: 0.9,
-    },
-    reportButton: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: greenWave.spacing.lg,
-      paddingVertical: greenWave.spacing.md,
-    },
-    reportText: {
-      fontSize: 16,
-      lineHeight: 24,
-      color: greenWave.color.inkSecondary,
-    },
-    resultContainer: {
-      flex: 1,
-      paddingHorizontal: greenWave.spacing.xl,
-      paddingBottom: greenWave.spacing.xl,
-    },
-    resultHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    resultBodyArea: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    successBadge: {
-      width: 96,
-      height: 96,
-      borderRadius: greenWave.radius.pill,
-      backgroundColor: greenWave.color.paper,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: greenWave.spacing.xl,
-    },
-    resultTitle: {
-      fontSize: 32,
-      lineHeight: 36,
-      fontWeight: "700",
-      letterSpacing: -0.64,
-      textAlign: "center",
-      color: greenWave.color.ink,
-      marginBottom: greenWave.spacing.lg,
-    },
-    resultPercent: {
-      fontSize: 52,
-      lineHeight: 54,
-      fontWeight: "700",
-      letterSpacing: -0.52,
-      textAlign: "center",
-      marginBottom: greenWave.spacing.md,
-    },
-    resultCount: {
-      fontSize: 12,
-      lineHeight: 16,
-      textAlign: "center",
-      color: greenWave.color.inkSecondary,
-      marginBottom: greenWave.spacing.lg,
-    },
-    resultBody: {
-      fontSize: 18,
-      lineHeight: 28,
-      textAlign: "center",
-      color: greenWave.color.inkSecondary,
-      marginBottom: greenWave.spacing.xl,
-    },
-    nextCard: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: greenWave.spacing.md,
-      padding: greenWave.spacing.lg,
-      borderRadius: greenWave.radius.xl,
-      backgroundColor: greenWave.color.surface,
-      alignSelf: "stretch",
-    },
-    nextIconBox: {
-      padding: greenWave.spacing.sm,
-      borderRadius: greenWave.radius.md,
-      backgroundColor: greenWave.color.paper,
-    },
-    nextCardText: {
-      flex: 1,
-    },
-    nextTitle: {
-      fontSize: 16,
-      lineHeight: 24,
-      fontWeight: "600",
-      letterSpacing: -0.16,
-      color: greenWave.color.ink,
-    },
-    nextSubtitle: {
-      fontSize: 12,
-      lineHeight: 16,
-      color: greenWave.color.inkMuted,
-    },
+type QuestionChoice = {
+  id: string;
+  label: string;
+};
+
+type QuestionStepState = "correct" | "wrong" | "current" | "upcoming";
+
+function QuestionChoiceOption({
+  choice,
+  hasAnswered,
+  isBooleanQuestion,
+  isCorrectChoice,
+  isSelected,
+  onPress,
+}: {
+  choice: QuestionChoice;
+  hasAnswered: boolean;
+  isBooleanQuestion: boolean;
+  isCorrectChoice: boolean;
+  isSelected: boolean;
+  onPress: () => void;
+}) {
+  const { accents, colors } = useTheme();
+  const revealCorrect = hasAnswered && isCorrectChoice;
+  const revealWrong = hasAnswered && isSelected && !isCorrectChoice;
+  const filled = (isSelected && isCorrectChoice) || revealWrong;
+  const styles = useQuestionChoiceStyles({
+    dimmed: hasAnswered && !isSelected && !isCorrectChoice,
+    filled,
+    isBooleanQuestion,
+    isCorrectChoice,
+    revealCorrect,
   });
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={choice.label}
+      disabled={hasAnswered}
+      onPress={onPress}
+      style={styles.container}
+    >
+      {!isBooleanQuestion ? (
+        revealCorrect || revealWrong ? (
+          <IconPlaceholder
+            color={filled ? colors.onAccent : accents.green.fill}
+          />
+        ) : (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{choice.id.toUpperCase()}</Text>
+          </View>
+        )
+      ) : null}
+      <Text style={styles.label}>{choice.label}</Text>
+    </Pressable>
+  );
+}
+
+function useQuestionChoiceStyles({
+  dimmed,
+  filled,
+  isBooleanQuestion,
+  isCorrectChoice,
+  revealCorrect,
+}: {
+  dimmed: boolean;
+  filled: boolean;
+  isBooleanQuestion: boolean;
+  isCorrectChoice: boolean;
+  revealCorrect: boolean;
+}) {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => {
+      const fillColor = isCorrectChoice ? accents.green.fill : accents.red.fill;
+      const labelColor = filled
+        ? colors.onAccent
+        : revealCorrect
+          ? accents.green.ink
+          : colors.textPrimary;
+
+      return {
+        container: {
+          ...(isBooleanQuestion
+            ? {
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
+              paddingHorizontal: spacing.exact(12),
+              paddingVertical: spacing.exact(24),
+            }
+            : {
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing.exact(12),
+              padding: spacing.exact(12),
+            }),
+          borderRadius: spacing.exact(12),
+          backgroundColor: filled ? fillColor : colors.surface,
+          borderWidth: revealCorrect && !filled ? 2 : 0,
+          borderColor:
+            revealCorrect && !filled ? accents.green.fill : colors.transparent,
+          opacity: dimmed ? 0.4 : 1,
+        },
+        badge: {
+          width: spacing.exact(24),
+          height: spacing.exact(24),
+          borderRadius: radius.pill,
+          borderWidth: 2,
+          borderColor: colors.line,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        badgeText: {
+          fontSize: responsiveFont(12),
+          lineHeight: responsiveFont(16),
+          fontWeight: "600",
+          color: colors.textMuted,
+        },
+        label: {
+          ...(isBooleanQuestion
+            ? {
+              fontSize: responsiveFont(14),
+              lineHeight: responsiveFont(20),
+              textAlign: "center",
+            }
+            : {
+              flex: 1,
+              fontSize: responsiveFont(14),
+              lineHeight: responsiveFont(20),
+            }),
+          color: labelColor,
+          fontWeight: filled || revealCorrect ? "600" : "400",
+        },
+      };
+    }
+  );
+}
+
+function QuestionStepPill({
+  index,
+  stepState,
+}: {
+  index: number;
+  stepState: QuestionStepState;
+}) {
+  const styles = useQuestionStepPillStyles({ stepState });
+
+  return (
+    <View style={styles.pill}>
+      <Text style={styles.label}>{index + 1}</Text>
+    </View>
+  );
+}
+
+function useQuestionStepPillStyles({
+  stepState,
+}: {
+  stepState: QuestionStepState;
+}) {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => {
+      const backgroundColor =
+        stepState === "correct"
+          ? accents.green.fill
+          : stepState === "wrong"
+            ? accents.red.fill
+            : stepState === "current"
+              ? colors.textPrimary
+              : colors.track;
+
+      return {
+        pill: {
+          minWidth: spacing.exact(36),
+          height: spacing.exact(32),
+          paddingHorizontal: spacing.exact(12),
+          borderRadius: radius.pill,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor,
+        },
+        label: {
+          fontSize: responsiveFont(16),
+          lineHeight: responsiveFont(24),
+          color:
+            stepState === "upcoming" ? colors.textSecondary : colors.onAccent,
+        },
+      };
+    }
+  );
+}
+
+function useTrainerStyles({
+  feedbackBackgroundColor,
+  feedbackTitleColor,
+  resultPercentColor,
+}: {
+  feedbackBackgroundColor: string;
+  feedbackTitleColor: string;
+  resultPercentColor: string;
+}) {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+      safeArea: {
+        flex: 1,
+        backgroundColor: colors.paper,
+      },
+      footerStack: {
+        gap: spacing.exact(10),
+      },
+      container: {
+        flex: 1,
+        paddingHorizontal: spacing.exact(24),
+        paddingBottom: spacing.exact(24),
+      },
+      header: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(8),
+      },
+      headerButton: {
+        width: spacing.exact(40),
+        height: spacing.exact(40),
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      headerCenter: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+      },
+      headerTitle: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        color: colors.textPrimary,
+      },
+      headerCounter: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textSecondary,
+      },
+      stepperScroll: {
+        flexGrow: 0,
+        marginTop: spacing.exact(12),
+      },
+      stepper: {
+        gap: spacing.exact(4),
+        alignItems: "center",
+      },
+      metaRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingTop: spacing.exact(24),
+        paddingBottom: spacing.exact(8),
+      },
+      metaText: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textSecondary,
+      },
+      body: {
+        flex: 1,
+      },
+      bodyContent: {
+        paddingBottom: spacing.exact(12),
+      },
+      mediaBleed: {
+        marginHorizontal: -spacing.exact(24),
+        marginBottom: spacing.exact(12),
+      },
+      prompt: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "500",
+        letterSpacing: -0.16,
+        color: colors.textPrimary,
+        marginBottom: spacing.exact(12),
+      },
+      options: {
+        gap: spacing.exact(4),
+      },
+      booleanOptions: {
+        flexDirection: "row",
+        gap: spacing.exact(4),
+      },
+      feedbackCard: {
+        borderTopLeftRadius: radius.xxl,
+        borderTopRightRadius: radius.xxl,
+        padding: spacing.exact(24),
+        marginHorizontal: -spacing.exact(24),
+        marginBottom: -spacing.exact(24),
+        gap: spacing.exact(12),
+        backgroundColor: feedbackBackgroundColor,
+      },
+      feedbackHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(12),
+      },
+      feedbackTitle: {
+        flex: 1,
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: feedbackTitleColor,
+      },
+      feedbackBody: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textSecondary,
+      },
+      explainRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.exact(8),
+        paddingVertical: spacing.exact(8),
+      },
+      explainText: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        color: accents.blue.ink,
+      },
+      aiBadge: {
+        width: spacing.exact(24),
+        height: spacing.exact(24),
+        borderRadius: radius.pill,
+        backgroundColor: accents.green.fill,
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      primaryButton: {
+        borderRadius: radius.pill,
+        paddingHorizontal: spacing.exact(24),
+        paddingVertical: spacing.exact(12),
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: accents.green.fill,
+      },
+      primaryButtonText: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: colors.onAccent,
+      },
+      pressed: {
+        opacity: 0.9,
+      },
+      reportButton: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(12),
+      },
+      reportText: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        color: colors.textSecondary,
+      },
+      resultContainer: {
+        flex: 1,
+        paddingHorizontal: spacing.exact(24),
+        paddingBottom: spacing.exact(24),
+      },
+      resultHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+      },
+      resultBodyArea: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      successBadge: {
+        width: spacing.exact(96),
+        height: spacing.exact(96),
+        borderRadius: radius.pill,
+        backgroundColor: colors.paper,
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: spacing.exact(24),
+      },
+      resultTitle: {
+        fontSize: responsiveFont(32),
+        lineHeight: responsiveFont(36),
+        fontWeight: "700",
+        letterSpacing: -0.64,
+        textAlign: "center",
+        color: colors.textPrimary,
+        marginBottom: spacing.exact(16),
+      },
+      resultPercent: {
+        fontSize: responsiveFont(52),
+        lineHeight: responsiveFont(54),
+        fontWeight: "700",
+        letterSpacing: -0.52,
+        textAlign: "center",
+        marginBottom: spacing.exact(12),
+        color: resultPercentColor,
+      },
+      resultCount: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        textAlign: "center",
+        color: colors.textSecondary,
+        marginBottom: spacing.exact(16),
+      },
+      resultBody: {
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(28),
+        textAlign: "center",
+        color: colors.textSecondary,
+        marginBottom: spacing.exact(24),
+      },
+      nextCard: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(12),
+        padding: spacing.exact(16),
+        borderRadius: radius.xl,
+        backgroundColor: colors.surface,
+        alignSelf: "stretch",
+      },
+      nextIconBox: {
+        padding: spacing.exact(8),
+        borderRadius: radius.md,
+        backgroundColor: colors.paper,
+      },
+      nextCardText: {
+        flex: 1,
+      },
+      nextTitle: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "600",
+        letterSpacing: -0.16,
+        color: colors.textPrimary,
+      },
+      nextSubtitle: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textMuted,
+      },
+    })
+  );
+}

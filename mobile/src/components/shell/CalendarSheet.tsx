@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Modal,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 type CalendarSheetProps = {
   visible: boolean;
@@ -115,6 +115,8 @@ export function CalendarSheet({
   onConfirm,
   onClear,
 }: CalendarSheetProps) {
+  const theme = useTheme();
+  const styles = useStyles();
   const today = useMemo(() => startOfDay(new Date()), []);
   const months = MONTH_NAMES[locale] ?? MONTH_NAMES.ua;
   const weekdays = WEEKDAY_NAMES[locale] ?? WEEKDAY_NAMES.ua;
@@ -264,153 +266,159 @@ export function CalendarSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(20,45,33,0.35)",
-  },
-  sheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingTop: greenWave.spacing.md,
-    paddingBottom: 32,
-    backgroundColor: greenWave.color.paper,
-    borderTopLeftRadius: greenWave.radius.xxl,
-    borderTopRightRadius: greenWave.radius.xxl,
-  },
-  grabber: {
-    alignSelf: "center",
-    width: 40,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: greenWave.color.line,
-    marginBottom: greenWave.spacing.lg,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: greenWave.spacing.md,
-  },
-  navButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: greenWave.color.surface,
-  },
-  navDisabled: {
-    opacity: 0.35,
-  },
-  chevron: {
-    width: 9,
-    height: 9,
-    borderTopWidth: 2,
-    borderRightWidth: 2,
-    borderColor: greenWave.color.ink,
-  },
-  chevronLeft: {
-    transform: [{ rotate: "225deg" }],
-    marginLeft: 4,
-  },
-  chevronRight: {
-    transform: [{ rotate: "45deg" }],
-    marginRight: 4,
-  },
-  monthLabel: {
-    fontSize: 18,
-    fontWeight: "700",
-    letterSpacing: -0.2,
-    color: greenWave.color.ink,
-  },
-  weekRow: {
-    flexDirection: "row",
-    marginBottom: greenWave.spacing.sm,
-  },
-  weekday: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 12,
-    fontWeight: "600",
-    color: greenWave.color.inkMuted,
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  cell: {
-    width: `${100 / 7}%`,
-    aspectRatio: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dayPill: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dayPillSelected: {
-    backgroundColor: greenWaveAccent.green.fill,
-  },
-  dayPillToday: {
-    borderWidth: 1.5,
-    borderColor: greenWaveAccent.green.fill,
-  },
-  dayText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: greenWave.color.ink,
-  },
-  dayTextPast: {
-    color: greenWave.color.inkMuted,
-    opacity: 0.5,
-  },
-  dayTextSelected: {
-    color: greenWave.color.onAccent,
-    fontWeight: "700",
-  },
-  footer: {
-    flexDirection: "row",
-    gap: greenWave.spacing.md,
-    marginTop: greenWave.spacing.lg,
-  },
-  clearButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.pill,
-    borderWidth: 1,
-    borderColor: greenWave.color.line,
-  },
-  clearLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: greenWave.color.inkSecondary,
-  },
-  confirmButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.green.fill,
-  },
-  confirmDisabled: {
-    opacity: 0.45,
-  },
-  confirmLabel: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: greenWave.color.onAccent,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    backdrop: {
+      position: "absolute",
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      backgroundColor: colors.overlayScrim,
+    },
+    sheet: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.md,
+      paddingBottom: spacing.exact(32),
+      backgroundColor: colors.paper,
+      borderTopLeftRadius: radius.xxl,
+      borderTopRightRadius: radius.xxl,
+    },
+    grabber: {
+      alignSelf: "center",
+      width: spacing.exact(40),
+      height: spacing.exact(5),
+      borderRadius: radius.pill,
+      backgroundColor: colors.line,
+      marginBottom: spacing.lg,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: spacing.md,
+    },
+    navButton: {
+      width: spacing.exact(36),
+      height: spacing.exact(36),
+      borderRadius: spacing.exact(18),
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.surface,
+    },
+    navDisabled: {
+      opacity: 0.35,
+    },
+    chevron: {
+      width: spacing.exact(9),
+      height: spacing.exact(9),
+      borderTopWidth: 2,
+      borderRightWidth: 2,
+      borderColor: colors.ink,
+    },
+    chevronLeft: {
+      transform: [{ rotate: "225deg" }],
+      marginLeft: spacing.exact(4),
+    },
+    chevronRight: {
+      transform: [{ rotate: "45deg" }],
+      marginRight: spacing.exact(4),
+    },
+    monthLabel: {
+      fontSize: responsiveFont(18),
+      fontWeight: "700",
+      letterSpacing: -0.2,
+      color: colors.ink,
+    },
+    weekRow: {
+      flexDirection: "row",
+      marginBottom: spacing.sm,
+    },
+    weekday: {
+      flex: 1,
+      textAlign: "center",
+      fontSize: responsiveFont(12),
+      fontWeight: "600",
+      color: colors.inkMuted,
+    },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+    },
+    cell: {
+      width: `${100 / 7}%`,
+      aspectRatio: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    dayPill: {
+      width: spacing.exact(40),
+      height: spacing.exact(40),
+      borderRadius: spacing.exact(20),
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    dayPillSelected: {
+      backgroundColor: theme.accents.green.fill,
+    },
+    dayPillToday: {
+      borderWidth: 1.5,
+      borderColor: theme.accents.green.fill,
+    },
+    dayText: {
+      fontSize: responsiveFont(16),
+      fontWeight: "500",
+      color: colors.ink,
+    },
+    dayTextPast: {
+      color: colors.inkMuted,
+      opacity: 0.5,
+    },
+    dayTextSelected: {
+      color: colors.onAccent,
+      fontWeight: "700",
+    },
+    footer: {
+      flexDirection: "row",
+      gap: spacing.md,
+      marginTop: spacing.lg,
+    },
+    clearButton: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: spacing.lg,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      borderColor: colors.line,
+    },
+    clearLabel: {
+      fontSize: responsiveFont(16),
+      fontWeight: "600",
+      color: colors.inkSecondary,
+    },
+    confirmButton: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: spacing.lg,
+      borderRadius: radius.pill,
+      backgroundColor: theme.accents.green.fill,
+    },
+    confirmDisabled: {
+      opacity: 0.45,
+    },
+    confirmLabel: {
+      fontSize: responsiveFont(16),
+      fontWeight: "700",
+      color: colors.onAccent,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+  }));
+}

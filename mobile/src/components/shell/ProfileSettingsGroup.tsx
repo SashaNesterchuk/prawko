@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { Pressable, Switch, Text, View } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 type ProfileSettingsRowProps = {
   title: string;
@@ -22,22 +23,27 @@ export function ProfileSettingsRow({
   subtitle,
   value,
   icon,
-  iconBackground = greenWave.color.paper,
-  titleColor = greenWave.color.ink,
+  iconBackground,
+  titleColor,
   trailing = "value",
   switchValue = false,
   onPress,
   onSwitchChange,
   isLast = false,
 }: ProfileSettingsRowProps) {
+  const theme = useTheme();
+  const styles = useStyles({
+    iconBackgroundColor: iconBackground ?? theme.colors.paper,
+    titleColor: titleColor ?? theme.colors.ink,
+  });
   const content = (
     <>
-      <View style={[styles.iconWrap, { backgroundColor: iconBackground }]}>
+      <View style={styles.iconWrap}>
         {icon}
       </View>
 
       <View style={styles.copy}>
-        <Text style={[styles.title, { color: titleColor }]}>{title}</Text>
+        <Text style={styles.title}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
 
@@ -48,10 +54,10 @@ export function ProfileSettingsRow({
         <Switch
           accessibilityLabel={title}
           onValueChange={onSwitchChange}
-          thumbColor="#ffffff"
+          thumbColor={theme.colors.white}
           trackColor={{
-            false: greenWave.color.track,
-            true: greenWaveAccent.green.fill,
+            false: theme.colors.track,
+            true: theme.accents.green.fill,
           }}
           value={switchValue}
         />
@@ -86,10 +92,13 @@ type ProfileSettingsGroupProps = {
 };
 
 export function ProfileSettingsGroup({ children }: ProfileSettingsGroupProps) {
+  const styles = useStyles();
   return <View style={styles.group}>{children}</View>;
 }
 
 function PremiumMiniBadge() {
+  const styles = useStyles();
+
   return (
     <View style={styles.badge}>
       <View style={styles.badgeCrown} />
@@ -97,75 +106,85 @@ function PremiumMiniBadge() {
   );
 }
 
-const styles = StyleSheet.create({
-  group: {
-    width: "100%",
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: greenWave.color.surface,
-    overflow: "hidden",
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.lg,
-    backgroundColor: greenWave.color.surface,
-  },
-  rowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: greenWave.color.line,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  iconWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.md,
-  },
-  copy: {
-    flex: 1,
-    gap: greenWave.spacing.xs,
-  },
-  title: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-  },
-  subtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWave.color.inkMuted,
-  },
-  value: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "400",
-    color: greenWaveAccent.blue.ink,
-  },
-  badge: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.xs,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.green.fill,
-  },
-  badgeCrown: {
-    width: 10,
-    height: 8,
-    borderTopWidth: 2,
-    borderLeftWidth: 2,
-    borderRightWidth: 2,
-    borderColor: "#ffffff",
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-  },
-});
+function useStyles({
+  iconBackgroundColor,
+  titleColor,
+}: {
+  iconBackgroundColor?: string;
+  titleColor?: string;
+} = {}) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    group: {
+      width: "100%",
+      borderRadius: radius.xl,
+      backgroundColor: colors.surface,
+      overflow: "hidden",
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(6),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 2,
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+      padding: spacing.lg,
+      backgroundColor: colors.surface,
+    },
+    rowBorder: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.line,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    iconWrap: {
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.sm,
+      borderRadius: radius.md,
+      backgroundColor: iconBackgroundColor ?? colors.paper,
+    },
+    copy: {
+      flex: 1,
+      gap: spacing.xs,
+    },
+    title: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: titleColor ?? colors.ink,
+    },
+    subtitle: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.inkMuted,
+    },
+    value: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "400",
+      color: theme.accents.blue.ink,
+    },
+    badge: {
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.xs,
+      borderRadius: radius.pill,
+      backgroundColor: theme.accents.green.fill,
+    },
+    badgeCrown: {
+      width: spacing.exact(10),
+      height: spacing.exact(8),
+      borderTopWidth: 2,
+      borderLeftWidth: 2,
+      borderRightWidth: 2,
+      borderColor: colors.white,
+      borderTopLeftRadius: spacing.exact(2),
+      borderTopRightRadius: spacing.exact(2),
+    },
+  }));
+}

@@ -1,8 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
+import { useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 import { SignImage } from "../../features/road-signs/SignImage";
 import type { RoadSign, RoadSignCategory } from "../../features/road-signs/types";
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
 
 export type SignCategoryProgress = {
   correct: number;
@@ -26,12 +27,17 @@ export function SignCategoryProgressCard({
   progress,
   onPress,
 }: SignCategoryProgressCardProps) {
-  const accent = greenWaveAccent[category.accent];
+  const theme = useTheme();
+  const accent = theme.accents[category.accent];
   const answered = progress.correct + progress.wrong;
   const percent =
     progress.total > 0
       ? Math.round((answered / progress.total) * 100)
       : 0;
+  const styles = useStyles({
+    fillColor: accent.fill,
+    fillWidth: `${Math.min(percent, 100)}%`,
+  });
 
   return (
     <Pressable
@@ -45,15 +51,7 @@ export function SignCategoryProgressCard({
         </Text>
 
         <View style={styles.track}>
-          <View
-            style={[
-              styles.fill,
-              {
-                width: `${Math.min(percent, 100)}%`,
-                backgroundColor: accent.fill,
-              },
-            ]}
-          />
+          <View style={styles.fill} />
         </View>
 
         <View style={styles.statsRow}>
@@ -78,82 +76,92 @@ export function SignCategoryProgressCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    position: "relative",
-    minHeight: 108,
-    paddingVertical: greenWave.spacing.lg,
-    paddingLeft: greenWave.spacing.lg,
-    paddingRight: 92,
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: greenWave.color.paper,
-    overflow: "hidden",
-  },
-  pressed: {
-    opacity: 0.92,
-  },
-  content: {
-    gap: greenWave.spacing.sm,
-  },
-  title: {
-    fontSize: 16,
-    lineHeight: 22,
-    fontWeight: "700",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-    paddingRight: greenWave.spacing.sm,
-  },
-  track: {
-    height: 6,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.track,
-    overflow: "hidden",
-  },
-  fill: {
-    height: 6,
-    borderRadius: greenWave.radius.pill,
-  },
-  statsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-  },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  statIcon: {
-    fontSize: 13,
-    lineHeight: 16,
-    fontWeight: "700",
-  },
-  statGood: {
-    color: greenWaveAccent.green.ink,
-  },
-  statBad: {
-    color: greenWaveAccent.red.ink,
-  },
-  statValue: {
-    fontSize: 13,
-    lineHeight: 16,
-    fontWeight: "500",
-    color: greenWave.color.inkSecondary,
-  },
-  fraction: {
-    marginLeft: "auto",
-    fontSize: 13,
-    lineHeight: 16,
-    fontWeight: "500",
-    color: greenWave.color.inkSecondary,
-  },
-  previewWrap: {
-    position: "absolute",
-    right: greenWave.spacing.md,
-    top: 0,
-    bottom: 0,
-    width: 80,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+function useStyles({
+  fillColor,
+  fillWidth,
+}: {
+  fillColor: string;
+  fillWidth: string;
+}) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      position: "relative",
+      minHeight: spacing.exact(108),
+      paddingVertical: spacing.lg,
+      paddingLeft: spacing.lg,
+      paddingRight: spacing.exact(92),
+      borderRadius: radius.xl,
+      backgroundColor: colors.paper,
+      overflow: "hidden",
+    },
+    pressed: {
+      opacity: 0.92,
+    },
+    content: {
+      gap: spacing.sm,
+    },
+    title: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(22),
+      fontWeight: "700",
+      letterSpacing: -0.16,
+      color: colors.ink,
+      paddingRight: spacing.sm,
+    },
+    track: {
+      height: spacing.exact(6),
+      borderRadius: radius.pill,
+      backgroundColor: colors.track,
+      overflow: "hidden",
+    },
+    fill: {
+      width: fillWidth,
+      height: spacing.exact(6),
+      borderRadius: radius.pill,
+      backgroundColor: fillColor,
+    },
+    statsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+    },
+    statItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.exact(4),
+    },
+    statIcon: {
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(16),
+      fontWeight: "700",
+    },
+    statGood: {
+      color: theme.accents.green.ink,
+    },
+    statBad: {
+      color: theme.accents.red.ink,
+    },
+    statValue: {
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(16),
+      fontWeight: "500",
+      color: colors.inkSecondary,
+    },
+    fraction: {
+      marginLeft: "auto",
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(16),
+      fontWeight: "500",
+      color: colors.inkSecondary,
+    },
+    previewWrap: {
+      position: "absolute",
+      right: spacing.md,
+      top: 0,
+      bottom: 0,
+      width: spacing.exact(80),
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  }));
+}

@@ -3,11 +3,17 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
 import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
+import {
+  useResponsiveFonts,
+  useResponsiveSpacing,
+  useResponsiveStyles,
+} from "../../../src/portable-ui";
+import { useTheme } from "../../../src/providers/ThemeProvider";
 import {
   getRoadSignById,
   getRoadSignCategory,
@@ -19,13 +25,15 @@ import {
 } from "../../../src/features/road-signs/content/registry";
 import type { SignPractice } from "../../../src/features/road-signs/content/types";
 import { SignImage } from "../../../src/features/road-signs/SignImage";
-import { greenWave, greenWaveAccent } from "../../../src/theme/green-wave";
 
 type PracticePhase = "question" | "result";
 
 export default function SignPracticeScreen() {
   const { t, i18n } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
+  const { accents } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const spacing = useResponsiveSpacing();
   const { signId } = useLocalSearchParams<{ signId: string }>();
   const sign = useMemo(
     () => (signId ? getRoadSignById(signId) : undefined),
@@ -39,7 +47,14 @@ export default function SignPracticeScreen() {
     () => (sign ? getRoadSignCategory(sign.categoryId) : undefined),
     [sign]
   );
-  const accent = category ? greenWaveAccent[category.accent] : greenWaveAccent.amber;
+  const accent = category ? accents[category.accent] : accents.amber;
+  const styles = useStyles({
+    accentInk: accent.ink,
+    accentSoft: accent.soft,
+    safeBottom,
+  });
+  const resultIconSize = responsiveFont(40);
+  const signImageSize = spacing.exact(120);
 
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
@@ -111,10 +126,14 @@ export default function SignPracticeScreen() {
             onBack={() => router.back()}
           />
 
-          <View style={[styles.resultWrap, { paddingBottom: 24 + safeBottom }]}>
+          <View style={styles.resultWrap}>
             <View style={styles.resultCard}>
-              <View style={[styles.resultIconWrap, { backgroundColor: accent.soft }]}>
-                <Ionicons color={accent.ink} name="checkmark-circle" size={40} />
+              <View style={styles.resultIconWrap}>
+                <Ionicons
+                  color={accent.ink}
+                  name="checkmark-circle"
+                  size={resultIconSize}
+                />
               </View>
               <Text style={styles.resultTitle}>{t("signs.practiceComplete")}</Text>
               <Text style={styles.resultScore}>
@@ -131,13 +150,10 @@ export default function SignPracticeScreen() {
               onPress={() => router.back()}
               style={({ pressed }) => [
                 styles.primaryButton,
-                { backgroundColor: accent.soft },
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Text style={[styles.primaryButtonLabel, { color: accent.ink }]}>
-                {t("common.back")}
-              </Text>
+              <Text style={styles.primaryButtonLabel}>{t("common.back")}</Text>
             </Pressable>
           </View>
         </SafeAreaView>
@@ -157,10 +173,7 @@ export default function SignPracticeScreen() {
 
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: 24 + safeBottom },
-          ]}
+          contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.progressRow}>
@@ -176,8 +189,8 @@ export default function SignPracticeScreen() {
           </View>
 
           <View style={styles.heroCard}>
-            <View style={[styles.imageWrap, { backgroundColor: accent.soft }]}>
-              <SignImage sign={sign} size={120} />
+            <View style={styles.imageWrap}>
+              <SignImage sign={sign} size={signImageSize} />
             </View>
           </View>
 
@@ -244,12 +257,11 @@ export default function SignPracticeScreen() {
             onPress={handleContinue}
             style={({ pressed }) => [
               styles.primaryButton,
-              { backgroundColor: accent.soft },
               !hasAnswered ? styles.primaryButtonDisabled : null,
               hasAnswered && pressed ? styles.pressed : null,
             ]}
           >
-            <Text style={[styles.primaryButtonLabel, { color: accent.ink }]}>
+            <Text style={styles.primaryButtonLabel}>
               {isLastQuestion ? t("signs.practiceFinish") : t("signs.practiceNext")}
             </Text>
           </Pressable>
@@ -259,178 +271,196 @@ export default function SignPracticeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    padding: greenWave.spacing.xl,
-    gap: greenWave.spacing.lg,
-  },
-  progressRow: {
-    gap: greenWave.spacing.xs,
-  },
-  progressLabel: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "600",
-    color: greenWave.color.inkMuted,
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-  },
-  progressName: {
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-  },
-  heroCard: {
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: greenWave.color.surface,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  imageWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 160,
-    borderRadius: greenWave.radius.lg,
-    padding: greenWave.spacing.lg,
-  },
-  prompt: {
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-  },
-  options: {
-    gap: greenWave.spacing.sm,
-  },
-  option: {
-    paddingVertical: greenWave.spacing.md,
-    paddingHorizontal: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.lg,
-    backgroundColor: greenWave.color.surface,
-    borderWidth: 1,
-    borderColor: greenWave.color.line,
-  },
-  optionSelected: {
-    borderColor: greenWaveAccent.amber.fill,
-    backgroundColor: greenWaveAccent.amber.soft,
-  },
-  optionCorrect: {
-    borderColor: greenWaveAccent.green.fill,
-    backgroundColor: greenWaveAccent.green.soft,
-  },
-  optionWrong: {
-    borderColor: greenWaveAccent.red.fill,
-    backgroundColor: greenWaveAccent.red.soft,
-  },
-  optionLabel: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: greenWave.color.ink,
-  },
-  optionLabelCorrect: {
-    color: greenWaveAccent.green.ink,
-    fontWeight: "600",
-  },
-  optionLabelWrong: {
-    color: greenWaveAccent.red.ink,
-    fontWeight: "600",
-  },
-  feedbackCard: {
-    gap: greenWave.spacing.xs,
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.lg,
-    backgroundColor: greenWave.color.surface,
-  },
-  feedbackTitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-  },
-  feedbackBody: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: greenWave.color.inkSecondary,
-  },
-  primaryButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: greenWave.spacing.md,
-    paddingHorizontal: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.lg,
-  },
-  primaryButtonDisabled: {
-    opacity: 0.45,
-  },
-  primaryButtonLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-  },
-  resultWrap: {
-    flex: 1,
-    padding: greenWave.spacing.xl,
-    justifyContent: "space-between",
-  },
-  resultCard: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: greenWave.spacing.md,
-    paddingHorizontal: greenWave.spacing.lg,
-  },
-  resultIconWrap: {
-    width: 72,
-    height: 72,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: greenWave.radius.xxl,
-  },
-  resultTitle: {
-    fontSize: 24,
-    lineHeight: 32,
-    fontWeight: "700",
-    color: greenWave.color.ink,
-    textAlign: "center",
-  },
-  resultScore: {
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-    textAlign: "center",
-  },
-  resultSubtitle: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: greenWave.color.inkSecondary,
-    textAlign: "center",
-  },
-  missingState: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.xl,
-  },
-  missingTitle: {
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-    textAlign: "center",
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-});
+function useStyles({
+  accentInk,
+  accentSoft,
+  safeBottom,
+}: {
+  accentInk: string;
+  accentSoft: string;
+  safeBottom: number;
+}) {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+      safeArea: {
+        flex: 1,
+      },
+      scroll: {
+        flex: 1,
+      },
+      content: {
+        padding: spacing.exact(24),
+        paddingBottom: spacing.exact(24) + safeBottom,
+        gap: spacing.exact(16),
+      },
+      progressRow: {
+        gap: spacing.exact(4),
+      },
+      progressLabel: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        fontWeight: "600",
+        color: colors.textMuted,
+        textTransform: "uppercase",
+        letterSpacing: 0.4,
+      },
+      progressName: {
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        color: colors.textPrimary,
+      },
+      heroCard: {
+        padding: spacing.exact(16),
+        borderRadius: radius.xl,
+        backgroundColor: colors.surface,
+        shadowColor: colors.shadow,
+        shadowOpacity: 0.05,
+        shadowRadius: spacing.exact(6),
+        shadowOffset: { width: 0, height: spacing.exact(2) },
+        elevation: 1,
+      },
+      imageWrap: {
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: spacing.exact(160),
+        borderRadius: radius.lg,
+        padding: spacing.exact(16),
+        backgroundColor: accentSoft,
+      },
+      prompt: {
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        color: colors.textPrimary,
+      },
+      options: {
+        gap: spacing.exact(8),
+      },
+      option: {
+        paddingVertical: spacing.exact(12),
+        paddingHorizontal: spacing.exact(16),
+        borderRadius: radius.lg,
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.line,
+      },
+      optionSelected: {
+        borderColor: accents.amber.fill,
+        backgroundColor: accents.amber.soft,
+      },
+      optionCorrect: {
+        borderColor: accents.green.fill,
+        backgroundColor: accents.green.soft,
+      },
+      optionWrong: {
+        borderColor: accents.red.fill,
+        backgroundColor: accents.red.soft,
+      },
+      optionLabel: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        color: colors.textPrimary,
+      },
+      optionLabelCorrect: {
+        color: accents.green.ink,
+        fontWeight: "600",
+      },
+      optionLabelWrong: {
+        color: accents.red.ink,
+        fontWeight: "600",
+      },
+      feedbackCard: {
+        gap: spacing.exact(4),
+        padding: spacing.exact(16),
+        borderRadius: radius.lg,
+        backgroundColor: colors.surface,
+      },
+      feedbackTitle: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        fontWeight: "600",
+        color: colors.textPrimary,
+      },
+      feedbackBody: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(22),
+        color: colors.textSecondary,
+      },
+      primaryButton: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: spacing.exact(12),
+        paddingHorizontal: spacing.exact(16),
+        borderRadius: radius.lg,
+        backgroundColor: accentSoft,
+      },
+      primaryButtonDisabled: {
+        opacity: 0.45,
+      },
+      primaryButtonLabel: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        fontWeight: "600",
+        color: accentInk,
+      },
+      resultWrap: {
+        flex: 1,
+        padding: spacing.exact(24),
+        paddingBottom: spacing.exact(24) + safeBottom,
+        justifyContent: "space-between",
+      },
+      resultCard: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.exact(12),
+        paddingHorizontal: spacing.exact(16),
+      },
+      resultIconWrap: {
+        width: spacing.exact(72),
+        height: spacing.exact(72),
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: radius.xxl,
+        backgroundColor: accentSoft,
+      },
+      resultTitle: {
+        fontSize: responsiveFont(24),
+        lineHeight: responsiveFont(32),
+        fontWeight: "700",
+        color: colors.textPrimary,
+        textAlign: "center",
+      },
+      resultScore: {
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        color: colors.textPrimary,
+        textAlign: "center",
+      },
+      resultSubtitle: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(22),
+        color: colors.textSecondary,
+        textAlign: "center",
+      },
+      missingState: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: spacing.exact(24),
+      },
+      missingTitle: {
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        color: colors.textPrimary,
+        textAlign: "center",
+      },
+      pressed: {
+        opacity: 0.9,
+      },
+    })
+  );
+}

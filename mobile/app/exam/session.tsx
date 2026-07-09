@@ -4,14 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SUPPORTED_LOCALES } from "@prawko/config";
@@ -33,15 +26,21 @@ import {
   getQuestionById,
   getQuestionChoices,
 } from "../../src/features/questions/question-engine";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../src/portable-ui";
+import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
-import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
 import type { RemoteExamSnapshot } from "../../src/features/exam/types";
 
 const URGENT_THRESHOLD_SECONDS = 180;
 
 export default function ExamSessionScreen() {
   const { t } = useTranslation();
+  const { accents, colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const navigation = useNavigation();
   const params = useLocalSearchParams<{
     sessionId?: string | string[];
@@ -88,6 +87,13 @@ export default function ExamSessionScreen() {
   const questionChoices = currentQuestion
     ? getQuestionChoices(currentQuestion, displayLocale)
     : [];
+  const totalSessionSeconds = snapshot ? getTotalSessionSeconds(snapshot) : null;
+  const remainingSeconds = snapshot?.session.remainingSeconds ?? null;
+  const progressFraction =
+    totalSessionSeconds && remainingSeconds != null
+      ? Math.max(0, Math.min(1, remainingSeconds / totalSessionSeconds))
+      : 1;
+  const styles = useStyles({ progressWidth: `${progressFraction * 100}%` });
 
   useEffect(() => {
     if (!sessionId) {
@@ -329,7 +335,7 @@ export default function ExamSessionScreen() {
                 pressed ? styles.pressed : null,
               ]}
             >
-              <CloseIcon color={greenWave.color.ink} />
+              <CloseIcon color={colors.textPrimary} />
             </Pressable>
           </View>
 
@@ -337,8 +343,8 @@ export default function ExamSessionScreen() {
             <View style={styles.completeBadge}>
               <MaterialCommunityIcons
                 name="check"
-                size={40}
-                color={greenWaveAccent.green.ink}
+                size={completeIconSize}
+                color={accents.green.ink}
               />
             </View>
             <Text style={styles.completeTitle}>{t("exam.completeTitle")}</Text>
@@ -376,12 +382,6 @@ export default function ExamSessionScreen() {
     );
   }
 
-  const totalSessionSeconds = getTotalSessionSeconds(snapshot);
-  const remainingSeconds = snapshot.session.remainingSeconds;
-  const progressFraction =
-    totalSessionSeconds && remainingSeconds != null
-      ? Math.max(0, Math.min(1, remainingSeconds / totalSessionSeconds))
-      : 1;
   const isUrgent =
     remainingSeconds != null && remainingSeconds <= URGENT_THRESHOLD_SECONDS;
   const orderIndex = snapshot.questions.findIndex(
@@ -394,6 +394,7 @@ export default function ExamSessionScreen() {
   const isBoolean = currentQuestion.answerType === "boolean";
   const isBusy = isSubmitting || isEnding;
   const primaryDisabled = !selectedAnswerId || isBusy;
+  const completeIconSize = responsiveFont(40);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
@@ -411,7 +412,7 @@ export default function ExamSessionScreen() {
                 pressed ? styles.pressed : null,
               ]}
             >
-              <CloseIcon color={greenWave.color.ink} />
+              <CloseIcon color={colors.textPrimary} />
             </Pressable>
 
             <View style={styles.topBarTitle}>
@@ -428,7 +429,7 @@ export default function ExamSessionScreen() {
               style={[styles.timerPill, isUrgent ? styles.timerPillUrgent : null]}
             >
               <ClockIcon
-                color={isUrgent ? greenWaveAccent.red.ink : greenWave.color.ink}
+                color={isUrgent ? accents.red.ink : colors.textPrimary}
               />
               <Text
                 style={[
@@ -477,7 +478,6 @@ export default function ExamSessionScreen() {
               <View
                 style={[
                   styles.progressFill,
-                  { width: `${progressFraction * 100}%` },
                   isUrgent ? styles.progressFillUrgent : null,
                 ]}
               />
@@ -611,6 +611,8 @@ function CenteredState({
   onAction?: () => void;
   title: string;
 }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.centeredState}>
       <Text style={styles.centeredTitle}>{title}</Text>
@@ -633,29 +635,72 @@ function CenteredState({
 }
 
 function CloseIcon({ color }: { color: string }) {
+  const styles = useResponsiveStyles(({ spacing }) => ({
+    glyph18: {
+      width: spacing.exact(18),
+      height: spacing.exact(18),
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    glyphLinePositive: {
+      position: "absolute",
+      width: spacing.exact(18),
+      height: spacing.exact(2),
+      borderRadius: spacing.exact(1),
+      backgroundColor: color,
+      transform: [{ rotate: "45deg" }],
+    },
+    glyphLineNegative: {
+      position: "absolute",
+      width: spacing.exact(18),
+      height: spacing.exact(2),
+      borderRadius: spacing.exact(1),
+      backgroundColor: color,
+      transform: [{ rotate: "-45deg" }],
+    },
+  }));
+
   return (
     <View style={styles.glyph18}>
-      <View
-        style={[
-          styles.glyphLine,
-          { backgroundColor: color, transform: [{ rotate: "45deg" }] },
-        ]}
-      />
-      <View
-        style={[
-          styles.glyphLine,
-          { backgroundColor: color, transform: [{ rotate: "-45deg" }] },
-        ]}
-      />
+      <View style={styles.glyphLinePositive} />
+      <View style={styles.glyphLineNegative} />
     </View>
   );
 }
 
 function ClockIcon({ color }: { color: string }) {
+  const styles = useResponsiveStyles(({ spacing }) => ({
+    clockFace: {
+      width: spacing.exact(16),
+      height: spacing.exact(16),
+      borderRadius: spacing.exact(8),
+      borderWidth: 1.6,
+      borderColor: color,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    clockHandVertical: {
+      position: "absolute",
+      width: 1.6,
+      height: spacing.exact(4.5),
+      borderRadius: spacing.exact(1),
+      top: spacing.exact(3),
+      backgroundColor: color,
+    },
+    clockHandHorizontal: {
+      position: "absolute",
+      width: spacing.exact(4),
+      height: 1.6,
+      borderRadius: spacing.exact(1),
+      left: spacing.exact(7),
+      backgroundColor: color,
+    },
+  }));
+
   return (
-    <View style={[styles.clockFace, { borderColor: color }]}>
-      <View style={[styles.clockHandVertical, { backgroundColor: color }]} />
-      <View style={[styles.clockHandHorizontal, { backgroundColor: color }]} />
+    <View style={styles.clockFace}>
+      <View style={styles.clockHandVertical} />
+      <View style={styles.clockHandHorizontal} />
     </View>
   );
 }
@@ -694,326 +739,297 @@ function getErrorMessage(error: unknown) {
     : "Unable to continue this exam session.";
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: greenWave.color.paper,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: greenWave.spacing.xl,
-  },
-  headerBlock: {
-    paddingTop: greenWave.spacing.sm,
-    gap: greenWave.spacing.md,
-  },
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    marginLeft: -greenWave.spacing.sm,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: greenWave.radius.md,
-  },
-  topBarTitle: {
-    flex: 1,
-    gap: 2,
-  },
-  eyebrow: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkMuted,
-  },
-  topBarHeading: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: greenWave.color.ink,
-  },
-  timerPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.xs,
-    paddingHorizontal: greenWave.spacing.sm,
-    paddingVertical: greenWave.spacing.xs,
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWave.color.track,
-  },
-  timerPillUrgent: {
-    backgroundColor: greenWaveAccent.red.soft,
-  },
-  timerPillText: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-    letterSpacing: -0.14,
-    fontVariant: ["tabular-nums"],
-    color: greenWave.color.ink,
-  },
-  timerPillTextUrgent: {
-    color: greenWaveAccent.red.ink,
-  },
-  scopeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  scopeText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: greenWave.color.inkSecondary,
-  },
-  scrollContent: {
-    paddingTop: greenWave.spacing.sm,
-    paddingBottom: greenWave.spacing.md,
-    gap: greenWave.spacing.md,
-  },
-  mediaBleed: {
-    marginHorizontal: -greenWave.spacing.xl,
-  },
-  timerBlock: {
-    gap: greenWave.spacing.xs,
-  },
-  timerLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  timerLabel: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkSecondary,
-  },
-  timerValue: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "600",
-    color: greenWave.color.inkSecondary,
-  },
-  progressTrack: {
-    height: 12,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.track,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: 12,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.inkMuted,
-  },
-  progressFillUrgent: {
-    backgroundColor: greenWaveAccent.red.fill,
-  },
-  promptText: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "500",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  optionsRow: {
-    flexDirection: "row",
-    gap: greenWave.spacing.xs,
-  },
-  optionsColumn: {
-    gap: greenWave.spacing.xs,
-  },
-  booleanOption: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: greenWave.spacing.md,
-    paddingVertical: 20,
-    borderRadius: greenWave.radius.lg,
-    backgroundColor: greenWave.color.surface,
-  },
-  booleanOptionLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: greenWave.color.ink,
-    textAlign: "center",
-  },
-  multiOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.md,
-    borderRadius: greenWave.radius.lg,
-    backgroundColor: greenWave.color.surface,
-  },
-  optionSelected: {
-    backgroundColor: greenWaveAccent.blue.fill,
-  },
-  optionLabelSelected: {
-    color: "#ffffff",
-    fontWeight: "600",
-  },
-  letterCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: greenWave.radius.pill,
-    borderWidth: 2,
-    borderColor: greenWave.color.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  letterCircleSelected: {
-    backgroundColor: "#ffffff",
-    borderColor: "#ffffff",
-  },
-  letterText: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "600",
-    textAlign: "center",
-    color: greenWave.color.inkMuted,
-  },
-  letterTextSelected: {
-    color: greenWaveAccent.blue.fill,
-  },
-  multiOptionLabel: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-    color: greenWave.color.ink,
-  },
-  footer: {
-    paddingTop: greenWave.spacing.md,
-    paddingBottom: greenWave.spacing.sm,
-    gap: greenWave.spacing.sm,
-  },
-  primaryButton: {
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingVertical: greenWave.spacing.md,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.green.fill,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.1,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 14 },
-    elevation: 4,
-  },
-  primaryButtonDisabled: {
-    opacity: 0.45,
-  },
-  primaryButtonLabel: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    color: "#ffffff",
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  errorText: {
-    fontSize: 13,
-    lineHeight: 20,
-    color: greenWaveAccent.red.ink,
-  },
-  completeContainer: {
-    flex: 1,
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingBottom: greenWave.spacing.xl,
-  },
-  completeHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  completeBody: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: greenWave.spacing.md,
-  },
-  completeBadge: {
-    width: 96,
-    height: 96,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.surface,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: greenWave.spacing.xl,
-  },
-  completeTitle: {
-    fontSize: 32,
-    lineHeight: 36,
-    fontWeight: "700",
-    letterSpacing: -0.64,
-    textAlign: "center",
-    color: greenWave.color.ink,
-    marginBottom: greenWave.spacing.lg,
-  },
-  completeMessage: {
-    fontSize: 18,
-    lineHeight: 28,
-    textAlign: "center",
-    color: greenWave.color.inkSecondary,
-  },
-  centeredState: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: greenWave.spacing.xl,
-    gap: greenWave.spacing.sm,
-  },
-  centeredTitle: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    color: greenWave.color.ink,
-    textAlign: "center",
-  },
-  centeredBody: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: greenWave.color.inkSecondary,
-    textAlign: "center",
-  },
-  centeredAction: {
-    marginTop: greenWave.spacing.md,
-    alignSelf: "stretch",
-  },
-  glyph18: {
-    width: 18,
-    height: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  glyphLine: {
-    position: "absolute",
-    width: 18,
-    height: 2,
-    borderRadius: 1,
-  },
-  clockFace: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1.6,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  clockHandVertical: {
-    position: "absolute",
-    width: 1.6,
-    height: 4.5,
-    borderRadius: 1,
-    top: 3,
-  },
-  clockHandHorizontal: {
-    position: "absolute",
-    width: 4,
-    height: 1.6,
-    borderRadius: 1,
-    left: 7,
-  },
-});
+function useStyles({ progressWidth }: { progressWidth?: string } = {}) {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+      safeArea: {
+        flex: 1,
+        backgroundColor: colors.paper,
+      },
+      container: {
+        flex: 1,
+        paddingHorizontal: spacing.exact(24),
+      },
+      headerBlock: {
+        paddingTop: spacing.exact(8),
+        gap: spacing.exact(12),
+      },
+      topBar: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(12),
+      },
+      iconButton: {
+        width: spacing.exact(40),
+        height: spacing.exact(40),
+        marginLeft: -spacing.exact(8),
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: radius.md,
+      },
+      topBarTitle: {
+        flex: 1,
+        gap: spacing.exact(2),
+      },
+      eyebrow: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textMuted,
+      },
+      topBarHeading: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        color: colors.textPrimary,
+      },
+      timerPill: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(4),
+        paddingHorizontal: spacing.exact(8),
+        paddingVertical: spacing.exact(4),
+        borderRadius: radius.md,
+        backgroundColor: colors.track,
+      },
+      timerPillUrgent: {
+        backgroundColor: accents.red.soft,
+      },
+      timerPillText: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        fontWeight: "600",
+        letterSpacing: -0.14,
+        fontVariant: ["tabular-nums"],
+        color: colors.textPrimary,
+      },
+      timerPillTextUrgent: {
+        color: accents.red.ink,
+      },
+      scopeRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+      },
+      scopeText: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textSecondary,
+      },
+      scrollContent: {
+        paddingTop: spacing.exact(8),
+        paddingBottom: spacing.exact(12),
+        gap: spacing.exact(12),
+      },
+      mediaBleed: {
+        marginHorizontal: -spacing.exact(24),
+      },
+      timerBlock: {
+        gap: spacing.exact(4),
+      },
+      timerLabelRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+      },
+      timerLabel: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textSecondary,
+      },
+      timerValue: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        fontWeight: "600",
+        color: colors.textSecondary,
+      },
+      progressTrack: {
+        height: spacing.exact(12),
+        borderRadius: radius.pill,
+        backgroundColor: colors.track,
+        overflow: "hidden",
+      },
+      progressFill: {
+        width: progressWidth ?? "100%",
+        height: spacing.exact(12),
+        borderRadius: radius.pill,
+        backgroundColor: colors.textMuted,
+      },
+      progressFillUrgent: {
+        backgroundColor: accents.red.fill,
+      },
+      promptText: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "500",
+        letterSpacing: -0.16,
+        color: colors.textPrimary,
+      },
+      optionsRow: {
+        flexDirection: "row",
+        gap: spacing.exact(4),
+      },
+      optionsColumn: {
+        gap: spacing.exact(4),
+      },
+      booleanOption: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(12),
+        paddingVertical: spacing.exact(20),
+        borderRadius: radius.lg,
+        backgroundColor: colors.surface,
+      },
+      booleanOptionLabel: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textPrimary,
+        textAlign: "center",
+      },
+      multiOption: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(12),
+        padding: spacing.exact(12),
+        borderRadius: radius.lg,
+        backgroundColor: colors.surface,
+      },
+      optionSelected: {
+        backgroundColor: accents.blue.fill,
+      },
+      optionLabelSelected: {
+        color: colors.onAccent,
+        fontWeight: "600",
+      },
+      letterCircle: {
+        width: spacing.exact(24),
+        height: spacing.exact(24),
+        borderRadius: radius.pill,
+        borderWidth: 2,
+        borderColor: colors.line,
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      letterCircleSelected: {
+        backgroundColor: colors.white,
+        borderColor: colors.white,
+      },
+      letterText: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        fontWeight: "600",
+        textAlign: "center",
+        color: colors.textMuted,
+      },
+      letterTextSelected: {
+        color: accents.blue.fill,
+      },
+      multiOptionLabel: {
+        flex: 1,
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textPrimary,
+      },
+      footer: {
+        paddingTop: spacing.exact(12),
+        paddingBottom: spacing.exact(8),
+        gap: spacing.exact(8),
+      },
+      primaryButton: {
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(24),
+        paddingVertical: spacing.exact(12),
+        borderRadius: radius.pill,
+        backgroundColor: accents.green.fill,
+        shadowColor: colors.shadow,
+        shadowOpacity: 0.1,
+        shadowRadius: spacing.exact(18),
+        shadowOffset: { width: 0, height: spacing.exact(14) },
+        elevation: 4,
+      },
+      primaryButtonDisabled: {
+        opacity: 0.45,
+      },
+      primaryButtonLabel: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: colors.onAccent,
+      },
+      pressed: {
+        opacity: 0.85,
+      },
+      errorText: {
+        fontSize: responsiveFont(13),
+        lineHeight: responsiveFont(20),
+        color: accents.red.ink,
+      },
+      completeContainer: {
+        flex: 1,
+        paddingHorizontal: spacing.exact(24),
+        paddingBottom: spacing.exact(24),
+      },
+      completeHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+      },
+      completeBody: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(12),
+      },
+      completeBadge: {
+        width: spacing.exact(96),
+        height: spacing.exact(96),
+        borderRadius: radius.pill,
+        backgroundColor: colors.surface,
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: spacing.exact(24),
+      },
+      completeTitle: {
+        fontSize: responsiveFont(32),
+        lineHeight: responsiveFont(36),
+        fontWeight: "700",
+        letterSpacing: -0.64,
+        textAlign: "center",
+        color: colors.textPrimary,
+        marginBottom: spacing.exact(16),
+      },
+      completeMessage: {
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(28),
+        textAlign: "center",
+        color: colors.textSecondary,
+      },
+      centeredState: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(24),
+        gap: spacing.exact(8),
+      },
+      centeredTitle: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: colors.textPrimary,
+        textAlign: "center",
+      },
+      centeredBody: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textSecondary,
+        textAlign: "center",
+      },
+      centeredAction: {
+        marginTop: spacing.exact(12),
+        alignSelf: "stretch",
+      },
+    })
+  );
+}

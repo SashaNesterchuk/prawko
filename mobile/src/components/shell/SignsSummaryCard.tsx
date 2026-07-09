@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
 
 type SignsSummaryCardProps = {
   title: string;
@@ -22,6 +22,7 @@ export function SignsSummaryCard({
   onTrainAll,
 }: SignsSummaryCardProps) {
   const clamped = Math.max(0, Math.min(readiness, 100));
+  const styles = useStyles({ fillWidth: `${clamped}%` });
 
   return (
     <View style={styles.card}>
@@ -31,12 +32,7 @@ export function SignsSummaryCard({
       </View>
 
       <View style={styles.track}>
-        <View
-          style={[
-            styles.fill,
-            { width: `${clamped}%`, backgroundColor: greenWaveAccent.green.fill },
-          ]}
-        />
+        <View style={styles.fill} />
       </View>
 
       <View style={styles.footerRow}>
@@ -57,82 +53,86 @@ export function SignsSummaryCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: greenWave.color.surface,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: greenWave.spacing.md,
-  },
-  title: {
-    flex: 1,
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "700",
-    letterSpacing: -0.56,
-    color: greenWave.color.ink,
-  },
-  readiness: {
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: "700",
-    color: greenWave.color.ink,
-  },
-  track: {
-    height: 6,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.track,
-    overflow: "hidden",
-  },
-  fill: {
-    height: 6,
-    borderRadius: greenWave.radius.pill,
-  },
-  footerRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    gap: greenWave.spacing.md,
-  },
-  statsCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  statsLabel: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkMuted,
-  },
-  statsValue: {
-    fontSize: 15,
-    lineHeight: 22,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-  },
-  trainButton: {
-    paddingVertical: 10,
-    paddingHorizontal: greenWave.spacing.md,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.paper,
-  },
-  trainButtonLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-});
+function useStyles({ fillWidth }: { fillWidth: string }) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      gap: spacing.md,
+      padding: spacing.lg,
+      borderRadius: radius.xl,
+      backgroundColor: colors.surface,
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.06,
+      shadowRadius: spacing.exact(8),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 2,
+    },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: spacing.md,
+    },
+    title: {
+      flex: 1,
+      fontSize: responsiveFont(28),
+      lineHeight: responsiveFont(34),
+      fontWeight: "700",
+      letterSpacing: -0.56,
+      color: colors.ink,
+    },
+    readiness: {
+      fontSize: responsiveFont(18),
+      lineHeight: responsiveFont(28),
+      fontWeight: "700",
+      color: colors.ink,
+    },
+    track: {
+      height: spacing.exact(6),
+      borderRadius: radius.pill,
+      backgroundColor: colors.track,
+      overflow: "hidden",
+    },
+    fill: {
+      width: fillWidth,
+      height: spacing.exact(6),
+      borderRadius: radius.pill,
+      backgroundColor: theme.accents.green.fill,
+    },
+    footerRow: {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      justifyContent: "space-between",
+      gap: spacing.md,
+    },
+    statsCopy: {
+      flex: 1,
+      gap: spacing.exact(2),
+    },
+    statsLabel: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      color: colors.inkMuted,
+    },
+    statsValue: {
+      fontSize: responsiveFont(15),
+      lineHeight: responsiveFont(22),
+      fontWeight: "600",
+      color: colors.ink,
+    },
+    trainButton: {
+      paddingVertical: spacing.exact(10),
+      paddingHorizontal: spacing.md,
+      borderRadius: radius.pill,
+      backgroundColor: colors.paper,
+    },
+    trainButtonLabel: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "600",
+      color: colors.ink,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+  }));
+}

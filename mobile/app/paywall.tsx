@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -28,8 +27,13 @@ import {
   restoreRevenueCatPurchases,
 } from "../src/features/entitlements/revenuecat";
 import { formatPlanDate } from "../src/features/study-plan/generate-local-study-plan";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../src/portable-ui";
 import { useAnalytics } from "../src/providers/AnalyticsProvider";
 import { useErrorLogger } from "../src/providers/ErrorLoggingProvider";
+import { useTheme } from "../src/providers/ThemeProvider";
 import {
   useEntitlementStore,
   useHasPlusAccess,
@@ -39,10 +43,12 @@ import {
   useRevenueCatStatus,
 } from "../src/state/entitlements";
 import { useCurrentUser, useAppShellStore } from "../src/state/app-shell";
-import { greenWave, greenWaveAccent } from "../src/theme/green-wave";
 
 export default function PaywallPage() {
   const { t } = useTranslation();
+  const { responsiveFont } = useResponsiveFonts();
+  const { colors } = useTheme();
+  const styles = useStyles();
   const { track } = useAnalytics();
   const { captureError } = useErrorLogger();
   const params = useLocalSearchParams<{
@@ -135,6 +141,8 @@ export default function PaywallPage() {
 
   const displayPrice =
     selectedPackage?.priceString ?? t("paywall.ctaFallbackPrice");
+  const closeIconSize = responsiveFont(28);
+  const crownIconSize = responsiveFont(32);
 
   useEffect(() => {
     if (!selectedPackageKey && recommendedPackage) {
@@ -421,7 +429,7 @@ export default function PaywallPage() {
               pressed ? styles.pressed : null,
             ]}
           >
-            <Ionicons color="#ffffff" name="close" size={28} />
+            <Ionicons color={colors.onAccent} name="close" size={closeIconSize} />
           </Pressable>
         </View>
 
@@ -431,7 +439,11 @@ export default function PaywallPage() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.hero}>
-            <MaterialCommunityIcons color="#ffffff" name="crown-outline" size={32} />
+            <MaterialCommunityIcons
+              color={colors.onAccent}
+              name="crown-outline"
+              size={crownIconSize}
+            />
             <Text style={styles.heroTitle}>
               {t(hasPlusAccess ? "paywall.activeTitle" : "paywall.comparisonTitle")}
             </Text>
@@ -507,7 +519,7 @@ export default function PaywallPage() {
                 ]}
               >
                 {isPurchasing ? (
-                  <ActivityIndicator color="#ffffff" />
+                  <ActivityIndicator color={colors.onAccent} />
                 ) : (
                   <Text style={styles.ctaLabel}>
                     {!currentUser || authMode !== "supabase"
@@ -583,151 +595,153 @@ function getPackageKey(item: {
   return `${item.offeringIdentifier}:${item.identifier}`;
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingBottom: greenWave.spacing.xs,
-  },
-  closeButton: {
-    alignSelf: "flex-start",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.xs,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingBottom: greenWave.spacing.xl,
-    gap: greenWave.spacing.lg,
-  },
-  hero: {
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-    paddingBottom: greenWave.spacing.xs,
-  },
-  heroTitle: {
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: "500",
-    textAlign: "center",
-    color: "#ffffff",
-  },
-  heroPrice: {
-    fontSize: 32,
-    lineHeight: 36,
-    fontWeight: "700",
-    letterSpacing: -0.64,
-    textAlign: "center",
-    color: "#ffffff",
-  },
-  activeCard: {
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    gap: greenWave.spacing.xs,
-  },
-  activeCardTitle: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  activeCardBody: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: "rgba(255,255,255,0.85)",
-  },
-  noAdsBadge: {
-    alignSelf: "center",
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingVertical: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.green.ink,
-  },
-  noAdsBadgeText: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-    textAlign: "center",
-    color: "#ffffff",
-  },
-  feedbackText: {
-    fontSize: 13,
-    lineHeight: 20,
-    textAlign: "center",
-  },
-  feedbackError: {
-    color: "#ffe0db",
-  },
-  feedbackSuccess: {
-    color: "#ffffff",
-  },
-  helperText: {
-    fontSize: 13,
-    lineHeight: 20,
-    textAlign: "center",
-    color: "rgba(255,255,255,0.85)",
-  },
-  lifetimeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: greenWave.spacing.xs,
-  },
-  lifetimeText: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "400",
-    color: "#ffffff",
-  },
-  lifetimeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "rgba(255,255,255,0.7)",
-  },
-  cta: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 52,
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingVertical: greenWave.spacing.md,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.amber.fill,
-    shadowColor: "#000000",
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
-  },
-  ctaDisabled: {
-    opacity: 0.55,
-  },
-  ctaLabel: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "700",
-    letterSpacing: -0.2,
-    textAlign: "center",
-    color: "#ffffff",
-  },
-  restoreButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: greenWave.spacing.sm,
-  },
-  restoreLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "400",
-    color: "rgba(255,255,255,0.85)",
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ accents, colors, radius, responsiveFont, spacing }) => ({
+    safeArea: {
+      flex: 1,
+    },
+    header: {
+      paddingHorizontal: spacing.exact(16),
+      paddingBottom: spacing.exact(4),
+    },
+    closeButton: {
+      alignSelf: "flex-start",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.exact(4),
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    scroll: {
+      flex: 1,
+    },
+    content: {
+      paddingHorizontal: spacing.exact(24),
+      paddingBottom: spacing.exact(24),
+      gap: spacing.exact(16),
+    },
+    hero: {
+      alignItems: "center",
+      gap: spacing.exact(8),
+      paddingBottom: spacing.exact(4),
+    },
+    heroTitle: {
+      fontSize: responsiveFont(18),
+      lineHeight: responsiveFont(24),
+      fontWeight: "500",
+      textAlign: "center",
+      color: colors.onAccent,
+    },
+    heroPrice: {
+      fontSize: responsiveFont(32),
+      lineHeight: responsiveFont(36),
+      fontWeight: "700",
+      letterSpacing: -0.64,
+      textAlign: "center",
+      color: colors.onAccent,
+    },
+    activeCard: {
+      padding: spacing.exact(16),
+      borderRadius: radius.xl,
+      backgroundColor: colors.glassThin,
+      gap: spacing.exact(4),
+    },
+    activeCardTitle: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      color: colors.onAccent,
+    },
+    activeCardBody: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      color: colors.onAccentMuted,
+    },
+    noAdsBadge: {
+      alignSelf: "center",
+      paddingHorizontal: spacing.exact(16),
+      paddingVertical: spacing.exact(8),
+      borderRadius: radius.pill,
+      backgroundColor: accents.green.ink,
+    },
+    noAdsBadgeText: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "600",
+      textAlign: "center",
+      color: colors.onAccent,
+    },
+    feedbackText: {
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(20),
+      textAlign: "center",
+    },
+    feedbackError: {
+      color: colors.warningSoft,
+    },
+    feedbackSuccess: {
+      color: colors.onAccent,
+    },
+    helperText: {
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(20),
+      textAlign: "center",
+      color: colors.onAccentMuted,
+    },
+    lifetimeRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.exact(4),
+    },
+    lifetimeText: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "400",
+      color: colors.onAccent,
+    },
+    lifetimeDot: {
+      width: spacing.exact(4),
+      height: spacing.exact(4),
+      borderRadius: spacing.exact(2),
+      backgroundColor: colors.glassStrong,
+    },
+    cta: {
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: spacing.exact(52),
+      paddingHorizontal: spacing.exact(24),
+      paddingVertical: spacing.exact(12),
+      borderRadius: radius.pill,
+      backgroundColor: accents.amber.fill,
+      shadowColor: colors.shadowDeep,
+      shadowOpacity: 0.15,
+      shadowRadius: spacing.exact(12),
+      shadowOffset: { width: 0, height: spacing.exact(6) },
+      elevation: 4,
+    },
+    ctaDisabled: {
+      opacity: 0.55,
+    },
+    ctaLabel: {
+      fontSize: responsiveFont(20),
+      lineHeight: responsiveFont(28),
+      fontWeight: "700",
+      letterSpacing: -0.2,
+      textAlign: "center",
+      color: colors.onAccent,
+    },
+    restoreButton: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: spacing.exact(8),
+    },
+    restoreLabel: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "400",
+      color: colors.onAccentMuted,
+    },
+  }));
+}

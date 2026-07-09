@@ -7,12 +7,12 @@ import { PLAN_LEVELS } from "@prawko/config";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { useTheme } from "../../src/providers/ThemeProvider";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 
 export default function LevelScreen() {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const styles = useStyles();
   const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const setLevel = useAppShellStore((state) => state.setLevel);
   const selectedLevel = studyPlanSetup.level ?? "first_time";
@@ -22,7 +22,7 @@ export default function LevelScreen() {
       title={t("onboarding.levelTitle")}
       subtitle={t("onboarding.levelSubtitle")}
       footer={
-        <View style={{ gap: 10 }}>
+        <View style={styles.footerStack}>
           <AppButton
             label={t("common.continue")}
             onPress={() => {
@@ -38,29 +38,16 @@ export default function LevelScreen() {
         </View>
       }
     >
-      <View style={{ gap: 12 }}>
+      <View style={styles.cardStack}>
         {PLAN_LEVELS.map((level) => {
           const isActive = selectedLevel === level;
 
           return (
             <AppCard key={level} accent={isActive} onPress={() => setLevel(level)}>
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "700",
-                  color: theme.colors.textPrimary,
-                  marginBottom: 4,
-                }}
-              >
+              <Text style={styles.optionTitle}>
                 {t(`levels.${level}.label`)}
               </Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                  lineHeight: 22,
-                  color: theme.colors.textSecondary,
-                }}
-              >
+              <Text style={styles.optionBody}>
                 {t(`levels.${level}.description`)}
               </Text>
             </AppCard>
@@ -69,4 +56,26 @@ export default function LevelScreen() {
       </View>
     </AppScreen>
   );
+}
+
+function useStyles() {
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
+    footerStack: {
+      gap: spacing.exact(10),
+    },
+    cardStack: {
+      gap: spacing.exact(12),
+    },
+    optionTitle: {
+      fontSize: responsiveFont(18),
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: spacing.exact(4),
+    },
+    optionBody: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+      color: colors.textSecondary,
+    },
+  }));
 }

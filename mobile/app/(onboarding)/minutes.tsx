@@ -5,14 +5,14 @@ import { Text, View } from "react-native";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { useTheme } from "../../src/providers/ThemeProvider";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 
 const MINUTE_OPTIONS = [15, 25, 45, 60] as const;
 
 export default function MinutesScreen() {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const styles = useStyles();
   const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const setMinutesPerDay = useAppShellStore((state) => state.setMinutesPerDay);
   const selectedMinutes = studyPlanSetup.minutesPerDay ?? 25;
@@ -22,7 +22,7 @@ export default function MinutesScreen() {
       title={t("onboarding.minutesTitle")}
       subtitle={t("onboarding.minutesSubtitle")}
       footer={
-        <View style={{ gap: 10 }}>
+        <View style={styles.footerStack}>
           <AppButton
             label={t("common.continue")}
             onPress={() => {
@@ -38,7 +38,7 @@ export default function MinutesScreen() {
         </View>
       }
     >
-      <View style={{ gap: 12 }}>
+      <View style={styles.cardStack}>
         {MINUTE_OPTIONS.map((minutes) => {
           const isActive = selectedMinutes === minutes;
 
@@ -48,23 +48,10 @@ export default function MinutesScreen() {
               accent={isActive}
               onPress={() => setMinutesPerDay(minutes)}
             >
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "700",
-                  color: theme.colors.textPrimary,
-                  marginBottom: 4,
-                }}
-              >
+              <Text style={styles.optionTitle}>
                 {t("onboarding.minutesOptionTitle", { minutes })}
               </Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                  lineHeight: 22,
-                  color: theme.colors.textSecondary,
-                }}
-              >
+              <Text style={styles.optionBody}>
                 {minutes <= 20
                   ? t("onboarding.minutesOptionMinimum")
                   : t("onboarding.minutesOptionFull")}
@@ -75,4 +62,26 @@ export default function MinutesScreen() {
       </View>
     </AppScreen>
   );
+}
+
+function useStyles() {
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
+    footerStack: {
+      gap: spacing.exact(10),
+    },
+    cardStack: {
+      gap: spacing.exact(12),
+    },
+    optionTitle: {
+      fontSize: responsiveFont(18),
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: spacing.exact(4),
+    },
+    optionBody: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+      color: colors.textSecondary,
+    },
+  }));
 }

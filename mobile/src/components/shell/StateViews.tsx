@@ -1,5 +1,6 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
+import { useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type StateViewProps = {
@@ -9,7 +10,7 @@ type StateViewProps = {
 
 export function StateView({ title, description }: StateViewProps) {
   const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
 
   return (
     <View style={styles.base}>
@@ -21,7 +22,7 @@ export function StateView({ title, description }: StateViewProps) {
 
 export function LoadingStateView({ title, description }: StateViewProps) {
   const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
 
   return (
     <View style={styles.base}>
@@ -40,26 +41,27 @@ export function ErrorStateView({ title, description }: StateViewProps) {
   return <StateView title={title} description={description} />;
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
+function useStyles() {
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
     base: {
       flex: 1,
       alignItems: "center",
       justifyContent: "center",
-      gap: 10,
-      paddingHorizontal: 20,
+      gap: spacing.exact(10),
+      paddingHorizontal: spacing.exact(20),
     },
     title: {
-      fontSize: 22,
-      lineHeight: 28,
+      fontSize: responsiveFont(22),
+      lineHeight: responsiveFont(28),
       fontWeight: "800",
-      color: theme.colors.textPrimary,
+      color: colors.textPrimary,
       textAlign: "center",
     },
     description: {
-      fontSize: 15,
-      lineHeight: 24,
-      color: theme.colors.textSecondary,
+      fontSize: responsiveFont(15),
+      lineHeight: responsiveFont(24),
+      color: colors.textSecondary,
       textAlign: "center",
     },
-  });
+  }));
+}

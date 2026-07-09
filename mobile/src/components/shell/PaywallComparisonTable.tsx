@@ -1,7 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 export type PaywallComparisonCell =
   | { kind: "check" }
@@ -27,6 +31,8 @@ export function PaywallComparisonTable({
   premiumLabel,
   rows,
 }: PaywallComparisonTableProps) {
+  const styles = useStyles();
+
   return (
     <View style={styles.card}>
       <View style={[styles.row, styles.headerRow]}>
@@ -55,20 +61,24 @@ export function PaywallComparisonTable({
 }
 
 function ComparisonCell({ cell }: { cell: PaywallComparisonCell }) {
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles();
+
   return (
     <View style={styles.cell}>
       {cell.kind === "check" ? (
         <Ionicons
-          color={greenWaveAccent.green.fill}
+          color={theme.accents.green.fill}
           name="checkmark"
-          size={16}
+          size={responsiveFont(16)}
         />
       ) : null}
       {cell.kind === "cross" ? (
         <Ionicons
-          color={greenWaveAccent.red.fill}
+          color={theme.accents.red.fill}
           name="close"
-          size={16}
+          size={responsiveFont(16)}
         />
       ) : null}
       {cell.kind === "label" ? (
@@ -78,76 +88,78 @@ function ComparisonCell({ cell }: { cell: PaywallComparisonCell }) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    width: "100%",
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: "#ffffff",
-    overflow: "hidden",
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.xs,
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingVertical: greenWave.spacing.md,
-  },
-  rowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: greenWave.color.line,
-  },
-  headerRow: {
-    justifyContent: "flex-end",
-  },
-  featureColumn: {
-    flex: 1,
-    minWidth: 0,
-  },
-  headerFree: {
-    width: 60,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "500",
-    textAlign: "center",
-    color: greenWave.color.inkSecondary,
-  },
-  headerPremium: {
-    width: 60,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "500",
-    textAlign: "center",
-    color: greenWaveAccent.amber.ink,
-  },
-  featureTitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-  },
-  featureSubtitle: {
-    marginTop: greenWave.spacing.xs,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWave.color.inkMuted,
-  },
-  cell: {
-    width: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 20,
-  },
-  cellLabel: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    textAlign: "center",
-    color: greenWave.color.inkMuted,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      width: "100%",
+      borderRadius: radius.xl,
+      backgroundColor: colors.white,
+      overflow: "hidden",
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.08,
+      shadowRadius: spacing.exact(16),
+      shadowOffset: { width: 0, height: spacing.exact(4) },
+      elevation: 4,
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.xs,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    rowBorder: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.line,
+    },
+    headerRow: {
+      justifyContent: "flex-end",
+    },
+    featureColumn: {
+      flex: 1,
+      minWidth: 0,
+    },
+    headerFree: {
+      width: spacing.exact(60),
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "500",
+      textAlign: "center",
+      color: colors.inkSecondary,
+    },
+    headerPremium: {
+      width: spacing.exact(60),
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "500",
+      textAlign: "center",
+      color: theme.accents.amber.ink,
+    },
+    featureTitle: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "600",
+      color: colors.ink,
+    },
+    featureSubtitle: {
+      marginTop: spacing.xs,
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.inkMuted,
+    },
+    cell: {
+      width: spacing.exact(60),
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: spacing.exact(20),
+    },
+    cellLabel: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      textAlign: "center",
+      color: colors.inkMuted,
+    },
+  }));
+}

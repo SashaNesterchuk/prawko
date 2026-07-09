@@ -9,7 +9,6 @@ import {
 } from "react";
 import {
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -19,6 +18,7 @@ import {
   normalizeCapturedError,
   persistMobileErrorLog,
 } from "../features/errors/error-logging";
+import { useResponsiveStyles } from "../portable-ui";
 import { useCurrentUser, useAppShellStore } from "../state/app-shell";
 import { type AnalyticsTrackPayload, useAnalytics } from "./AnalyticsProvider";
 
@@ -214,74 +214,90 @@ class RootErrorBoundary extends Component<
       return this.props.children;
     }
 
-    return (
-      <View style={styles.crashContainer}>
-        <View style={styles.crashCard}>
-          <Text style={styles.crashEyebrow}>Prawko</Text>
-          <Text style={styles.crashTitle}>The app hit an unexpected error.</Text>
-          <Text style={styles.crashBody}>
-            The issue was recorded for review. Try reopening the screen or restarting
-            the app.
-          </Text>
-          <Pressable
-            onPress={() => this.setState({ hasError: false })}
-            style={styles.crashButton}
-          >
-            <Text style={styles.crashButtonLabel}>Try again</Text>
-          </Pressable>
-        </View>
-      </View>
-    );
+    return <CrashFallback onRetry={() => this.setState({ hasError: false })} />;
   }
 }
 
-const styles = StyleSheet.create({
-  crashBody: {
-    color: "#4B4035",
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  crashButton: {
-    alignItems: "center",
-    backgroundColor: "#7A3216",
-    borderRadius: 999,
-    justifyContent: "center",
-    minHeight: 46,
-    paddingHorizontal: 20,
-  },
-  crashButtonLabel: {
-    color: "#FFF6EF",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  crashCard: {
-    backgroundColor: "rgba(255, 249, 238, 0.96)",
-    borderColor: "rgba(38, 30, 18, 0.1)",
-    borderRadius: 24,
-    borderWidth: 1,
-    gap: 12,
-    maxWidth: 420,
-    padding: 24,
-    width: "100%",
-  },
-  crashContainer: {
-    alignItems: "center",
-    backgroundColor: "#F3EFE7",
-    flex: 1,
-    justifyContent: "center",
-    padding: 24,
-  },
-  crashEyebrow: {
-    color: "#7A3216",
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 1.4,
-    textTransform: "uppercase",
-  },
-  crashTitle: {
-    color: "#1F1D1A",
-    fontSize: 28,
-    fontWeight: "800",
-    lineHeight: 30,
-  },
-});
+function CrashFallback({ onRetry }: { onRetry: () => void }) {
+  const styles = useCrashStyles();
+
+  return (
+    <View style={styles.crashContainer}>
+      <View style={styles.crashCard}>
+        <Text style={styles.crashEyebrow}>Prawko</Text>
+        <Text style={styles.crashTitle}>The app hit an unexpected error.</Text>
+        <Text style={styles.crashBody}>
+          The issue was recorded for review. Try reopening the screen or restarting
+          the app.
+        </Text>
+        <Pressable
+          onPress={onRetry}
+          style={({ pressed }) => [
+            styles.crashButton,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <Text style={styles.crashButtonLabel}>Try again</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function useCrashStyles() {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+      crashContainer: {
+        alignItems: "center",
+        backgroundColor: colors.background,
+        flex: 1,
+        justifyContent: "center",
+        padding: spacing.exact(24),
+      },
+      crashCard: {
+        backgroundColor: colors.surfaceStrong,
+        borderColor: colors.borderSoft,
+        borderRadius: radius.xl,
+        borderWidth: 1,
+        gap: spacing.exact(12),
+        maxWidth: spacing.exact(420),
+        padding: spacing.exact(24),
+        width: "100%",
+      },
+      crashEyebrow: {
+        color: accents.red.ink,
+        fontSize: responsiveFont(12),
+        fontWeight: "800",
+        letterSpacing: 1.4,
+        textTransform: "uppercase",
+      },
+      crashTitle: {
+        color: colors.textPrimary,
+        fontSize: responsiveFont(28),
+        fontWeight: "800",
+        lineHeight: responsiveFont(30),
+      },
+      crashBody: {
+        color: colors.textSecondary,
+        fontSize: responsiveFont(15),
+        lineHeight: responsiveFont(22),
+      },
+      crashButton: {
+        alignItems: "center",
+        backgroundColor: accents.red.fill,
+        borderRadius: radius.pill,
+        justifyContent: "center",
+        minHeight: spacing.exact(46),
+        paddingHorizontal: spacing.exact(20),
+      },
+      crashButtonLabel: {
+        color: colors.onAccent,
+        fontSize: responsiveFont(15),
+        fontWeight: "700",
+      },
+      pressed: {
+        opacity: 0.9,
+      },
+    })
+  );
+}

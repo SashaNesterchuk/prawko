@@ -1,7 +1,7 @@
 import { PropsWithChildren } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
-import { useTheme } from "../../providers/ThemeProvider";
+import { useResponsiveStyles } from "../../portable-ui";
 
 type AppCardProps = PropsWithChildren<{
   accent?: boolean;
@@ -9,8 +9,7 @@ type AppCardProps = PropsWithChildren<{
 }>;
 
 export function AppCard({ accent = false, children, onPress }: AppCardProps) {
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
 
   if (onPress) {
     return (
@@ -31,28 +30,29 @@ export function AppCard({ accent = false, children, onPress }: AppCardProps) {
   return <View style={[styles.base, accent ? styles.accent : null]}>{children}</View>;
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, spacing }) => ({
     base: {
-      borderRadius: theme.radius.xlarge,
-      padding: 18,
-      backgroundColor: theme.colors.surface,
+      borderRadius: radius.xlarge,
+      padding: spacing.exact(18),
+      backgroundColor: colors.surface,
       borderWidth: 1,
-      borderColor: theme.colors.borderSoft,
-      shadowColor: theme.colors.shadow,
+      borderColor: colors.borderSoft,
+      shadowColor: colors.shadow,
       shadowOpacity: 0.08,
-      shadowRadius: 16,
+      shadowRadius: spacing.exact(16),
       shadowOffset: {
         width: 0,
-        height: 8,
+        height: spacing.exact(8),
       },
       elevation: 2,
     },
     accent: {
-      borderColor: theme.colors.accentMuted,
-      backgroundColor: theme.colors.cardAccent,
+      borderColor: colors.accentMuted,
+      backgroundColor: colors.cardAccent,
     },
     pressed: {
       opacity: 0.88,
     },
-  });
+  }));
+}

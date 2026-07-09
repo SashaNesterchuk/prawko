@@ -1,14 +1,17 @@
 import { useMemo } from "react";
-import { useTheme } from "@react-navigation/native";
-import type { StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 
+import { useTheme } from "../../providers/ThemeProvider";
 import { useResponsiveFonts } from "./useResponsiveFonts";
 import { useResponsiveSpacing } from "./useResponsiveSpacing";
 
 export interface ResponsiveStylesContext {
+  theme: ReturnType<typeof useTheme>;
   spacing: ReturnType<typeof useResponsiveSpacing>;
   responsiveFont: (size: number) => number;
   colors: ReturnType<typeof useTheme>["colors"];
+  accents: ReturnType<typeof useTheme>["accents"];
+  radius: ReturnType<typeof useTheme>["radius"];
 }
 
 export function useResponsiveStyles<T extends StyleSheet.NamedStyles<T>>(
@@ -16,10 +19,21 @@ export function useResponsiveStyles<T extends StyleSheet.NamedStyles<T>>(
 ): T {
   const spacing = useResponsiveSpacing();
   const { responsiveFont } = useResponsiveFonts();
-  const { colors } = useTheme();
+  const theme = useTheme();
+  const { accents, colors, radius } = theme;
 
   return useMemo(
-    () => factory({ spacing, responsiveFont, colors }),
-    [spacing, responsiveFont, colors, factory]
+    () =>
+      StyleSheet.create(
+        factory({
+          theme,
+          spacing,
+          responsiveFont,
+          colors,
+          accents,
+          radius,
+        })
+      ),
+    [factory, theme, spacing, responsiveFont, colors, accents, radius]
   );
 }

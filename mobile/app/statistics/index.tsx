@@ -4,13 +4,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { TOPIC_BLOCK_IDS, type TopicBlockId } from "@prawko/config";
@@ -38,6 +32,12 @@ import {
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import { getDaysUntilExamFromDate } from "../../src/features/study-plan/generate-local-study-plan";
 import {
+  useResponsiveFonts,
+  useResponsiveSpacing,
+  useResponsiveStyles,
+} from "../../src/portable-ui";
+import { useTheme } from "../../src/providers/ThemeProvider";
+import {
   fetchRemoteHomeProgress,
   getWarsawIsoDate,
   type RemoteReadinessSummary,
@@ -48,7 +48,6 @@ import {
 } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
-import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
 
 type StatisticsTab = "exam" | "signs";
 
@@ -64,18 +63,21 @@ function resolveReadinessLevel(readiness: number) {
   return "low" as const;
 }
 
-function resolveRingColor(readiness: number) {
+function resolveRingColor(
+  readiness: number,
+  accents: ReturnType<typeof useTheme>["accents"]
+) {
   const level = resolveReadinessLevel(readiness);
 
   if (level === "high") {
-    return greenWaveAccent.green.fill;
+    return accents.green.fill;
   }
 
   if (level === "mid") {
-    return greenWaveAccent.amber.fill;
+    return accents.amber.fill;
   }
 
-  return greenWaveAccent.red.fill;
+  return accents.red.fill;
 }
 
 function getBestExamScore(sessions: RemoteExamSession[]) {
@@ -126,6 +128,9 @@ function getBestSessionAccuracy(
 export default function StatisticsScreen() {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
+  const { accents, colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const spacing = useResponsiveSpacing();
   const isFocused = useIsFocused();
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
@@ -225,6 +230,12 @@ export default function StatisticsScreen() {
   const signsReadiness = signsTopic.progress;
   const readiness = activeTab === "exam" ? examReadiness : signsReadiness;
   const readinessLevel = resolveReadinessLevel(readiness);
+  const ringColor = resolveRingColor(readiness, accents);
+  const styles = useStyles({ ringColor, safeBottom });
+  const backIconSize = responsiveFont(22);
+  const smallIconSize = responsiveFont(16);
+  const ringSize = spacing.exact(160);
+  const ringStroke = spacing.exact(10);
 
   const metrics = useMemo(
     () => getProfileStatMetrics(attempts, examSessions.length),
@@ -288,7 +299,11 @@ export default function StatisticsScreen() {
             onPress={() => router.back()}
             style={({ pressed }) => [styles.backButton, pressed ? styles.pressed : null]}
           >
-            <Ionicons color={greenWave.color.ink} name="chevron-back" size={22} />
+            <Ionicons
+              color={colors.textPrimary}
+              name="chevron-back"
+              size={backIconSize}
+            />
           </Pressable>
           <Text style={styles.headerTitle}>
             {t("statistics.title", { defaultValue: "Статистика" })}
@@ -297,10 +312,7 @@ export default function StatisticsScreen() {
 
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: 24 + safeBottom },
-          ]}
+          contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.segment}>
@@ -343,16 +355,11 @@ export default function StatisticsScreen() {
           <View style={styles.overviewRow}>
             <ProgressRing
               progress={readiness}
-              size={160}
-              stroke={10}
-              color={resolveRingColor(readiness)}
+              size={ringSize}
+              stroke={ringStroke}
+              color={ringColor}
             >
-              <Text
-                style={[
-                  styles.ringValue,
-                  { color: resolveRingColor(readiness) },
-                ]}
-              >
+              <Text style={styles.ringValue}>
                 {`${readiness}%`}
               </Text>
             </ProgressRing>
@@ -418,9 +425,9 @@ export default function StatisticsScreen() {
                   </Text>
                   <View style={styles.infoButton}>
                     <Ionicons
-                      color={greenWave.color.inkSecondary}
+                      color={colors.textSecondary}
                       name="information-circle-outline"
-                      size={16}
+                      size={smallIconSize}
                     />
                   </View>
                 </View>
@@ -449,6 +456,7 @@ export default function StatisticsScreen() {
 
               <View style={styles.card}>
                 <StatisticsQueueRow
+                  styles={styles}
                   title={t("statistics.smartReviewTitle", {
                     defaultValue: "Розумні повторення",
                   })}
@@ -462,6 +470,7 @@ export default function StatisticsScreen() {
                 />
                 <View style={styles.divider} />
                 <StatisticsQueueRow
+                  styles={styles}
                   title={t("statistics.mistakesTitle", {
                     defaultValue: "Питання з помилками",
                   })}
@@ -499,9 +508,9 @@ export default function StatisticsScreen() {
                           >
                             <Text style={styles.chipLabel}>{topic.title}</Text>
                             <Ionicons
-                              color={greenWave.color.inkSecondary}
+                              color={colors.textSecondary}
                               name="chevron-forward"
-                              size={16}
+                              size={smallIconSize}
                             />
                           </Pressable>
                         ))}
@@ -513,6 +522,7 @@ export default function StatisticsScreen() {
 
               <View style={styles.card}>
                 <StatisticsSummaryRow
+                  styles={styles}
                   label={t("statistics.totalExams", {
                     defaultValue: "Всього іспитів",
                   })}
@@ -520,6 +530,7 @@ export default function StatisticsScreen() {
                 />
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
+                  styles={styles}
                   label={t("statistics.bestExam", {
                     defaultValue: "Кращий іспит",
                   })}
@@ -535,6 +546,7 @@ export default function StatisticsScreen() {
                 />
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
+                  styles={styles}
                   label={t("statistics.totalTrainings", {
                     defaultValue: "Всього тренувань",
                   })}
@@ -542,6 +554,7 @@ export default function StatisticsScreen() {
                 />
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
+                  styles={styles}
                   label={t("statistics.bestTraining", {
                     defaultValue: "Краще тренування",
                   })}
@@ -551,6 +564,7 @@ export default function StatisticsScreen() {
                 />
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
+                  styles={styles}
                   label={t("statistics.questionsCovered", {
                     defaultValue: "Охоплено питань",
                   })}
@@ -559,6 +573,7 @@ export default function StatisticsScreen() {
                 />
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
+                  styles={styles}
                   label={t("statistics.mistakesFixed", {
                     defaultValue: "Виправлено помилок",
                   })}
@@ -617,6 +632,7 @@ export default function StatisticsScreen() {
 }
 
 function StatisticsQueueRow({
+  styles,
   title,
   subtitle,
   count,
@@ -624,6 +640,7 @@ function StatisticsQueueRow({
   premium = false,
   onPress,
 }: {
+  styles: ReturnType<typeof useStyles>;
   title: string;
   subtitle: string;
   count: number;
@@ -631,8 +648,15 @@ function StatisticsQueueRow({
   premium?: boolean;
   onPress?: () => void;
 }) {
-  const accentColors =
-    accent === "blue" ? greenWaveAccent.blue : greenWaveAccent.red;
+  const { accents } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const accentColors = accent === "blue" ? accents.blue : accents.red;
+  const { colors } = useTheme();
+  const rowStyles = useQueueRowStyles({
+    countBackgroundColor: accentColors.soft,
+    countTextColor: accentColors.ink,
+  });
+  const premiumIconSize = responsiveFont(10);
 
   return (
     <Pressable
@@ -649,31 +673,55 @@ function StatisticsQueueRow({
           <Text style={styles.queueTitle}>{title}</Text>
           {premium ? (
             <View style={styles.premiumBadge}>
-              <Ionicons color="#ffffff" name="star" size={10} />
+              <Ionicons color={colors.onAccent} name="star" size={premiumIconSize} />
             </View>
           ) : null}
         </View>
         <Text style={styles.queueSubtitle}>{subtitle}</Text>
       </View>
-      <View
-        style={[
-          styles.queueCount,
-          { backgroundColor: accentColors.soft },
-        ]}
-      >
-        <Text style={[styles.queueCountText, { color: accentColors.ink }]}>
-          {count}
-        </Text>
+      <View style={rowStyles.queueCount}>
+        <Text style={rowStyles.queueCountText}>{count}</Text>
       </View>
     </Pressable>
   );
 }
 
+function useQueueRowStyles({
+  countBackgroundColor,
+  countTextColor,
+}: {
+  countBackgroundColor: string;
+  countTextColor: string;
+}) {
+  return useResponsiveStyles(
+    ({ radius, responsiveFont, spacing }) => ({
+      queueCount: {
+        minWidth: spacing.exact(40),
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(8),
+        paddingVertical: spacing.exact(8),
+        borderRadius: radius.md,
+        backgroundColor: countBackgroundColor,
+      },
+      queueCountText: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "600",
+        letterSpacing: -0.16,
+        color: countTextColor,
+      },
+    })
+  );
+}
+
 function StatisticsSummaryRow({
+  styles,
   label,
   value,
   badge,
 }: {
+  styles: ReturnType<typeof useStyles>;
   label: string;
   value: string;
   badge?: string;
@@ -693,291 +741,273 @@ function StatisticsSummaryRow({
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingTop: greenWave.spacing.sm,
-    paddingBottom: greenWave.spacing.md,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: greenWave.radius.lg,
-    backgroundColor: "rgba(255,255,255,0.55)",
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    color: greenWave.color.ink,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    padding: greenWave.spacing.xl,
-    gap: greenWave.spacing.xl,
-  },
-  segment: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 2,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.surface,
-  },
-  segmentItem: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingVertical: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.xxl,
-  },
-  segmentItemActive: {
-    backgroundColor: greenWave.color.inkMuted,
-  },
-  segmentLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "500",
-    color: greenWave.color.ink,
-  },
-  segmentLabelActive: {
-    color: "#ffffff",
-  },
-  overviewRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.lg,
-  },
-  ringValue: {
-    fontSize: 40,
-    lineHeight: 40,
-    fontWeight: "700",
-    letterSpacing: -0.8,
-  },
-  overviewCopy: {
-    flex: 1,
-    gap: greenWave.spacing.md,
-  },
-  overviewBlock: {
-    gap: greenWave.spacing.xs,
-  },
-  levelTitle: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    color: greenWave.color.ink,
-  },
-  levelSubtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkSecondary,
-  },
-  trendBadge: {
-    alignSelf: "flex-start",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-    paddingHorizontal: greenWave.spacing.xs,
-    paddingVertical: 2,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.green.soft,
-  },
-  trendText: {
-    fontSize: 11,
-    lineHeight: 12,
-    fontWeight: "500",
-    color: greenWaveAccent.green.ink,
-  },
-  daysValue: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    color: greenWave.color.ink,
-  },
-  card: {
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: "#ffffff",
-    overflow: "hidden",
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: greenWave.spacing.lg,
-    padding: greenWave.spacing.lg,
-  },
-  cardTitle: {
-    flex: 1,
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    color: greenWave.color.ink,
-  },
-  infoButton: {
-    width: 32,
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWave.color.track,
-  },
-  topicList: {
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingBottom: greenWave.spacing.lg,
-    gap: greenWave.spacing.sm,
-  },
-  topicPressable: {
-    width: "100%",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: greenWave.color.line,
-  },
-  queueRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingVertical: greenWave.spacing.lg,
-  },
-  queueCopy: {
-    flex: 1,
-    gap: greenWave.spacing.xs,
-  },
-  queueTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-  },
-  queueTitle: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  premiumBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: greenWave.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: greenWaveAccent.green.fill,
-  },
-  queueSubtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkMuted,
-  },
-  queueCount: {
-    minWidth: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: greenWave.spacing.sm,
-    paddingVertical: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.md,
-  },
-  queueCountText: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-  },
-  weakSection: {
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingVertical: greenWave.spacing.lg,
-    gap: greenWave.spacing.xs,
-  },
-  weakTitle: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  weakSubtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkMuted,
-  },
-  chipRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: greenWave.spacing.sm,
-    marginTop: greenWave.spacing.sm,
-  },
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.xs,
-    paddingLeft: greenWave.spacing.md,
-    paddingRight: greenWave.spacing.sm,
-    paddingVertical: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWave.color.track,
-  },
-  chipLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: greenWave.color.ink,
-  },
-  summaryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: greenWave.spacing.md,
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingVertical: greenWave.spacing.md,
-  },
-  summaryLabel: {
-    flex: 1,
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkSecondary,
-  },
-  summaryValueGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-  },
-  summaryBadge: {
-    paddingHorizontal: greenWave.spacing.xs,
-    paddingVertical: 2,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.track,
-  },
-  summaryBadgeText: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkSecondary,
-  },
-  summaryValue: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "500",
-    color: greenWave.color.ink,
-  },
-  pressed: {
-    opacity: 0.88,
-  },
-});
+function useStyles({
+  ringColor,
+  safeBottom,
+}: {
+  ringColor: string;
+  safeBottom: number;
+}) {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+      safeArea: {
+        flex: 1,
+      },
+      header: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(8),
+        paddingHorizontal: spacing.exact(16),
+        paddingTop: spacing.exact(8),
+        paddingBottom: spacing.exact(12),
+      },
+      backButton: {
+        width: spacing.exact(40),
+        height: spacing.exact(40),
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: radius.lg,
+        backgroundColor: colors.glassTint,
+      },
+      headerTitle: {
+        flex: 1,
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: colors.textPrimary,
+      },
+      scroll: {
+        flex: 1,
+      },
+      content: {
+        padding: spacing.exact(24),
+        paddingBottom: spacing.exact(24) + safeBottom,
+        gap: spacing.exact(24),
+      },
+      segment: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: spacing.exact(2),
+        borderRadius: radius.pill,
+        backgroundColor: colors.surface,
+      },
+      segmentItem: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(8),
+        borderRadius: radius.xxl,
+      },
+      segmentItemActive: {
+        backgroundColor: colors.textMuted,
+      },
+      segmentLabel: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        fontWeight: "500",
+        color: colors.textPrimary,
+      },
+      segmentLabelActive: {
+        color: colors.onAccent,
+      },
+      overviewRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(16),
+      },
+      ringValue: {
+        fontSize: responsiveFont(40),
+        lineHeight: responsiveFont(40),
+        fontWeight: "700",
+        letterSpacing: -0.8,
+        color: ringColor,
+      },
+      overviewCopy: {
+        flex: 1,
+        gap: spacing.exact(12),
+      },
+      overviewBlock: {
+        gap: spacing.exact(4),
+      },
+      levelTitle: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: colors.textPrimary,
+      },
+      levelSubtitle: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textSecondary,
+      },
+      daysValue: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: colors.textPrimary,
+      },
+      card: {
+        borderRadius: radius.xl,
+        backgroundColor: colors.surfaceStrong,
+        overflow: "hidden",
+        shadowColor: colors.shadow,
+        shadowOpacity: 0.05,
+        shadowRadius: spacing.exact(6),
+        shadowOffset: { width: 0, height: spacing.exact(2) },
+        elevation: 2,
+      },
+      cardHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: spacing.exact(16),
+        padding: spacing.exact(16),
+      },
+      cardTitle: {
+        flex: 1,
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: colors.textPrimary,
+      },
+      infoButton: {
+        width: spacing.exact(32),
+        height: spacing.exact(32),
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: radius.md,
+        backgroundColor: colors.track,
+      },
+      topicList: {
+        paddingHorizontal: spacing.exact(16),
+        paddingBottom: spacing.exact(16),
+        gap: spacing.exact(8),
+      },
+      topicPressable: {
+        width: "100%",
+      },
+      divider: {
+        height: 1,
+        backgroundColor: colors.line,
+      },
+      queueRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(12),
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(16),
+      },
+      queueCopy: {
+        flex: 1,
+        gap: spacing.exact(4),
+      },
+      queueTitleRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(8),
+      },
+      queueTitle: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "600",
+        letterSpacing: -0.16,
+        color: colors.textPrimary,
+      },
+      premiumBadge: {
+        width: spacing.exact(20),
+        height: spacing.exact(20),
+        borderRadius: radius.pill,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: accents.green.fill,
+      },
+      queueSubtitle: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textMuted,
+      },
+      weakSection: {
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(16),
+        gap: spacing.exact(4),
+      },
+      weakTitle: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "600",
+        letterSpacing: -0.16,
+        color: colors.textPrimary,
+      },
+      weakSubtitle: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textMuted,
+      },
+      chipRow: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: spacing.exact(8),
+        marginTop: spacing.exact(8),
+      },
+      chip: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(4),
+        paddingLeft: spacing.exact(12),
+        paddingRight: spacing.exact(8),
+        paddingVertical: spacing.exact(8),
+        borderRadius: radius.md,
+        backgroundColor: colors.track,
+      },
+      chipLabel: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textPrimary,
+      },
+      summaryRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: spacing.exact(12),
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(12),
+      },
+      summaryLabel: {
+        flex: 1,
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textSecondary,
+      },
+      summaryValueGroup: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(8),
+      },
+      summaryBadge: {
+        paddingHorizontal: spacing.exact(4),
+        paddingVertical: spacing.exact(2),
+        borderRadius: radius.pill,
+        backgroundColor: colors.track,
+      },
+      summaryBadgeText: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textSecondary,
+      },
+      summaryValue: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        fontWeight: "500",
+        color: colors.textPrimary,
+      },
+      pressed: {
+        opacity: 0.88,
+      },
+    })
+  );
+}

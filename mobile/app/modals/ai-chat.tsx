@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@prawko/config";
@@ -12,18 +12,17 @@ import {
   EmptyStateView,
   LoadingStateView,
 } from "../../src/components/shell/StateViews";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import {
   getAnswerTextFromContext,
 } from "../../src/features/ai/question-chat-context";
 import { useQuestionAiChat } from "../../src/features/ai/use-question-ai-chat";
 import { useHasAiChatAccess } from "../../src/state/entitlements";
 import { useAppShellStore } from "../../src/state/app-shell";
-import { useTheme } from "../../src/providers/ThemeProvider";
 
 export default function AiChatModalScreen() {
   const { t } = useTranslation();
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
   const params = useLocalSearchParams<{
     locale?: string | string[];
     questionId?: string | string[];
@@ -82,7 +81,7 @@ export default function AiChatModalScreen() {
         subtitle={t("modals.aiSubtitle")}
         scroll={false}
         footer={
-          <View style={{ gap: 10 }}>
+          <View style={styles.footerStack}>
             <AppButton
               label={t("modals.openLearn")}
               onPress={() => router.replace("/(tabs)/learn")}
@@ -109,7 +108,7 @@ export default function AiChatModalScreen() {
         title={t("modals.aiTitle")}
         subtitle={t("modals.aiPlusGateSubtitle")}
         footer={
-          <View style={{ gap: 10 }}>
+          <View style={styles.footerStack}>
             <AppButton
               label={t("modals.aiOpenPaywall")}
               onPress={() =>
@@ -155,7 +154,7 @@ export default function AiChatModalScreen() {
       title={t("modals.aiTitle")}
       subtitle={t("modals.aiSubtitle")}
       footer={
-        <View style={{ gap: 10 }}>
+        <View style={styles.footerStack}>
           <AppTextInput
             label={t("modals.aiInputLabel")}
             placeholder={t("modals.aiInputPlaceholder")}
@@ -181,7 +180,7 @@ export default function AiChatModalScreen() {
         </View>
       }
     >
-      <View style={{ gap: 12 }}>
+      <View style={styles.contentStack}>
         <AppCard accent>
           <Text style={styles.eyebrow}>{t(`topics.${questionContext.topicBlock}`)}</Text>
           <Text style={styles.prompt}>{questionContext.prompt}</Text>
@@ -252,8 +251,7 @@ function MetaPill({
   accent?: boolean;
   label: string;
 }) {
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
 
   return (
     <View style={[styles.metaPill, accent ? styles.metaPillAccent : null]}>
@@ -272,86 +270,93 @@ function getSingleParam(value: string | string[] | undefined) {
   return value;
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    footerStack: {
+      gap: spacing.exact(10),
+    },
+    contentStack: {
+      gap: spacing.exact(12),
+    },
     eyebrow: {
-      fontSize: 12,
-      lineHeight: 18,
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(18),
       fontWeight: "800",
-      marginBottom: 8,
-      color: theme.colors.textSecondary,
+      marginBottom: spacing.exact(8),
+      color: colors.textSecondary,
       textTransform: "uppercase",
       letterSpacing: 0.8,
     },
     messageBody: {
-      fontSize: 15,
-      lineHeight: 24,
-      color: theme.colors.textPrimary,
+      fontSize: responsiveFont(15),
+      lineHeight: responsiveFont(24),
+      color: colors.textPrimary,
     },
     messageRole: {
-      fontSize: 12,
-      lineHeight: 18,
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(18),
       fontWeight: "800",
-      marginBottom: 8,
-      color: theme.colors.textSecondary,
+      marginBottom: spacing.exact(8),
+      color: colors.textSecondary,
       textTransform: "uppercase",
       letterSpacing: 0.8,
     },
     metaPill: {
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      borderRadius: 999,
-      backgroundColor: theme.colors.cardMuted,
+      paddingHorizontal: spacing.exact(10),
+      paddingVertical: spacing.exact(8),
+      borderRadius: radius.pill,
+      backgroundColor: colors.cardMuted,
     },
     metaPillAccent: {
-      backgroundColor: theme.colors.cardAccent,
+      backgroundColor: colors.cardAccent,
       borderWidth: 1,
-      borderColor: theme.colors.accentMuted,
+      borderColor: colors.accentMuted,
     },
     metaPillLabel: {
-      fontSize: 12,
-      lineHeight: 18,
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(18),
       fontWeight: "600",
-      color: theme.colors.textSecondary,
+      color: colors.textSecondary,
     },
     metaPillLabelAccent: {
-      color: theme.colors.textPrimary,
+      color: colors.textPrimary,
     },
     metaRow: {
       flexDirection: "row",
       flexWrap: "wrap",
-      gap: 8,
-      marginTop: 12,
+      gap: spacing.exact(8),
+      marginTop: spacing.exact(12),
     },
     prompt: {
-      fontSize: 16,
-      lineHeight: 24,
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
       fontWeight: "600",
-      color: theme.colors.textPrimary,
+      color: colors.textPrimary,
     },
     sectionTitle: {
-      fontSize: 16,
+      fontSize: responsiveFont(16),
       fontWeight: "700",
-      marginBottom: 8,
-      color: theme.colors.textPrimary,
+      marginBottom: spacing.exact(8),
+      color: colors.textPrimary,
     },
     suggestionChip: {
-      backgroundColor: theme.colors.cardMuted,
-      borderRadius: 999,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
+      backgroundColor: colors.cardMuted,
+      borderRadius: radius.pill,
+      paddingHorizontal: spacing.exact(14),
+      paddingVertical: spacing.exact(10),
     },
     suggestionChipPressed: {
       opacity: 0.86,
     },
     suggestionLabel: {
-      fontSize: 14,
-      lineHeight: 20,
-      color: theme.colors.textPrimary,
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      color: colors.textPrimary,
     },
     suggestionWrap: {
       flexDirection: "row",
       flexWrap: "wrap",
-      gap: 8,
+      gap: spacing.exact(8),
     },
-  });
+  }));
+}

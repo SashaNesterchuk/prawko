@@ -1,11 +1,11 @@
 import {
-  StyleSheet,
   Text,
   TextInput,
   View,
   type TextInputProps,
 } from "react-native";
 
+import { useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type AppTextInputProps = {
@@ -40,7 +40,7 @@ export function AppTextInput({
   value,
 }: AppTextInputProps) {
   const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
 
   return (
     <View style={styles.wrapper}>
@@ -65,29 +65,30 @@ export function AppTextInput({
   );
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     wrapper: {
-      gap: 8,
+      gap: spacing.exact(8),
     },
     label: {
-      fontSize: 13,
+      fontSize: responsiveFont(13),
       fontWeight: "700",
-      color: theme.colors.textSecondary,
+      color: colors.textSecondary,
       textTransform: "uppercase",
     },
     input: {
-      minHeight: 56,
-      borderRadius: theme.radius.large,
+      minHeight: spacing.exact(56),
+      borderRadius: radius.large,
       borderWidth: 1,
-      borderColor: theme.colors.borderSoft,
-      backgroundColor: theme.colors.surface,
-      paddingHorizontal: 16,
-      fontSize: 16,
-      color: theme.colors.textPrimary,
+      borderColor: colors.borderSoft,
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing.exact(16),
+      fontSize: responsiveFont(16),
+      color: colors.textPrimary,
     },
     multilineInput: {
-      paddingVertical: 14,
+      paddingVertical: spacing.exact(14),
       textAlignVertical: "top",
     },
-  });
+  }));
+}

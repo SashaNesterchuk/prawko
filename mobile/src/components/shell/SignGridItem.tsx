@@ -1,10 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { useResponsiveStyles } from "../../portable-ui";
 import { getSignDisplayName } from "../../features/road-signs/content/registry";
 import { SignImage } from "../../features/road-signs/SignImage";
 import type { RoadSign } from "../../features/road-signs/types";
-import { greenWave } from "../../theme/green-wave";
 
 type SignGridItemProps = {
   sign: RoadSign;
@@ -13,6 +13,7 @@ type SignGridItemProps = {
 
 export function SignGridItem({ sign, onPress }: SignGridItemProps) {
   const { i18n } = useTranslation();
+  const styles = useStyles();
   const displayName = getSignDisplayName(sign.id, i18n.language, sign.code);
 
   return (
@@ -35,42 +36,44 @@ export function SignGridItem({ sign, onPress }: SignGridItemProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  tile: {
-    flex: 1,
-    minWidth: 96,
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-    padding: greenWave.spacing.md,
-    borderRadius: greenWave.radius.lg,
-    backgroundColor: greenWave.color.surface,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-  copy: {
-    width: "100%",
-    alignItems: "center",
-    gap: 2,
-  },
-  title: {
-    width: "100%",
-    fontSize: 11,
-    lineHeight: 14,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-    textAlign: "center",
-  },
-  code: {
-    width: "100%",
-    fontSize: 11,
-    lineHeight: 14,
-    color: greenWave.color.inkMuted,
-    textAlign: "center",
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    tile: {
+      flex: 1,
+      minWidth: spacing.exact(96),
+      alignItems: "center",
+      gap: spacing.sm,
+      padding: spacing.md,
+      borderRadius: radius.lg,
+      backgroundColor: colors.surface,
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(6),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 1,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+    copy: {
+      width: "100%",
+      alignItems: "center",
+      gap: spacing.exact(2),
+    },
+    title: {
+      width: "100%",
+      fontSize: responsiveFont(11),
+      lineHeight: responsiveFont(14),
+      fontWeight: "600",
+      color: colors.ink,
+      textAlign: "center",
+    },
+    code: {
+      width: "100%",
+      fontSize: responsiveFont(11),
+      lineHeight: responsiveFont(14),
+      color: colors.inkMuted,
+      textAlign: "center",
+    },
+  }));
+}

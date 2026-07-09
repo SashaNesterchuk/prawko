@@ -1,11 +1,13 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import { SignsHomeContent } from "../../src/features/road-signs/SignsHomeContent";
 
 export default function SignsTabScreen() {
+  const styles = useStyles();
+
   return (
     <GreenWaveScreen>
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -16,8 +18,10 @@ export default function SignsTabScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(() => ({
+    safeArea: {
+      flex: 1,
+    },
+  }));
+}

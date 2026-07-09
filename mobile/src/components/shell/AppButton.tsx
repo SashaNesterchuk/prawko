@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, Text } from "react-native";
 
-import { useTheme } from "../../providers/ThemeProvider";
+import { useResponsiveStyles } from "../../portable-ui";
 
 type AppButtonVariant = "primary" | "secondary" | "ghost";
 
@@ -17,8 +17,7 @@ export function AppButton({
   onPress,
   variant = "primary",
 }: AppButtonProps) {
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
 
   return (
     <Pressable
@@ -47,27 +46,27 @@ export function AppButton({
   );
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     base: {
-      minHeight: 54,
-      borderRadius: theme.radius.large,
+      minHeight: spacing.exact(54),
+      borderRadius: radius.large,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 18,
+      paddingHorizontal: spacing.exact(18),
     },
     primary: {
-      backgroundColor: theme.colors.accent,
+      backgroundColor: colors.accent,
     },
     secondary: {
-      backgroundColor: theme.colors.cardMuted,
+      backgroundColor: colors.cardMuted,
       borderWidth: 1,
-      borderColor: theme.colors.borderStrong,
+      borderColor: colors.borderStrong,
     },
     ghost: {
-      backgroundColor: "transparent",
+      backgroundColor: colors.transparent,
       borderWidth: 1,
-      borderColor: theme.colors.borderSoft,
+      borderColor: colors.borderSoft,
     },
     pressed: {
       opacity: 0.82,
@@ -76,16 +75,17 @@ const getStyles = (theme: ReturnType<typeof useTheme>) =>
       opacity: 0.45,
     },
     label: {
-      fontSize: 15,
+      fontSize: responsiveFont(15),
       fontWeight: "700",
     },
     primaryLabel: {
-      color: theme.colors.onAccent,
+      color: colors.onAccent,
     },
     secondaryLabel: {
-      color: theme.colors.textPrimary,
+      color: colors.textPrimary,
     },
     ghostLabel: {
-      color: theme.colors.textPrimary,
+      color: colors.textPrimary,
     },
-  });
+  }));
+}

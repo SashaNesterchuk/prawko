@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 import { STUDY_PLAN_LIMITS } from "@prawko/config";
@@ -10,6 +10,7 @@ import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { AppTextInput } from "../../src/components/shell/AppTextInput";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   formatPlanDate,
@@ -18,7 +19,6 @@ import {
   getExamDateFromDays,
 } from "../../src/features/study-plan/generate-local-study-plan";
 import { saveGeneratedStudyPlanRemotely } from "../../src/features/study-plan/supabase-study-plan";
-import { useTheme } from "../../src/providers/ThemeProvider";
 import {
   useCurrentStudyPlan,
   useAppShellStore,
@@ -28,8 +28,7 @@ const DAY_PRESETS = [1, 3, 5, 7, 10, 14, 21, 30] as const;
 
 export default function PlanAdjustModalScreen() {
   const { t } = useTranslation();
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
   const params = useLocalSearchParams<{
     missedDays?: string | string[];
   }>();
@@ -166,7 +165,7 @@ export default function PlanAdjustModalScreen() {
       title={t("modals.planAdjust.title")}
       subtitle={t("modals.planAdjust.subtitle")}
       footer={
-        <View style={{ gap: 10 }}>
+        <View style={styles.footerStack}>
           {currentStudyPlan && currentLevel ? (
             <AppButton
               disabled={!previewPlan || isSubmitting}
@@ -191,7 +190,7 @@ export default function PlanAdjustModalScreen() {
         </View>
       }
     >
-      <View style={{ gap: 12 }}>
+      <View style={styles.contentStack}>
         {!currentStudyPlan || !currentLevel ? (
           <AppCard>
             <Text style={styles.sectionTitle}>
@@ -488,31 +487,37 @@ function parseStrictIsoDate(value: string) {
   return trimmed;
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
+function useStyles() {
+  return useResponsiveStyles(({ accents, colors, radius, responsiveFont, spacing }) => ({
+    footerStack: {
+      gap: spacing.exact(10),
+    },
+    contentStack: {
+      gap: spacing.exact(12),
+    },
     bodyText: {
-      color: theme.colors.textPrimary,
-      fontSize: 14,
-      lineHeight: 22,
+      color: colors.textPrimary,
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
     },
     errorText: {
-      color: "#A44E37",
-      fontSize: 13,
-      lineHeight: 20,
+      color: accents.red.ink,
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(20),
     },
     presetButton: {
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.borderSoft,
-      borderRadius: theme.radius.large,
+      backgroundColor: colors.surface,
+      borderColor: colors.borderSoft,
+      borderRadius: radius.large,
       borderWidth: 1,
-      gap: 4,
+      gap: spacing.exact(4),
       minWidth: "47%",
-      paddingHorizontal: 14,
-      paddingVertical: 12,
+      paddingHorizontal: spacing.exact(14),
+      paddingVertical: spacing.exact(12),
     },
     presetButtonActive: {
-      backgroundColor: theme.colors.cardAccent,
-      borderColor: theme.colors.accentMuted,
+      backgroundColor: colors.cardAccent,
+      borderColor: colors.accentMuted,
     },
     presetButtonPressed: {
       opacity: 0.84,
@@ -520,27 +525,28 @@ const getStyles = (theme: ReturnType<typeof useTheme>) =>
     presetGrid: {
       flexDirection: "row",
       flexWrap: "wrap",
-      gap: 8,
-      marginTop: 12,
+      gap: spacing.exact(8),
+      marginTop: spacing.exact(12),
     },
     presetLabel: {
-      color: theme.colors.textPrimary,
-      fontSize: 14,
+      color: colors.textPrimary,
+      fontSize: responsiveFont(14),
       fontWeight: "700",
     },
     presetLabelActive: {
-      color: theme.colors.textPrimary,
+      color: colors.textPrimary,
     },
     presetMeta: {
-      color: theme.colors.textSecondary,
-      fontSize: 12,
-      lineHeight: 18,
+      color: colors.textSecondary,
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(18),
     },
     sectionTitle: {
-      color: theme.colors.textSecondary,
-      fontSize: 13,
+      color: colors.textSecondary,
+      fontSize: responsiveFont(13),
       fontWeight: "700",
-      marginBottom: 8,
+      marginBottom: spacing.exact(8),
       textTransform: "uppercase",
     },
-  });
+  }));
+}

@@ -6,6 +6,7 @@ import { Text, View } from "react-native";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { LoadingStateView } from "../../src/components/shell/StateViews";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import {
   isMobileSupabaseConfigured,
 } from "../../src/config/env";
@@ -23,6 +24,7 @@ import {
 
 export default function ExamIntroScreen() {
   const { t } = useTranslation();
+  const styles = useStyles();
   const params = useLocalSearchParams<{
     mode?: string | string[];
     questionLimit?: string | string[];
@@ -107,7 +109,7 @@ export default function ExamIntroScreen() {
           count: totalQuestionsTarget,
         })}
         footer={
-          <View style={{ gap: 10 }}>
+          <View style={styles.footerStack}>
             <AppButton
               label={t("exam.startCta")}
               onPress={() => {
@@ -123,7 +125,7 @@ export default function ExamIntroScreen() {
           </View>
         }
       >
-        <Text style={errorText}>{startError}</Text>
+        <Text style={styles.errorText}>{startError}</Text>
       </AppScreen>
     );
   }
@@ -169,8 +171,15 @@ function getErrorMessage(error: unknown) {
     : "Unable to start exam session.";
 }
 
-const errorText = {
-  color: "#A44E37",
-  fontSize: 14,
-  lineHeight: 22,
-};
+function useStyles() {
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
+    footerStack: {
+      gap: spacing.exact(10),
+    },
+    errorText: {
+      color: colors.warningInk,
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+    },
+  }));
+}

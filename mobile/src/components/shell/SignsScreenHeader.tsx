@@ -1,8 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { greenWave } from "../../theme/green-wave";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 type SignsScreenHeaderProps = {
   title: string;
@@ -17,6 +21,10 @@ export function SignsScreenHeader({
   backLabel = "Назад",
   rightSlot,
 }: SignsScreenHeaderProps) {
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles();
+
   return (
     <View style={styles.header}>
       {onBack ? (
@@ -26,7 +34,7 @@ export function SignsScreenHeader({
           onPress={onBack}
           style={({ pressed }) => [styles.backButton, pressed ? styles.pressed : null]}
         >
-          <Ionicons color={greenWave.color.ink} name="chevron-back" size={22} />
+          <Ionicons color={theme.colors.ink} name="chevron-back" size={responsiveFont(22)} />
         </Pressable>
       ) : (
         <View style={styles.backSpacer} />
@@ -41,36 +49,38 @@ export function SignsScreenHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingTop: greenWave.spacing.sm,
-    paddingBottom: greenWave.spacing.md,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: greenWave.radius.md,
-    backgroundColor: greenWave.color.surface,
-  },
-  backSpacer: {
-    width: 40,
-    height: 40,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 24,
-    lineHeight: 32,
-    fontWeight: "700",
-    letterSpacing: -0.48,
-    color: greenWave.color.ink,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+    backButton: {
+      width: spacing.exact(40),
+      height: spacing.exact(40),
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: radius.md,
+      backgroundColor: colors.surface,
+    },
+    backSpacer: {
+      width: spacing.exact(40),
+      height: spacing.exact(40),
+    },
+    headerTitle: {
+      flex: 1,
+      fontSize: responsiveFont(24),
+      lineHeight: responsiveFont(32),
+      fontWeight: "700",
+      letterSpacing: -0.48,
+      color: colors.ink,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+  }));
+}

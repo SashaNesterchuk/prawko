@@ -1,7 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 export type SignLearningStatus = "new" | "mastered" | "wrong";
 
@@ -11,12 +15,18 @@ type SignStatusBadgeProps = {
 };
 
 export function SignStatusBadge({ status, label }: SignStatusBadgeProps) {
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const palette =
     status === "mastered"
-      ? greenWaveAccent.green
+      ? theme.accents.green
       : status === "wrong"
-        ? greenWaveAccent.red
-        : greenWaveAccent.blue;
+        ? theme.accents.red
+        : theme.accents.blue;
+  const styles = useStyles({
+    badgeBackground: palette.soft,
+    labelColor: palette.ink,
+  });
 
   const iconName =
     status === "mastered"
@@ -26,26 +36,36 @@ export function SignStatusBadge({ status, label }: SignStatusBadgeProps) {
         : "document-text-outline";
 
   return (
-    <View style={[styles.badge, { backgroundColor: palette.soft }]}>
-      <Ionicons color={palette.ink} name={iconName} size={14} />
-      <Text style={[styles.label, { color: palette.ink }]}>{label}</Text>
+    <View style={styles.badge}>
+      <Ionicons color={palette.ink} name={iconName} size={responsiveFont(14)} />
+      <Text style={styles.label}>{label}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: greenWave.radius.pill,
-  },
-  label: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "600",
-  },
-});
+function useStyles({
+  badgeBackground,
+  labelColor,
+}: {
+  badgeBackground?: string;
+  labelColor?: string;
+} = {}) {
+  return useResponsiveStyles(({ radius, responsiveFont, spacing }) => ({
+    badge: {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "flex-start",
+      gap: spacing.exact(6),
+      paddingVertical: spacing.exact(6),
+      paddingHorizontal: spacing.exact(10),
+      borderRadius: radius.pill,
+      backgroundColor: badgeBackground,
+    },
+    label: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "600",
+      color: labelColor,
+    },
+  }));
+}

@@ -1,15 +1,18 @@
 import type { PropsWithChildren } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
-import { greenWaveAccent } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
 
 export function PaywallScreen({ children }: PropsWithChildren) {
+  const styles = useStyles();
   return <View style={styles.root}>{children}</View>;
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: greenWaveAccent.green.fill,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ theme }) => ({
+    root: {
+      flex: 1,
+      backgroundColor: theme.accents.green.fill,
+    },
+  }));
+}

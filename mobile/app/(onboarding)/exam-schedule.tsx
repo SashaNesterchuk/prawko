@@ -2,20 +2,21 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { Pressable, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { STUDY_PLAN_LIMITS } from "@prawko/config";
 
 import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
+import { useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
+import { useTheme } from "../../src/providers/ThemeProvider";
 import {
   formatPlanDate,
   getDaysUntilExamFromDate,
   getExamDateFromDays,
 } from "../../src/features/study-plan/generate-local-study-plan";
 import { useAppShellStore } from "../../src/state/app-shell";
-import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
 
 function toIsoDate(date: Date) {
   const year = String(date.getFullYear());
@@ -43,6 +44,9 @@ function parseIsoDate(value: string | null): Date | null {
 
 export default function ExamScheduleScreen() {
   const { t, i18n } = useTranslation();
+  const styles = useStyles();
+  const { accents, colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const setExamSchedule = useAppShellStore((state) => state.setExamSchedule);
 
@@ -50,6 +54,8 @@ export default function ExamScheduleScreen() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
     parseIsoDate(studyPlanSetup.examDate)
   );
+  const badgeIconSize = responsiveFont(28);
+  const fieldIconSize = responsiveFont(20);
 
   const goNext = () => {
     if (selectedDate) {
@@ -77,8 +83,8 @@ export default function ExamScheduleScreen() {
           <View style={styles.iconBadge}>
             <MaterialCommunityIcons
               name="calendar-month-outline"
-              size={28}
-              color={greenWaveAccent.amber.fill}
+              size={badgeIconSize}
+              color={accents.amber.fill}
             />
           </View>
 
@@ -97,11 +103,11 @@ export default function ExamScheduleScreen() {
           >
             <MaterialCommunityIcons
               name="calendar-blank-outline"
-              size={20}
+              size={fieldIconSize}
               color={
                 selectedDate
-                  ? greenWave.color.ink
-                  : greenWave.color.inkMuted
+                  ? colors.textPrimary
+                  : colors.textMuted
               }
             />
             <Text
@@ -171,128 +177,132 @@ export default function ExamScheduleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: greenWave.color.paper,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingBottom: greenWave.spacing.xl,
-  },
-  body: {
-    flex: 1,
-    paddingTop: greenWave.spacing.sm,
-  },
-  iconBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: greenWave.radius.lg,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: greenWave.color.surface,
-  },
-  title: {
-    marginTop: 32,
-    fontSize: 32,
-    lineHeight: 38,
-    fontWeight: "700",
-    letterSpacing: -0.64,
-    color: greenWave.color.ink,
-  },
-  subtitle: {
-    marginTop: greenWave.spacing.md,
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: "400",
-    color: greenWave.color.inkSecondary,
-  },
-  field: {
-    marginTop: 32,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingVertical: greenWave.spacing.md,
-    borderRadius: greenWave.radius.lg,
-    borderWidth: 1,
-    borderColor: greenWave.color.line,
-    backgroundColor: greenWave.color.surface,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  fieldPressed: {
-    opacity: 0.85,
-  },
-  fieldText: {
-    flex: 1,
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: "400",
-    color: greenWave.color.inkMuted,
-  },
-  fieldTextFilled: {
-    color: greenWave.color.ink,
-    fontWeight: "500",
-  },
-  footer: {
-    gap: greenWave.spacing.sm,
-  },
-  paging: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    paddingVertical: greenWave.spacing.md,
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: greenWave.color.line,
-  },
-  dotActive: {
-    width: 22,
-    backgroundColor: greenWaveAccent.green.fill,
-  },
-  cta: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.green.fill,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.1,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 14 },
-    elevation: 6,
-  },
-  ctaPressed: {
-    opacity: 0.9,
-  },
-  ctaLabel: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-    color: greenWave.color.onAccent,
-  },
-  ghost: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: greenWave.spacing.md,
-  },
-  ghostPressed: {
-    opacity: 0.6,
-  },
-  ghostLabel: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "400",
-    color: greenWave.color.inkSecondary,
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(
+    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+      safeArea: {
+        flex: 1,
+        backgroundColor: colors.background,
+      },
+      content: {
+        flex: 1,
+        paddingHorizontal: spacing.exact(24),
+        paddingBottom: spacing.exact(24),
+      },
+      body: {
+        flex: 1,
+        paddingTop: spacing.exact(8),
+      },
+      iconBadge: {
+        width: spacing.exact(56),
+        height: spacing.exact(56),
+        borderRadius: radius.lg,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: colors.surface,
+      },
+      title: {
+        marginTop: spacing.exact(32),
+        fontSize: responsiveFont(32),
+        lineHeight: responsiveFont(38),
+        fontWeight: "700",
+        letterSpacing: -0.64,
+        color: colors.textPrimary,
+      },
+      subtitle: {
+        marginTop: spacing.exact(12),
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(28),
+        fontWeight: "400",
+        color: colors.textSecondary,
+      },
+      field: {
+        marginTop: spacing.exact(32),
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(8),
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(12),
+        borderRadius: radius.lg,
+        borderWidth: 1,
+        borderColor: colors.line,
+        backgroundColor: colors.surface,
+        shadowColor: colors.shadow,
+        shadowOpacity: 0.05,
+        shadowRadius: spacing.exact(6),
+        shadowOffset: { width: 0, height: spacing.exact(2) },
+        elevation: 1,
+      },
+      fieldPressed: {
+        opacity: 0.85,
+      },
+      fieldText: {
+        flex: 1,
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(28),
+        fontWeight: "400",
+        color: colors.textMuted,
+      },
+      fieldTextFilled: {
+        color: colors.textPrimary,
+        fontWeight: "500",
+      },
+      footer: {
+        gap: spacing.exact(8),
+      },
+      paging: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.exact(7),
+        paddingVertical: spacing.exact(12),
+      },
+      dot: {
+        width: spacing.exact(7),
+        height: spacing.exact(7),
+        borderRadius: spacing.exact(4),
+        backgroundColor: colors.line,
+      },
+      dotActive: {
+        width: spacing.exact(22),
+        backgroundColor: accents.green.fill,
+      },
+      cta: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: spacing.exact(16),
+        borderRadius: radius.pill,
+        backgroundColor: accents.green.fill,
+        shadowColor: colors.shadow,
+        shadowOpacity: 0.1,
+        shadowRadius: spacing.exact(18),
+        shadowOffset: { width: 0, height: spacing.exact(14) },
+        elevation: 6,
+      },
+      ctaPressed: {
+        opacity: 0.9,
+      },
+      ctaLabel: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        letterSpacing: -0.2,
+        color: colors.onAccent,
+      },
+      ghost: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: spacing.exact(12),
+      },
+      ghostPressed: {
+        opacity: 0.6,
+      },
+      ghostLabel: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "400",
+        color: colors.textSecondary,
+      },
+    })
+  );
+}

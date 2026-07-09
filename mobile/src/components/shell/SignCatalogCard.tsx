@@ -1,11 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 import { getSignDisplayName } from "../../features/road-signs/content/registry";
 import { SignImage } from "../../features/road-signs/SignImage";
 import type { RoadSign } from "../../features/road-signs/types";
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
 
 type SignCatalogCardProps = {
   sign: RoadSign;
@@ -19,6 +23,9 @@ export function SignCatalogCard({
   onPress,
 }: SignCatalogCardProps) {
   const { i18n } = useTranslation();
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles();
   const displayName = getSignDisplayName(sign.id, i18n.language, sign.code);
 
   return (
@@ -33,10 +40,14 @@ export function SignCatalogCard({
         <View style={styles.topActions}>
           {showWrongBadge ? (
             <View style={styles.wrongBadge}>
-              <Ionicons color={greenWaveAccent.red.ink} name="close" size={12} />
+              <Ionicons color={theme.accents.red.ink} name="close" size={responsiveFont(12)} />
             </View>
           ) : null}
-          <Ionicons color={greenWave.color.inkMuted} name="bookmark-outline" size={18} />
+          <Ionicons
+            color={theme.colors.inkMuted}
+            name="bookmark-outline"
+            size={responsiveFont(18)}
+          />
         </View>
       </View>
 
@@ -51,55 +62,57 @@ export function SignCatalogCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: greenWave.color.surface,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  pressed: {
-    opacity: 0.92,
-  },
-  topRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  code: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-    color: greenWave.color.inkMuted,
-  },
-  topActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-  },
-  wrongBadge: {
-    width: 22,
-    height: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.red.soft,
-  },
-  imageWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 140,
-  },
-  name: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    color: greenWave.color.ink,
-    textAlign: "center",
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      gap: spacing.md,
+      padding: spacing.lg,
+      borderRadius: radius.xl,
+      backgroundColor: colors.surface,
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(6),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 1,
+    },
+    pressed: {
+      opacity: 0.92,
+    },
+    topRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    code: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "600",
+      color: colors.inkMuted,
+    },
+    topActions: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    wrongBadge: {
+      width: spacing.exact(22),
+      height: spacing.exact(22),
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: radius.pill,
+      backgroundColor: theme.accents.red.soft,
+    },
+    imageWrap: {
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: spacing.exact(140),
+    },
+    name: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      color: colors.ink,
+      textAlign: "center",
+    },
+  }));
+}

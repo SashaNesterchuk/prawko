@@ -3,7 +3,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
@@ -13,6 +13,11 @@ import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { ReadinessIndexCard } from "../../src/components/shell/ReadinessIndexCard";
 import { StatusPromptCard } from "../../src/components/shell/StatusPromptCard";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../src/portable-ui";
+import { useTheme } from "../../src/providers/ThemeProvider";
 import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
 import { getQuestionDisplayStats } from "../../src/features/questions/question-engine";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
@@ -24,21 +29,23 @@ import {
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
-import { greenWave, greenWaveAccent } from "../../src/theme/green-wave";
 import { Icon, IconName } from "../../src/components/icons";
 
 function HomeActionIcon({
   accent,
   name,
 }: {
-  accent: keyof typeof greenWaveAccent;
+  accent: keyof ReturnType<typeof useTheme>["accents"];
   name: IconName;
 }) {
+  const { accents } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+
   return (
     <Icon
-      color={greenWaveAccent[accent].fill}
+      color={accents[accent].fill}
       name={name}
-      size={24}
+      size={responsiveFont(24)}
     />
   );
 }
@@ -46,6 +53,7 @@ function HomeActionIcon({
 export default function HomeTabScreen() {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
+  const styles = useStyles({ safeBottom });
   const authMode = useAppShellStore((state) => state.authMode);
   const isFocused = useIsFocused();
   const questionCatalogVersion = useQuestionCatalogVersion();
@@ -179,10 +187,7 @@ export default function HomeTabScreen() {
         <StatusBar style="dark" />
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: 96 + safeBottom },
-          ]}
+          contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
           <ReadinessIndexCard
@@ -236,18 +241,21 @@ export default function HomeTabScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    padding: greenWave.spacing.xl,
-    gap: greenWave.spacing.xl,
-  },
-  stack: {
-    gap: greenWave.spacing.sm,
-  },
-});
+function useStyles({ safeBottom }: { safeBottom: number }) {
+  return useResponsiveStyles(({ spacing }) => ({
+    safeArea: {
+      flex: 1,
+    },
+    scroll: {
+      flex: 1,
+    },
+    content: {
+      padding: spacing.exact(24),
+      paddingBottom: spacing.exact(96) + safeBottom,
+      gap: spacing.exact(24),
+    },
+    stack: {
+      gap: spacing.exact(8),
+    },
+  }));
+}

@@ -1,11 +1,9 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import {
-  greenWave,
-  greenWaveAccent,
-  type GreenWaveAccent,
-} from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
+import { type GreenWaveAccent } from "../../theme/green-wave";
 
 type ActionTileProps = {
   title: string;
@@ -24,11 +22,13 @@ export function ActionTile({
   icon,
   onPress,
 }: ActionTileProps) {
-  const accentColor = greenWaveAccent[accent];
+  const theme = useTheme();
+  const accentColor = theme.accents[accent];
+  const styles = useStyles({ iconBackground: accentColor.soft });
 
   const body = (
     <>
-      <View style={[styles.iconWrap, { backgroundColor: accentColor.soft }]}>
+      <View style={styles.iconWrap}>
         {icon ? <View style={styles.icon}>{icon}</View> : null}
       </View>
 
@@ -62,6 +62,8 @@ export function ActionTile({
 }
 
 function PremiumBadge() {
+  const styles = useStyles();
+
   return (
     <View style={styles.badge}>
       <View style={styles.lockShackle} />
@@ -70,89 +72,92 @@ function PremiumBadge() {
   );
 }
 
-const styles = StyleSheet.create({
-  tile: {
-    flex: 1,
-    minWidth: 100,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    alignContent: "center",
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: greenWave.color.surface,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-  iconWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.sm,
-    borderRadius: greenWave.radius.md,
-    overflow: "hidden",
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  copy: {
-    flex: 1,
-    minWidth: 100,
-    flexDirection: "column",
-    gap: greenWave.spacing.xs,
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  title: {
-    flex: 1,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  subtitle: {
-    width: "100%",
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWave.color.inkMuted,
-  },
-  badge: {
-    width: 24,
-    height: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: greenWave.spacing.xs,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.green.fill,
-  },
-  lockShackle: {
-    width: 8,
-    height: 5,
-    borderWidth: 1.5,
-    borderBottomWidth: 0,
-    borderColor: "#ffffff",
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    marginBottom: -1,
-  },
-  lockBody: {
-    width: 11,
-    height: 7,
-    borderRadius: 2,
-    backgroundColor: "#ffffff",
-  },
-});
+function useStyles({ iconBackground }: { iconBackground?: string } = {}) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    tile: {
+      flex: 1,
+      minWidth: spacing.exact(100),
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      alignContent: "center",
+      gap: spacing.md,
+      padding: spacing.lg,
+      borderRadius: radius.xl,
+      backgroundColor: colors.surface,
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(6),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 1,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+    iconWrap: {
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.sm,
+      borderRadius: radius.md,
+      overflow: "hidden",
+      backgroundColor: iconBackground,
+    },
+    icon: {
+      width: spacing.exact(24),
+      height: spacing.exact(24),
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    copy: {
+      flex: 1,
+      minWidth: spacing.exact(100),
+      flexDirection: "column",
+      gap: spacing.xs,
+    },
+    titleRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: spacing.exact(10),
+    },
+    title: {
+      flex: 1,
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: colors.ink,
+    },
+    subtitle: {
+      width: "100%",
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.inkMuted,
+    },
+    badge: {
+      width: spacing.exact(24),
+      height: spacing.exact(24),
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.xs,
+      borderRadius: radius.pill,
+      backgroundColor: theme.accents.green.fill,
+    },
+    lockShackle: {
+      width: spacing.exact(8),
+      height: spacing.exact(5),
+      borderWidth: 1.5,
+      borderBottomWidth: 0,
+      borderColor: colors.onAccent,
+      borderTopLeftRadius: spacing.exact(4),
+      borderTopRightRadius: spacing.exact(4),
+      marginBottom: -1,
+    },
+    lockBody: {
+      width: spacing.exact(11),
+      height: spacing.exact(7),
+      borderRadius: spacing.exact(2),
+      backgroundColor: colors.onAccent,
+    },
+  }));
+}

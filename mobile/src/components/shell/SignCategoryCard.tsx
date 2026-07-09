@@ -1,10 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ComponentProps } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 import { SignImage } from "../../features/road-signs/SignImage";
 import type { RoadSign, RoadSignCategory } from "../../features/road-signs/types";
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
 
 type SignCategoryCardProps = {
   category: RoadSignCategory;
@@ -23,7 +27,10 @@ export function SignCategoryCard({
   subtitle,
   onPress,
 }: SignCategoryCardProps) {
-  const accent = greenWaveAccent[category.accent];
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const accent = theme.accents[category.accent];
+  const styles = useStyles({ iconBackgroundColor: accent.soft });
 
   return (
     <Pressable
@@ -31,7 +38,7 @@ export function SignCategoryCard({
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
     >
-      <View style={[styles.iconWrap, { backgroundColor: accent.soft }]}>
+      <View style={styles.iconWrap}>
         {previewSign ? (
           <SignImage sign={previewSign} size={36} />
         ) : previewUrl ? (
@@ -40,7 +47,7 @@ export function SignCategoryCard({
           <Ionicons
             color={accent.fill}
             name={category.iconName as ComponentProps<typeof Ionicons>["name"]}
-            size={24}
+            size={responsiveFont(24)}
           />
         )}
       </View>
@@ -56,66 +63,77 @@ export function SignCategoryCard({
 
       <View style={styles.meta}>
         <Text style={styles.count}>{category.count}</Text>
-        <Ionicons color={greenWave.color.inkMuted} name="chevron-forward" size={18} />
+        <Ionicons
+          color={theme.colors.inkMuted}
+          name="chevron-forward"
+          size={responsiveFont(18)}
+        />
       </View>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.lg,
-    backgroundColor: greenWave.color.surface,
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-  iconWrap: {
-    width: 48,
-    height: 48,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: greenWave.radius.md,
-    overflow: "hidden",
-  },
-  preview: {
-    width: 36,
-    height: 36,
-  },
-  copy: {
-    flex: 1,
-    gap: greenWave.spacing.xs,
-  },
-  title: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  subtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: greenWave.color.inkMuted,
-  },
-  meta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.xs,
-  },
-  count: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-    color: greenWave.color.inkSecondary,
-  },
-});
+function useStyles({
+  iconBackgroundColor,
+}: {
+  iconBackgroundColor: string;
+}) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    card: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+      padding: spacing.lg,
+      borderRadius: radius.lg,
+      backgroundColor: colors.surface,
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(6),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 1,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+    iconWrap: {
+      width: spacing.exact(48),
+      height: spacing.exact(48),
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: radius.md,
+      backgroundColor: iconBackgroundColor,
+      overflow: "hidden",
+    },
+    preview: {
+      width: spacing.exact(36),
+      height: spacing.exact(36),
+    },
+    copy: {
+      flex: 1,
+      gap: spacing.xs,
+    },
+    title: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: colors.ink,
+    },
+    subtitle: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      color: colors.inkMuted,
+    },
+    meta: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.xs,
+    },
+    count: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "600",
+      color: colors.inkSecondary,
+    },
+  }));
+}

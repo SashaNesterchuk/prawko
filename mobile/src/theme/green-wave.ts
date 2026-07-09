@@ -1,22 +1,24 @@
+import { appTheme, type AppThemeAccent } from ".";
+
 export const greenWave = {
   color: {
-    ink: "#15241d",
-    inkSecondary: "#5a6a62",
-    inkMuted: "#93a39b",
-    surface: "rgba(255,255,255,0.74)",
-    onAccent: "#ffffff",
-    paper: "#eef4f1",
-    skySoft: "#dff0e1",
-    line: "rgba(24,52,38,0.07)",
-    track: "rgba(24,52,38,0.07)",
-    shadow: "#142d21",
+    ink: appTheme.colors.ink,
+    inkSecondary: appTheme.colors.inkSecondary,
+    inkMuted: appTheme.colors.inkMuted,
+    surface: appTheme.colors.surface,
+    onAccent: appTheme.colors.onAccent,
+    paper: appTheme.colors.paper,
+    skySoft: appTheme.colors.skySoft,
+    line: appTheme.colors.line,
+    track: appTheme.colors.track,
+    shadow: appTheme.colors.shadow,
   },
   radius: {
-    md: 8,
-    lg: 16,
-    xl: 20,
-    xxl: 24,
-    pill: 999,
+    md: appTheme.radius.md,
+    lg: appTheme.radius.lg,
+    xl: appTheme.radius.xl,
+    xxl: appTheme.radius.xxl,
+    pill: appTheme.radius.pill,
   },
   spacing: {
     xs: 4,
@@ -27,14 +29,6 @@ export const greenWave = {
   },
 } as const;
 
-export type GreenWaveAccent = "green" | "blue" | "red" | "amber";
+export type GreenWaveAccent = AppThemeAccent;
 
-export const greenWaveAccent: Record<
-  GreenWaveAccent,
-  { fill: string; ink: string; soft: string }
-> = {
-  green: { fill: "#1fb574", ink: "#0e7a4c", soft: "rgba(31,181,116,0.14)" },
-  blue: { fill: "#3b82f6", ink: "#2563c4", soft: "rgba(59,130,246,0.13)" },
-  red: { fill: "#f0563f", ink: "#c33825", soft: "rgba(240,86,63,0.13)" },
-  amber: { fill: "#f0a93a", ink: "#a9700d", soft: "rgba(240,169,58,0.16)" },
-};
+export const greenWaveAccent = appTheme.accents;

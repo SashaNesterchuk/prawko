@@ -4,7 +4,6 @@ import { useMemo, useRef, useState } from "react";
 import {
   Image,
   Pressable,
-  StyleSheet,
   Text,
   View,
   useWindowDimensions,
@@ -14,9 +13,13 @@ import { useTranslation } from "react-i18next";
 import type { SupportedLocale } from "@prawko/config";
 import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
 import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
+import { useTheme } from "../../providers/ThemeProvider";
 import { useAppShellStore } from "../../state/app-shell";
-import { greenWave } from "../../theme/green-wave";
 import {
   buildQuestionMediaViewerParams,
   getQuestionDeliveryAssetUrl,
@@ -34,14 +37,19 @@ export function QuestionMediaCard({
   media: QuestionMedia;
 }) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const { captureError } = useErrorLogger();
   const enablePjmTracks = useAppShellStore((state) => state.enablePjmTracks);
   const { width: windowWidth } = useWindowDimensions();
-  const styles = useMemo(() => getStyles(windowWidth), [windowWidth]);
+  const styles = useStyles({ windowWidth });
   const [previewFailed, setPreviewFailed] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const didLogPreviewFailureRef = useRef(false);
+  const refreshIconSize = responsiveFont(18);
+  const playIconSize = responsiveFont(28);
+  const zoomIconSize = responsiveFont(22);
 
   const previewUrl = getQuestionMediaPreviewUrl(media);
   const assetUrl = getQuestionDeliveryAssetUrl(media.asset);
@@ -93,8 +101,8 @@ export function QuestionMediaCard({
             >
               <MaterialCommunityIcons
                 name="refresh"
-                size={18}
-                color={greenWave.color.inkSecondary}
+                size={refreshIconSize}
+                color={colors.textSecondary}
               />
               <Text style={styles.retryLabel}>{t("question.media.retry")}</Text>
             </Pressable>
@@ -155,16 +163,16 @@ export function QuestionMediaCard({
           <View pointerEvents="none" style={styles.playBadge}>
             <MaterialCommunityIcons
               name="play"
-              size={28}
-              color={greenWave.color.ink}
+              size={playIconSize}
+              color={colors.textPrimary}
             />
           </View>
         ) : (
           <View pointerEvents="none" style={styles.cornerButton}>
             <MaterialCommunityIcons
               name="magnify-plus-outline"
-              size={22}
-              color={greenWave.color.ink}
+              size={zoomIconSize}
+              color={colors.textPrimary}
             />
           </View>
         )}
@@ -242,26 +250,30 @@ function buildPjmActions(
   return actions;
 }
 
-const getStyles = (windowWidth: number) =>
-  StyleSheet.create({
+function useStyles({ windowWidth }: { windowWidth: number }) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     root: {
       width: windowWidth,
       alignSelf: "center",
     },
     frame: {
       width: windowWidth,
-      height: MEDIA_HEIGHT,
+      height: spacing.exact(MEDIA_HEIGHT),
       alignSelf: "center",
-      borderRadius: greenWave.radius.xl,
+      borderRadius: radius.xl,
       overflow: "hidden",
-      backgroundColor: greenWave.color.paper,
+      backgroundColor: colors.paper,
     },
     mediaPressed: {
       opacity: 0.96,
     },
     skeleton: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: greenWave.color.track,
+      position: "absolute",
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      backgroundColor: colors.track,
     },
     preview: {
       width: "100%",
@@ -269,75 +281,75 @@ const getStyles = (windowWidth: number) =>
     },
     cornerButton: {
       position: "absolute",
-      top: 12,
-      right: 12,
-      width: 40,
-      height: 40,
-      borderRadius: 999,
+      top: spacing.exact(12),
+      right: spacing.exact(12),
+      width: spacing.exact(40),
+      height: spacing.exact(40),
+      borderRadius: radius.pill,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: "rgba(255,255,255,0.82)",
+      backgroundColor: colors.cardMuted,
     },
     playBadge: {
       position: "absolute",
       top: "50%",
       left: "50%",
-      width: 56,
-      height: 56,
-      marginTop: -28,
-      marginLeft: -28,
-      borderRadius: 28,
+      width: spacing.exact(56),
+      height: spacing.exact(56),
+      marginTop: -spacing.exact(28),
+      marginLeft: -spacing.exact(28),
+      borderRadius: spacing.exact(28),
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: "rgba(255,255,255,0.82)",
+      backgroundColor: colors.cardMuted,
     },
     errorFrame: {
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 24,
-      gap: greenWave.spacing.sm,
-      backgroundColor: greenWave.color.track,
+      paddingHorizontal: spacing.exact(24),
+      gap: spacing.exact(8),
+      backgroundColor: colors.track,
     },
     errorTitle: {
-      fontSize: 16,
-      lineHeight: 24,
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
       fontWeight: "600",
-      color: greenWave.color.ink,
+      color: colors.textPrimary,
       textAlign: "center",
     },
     errorBody: {
-      fontSize: 14,
-      lineHeight: 20,
-      color: greenWave.color.inkMuted,
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      color: colors.textMuted,
       textAlign: "center",
     },
     retryButton: {
-      marginTop: greenWave.spacing.sm,
+      marginTop: spacing.exact(8),
       flexDirection: "row",
       alignItems: "center",
-      gap: greenWave.spacing.sm,
-      paddingHorizontal: greenWave.spacing.lg,
-      paddingVertical: greenWave.spacing.md,
-      borderRadius: greenWave.radius.pill,
-      backgroundColor: greenWave.color.surface,
+      gap: spacing.exact(8),
+      paddingHorizontal: spacing.exact(16),
+      paddingVertical: spacing.exact(12),
+      borderRadius: radius.pill,
+      backgroundColor: colors.surface,
     },
     retryLabel: {
-      fontSize: 14,
+      fontSize: responsiveFont(14),
       fontWeight: "600",
-      color: greenWave.color.inkSecondary,
+      color: colors.textSecondary,
     },
     pressed: {
       opacity: 0.85,
     },
     pjmIconButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: spacing.exact(40),
+      height: spacing.exact(40),
+      borderRadius: spacing.exact(20),
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: "rgba(24, 32, 24, 0.78)",
+      backgroundColor: colors.overlayInk,
       borderWidth: 1,
-      borderColor: "rgba(248, 246, 240, 0.35)",
+      borderColor: colors.borderInverseSoft,
     },
     pjmIconButtonDisabled: {
       opacity: 0.35,
@@ -346,20 +358,21 @@ const getStyles = (windowWidth: number) =>
       opacity: 0.88,
     },
     pjmIconGlyph: {
-      fontSize: 12,
-      lineHeight: 16,
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
       fontWeight: "800",
-      color: "#F8F6F0",
+      color: colors.onAccent,
       letterSpacing: 0.4,
     },
     pjmOverlay: {
       position: "absolute",
-      right: 12,
-      bottom: 12,
+      right: spacing.exact(12),
+      bottom: spacing.exact(12),
       flexDirection: "row",
       flexWrap: "wrap",
       justifyContent: "flex-end",
-      gap: 8,
+      gap: spacing.exact(8),
       maxWidth: "70%",
     },
-  });
+  }));
+}

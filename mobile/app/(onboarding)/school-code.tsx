@@ -7,12 +7,12 @@ import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { AppTextInput } from "../../src/components/shell/AppTextInput";
-import { useTheme } from "../../src/providers/ThemeProvider";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 
 export default function SchoolCodeScreen() {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const styles = useStyles();
   const existingCode = useAppShellStore((state) => state.studyPlanSetup.schoolCode);
   const setSchoolCode = useAppShellStore((state) => state.setSchoolCode);
   const [value, setValue] = useState(existingCode);
@@ -27,7 +27,7 @@ export default function SchoolCodeScreen() {
       title={t("onboarding.schoolCodeTitle")}
       subtitle={t("onboarding.schoolCodeSubtitle")}
       footer={
-        <View style={{ gap: 10 }}>
+        <View style={styles.footerStack}>
           <AppButton
             label={t("common.continue")}
             onPress={() => continueToAccess(value)}
@@ -45,7 +45,7 @@ export default function SchoolCodeScreen() {
         </View>
       }
     >
-      <View style={{ gap: 12 }}>
+      <View style={styles.cardStack}>
         <AppCard>
           <AppTextInput
             autoCapitalize="characters"
@@ -57,17 +57,27 @@ export default function SchoolCodeScreen() {
         </AppCard>
 
         <AppCard accent>
-          <Text
-            style={{
-              fontSize: 14,
-              lineHeight: 22,
-              color: theme.colors.textPrimary,
-            }}
-          >
+          <Text style={styles.helpText}>
             {t("onboarding.schoolCodeHelp")}
           </Text>
         </AppCard>
       </View>
     </AppScreen>
   );
+}
+
+function useStyles() {
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
+    footerStack: {
+      gap: spacing.exact(10),
+    },
+    cardStack: {
+      gap: spacing.exact(12),
+    },
+    helpText: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+      color: colors.textPrimary,
+    },
+  }));
 }

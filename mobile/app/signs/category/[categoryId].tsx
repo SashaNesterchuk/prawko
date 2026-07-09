@@ -2,23 +2,27 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
 import { SignCatalogCard } from "../../../src/components/shell/SignCatalogCard";
 import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
 import {
+  useResponsiveSpacing,
+  useResponsiveStyles,
+} from "../../../src/portable-ui";
+import {
   getRoadSignCategory,
   getRoadSignsByCategory,
   isRoadSignCategoryId,
 } from "../../../src/features/road-signs/catalog";
 import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
-import { greenWave, greenWaveAccent } from "../../../src/theme/green-wave";
 
 export default function SignsCategoryScreen() {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
+  const styles = useStyles({ safeBottom });
   const { categoryId } = useLocalSearchParams<{ categoryId: string }>();
   const resolvedCategoryId =
     categoryId && isRoadSignCategoryId(categoryId) ? categoryId : "A";
@@ -56,10 +60,7 @@ export default function SignsCategoryScreen() {
 
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: 88 + safeBottom },
-          ]}
+          contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.list}>
@@ -79,7 +80,7 @@ export default function SignsCategoryScreen() {
           </View>
         </ScrollView>
 
-        <View style={[styles.footer, { paddingBottom: greenWave.spacing.lg + safeBottom }]}>
+        <View style={styles.footer}>
           <Pressable
             accessibilityRole="button"
             onPress={openCategoryTest}
@@ -96,42 +97,46 @@ export default function SignsCategoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    padding: greenWave.spacing.xl,
-  },
-  list: {
-    gap: greenWave.spacing.md,
-  },
-  footer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingTop: greenWave.spacing.md,
-    backgroundColor: "transparent",
-  },
-  trainButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: greenWave.spacing.md,
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWaveAccent.green.fill,
-  },
-  trainButtonLabel: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    color: greenWave.color.onAccent,
-  },
-  pressed: {
-    opacity: 0.92,
-  },
-});
+function useStyles({ safeBottom }: { safeBottom: number }) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    safeArea: {
+      flex: 1,
+    },
+    scroll: {
+      flex: 1,
+    },
+    content: {
+      padding: spacing.xl,
+      paddingBottom: spacing.exact(88) + safeBottom,
+    },
+    list: {
+      gap: spacing.md,
+    },
+    footer: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.md,
+      paddingBottom: spacing.lg + safeBottom,
+      backgroundColor: colors.transparent,
+    },
+    trainButton: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: spacing.md,
+      borderRadius: radius.pill,
+      backgroundColor: theme.accents.green.fill,
+    },
+    trainButtonLabel: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      color: colors.onAccent,
+    },
+    pressed: {
+      opacity: 0.92,
+    },
+  }));
+}

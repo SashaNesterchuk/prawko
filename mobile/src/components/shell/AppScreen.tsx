@@ -1,9 +1,9 @@
 import { PropsWithChildren, ReactNode } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
-import { useTheme } from "../../providers/ThemeProvider";
+import { useResponsiveStyles } from "../../portable-ui";
 
 type AppScreenProps = PropsWithChildren<{
   title?: string;
@@ -19,8 +19,7 @@ export function AppScreen({
   subtitle,
   title,
 }: AppScreenProps) {
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles();
 
   const hasHeader = Boolean(title || subtitle);
 
@@ -54,47 +53,48 @@ export function AppScreen({
   );
 }
 
-const getStyles = (theme: ReturnType<typeof useTheme>) =>
-  StyleSheet.create({
+function useStyles() {
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
     safeArea: {
       flex: 1,
-      backgroundColor: theme.colors.background,
+      backgroundColor: colors.background,
     },
     flexContent: {
       flex: 1,
     },
     scrollContent: {
-      paddingBottom: 24,
+      paddingBottom: spacing.exact(24),
     },
     inner: {
-      paddingHorizontal: 20,
-      paddingTop: 20,
+      paddingHorizontal: spacing.exact(20),
+      paddingTop: spacing.exact(20),
     },
     header: {
-      marginBottom: 18,
-      gap: 8,
+      marginBottom: spacing.exact(18),
+      gap: spacing.exact(8),
     },
     title: {
-      fontSize: 32,
-      lineHeight: 38,
+      fontSize: responsiveFont(32),
+      lineHeight: responsiveFont(38),
       fontWeight: "800",
-      color: theme.colors.textPrimary,
+      color: colors.textPrimary,
     },
     subtitle: {
-      fontSize: 16,
-      lineHeight: 24,
-      color: theme.colors.textSecondary,
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      color: colors.textSecondary,
     },
     content: {
-      gap: 16,
-      paddingBottom: 12,
+      gap: spacing.exact(16),
+      paddingBottom: spacing.exact(12),
     },
     footer: {
-      paddingHorizontal: 20,
-      paddingTop: 12,
-      paddingBottom: 16,
-      backgroundColor: theme.colors.background,
+      paddingHorizontal: spacing.exact(20),
+      paddingTop: spacing.exact(12),
+      paddingBottom: spacing.exact(16),
+      backgroundColor: colors.background,
       borderTopWidth: 1,
-      borderTopColor: theme.colors.borderSoft,
+      borderTopColor: colors.borderSoft,
     },
-  });
+  }));
+}

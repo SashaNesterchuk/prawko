@@ -1,11 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
+import {
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 import type {
   ProfileStatMetrics,
   WeekDayActivity,
 } from "../../features/profile/profile-stats";
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
 
 type ProfileStatsCardProps = {
   title: string;
@@ -29,6 +33,9 @@ export function ProfileStatsCard({
   weekDays,
   onPressDetails,
 }: ProfileStatsCardProps) {
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles();
   const statItems = [
     { key: "sessions", value: String(metrics.sessions), label: metricLabels.sessions },
     {
@@ -56,9 +63,9 @@ export function ProfileStatsCard({
           >
             <Text style={styles.detailsLabel}>{detailsLabel}</Text>
             <Ionicons
-              color={greenWaveAccent.blue.ink}
+              color={theme.accents.blue.ink}
               name="chevron-forward"
-              size={20}
+              size={responsiveFont(20)}
             />
           </Pressable>
         </View>
@@ -92,12 +99,12 @@ export function ProfileStatsCard({
               </Text>
               <View style={styles.dayIconSlot}>
                 {day.isToday && day.hasActivity ? (
-                  <Ionicons color="#ffffff" name="water" size={12} />
+                  <Ionicons color={theme.colors.white} name="water" size={responsiveFont(12)} />
                 ) : day.isStreakDay && !day.isToday ? (
                   <Ionicons
-                    color={greenWaveAccent.amber.fill}
+                    color={theme.accents.amber.fill}
                     name="flame"
-                    size={12}
+                    size={responsiveFont(12)}
                   />
                 ) : null}
               </View>
@@ -109,113 +116,115 @@ export function ProfileStatsCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    width: "100%",
-    borderRadius: greenWave.radius.xl,
-    backgroundColor: "#ffffff",
-    overflow: "hidden",
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  headerSection: {
-    paddingTop: greenWave.spacing.lg,
-    paddingHorizontal: greenWave.spacing.lg,
-    paddingBottom: greenWave.spacing.md,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: greenWave.spacing.md,
-  },
-  title: {
-    flex: 1,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  detailsButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  detailsLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "400",
-    color: greenWaveAccent.blue.ink,
-  },
-  metricsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.sm,
-  },
-  metric: {
-    flex: 1,
-    alignItems: "center",
-    gap: greenWave.spacing.xs,
-  },
-  metricValue: {
-    fontSize: 24,
-    lineHeight: 32,
-    fontWeight: "600",
-    letterSpacing: -0.24,
-    color: greenWave.color.ink,
-  },
-  metricLabel: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWave.color.inkMuted,
-  },
-  weekSection: {
-    paddingHorizontal: greenWave.spacing.xl,
-    paddingVertical: greenWave.spacing.md,
-  },
-  weekRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  dayCell: {
-    alignItems: "center",
-    gap: greenWave.spacing.xs,
-    padding: greenWave.spacing.xs,
-    borderRadius: greenWave.radius.lg,
-    minWidth: 32,
-  },
-  dayCellToday: {
-    backgroundColor: greenWave.color.inkMuted,
-  },
-  weekdayLabel: {
-    fontSize: 11,
-    lineHeight: 12,
-    fontWeight: "500",
-    color: greenWave.color.inkMuted,
-  },
-  dayNumber: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "500",
-    letterSpacing: -0.14,
-    color: greenWave.color.ink,
-  },
-  dayTextToday: {
-    color: "#ffffff",
-  },
-  dayIconSlot: {
-    width: 12,
-    height: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+function useStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      width: "100%",
+      borderRadius: radius.xl,
+      backgroundColor: colors.white,
+      overflow: "hidden",
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(6),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 2,
+    },
+    headerSection: {
+      paddingTop: spacing.lg,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.md,
+    },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: spacing.md,
+    },
+    title: {
+      flex: 1,
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: colors.ink,
+    },
+    detailsButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+    },
+    pressed: {
+      opacity: 0.7,
+    },
+    detailsLabel: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "400",
+      color: theme.accents.blue.ink,
+    },
+    metricsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    metric: {
+      flex: 1,
+      alignItems: "center",
+      gap: spacing.xs,
+    },
+    metricValue: {
+      fontSize: responsiveFont(24),
+      lineHeight: responsiveFont(32),
+      fontWeight: "600",
+      letterSpacing: -0.24,
+      color: colors.ink,
+    },
+    metricLabel: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.inkMuted,
+    },
+    weekSection: {
+      paddingHorizontal: spacing.xl,
+      paddingVertical: spacing.md,
+    },
+    weekRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    dayCell: {
+      alignItems: "center",
+      gap: spacing.xs,
+      padding: spacing.xs,
+      borderRadius: radius.lg,
+      minWidth: spacing.exact(32),
+    },
+    dayCellToday: {
+      backgroundColor: colors.inkMuted,
+    },
+    weekdayLabel: {
+      fontSize: responsiveFont(11),
+      lineHeight: responsiveFont(12),
+      fontWeight: "500",
+      color: colors.inkMuted,
+    },
+    dayNumber: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "500",
+      letterSpacing: -0.14,
+      color: colors.ink,
+    },
+    dayTextToday: {
+      color: colors.white,
+    },
+    dayIconSlot: {
+      width: spacing.exact(12),
+      height: spacing.exact(12),
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  }));
+}

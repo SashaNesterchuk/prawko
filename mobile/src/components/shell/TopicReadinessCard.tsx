@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { greenWave, greenWaveAccent } from "../../theme/green-wave";
+import { useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 export type TopicReadinessStatus = "not_started" | "bad" | "normal" | "good";
 
@@ -14,15 +15,6 @@ type TopicReadinessCardProps = {
   wrong?: number;
   status?: TopicReadinessStatus;
   onPress?: () => void;
-};
-
-const STATUS_COLORS: Record<
-  Exclude<TopicReadinessStatus, "not_started">,
-  { fill: string; ink: string }
-> = {
-  bad: { fill: greenWaveAccent.red.fill, ink: greenWaveAccent.red.ink },
-  normal: { fill: greenWaveAccent.amber.fill, ink: greenWaveAccent.amber.ink },
-  good: { fill: greenWaveAccent.green.fill, ink: greenWaveAccent.green.ink },
 };
 
 export function resolveTopicReadinessStatus(
@@ -55,11 +47,18 @@ export function TopicReadinessCard({
   status,
   onPress,
 }: TopicReadinessCardProps) {
+  const theme = useTheme();
   const normalizedReadiness = Math.max(0, Math.min(readiness ?? 0, 100));
   const resolvedStatus =
     status ?? resolveTopicReadinessStatus(seen, normalizedReadiness);
   const isStarted = resolvedStatus !== "not_started";
-  const statusColor = isStarted ? STATUS_COLORS[resolvedStatus] : null;
+  const statusColors = getStatusColors(theme);
+  const statusColor = isStarted ? statusColors[resolvedStatus] : null;
+  const styles = useStyles({
+    readinessFillColor: statusColor?.fill ?? theme.colors.track,
+    readinessTextColor: statusColor?.ink ?? theme.colors.inkMuted,
+    readinessWidth: `${normalizedReadiness}%`,
+  });
 
   const resolvedWrong = wrong ?? mistakes ?? 0;
   const resolvedCorrect = correct ?? Math.max(0, seen - resolvedWrong);
@@ -73,29 +72,15 @@ export function TopicReadinessCard({
         {isStarted && resolvedStatus === "good" ? (
           <View style={styles.readinessGroup}>
             <Text style={styles.readinessLabel}>Готовність</Text>
-            <Text style={[styles.readinessValue, { color: statusColor?.ink }]}>
-              {normalizedReadiness}%
-            </Text>
+            <Text style={styles.readinessValue}>{normalizedReadiness}%</Text>
           </View>
         ) : isStarted ? (
-          <Text style={[styles.readinessValue, { color: statusColor?.ink }]}>
-            {normalizedReadiness}%
-          </Text>
+          <Text style={styles.readinessValue}>{normalizedReadiness}%</Text>
         ) : null}
       </View>
 
       <View style={styles.track}>
-        {isStarted ? (
-          <View
-            style={[
-              styles.fill,
-              {
-                width: `${normalizedReadiness}%`,
-                backgroundColor: statusColor?.fill,
-              },
-            ]}
-          />
-        ) : null}
+        {isStarted ? <View style={styles.fill} /> : null}
       </View>
 
       <View style={styles.footerRow}>
@@ -129,102 +114,126 @@ export function TopicReadinessCard({
   return <View style={styles.card}>{body}</View>;
 }
 
-const styles = StyleSheet.create({
-  card: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    padding: greenWave.spacing.lg,
-    borderRadius: greenWave.radius.lg,
-    backgroundColor: greenWave.color.surface,
-    overflow: "hidden",
-    shadowColor: greenWave.color.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-  inner: {
-    flex: 1,
-    flexDirection: "column",
-    gap: greenWave.spacing.xs,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-  title: {
-    flex: 1,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.16,
-    color: greenWave.color.ink,
-  },
-  readinessGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.xs,
-  },
-  readinessLabel: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWave.color.inkMuted,
-  },
-  readinessValue: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "400",
-  },
-  track: {
-    height: 4,
-    width: "100%",
-    borderRadius: greenWave.radius.pill,
-    backgroundColor: greenWave.color.track,
-    overflow: "hidden",
-  },
-  fill: {
-    height: 4,
-    borderRadius: greenWave.radius.pill,
-  },
-  footerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
-    gap: greenWave.spacing.sm,
-  },
-  statsGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: greenWave.spacing.md,
-  },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  statIcon: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "700",
-  },
-  statGood: {
-    color: greenWaveAccent.green.ink,
-  },
-  statBad: {
-    color: greenWaveAccent.red.ink,
-  },
-  footerLabel: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "400",
-    color: greenWave.color.inkMuted,
-  },
-});
+function getStatusColors(theme: ReturnType<typeof useTheme>) {
+  return {
+    bad: { fill: theme.accents.red.fill, ink: theme.accents.red.ink },
+    normal: { fill: theme.accents.amber.fill, ink: theme.accents.amber.ink },
+    good: { fill: theme.accents.green.fill, ink: theme.accents.green.ink },
+  } satisfies Record<
+    Exclude<TopicReadinessStatus, "not_started">,
+    { fill: string; ink: string }
+  >;
+}
+
+function useStyles({
+  readinessFillColor,
+  readinessTextColor,
+  readinessWidth,
+}: {
+  readinessFillColor: string;
+  readinessTextColor: string;
+  readinessWidth: string;
+}) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+    card: {
+      width: "100%",
+      flexDirection: "row",
+      alignItems: "center",
+      padding: spacing.lg,
+      borderRadius: radius.lg,
+      backgroundColor: colors.surface,
+      overflow: "hidden",
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.05,
+      shadowRadius: spacing.exact(6),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 1,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+    inner: {
+      flex: 1,
+      flexDirection: "column",
+      gap: spacing.xs,
+    },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      justifyContent: "space-between",
+      gap: spacing.exact(10),
+    },
+    title: {
+      flex: 1,
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      letterSpacing: -0.16,
+      color: colors.ink,
+    },
+    readinessGroup: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.xs,
+    },
+    readinessLabel: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.inkMuted,
+    },
+    readinessValue: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "400",
+      color: readinessTextColor,
+    },
+    track: {
+      height: spacing.exact(4),
+      width: "100%",
+      borderRadius: radius.pill,
+      backgroundColor: colors.track,
+      overflow: "hidden",
+    },
+    fill: {
+      width: readinessWidth,
+      height: spacing.exact(4),
+      borderRadius: radius.pill,
+      backgroundColor: readinessFillColor,
+    },
+    footerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      width: "100%",
+      gap: spacing.sm,
+    },
+    statsGroup: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+    },
+    statItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.exact(4),
+    },
+    statIcon: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "700",
+    },
+    statGood: {
+      color: theme.accents.green.ink,
+    },
+    statBad: {
+      color: theme.accents.red.ink,
+    },
+    footerLabel: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.inkMuted,
+    },
+  }));
+}

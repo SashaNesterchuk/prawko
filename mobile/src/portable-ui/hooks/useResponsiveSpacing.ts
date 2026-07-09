@@ -23,6 +23,7 @@ function snap4(value: number) {
 
 export interface ResponsiveSpacingApi {
   value: (base: number) => number;
+  exact: (base: number) => number;
   xs: number;
   sm: number;
   md: number;
@@ -39,10 +40,10 @@ export function useResponsiveSpacing(): ResponsiveSpacingApi {
     return clamp(nextScale, MIN_SCALE, MAX_SCALE);
   }, [width, height]);
 
-  const value = useMemo(() => {
+  const scaleValue = useMemo(() => {
     const mix = (a: number, b: number, weight: number) => a * (1 - weight) + b * weight;
 
-    return (base: number) => {
+    return (base: number, snapToGrid: boolean) => {
       let factor = scale;
 
       if (base <= 12) {
@@ -57,17 +58,29 @@ export function useResponsiveSpacing(): ResponsiveSpacingApi {
 
       const scaled = base * factor;
       const pxRounded = Math.round(PixelRatio.roundToNearestPixel(scaled));
-      return snap4(pxRounded);
+      return snapToGrid ? snap4(pxRounded) : pxRounded;
     };
   }, [scale]);
 
-  return {
-    value,
-    xs: value(4),
-    sm: value(8),
-    md: value(12),
-    lg: value(16),
-    xl: value(20),
-    xxl: value(24),
-  };
+  const value = useMemo(() => {
+    return (base: number) => scaleValue(base, true);
+  }, [scaleValue]);
+
+  const exact = useMemo(() => {
+    return (base: number) => scaleValue(base, false);
+  }, [scaleValue]);
+
+  return useMemo(
+    () => ({
+      value,
+      exact,
+      xs: exact(4),
+      sm: exact(8),
+      md: exact(12),
+      lg: exact(16),
+      xl: exact(20),
+      xxl: exact(24),
+    }),
+    [exact, value]
+  );
 }

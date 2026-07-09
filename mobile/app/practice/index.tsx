@@ -7,6 +7,7 @@ import { Text, View } from "react-native";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   buildExamRouteParams,
@@ -47,6 +48,7 @@ type PracticeCard = {
 
 export default function PracticeScreen() {
   const { t } = useTranslation();
+  const styles = useStyles();
   const authMode = useAppShellStore((state) => state.authMode);
   const currentUser = useCurrentUser();
   const currentUserId = currentUser?.id ?? null;
@@ -278,61 +280,56 @@ export default function PracticeScreen() {
       title={t("tabs.practiceTitle")}
       subtitle={t("tabs.practiceSubtitle")}
     >
-      <View style={{ gap: 12 }}>
+      <View style={styles.cardStack}>
         {isLoadingRecentExamSessions ? (
           <AppCard>
-            <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 4 }}>
+            <Text style={styles.cardTitle}>
               {t("practice.recentExamsTitle")}
             </Text>
-            <Text style={{ fontSize: 14, lineHeight: 22 }}>
+            <Text style={styles.cardBody}>
               {t("practice.recentExamsLoading")}
             </Text>
           </AppCard>
         ) : (
           <AppCard>
-            <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 4 }}>
+            <Text style={styles.cardTitle}>
               {t("practice.recentExamsTitle")}
             </Text>
             <Text
-              style={{
-                fontSize: 14,
-                lineHeight: 22,
-                marginBottom: recentExamSessions.length > 0 ? 12 : 0,
-              }}
+              style={[
+                styles.cardBody,
+                recentExamSessions.length > 0 ? styles.cardBodyWithMargin : null,
+              ]}
             >
               {recentExamSessions.length > 0
                 ? t("practice.recentExamsSubtitle")
                 : t("practice.recentExamsEmptyBody")}
             </Text>
             {recentExamSessions.length > 0 ? (
-              <View style={{ gap: 10 }}>
+              <View style={styles.historyStack}>
                 {recentExamSessions.map((session) => (
                   <View key={session.id}>
-                    <Text
-                      style={{ fontSize: 16, fontWeight: "700", marginBottom: 4 }}
-                    >
+                    <Text style={styles.historyTitle}>
                       {t("practice.latestExamSummary", {
                         outcome: t(
                           `practice.historyOutcomes.${getRecentExamOutcomeKey(session)}`
                         ),
                       })}
                     </Text>
-                    <Text style={{ fontSize: 13, lineHeight: 20 }}>
+                    <Text style={styles.historyMeta}>
                       {t("practice.historyDate", {
                         date: formatPlanDate(
                           (session.finishedAt ?? session.startedAt).slice(0, 10)
                         ),
                       })}
                     </Text>
-                    <Text style={{ fontSize: 13, lineHeight: 20 }}>
+                    <Text style={styles.historyMeta}>
                       {t("practice.historyScore", {
                         score: session.scorePoints,
                         total: session.totalPointsTarget,
                       })}
                     </Text>
-                    <Text
-                      style={{ fontSize: 13, lineHeight: 20, marginBottom: 8 }}
-                    >
+                    <Text style={styles.historyMetaWithMargin}>
                       {t("practice.historyQuestions", {
                         answered: session.totalQuestionsAnswered,
                         total: session.totalQuestionsTarget,
@@ -394,12 +391,14 @@ function PracticeCardView({
   onOpen: (input: { params: Record<string, string>; routeType: "exam" | "question" }) => void;
   t: ReturnType<typeof useTranslation>["t"];
 }) {
+  const styles = useStyles();
+
   return (
     <AppCard>
-      <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 4 }}>
+      <Text style={styles.cardTitle}>
         {t(card.title)}
       </Text>
-      <Text style={{ fontSize: 14, lineHeight: 22, marginBottom: 8 }}>
+      <Text style={styles.cardBodyWithSmallMargin}>
         {t(card.description, {
           count: card.count,
         })}
@@ -416,4 +415,46 @@ function PracticeCardView({
       />
     </AppCard>
   );
+}
+
+function useStyles() {
+  return useResponsiveStyles(({ responsiveFont, spacing }) => ({
+    cardStack: {
+      gap: spacing.exact(12),
+    },
+    cardTitle: {
+      fontSize: responsiveFont(18),
+      fontWeight: "700",
+      marginBottom: spacing.exact(4),
+    },
+    cardBody: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+    },
+    cardBodyWithMargin: {
+      marginBottom: spacing.exact(12),
+    },
+    cardBodyWithSmallMargin: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+      marginBottom: spacing.exact(8),
+    },
+    historyStack: {
+      gap: spacing.exact(10),
+    },
+    historyTitle: {
+      fontSize: responsiveFont(16),
+      fontWeight: "700",
+      marginBottom: spacing.exact(4),
+    },
+    historyMeta: {
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(20),
+    },
+    historyMetaWithMargin: {
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(20),
+      marginBottom: spacing.exact(8),
+    },
+  }));
 }
