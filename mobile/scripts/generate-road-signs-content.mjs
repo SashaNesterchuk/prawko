@@ -519,6 +519,54 @@ function loadOfficialLines() {
     .map((line) => normalizeOfficialLine(line));
 }
 
+function parseNumber(value) {
+  return Number.parseFloat(String(value).replace(/[^\d.]/g, ""));
+}
+
+function ensureViewBox(content) {
+  if (/viewBox=/i.test(content)) {
+    return content;
+  }
+
+  const widthMatch = content.match(/\bwidth="([^"]+)"/i);
+  const heightMatch = content.match(/\bheight="([^"]+)"/i);
+
+  if (!widthMatch || !heightMatch) {
+    return content;
+  }
+
+  const width = parseNumber(widthMatch[1]);
+  const height = parseNumber(heightMatch[1]);
+
+  if (!width || !height) {
+    return content;
+  }
+
+  return content.replace(
+    /<svg\b([^>]*)>/i,
+    `<svg$1 viewBox="0 0 ${width} ${height}">`
+  );
+}
+
+function normalizeRoadSignSvgs(files) {
+  let changed = 0;
+
+  for (const file of files.filter((entry) => entry.endsWith(".svg"))) {
+    const filePath = path.join(assetDir, file);
+    const content = fs.readFileSync(filePath, "utf8");
+    const normalized = ensureViewBox(content);
+
+    if (normalized !== content) {
+      fs.writeFileSync(filePath, normalized);
+      changed += 1;
+    }
+  }
+
+  if (changed > 0) {
+    console.log(`Added viewBox to ${changed} road-sign SVG files`);
+  }
+}
+
 function generateAssetRegistry(files) {
   const entries = files
     .filter((file) => file.endsWith(".svg"))
@@ -645,6 +693,7 @@ function main() {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   const files = manifest.files ?? [];
 
+  normalizeRoadSignSvgs(files);
   generateAssetRegistry(files);
 
   const { metadataBySignId, missing, counts } = buildMetadata(files);

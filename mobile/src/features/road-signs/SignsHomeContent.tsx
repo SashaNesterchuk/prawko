@@ -118,7 +118,8 @@ function useStyles({
       flex: 1,
     },
     content: {
-      paddingHorizontal: spacing.lg,
+      paddingLeft: spacing.lg,
+      paddingRight: spacing.xl,
       paddingTop: spacing.sm,
       paddingBottom: contentBottomPadding,
       gap: spacing.sm,

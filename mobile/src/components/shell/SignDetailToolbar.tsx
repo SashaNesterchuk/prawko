@@ -1,6 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
+
+import { Icon } from "../icons";
 
 import {
   useResponsiveFonts,
@@ -40,7 +41,7 @@ export function SignDetailToolbar({
           onPress={onClose}
           style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
         >
-          <Ionicons color={theme.colors.ink} name="close" size={responsiveFont(22)} />
+          <Icon color={theme.colors.ink} name="close" size={responsiveFont(22)} />
         </Pressable>
       ) : (
         <View style={styles.iconSpacer} />
@@ -60,11 +61,7 @@ export function SignDetailToolbar({
             accessibilityRole="button"
             style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
           >
-            <Ionicons
-              color={theme.colors.ink}
-              name="bookmark-outline"
-              size={responsiveFont(20)}
-            />
+            <Icon color={theme.colors.ink} name="star" size={responsiveFont(20)} />
           </Pressable>
         )}
       </View>

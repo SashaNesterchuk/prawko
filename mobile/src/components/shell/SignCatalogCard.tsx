@@ -1,6 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
+
+import { Icon } from "../icons";
 
 import {
   useResponsiveFonts,
@@ -40,14 +41,10 @@ export function SignCatalogCard({
         <View style={styles.topActions}>
           {showWrongBadge ? (
             <View style={styles.wrongBadge}>
-              <Ionicons color={theme.accents.red.ink} name="close" size={responsiveFont(12)} />
+              <Icon color={theme.accents.red.ink} name="close" size={responsiveFont(12)} />
             </View>
           ) : null}
-          <Ionicons
-            color={theme.colors.inkMuted}
-            name="bookmark-outline"
-            size={responsiveFont(18)}
-          />
+          <Icon color={theme.colors.inkMuted} name="star" size={responsiveFont(18)} />
         </View>
       </View>
 

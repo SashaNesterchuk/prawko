@@ -1,7 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { Icon } from "../icons";
 import {
   useResponsiveFonts,
   useResponsiveStyles,
@@ -34,7 +34,7 @@ export function SignsScreenHeader({
           onPress={onBack}
           style={({ pressed }) => [styles.backButton, pressed ? styles.pressed : null]}
         >
-          <Ionicons color={theme.colors.ink} name="chevron-back" size={responsiveFont(22)} />
+          <Icon color={theme.colors.ink} name="back" size={responsiveFont(22)} />
         </Pressable>
       ) : (
         <View style={styles.backSpacer} />

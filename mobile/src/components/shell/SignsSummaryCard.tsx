@@ -1,6 +1,8 @@
 import { Pressable, Text, View } from "react-native";
 
+import { Icon } from "../icons";
 import { useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 
 type SignsSummaryCardProps = {
   title: string;
@@ -21,8 +23,10 @@ export function SignsSummaryCard({
   trainAllLabel,
   onTrainAll,
 }: SignsSummaryCardProps) {
+  const theme = useTheme();
   const clamped = Math.max(0, Math.min(readiness, 100));
   const styles = useStyles({ fillWidth: `${clamped}%` });
+  const trainLabel = trainAllLabel.replace(/\s*>\s*$/, "");
 
   return (
     <View style={styles.card}>
@@ -46,7 +50,8 @@ export function SignsSummaryCard({
           onPress={onTrainAll}
           style={({ pressed }) => [styles.trainButton, pressed ? styles.pressed : null]}
         >
-          <Text style={styles.trainButtonLabel}>{trainAllLabel}</Text>
+          <Text style={styles.trainButtonLabel}>{trainLabel}</Text>
+          <Icon color={theme.colors.ink} name="chevron" size={16} />
         </Pressable>
       </View>
     </View>
@@ -120,6 +125,9 @@ function useStyles({ fillWidth }: { fillWidth: string }) {
       color: colors.ink,
     },
     trainButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.exact(4),
       paddingVertical: spacing.exact(10),
       paddingHorizontal: spacing.md,
       borderRadius: radius.pill,

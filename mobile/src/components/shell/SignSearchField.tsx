@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Pressable, TextInput, View } from "react-native";
 
+import { Icon } from "../icons";
 import {
   useResponsiveFonts,
   useResponsiveStyles,
@@ -37,11 +37,7 @@ export function SignSearchField({
       style={styles.wrapper}
     >
       <View style={styles.field}>
-        <Ionicons
-          color={theme.colors.inkMuted}
-          name="search-outline"
-          size={responsiveFont(20)}
-        />
+        <Icon color={theme.colors.inkMuted} name="search" size={responsiveFont(20)} />
         <TextInput
           autoCapitalize="none"
           autoCorrect={false}
@@ -62,11 +58,7 @@ export function SignSearchField({
             onPress={onClear}
             style={({ pressed }) => [styles.clearButton, pressed ? styles.pressed : null]}
           >
-            <Ionicons
-              color={theme.colors.inkMuted}
-              name="close-circle"
-              size={responsiveFont(18)}
-            />
+            <Icon color={theme.colors.inkMuted} name="close" size={responsiveFont(18)} />
           </Pressable>
         ) : null}
       </View>

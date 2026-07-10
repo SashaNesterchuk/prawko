@@ -41,6 +41,8 @@ PODS:
     - RNScreens
   - ExpoKeepAwake (15.0.8):
     - ExpoModulesCore
+  - ExpoLinearGradient (15.0.8):
+    - ExpoModulesCore
   - ExpoLinking (8.0.12):
     - ExpoModulesCore
   - ExpoLocalization (17.0.8):
@@ -2095,6 +2097,7 @@ DEPENDENCIES:
   - "ExpoFont (from `../../node_modules/.pnpm/expo-font@14.0.11_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-con_irdpowq2zfyeouoemeu3uef7ay/node_modules/expo-font/ios`)"
   - "ExpoHead (from `../../node_modules/.pnpm/expo-router@6.0.23_prduksynpqokqsg7qe4eppzym4/node_modules/expo-router/ios`)"
   - "ExpoKeepAwake (from `../../node_modules/.pnpm/expo-keep-awake@15.0.8_expo@54.0.34_react@19.1.0/node_modules/expo-keep-awake/ios`)"
+  - "ExpoLinearGradient (from `../../node_modules/.pnpm/expo-linear-gradient@15.0.8_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native_r7rs2p46z2sie3dlc37llqfmsu/node_modules/expo-linear-gradient/ios`)"
   - "ExpoLinking (from `../../node_modules/.pnpm/expo-linking@8.0.12_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-c_jvgrdm26aqg7jhrdcymmjh27ai/node_modules/expo-linking/ios`)"
   - "ExpoLocalization (from `../../node_modules/.pnpm/expo-localization@17.0.8_expo@54.0.34_react@19.1.0/node_modules/expo-localization/ios`)"
   - "ExpoModulesCore (from `../../node_modules/.pnpm/expo-modules-core@3.0.30_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-config@0._sdv4z76tv6w2l5h4mc46zzbgoa/node_modules/expo-modules-core`)"
@@ -2202,6 +2205,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/expo-router@6.0.23_prduksynpqokqsg7qe4eppzym4/node_modules/expo-router/ios"
   ExpoKeepAwake:
     :path: "../../node_modules/.pnpm/expo-keep-awake@15.0.8_expo@54.0.34_react@19.1.0/node_modules/expo-keep-awake/ios"
+  ExpoLinearGradient:
+    :path: "../../node_modules/.pnpm/expo-linear-gradient@15.0.8_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native_r7rs2p46z2sie3dlc37llqfmsu/node_modules/expo-linear-gradient/ios"
   ExpoLinking:
     :path: "../../node_modules/.pnpm/expo-linking@8.0.12_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-c_jvgrdm26aqg7jhrdcymmjh27ai/node_modules/expo-linking/ios"
   ExpoLocalization:
@@ -2376,6 +2381,7 @@ SPEC CHECKSUMS:
   ExpoFont: f543ce20a228dd702813668b1a07b46f51878d47
   ExpoHead: 7e19b2272edf492262acf8afb391a295198a6b23
   ExpoKeepAwake: 55f75eca6499bb9e4231ebad6f3e9cb8f99c0296
+  ExpoLinearGradient: 809102bdb979f590083af49f7fa4805cd931bd58
   ExpoLinking: 2ef632ad5013e3f1568fae9408d56ab9af5efc55
   ExpoLocalization: d9168d5300a5b03e5e78b986124d11fb6ec3ebbd
   ExpoModulesCore: 9e6a5514828e7dd5ded9e99d33557be2d284e660

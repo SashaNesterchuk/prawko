@@ -35,3 +35,5 @@ export {
   darkNavigationPalette,
   lightNavigationPalette,
 } from "./theme/navigationPalettes";
+
+export { hexToRgba } from "./utils/hexToRgba";

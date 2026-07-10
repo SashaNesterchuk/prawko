@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -6,6 +5,7 @@ import {
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
+import { Icon } from "../icons";
 import { useTheme } from "../../providers/ThemeProvider";
 import { getCategoryAccent } from "../../features/road-signs/catalog";
 import { getSignDisplayName } from "../../features/road-signs/content/registry";
@@ -45,9 +45,9 @@ export function SignListItem({ sign, categoryLabel, onPress }: SignListItemProps
         </Text>
       </View>
 
-      <Ionicons
+      <Icon
         color={theme.colors.inkMuted}
-        name="chevron-forward"
+        name="chevron"
         size={responsiveFont(18)}
       />
     </Pressable>

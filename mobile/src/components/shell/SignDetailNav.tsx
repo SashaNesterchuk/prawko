@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 
+import { Icon } from "../icons";
 import {
   useResponsiveFonts,
   useResponsiveStyles,
@@ -27,6 +27,7 @@ export function SignDetailNav({
   const theme = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles();
+  const forwardLabelText = forwardLabel.replace(/\s*>\s*$/, "");
 
   return (
     <View style={styles.row}>
@@ -36,11 +37,7 @@ export function SignDetailNav({
           onPress={onBack}
           style={({ pressed }) => [styles.button, styles.buttonLeft, pressed ? styles.pressed : null]}
         >
-          <Ionicons
-            color={theme.colors.inkSecondary}
-            name="chevron-back"
-            size={responsiveFont(18)}
-          />
+          <Icon color={theme.colors.inkSecondary} name="back" size={responsiveFont(18)} />
           <Text style={styles.buttonLabel}>{backLabel}</Text>
         </Pressable>
       ) : (
@@ -53,12 +50,8 @@ export function SignDetailNav({
           onPress={onForward}
           style={({ pressed }) => [styles.button, styles.buttonRight, pressed ? styles.pressed : null]}
         >
-          <Text style={styles.buttonLabel}>{forwardLabel}</Text>
-          <Ionicons
-            color={theme.colors.inkSecondary}
-            name="chevron-forward"
-            size={responsiveFont(18)}
-          />
+          <Text style={styles.buttonLabel}>{forwardLabelText}</Text>
+          <Icon color={theme.colors.inkSecondary} name="chevron" size={responsiveFont(18)} />
         </Pressable>
       ) : null}
     </View>

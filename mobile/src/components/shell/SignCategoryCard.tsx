@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
-import type { ComponentProps } from "react";
 import { Image, Pressable, Text, View } from "react-native";
+
+import { Icon, type IconName } from "../icons";
 
 import {
   useResponsiveFonts,
@@ -44,9 +44,9 @@ export function SignCategoryCard({
         ) : previewUrl ? (
           <Image resizeMode="contain" source={{ uri: previewUrl }} style={styles.preview} />
         ) : (
-          <Ionicons
+          <Icon
             color={accent.fill}
-            name={category.iconName as ComponentProps<typeof Ionicons>["name"]}
+            name={CATEGORY_ICONS[category.iconName]}
             size={responsiveFont(24)}
           />
         )}
@@ -63,11 +63,7 @@ export function SignCategoryCard({
 
       <View style={styles.meta}>
         <Text style={styles.count}>{category.count}</Text>
-        <Ionicons
-          color={theme.colors.inkMuted}
-          name="chevron-forward"
-          size={responsiveFont(18)}
-        />
+        <Icon color={theme.colors.inkMuted} name="chevron" size={responsiveFont(18)} />
       </View>
     </Pressable>
   );
@@ -137,3 +133,14 @@ function useStyles({
     },
   }));
 }
+
+const CATEGORY_ICONS: Record<RoadSignCategory["iconName"], IconName> = {
+  "warning-outline": "warning",
+  "close-circle-outline": "close",
+  "arrow-forward-circle-outline": "start",
+  "information-circle-outline": "info",
+  "add-circle-outline": "new",
+  "train-outline": "map",
+  "document-text-outline": "document",
+  "shield-outline": "lock",
+};

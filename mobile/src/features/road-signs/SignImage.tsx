@@ -13,41 +13,59 @@ import type { RoadSign } from "./types";
 type SignImageProps = {
   sign: RoadSign;
   size?: number;
+  width?: number;
+  height?: number;
+  inset?: number;
   style?: ViewStyle;
   imageStyle?: ImageStyle;
 };
 
-export function SignImage({ sign, size = 72, style, imageStyle }: SignImageProps) {
+export function SignImage({
+  sign,
+  size = 72,
+  width,
+  height,
+  inset,
+  style,
+  imageStyle,
+}: SignImageProps) {
   const styles = useStyles();
+  const frameWidth = width ?? size;
+  const frameHeight = height ?? size;
+  const resolvedInset =
+    inset ?? Math.max(4, Math.round(Math.min(frameWidth, frameHeight) * 0.08));
+  const renderWidth = frameWidth - resolvedInset * 2;
+  const renderHeight = frameHeight - resolvedInset * 2;
   const SvgComponent = getSignAssetComponent(sign.id);
-  const dynamicStyles = useMemo(
+  const frameStyle = useMemo(
     () => ({
-      wrap: {
-        width: size,
-        height: size,
-      },
-      image: {
-        width: size,
-        height: size,
-      },
+      width: frameWidth,
+      height: frameHeight,
     }),
-    [size]
+    [frameWidth, frameHeight]
   );
 
   if (SvgComponent) {
     return (
-      <View style={[styles.wrap, dynamicStyles.wrap, style]}>
-        <SvgComponent width={size} height={size} />
+      <View style={[styles.wrap, frameStyle, style]}>
+        <SvgComponent
+          height={renderHeight}
+          preserveAspectRatio="xMidYMid meet"
+          width={renderWidth}
+        />
       </View>
     );
   }
 
   return (
-    <View style={[styles.wrap, dynamicStyles.wrap, style]}>
+    <View style={[styles.wrap, frameStyle, style]}>
       <Image
         resizeMode="contain"
         source={{ uri: sign.previewUrl }}
-        style={[dynamicStyles.image, imageStyle]}
+        style={[
+          { width: renderWidth, height: renderHeight },
+          imageStyle,
+        ]}
       />
     </View>
   );
