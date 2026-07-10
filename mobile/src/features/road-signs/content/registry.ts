@@ -1,5 +1,6 @@
 import generatedMetadata from "../../../../../data/pl-road-signs-wikimedia/metadata.generated.json";
 
+import { GENERATED_SIGN_PRACTICE_CONTENT } from "./generatedPractices";
 import { buildSearchText, pickLocalized } from "./localized";
 import { A1_PRACTICE_CONTENT } from "./signs/A-1";
 import type {
@@ -39,6 +40,7 @@ const SIGN_METADATA: Record<string, RoadSignMetadata> = Object.fromEntries(
 );
 
 const PRACTICE_CONTENT: Record<string, RoadSignPracticeContent> = {
+  ...GENERATED_SIGN_PRACTICE_CONTENT,
   "A-1": A1_PRACTICE_CONTENT,
 };
 
@@ -93,6 +95,12 @@ export function getSignDescription(
 
 export function getSignPractices(signId: string): SignPractice[] {
   return getSignPracticeContent(signId)?.practices ?? [];
+}
+
+export function getPrimarySignPractice(
+  signId: string
+): SignPractice | undefined {
+  return getSignPractices(signId)[0];
 }
 
 export function getSignSearchText(signId: string): string {

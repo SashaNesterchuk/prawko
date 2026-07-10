@@ -10,10 +10,7 @@ import {
   useResponsiveSpacing,
   useResponsiveStyles,
 } from "../../portable-ui";
-import { getTopicProgress } from "../questions/question-engine";
-import { buildQuestionRouteParams } from "../questions/question-routes";
-import { useQuestionCatalogVersion } from "../../state/question-catalog";
-import { useQuestionProgressStore } from "../../state/question-progress";
+import { useSignPracticeProgressStore } from "../../state/sign-practice-progress";
 import {
   ROAD_SIGN_CATEGORIES,
   getRoadSignsByCategory,
@@ -22,8 +19,6 @@ import {
   getAllSignsProgress,
   getCategorySignProgress,
 } from "./sign-progress";
-
-const SIGNS_TOPIC = "signs" as const;
 
 type SignsHomeContentProps = {
   showBackButton?: boolean;
@@ -37,35 +32,35 @@ export function SignsHomeContent({
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const spacing = useResponsiveSpacing();
-  const questionCatalogVersion = useQuestionCatalogVersion();
-  const questionUserState = useQuestionProgressStore(
-    (state) => state.questionUserState
+  const signPracticeRecords = useSignPracticeProgressStore(
+    (state) => state.records
   );
 
-  const topicProgress = useMemo(
-    () => getTopicProgress(SIGNS_TOPIC, questionUserState),
-    [questionCatalogVersion, questionUserState]
+  const catalogProgress = useMemo(
+    () => getAllSignsProgress(signPracticeRecords),
+    [signPracticeRecords]
   );
-
-  const catalogProgress = useMemo(() => getAllSignsProgress(), []);
+  const readiness = useMemo(
+    () =>
+      catalogProgress.total > 0
+        ? (catalogProgress.correct / catalogProgress.total) * 100
+        : 0,
+    [catalogProgress.correct, catalogProgress.total]
+  );
 
   const categoryPreviews = useMemo(
     () =>
       ROAD_SIGN_CATEGORIES.map((category) => ({
         category,
         previewSign: getRoadSignsByCategory(category.id)[0],
-        progress: getCategorySignProgress(category.id),
+        progress: getCategorySignProgress(category.id, signPracticeRecords),
       })),
-    []
+    [signPracticeRecords]
   );
 
   const openSignsTraining = () =>
     router.push({
-      pathname: "/question",
-      params: buildQuestionRouteParams({
-        mode: "learning",
-        topic: SIGNS_TOPIC,
-      }),
+      pathname: "/signs/test",
     });
 
   const resolvedBottomPadding = bottomPadding ?? spacing.exact(96) + safeBottom;
@@ -79,9 +74,9 @@ export function SignsHomeContent({
     >
       <SignsSummaryCard
         title={t("signs.title")}
-        readiness={topicProgress.progress}
-        seen={topicProgress.seen || catalogProgress.seen}
-        total={catalogProgress.total || topicProgress.total}
+        readiness={readiness}
+        seen={catalogProgress.seen}
+        total={catalogProgress.total}
         totalAnswersLabel={t("signs.totalAnswers")}
         trainAllLabel={t("signs.trainAll")}
         onTrainAll={openSignsTraining}

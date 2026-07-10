@@ -1,15 +1,12 @@
 import type { RoadSignCategoryId } from "./types";
-import { getRoadSignsByCategory } from "./catalog";
-import { pickLocalized } from "./content/localized";
+import { getAllRoadSigns, getRoadSignsByCategory } from "./catalog";
 import {
-  getSignDisplayName,
-  getSignPractices,
-  getSignMetadata,
+  getPrimarySignPractice,
   hasSignPracticeContent,
 } from "./content/registry";
 import type { SignPractice } from "./content/types";
 
-export type CategorySignTestQuestion = {
+export type SignTestQuestion = {
   id: string;
   signId: string;
   prompt?: SignPractice["prompt"];
@@ -18,83 +15,40 @@ export type CategorySignTestQuestion = {
   explanation?: SignPractice["explanation"];
 };
 
-function buildNameRecognitionQuestion(
+function toTestQuestion(
   signId: string,
-  categoryId: RoadSignCategoryId,
-  locale: string
-): CategorySignTestQuestion | null {
-  const metadata = getSignMetadata(signId);
-
-  if (!metadata) {
-    return null;
-  }
-
-  const categorySigns = getRoadSignsByCategory(categoryId)
-    .filter((sign) => hasSignPracticeContent(sign.id) && sign.id !== signId)
-    .slice(0, 2);
-
-  if (categorySigns.length < 2) {
-    return null;
-  }
-
-  const correctLabel = pickLocalized(metadata.name, locale);
-  const distractors = categorySigns.map((sign) => ({
-    id: sign.id,
-    label: {
-      pl: getSignDisplayName(sign.id, "pl", sign.code),
-      ua: getSignDisplayName(sign.id, "ua", sign.code),
-      en: getSignDisplayName(sign.id, "en", sign.code),
-    },
-  }));
-
+  practice: SignPractice
+): SignTestQuestion {
   return {
-    id: `name-${signId}`,
+    id: `${signId}-${practice.id}`,
     signId,
-    options: [
-      { id: "correct", label: metadata.name },
-      ...distractors.map((item, index) => ({
-        id: `distractor-${index}`,
-        label: item.label,
-      })),
-    ],
-    correctOptionId: "correct",
-    explanation: {
-      pl: `Poprawna odpowiedź: ${correctLabel}.`,
-      ua: `Правильна відповідь: ${correctLabel}.`,
-      en: `Correct answer: ${correctLabel}.`,
-    },
+    prompt: practice.prompt,
+    options: practice.options,
+    correctOptionId: practice.correctOptionId,
+    explanation: practice.explanation,
   };
+}
+
+export function buildSignTestQuestions(signIds: string[]): SignTestQuestion[] {
+  return signIds
+    .filter((signId) => hasSignPracticeContent(signId))
+    .map((signId) => {
+      const practice = getPrimarySignPractice(signId);
+      return practice ? toTestQuestion(signId, practice) : null;
+    })
+    .filter((question): question is SignTestQuestion => question != null);
+}
+
+export function buildAllSignTestQuestions(): SignTestQuestion[] {
+  return buildSignTestQuestions(getAllRoadSigns().map((sign) => sign.id));
 }
 
 export function buildCategorySignTestQuestions(
   categoryId: RoadSignCategoryId
-): CategorySignTestQuestion[] {
-  const signs = getRoadSignsByCategory(categoryId).filter((sign) =>
-    hasSignPracticeContent(sign.id)
+): SignTestQuestion[] {
+  return buildSignTestQuestions(
+    getRoadSignsByCategory(categoryId).map((sign) => sign.id)
   );
-
-  const questions: CategorySignTestQuestion[] = [];
-
-  for (const sign of signs) {
-    const practices = getSignPractices(sign.id).map((practice) => ({
-      id: `${sign.id}-${practice.id}`,
-      signId: sign.id,
-      prompt: practice.prompt,
-      options: practice.options,
-      correctOptionId: practice.correctOptionId,
-      explanation: practice.explanation,
-    }));
-
-    questions.push(...practices);
-
-    const nameQuestion = buildNameRecognitionQuestion(sign.id, categoryId, "pl");
-
-    if (nameQuestion) {
-      questions.push(nameQuestion);
-    }
-  }
-
-  return questions;
 }
 
 export function getCategorySignTestQuestionSignIds(

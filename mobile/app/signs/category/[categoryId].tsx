@@ -19,6 +19,7 @@ import {
 } from "../../../src/features/road-signs/catalog";
 import { buildCategorySignTestQuestions } from "../../../src/features/road-signs/category-test";
 import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
+import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 
 export default function SignsCategoryScreen() {
   const { t } = useTranslation();
@@ -36,6 +37,9 @@ export default function SignsCategoryScreen() {
   const signs = useMemo(
     () => getRoadSignsByCategory(resolvedCategoryId),
     [resolvedCategoryId]
+  );
+  const signPracticeRecords = useSignPracticeProgressStore(
+    (state) => state.records
   );
   const hasCategoryTestQuestions = useMemo(
     () => buildCategorySignTestQuestions(resolvedCategoryId).length > 0,
@@ -73,7 +77,9 @@ export default function SignsCategoryScreen() {
               <SignCatalogCard
                 key={sign.id}
                 sign={sign}
-                showWrongBadge={getSignLearningStatus(sign.id) === "wrong"}
+                showWrongBadge={
+                  getSignLearningStatus(sign.id, signPracticeRecords) === "wrong"
+                }
                 onPress={() =>
                   router.push({
                     pathname: "/signs/[signId]",

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,6 +25,7 @@ import {
 } from "../../../src/features/road-signs/content/registry";
 import type { SignPractice } from "../../../src/features/road-signs/content/types";
 import { SignImage } from "../../../src/features/road-signs/SignImage";
+import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 
 type PracticePhase = "question" | "result";
 
@@ -60,6 +61,10 @@ export default function SignPracticeScreen() {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [phase, setPhase] = useState<PracticePhase>("question");
+  const recordAttempt = useSignPracticeProgressStore(
+    (state) => state.recordAttempt
+  );
+  const hasRecordedCompletionRef = useRef(false);
 
   const currentQuestion: SignPractice | undefined = practices[questionIndex];
   const isLastQuestion = questionIndex >= practices.length - 1;
@@ -89,6 +94,15 @@ export default function SignPracticeScreen() {
     }
 
     if (isLastQuestion) {
+      if (!hasRecordedCompletionRef.current && sign) {
+        recordAttempt({
+          signId: sign.id,
+          correctCount,
+          totalQuestions: practices.length,
+        });
+        hasRecordedCompletionRef.current = true;
+      }
+
       setPhase("result");
       return;
     }

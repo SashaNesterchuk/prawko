@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
@@ -21,10 +21,12 @@ import {
 import {
   getSignDescription,
   getSignDisplayName,
+  getSignPractices,
   hasSignPracticeContent,
 } from "../../../src/features/road-signs/content/registry";
 import { SignImage } from "../../../src/features/road-signs/SignImage";
 import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
+import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 
 export default function SignDetailScreen() {
   const { t, i18n } = useTranslation();
@@ -45,6 +47,9 @@ export default function SignDetailScreen() {
     () => (sign ? getRoadSignsByCategory(sign.categoryId) : []),
     [sign]
   );
+  const signPracticeRecords = useSignPracticeProgressStore(
+    (state) => state.records
+  );
 
   const currentIndex = useMemo(
     () => categorySigns.findIndex((item) => item.id === sign?.id),
@@ -63,8 +68,11 @@ export default function SignDetailScreen() {
         code: sign.code,
       })
     : "";
+  const practiceCount = sign ? getSignPractices(sign.id).length : 0;
 
-  const learningStatus = sign ? getSignLearningStatus(sign.id) : "new";
+  const learningStatus = sign
+    ? getSignLearningStatus(sign.id, signPracticeRecords)
+    : "new";
   const statusLabel =
     learningStatus === "mastered"
       ? t("signs.statusMastered")
@@ -133,6 +141,30 @@ export default function SignDetailScreen() {
 
           <Text style={styles.name}>{displayName}</Text>
           <Text style={styles.description}>{description}</Text>
+
+          {sign && hasSignPracticeContent(sign.id) ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() =>
+                router.push({
+                  pathname: "/signs/[signId]/practice",
+                  params: { signId: sign.id },
+                })
+              }
+              style={({ pressed }) => [
+                styles.practiceCard,
+                pressed ? styles.pressed : null,
+              ]}
+            >
+              <View style={styles.practiceCopy}>
+                <Text style={styles.practiceTitle}>{t("signs.practiceTitle")}</Text>
+                <Text style={styles.practiceSubtitle}>
+                  {t("signs.practiceSubtitle", { count: practiceCount })}
+                </Text>
+              </View>
+              <Text style={styles.practiceCta}>{t("signs.startPractice")}</Text>
+            </Pressable>
+          ) : null}
         </ScrollView>
 
         <View style={styles.footer}>
@@ -186,6 +218,37 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       paddingTop: spacing.md,
       paddingBottom: spacing.lg + safeBottom,
     },
+    practiceCard: {
+      gap: spacing.sm,
+      padding: spacing.lg,
+      borderRadius: spacing.exact(24),
+      backgroundColor: colors.surface,
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.06,
+      shadowRadius: spacing.exact(8),
+      shadowOffset: { width: 0, height: spacing.exact(2) },
+      elevation: 2,
+    },
+    practiceCopy: {
+      gap: spacing.exact(4),
+    },
+    practiceTitle: {
+      fontSize: responsiveFont(18),
+      lineHeight: responsiveFont(26),
+      fontWeight: "700",
+      color: colors.ink,
+    },
+    practiceSubtitle: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(22),
+      color: colors.inkSecondary,
+    },
+    practiceCta: {
+      fontSize: responsiveFont(15),
+      lineHeight: responsiveFont(22),
+      fontWeight: "600",
+      color: colors.ink,
+    },
     missingState: {
       flex: 1,
       alignItems: "center",
@@ -198,6 +261,9 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       fontWeight: "600",
       color: colors.ink,
       textAlign: "center",
+    },
+    pressed: {
+      opacity: 0.92,
     },
   }));
 }
