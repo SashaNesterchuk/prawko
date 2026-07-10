@@ -155,6 +155,12 @@ export const resources = {
         previewFocus: "Fokus dnia: {{topic}}",
         previewMoreDays: "Plan zawiera jeszcze {{days}} kolejnych dni.",
       },
+      notification: {
+        morningTitle: "Czeka na Ciebie poranna chwila refleksji.",
+        morningBody: "Rozpocznij swoj dzien od sprawdzenia, jak sie czujesz.",
+        eveningTitle: "Zakonczmy Twoj dzien, sprawdzajac, jak sie czujesz.",
+        eveningBody: "Poswiec 3 minuty na refleksje nad swoim dniem.",
+      },
       tabs: {
         homeTitle: "Plan na dzis",
         homeSubtitle: "Zobacz najwazniejsze zadanie i zacznij nauke.",
@@ -1123,6 +1129,12 @@ export const resources = {
         previewDayTitle: "День {{dayNumber}} - {{date}}",
         previewFocus: "Фокус дня: {{topic}}",
         previewMoreDays: "У плані ще {{days}} наступних днів.",
+      },
+      notification: {
+        morningTitle: "На тебе чекає ранкова хвилина рефлексії.",
+        morningBody: "Розпочни свій день з короткої перевірки себе.",
+        eveningTitle: "Завершимо день, перевіривши себе.",
+        eveningBody: "Присвяти 3 хвилини, щоб обдумати свій день.",
       },
       tabs: {
         homeTitle: "План на сьогодні",
@@ -2097,6 +2109,12 @@ export const resources = {
         previewDayTitle: "Day {{dayNumber}} - {{date}}",
         previewFocus: "Focus: {{topic}}",
         previewMoreDays: "The plan includes {{days}} more upcoming days.",
+      },
+      notification: {
+        morningTitle: "Your morning check-in is waiting.",
+        morningBody: "Start your day with a check-in.",
+        eveningTitle: "Let's end your day with a check-in.",
+        eveningBody: "Take 3 minutes to reflect on your day.",
       },
       tabs: {
         homeTitle: "Today plan",

@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { isMobileSupabaseConfigured } from "../config/env";
+import { disableStudyNotificationsAsync } from "../features/notifications/runtime";
 import { getMobileSupabaseClient } from "../lib/supabase";
 import { useAiChatStore } from "./ai-chat";
 import { useAppShellStore } from "./app-shell";
@@ -22,6 +23,8 @@ export async function resetAppToFreshStart() {
       // Best effort — local reset below still clears everything.
     }
   }
+
+  await disableStudyNotificationsAsync();
 
   // Reset in-memory state immediately so the UI reflects the wipe without a reload.
   useEntitlementStore.getState().clearEntitlements();

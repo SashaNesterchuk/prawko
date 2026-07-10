@@ -7,7 +7,9 @@
     "orientation": "portrait",
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "expo-localization",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true
@@ -16,7 +18,10 @@
       "package": "com.mindjar.prawko"
     },
     "ios": {
-      "bundleIdentifier": "com.mindjar.prawko"
+      "bundleIdentifier": "com.mindjar.prawko",
+      "infoPlist": {
+        "NSUserNotificationUsageDescription": "This app uses notifications to remind you about study sessions."
+      }
     }
   }
 }

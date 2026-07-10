@@ -5,7 +5,7 @@ import {
   type TextInputProps,
 } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type AppTextInputProps = {
@@ -72,7 +72,7 @@ function useStyles() {
     },
     label: {
       fontSize: responsiveFont(13),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       color: colors.textSecondary,
       textTransform: "uppercase",
     },
@@ -84,6 +84,7 @@ function useStyles() {
       backgroundColor: colors.surface,
       paddingHorizontal: spacing.exact(16),
       fontSize: responsiveFont(16),
+      fontFamily: getFontFamily("regular"),
       color: colors.textPrimary,
     },
     multilineInput: {

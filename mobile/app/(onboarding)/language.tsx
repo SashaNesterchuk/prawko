@@ -7,7 +7,7 @@ import { SUPPORTED_LOCALES } from "@prawko/config";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 
 export default function LanguageScreen() {
@@ -71,19 +71,20 @@ function useStyles() {
     },
     optionTitle: {
       fontSize: responsiveFont(18),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       color: colors.textPrimary,
       marginBottom: spacing.exact(4),
     },
     optionBody: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(22),
+      fontFamily: getFontFamily("regular"),
       color: colors.textSecondary,
     },
     selectedLabel: {
       marginTop: spacing.exact(12),
       fontSize: responsiveFont(12),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       color: colors.accent,
       textTransform: "uppercase",
     },

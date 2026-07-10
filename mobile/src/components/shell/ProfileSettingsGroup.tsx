@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Pressable, Switch, Text, View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type ProfileSettingsRowProps = {
@@ -153,20 +153,20 @@ function useStyles({
     title: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("medium"),
       letterSpacing: -0.16,
       color: titleColor ?? colors.ink,
     },
     subtitle: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.inkMuted,
     },
     value: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: theme.accents.blue.ink,
     },
     badge: {

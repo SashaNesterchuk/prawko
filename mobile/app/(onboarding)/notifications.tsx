@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,8 +8,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { STUDY_PLAN_LIMITS } from "@prawko/config";
 
+import {
+  disableStudyNotificationsAsync,
+  enableStudyNotificationsAsync,
+} from "../../src/features/notifications/runtime";
 import { generateLocalStudyPlan } from "../../src/features/study-plan/generate-local-study-plan";
-import { useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
+import {
+  getFontFamily,
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 
@@ -39,9 +46,15 @@ export default function NotificationsScreen() {
 
     if (requestPermission) {
       try {
-        await Notifications.requestPermissionsAsync();
+        await enableStudyNotificationsAsync();
       } catch (error) {
-        console.warn("Failed to request notification permissions.", error);
+        console.warn("Failed to enable study notifications.", error);
+      }
+    } else {
+      try {
+        await disableStudyNotificationsAsync();
+      } catch (error) {
+        console.warn("Failed to disable study notifications.", error);
       }
     }
 
@@ -170,7 +183,7 @@ function useStyles() {
         marginTop: spacing.exact(32),
         fontSize: responsiveFont(32),
         lineHeight: responsiveFont(38),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
         letterSpacing: -0.64,
         color: colors.textPrimary,
       },
@@ -178,7 +191,7 @@ function useStyles() {
         marginTop: spacing.exact(12),
         fontSize: responsiveFont(18),
         lineHeight: responsiveFont(28),
-        fontWeight: "400",
+        fontFamily: getFontFamily("regular"),
         color: colors.textSecondary,
       },
       points: {
@@ -202,7 +215,7 @@ function useStyles() {
         flex: 1,
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "400",
+        fontFamily: getFontFamily("regular"),
         color: colors.textPrimary,
       },
       footer: {
@@ -246,7 +259,7 @@ function useStyles() {
       ctaLabel: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("medium"),
         letterSpacing: -0.2,
         color: colors.onAccent,
       },
@@ -261,7 +274,7 @@ function useStyles() {
       ghostLabel: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "400",
+        fontFamily: getFontFamily("regular"),
         color: colors.textSecondary,
       },
     })

@@ -11,6 +11,10 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { isMockAuthEnabled } from "../config/env";
+import {
+  getSupportedDeviceLocale,
+  normalizeSupportedLocale,
+} from "../i18n/locale";
 
 type AuthMode = "mock" | "supabase";
 
@@ -38,6 +42,11 @@ type StudyPlanSetupDraft = {
   schoolCode: string;
 };
 
+export type NotificationHour = {
+  hour: number;
+  minute: number;
+};
+
 export type OnboardingRoute =
   | "/(onboarding)/language"
   | "/(onboarding)/category"
@@ -59,7 +68,12 @@ type AppShellState = {
   onboardingProgress: OnboardingProgress;
   preferredCategory: DrivingCategory;
   preferredLocale: SupportedLocale;
+  hasChosenPreferredLocale: boolean;
   enablePjmTracks: boolean;
+  isScheduleNotificationEnabled: boolean;
+  notificationHours: NotificationHour[];
+  pushNotificationToken: string | null;
+  scheduledNotificationIds: string[];
   sessionResolved: boolean;
   studyPlanSetup: StudyPlanSetupDraft;
   supabaseUser: AppUser | null;
@@ -88,6 +102,9 @@ type AppShellState = {
   setMinutesPerDay: (minutesPerDay: number) => void;
   setPreferredCategory: (category: DrivingCategory) => void;
   setPreferredLocale: (locale: SupportedLocale) => void;
+  setPushNotificationToken: (token: string | null) => void;
+  setScheduleNotificationEnabled: (enabled: boolean) => void;
+  setScheduledNotificationIds: (ids: string[]) => void;
   setEnablePjmTracks: (enabled: boolean) => void;
   setSchoolCode: (schoolCode: string) => void;
   setSessionResolved: (value: boolean) => void;
@@ -106,7 +123,12 @@ type PersistedAppShellState = Pick<
   | "onboardingProgress"
   | "preferredCategory"
   | "preferredLocale"
+  | "hasChosenPreferredLocale"
   | "enablePjmTracks"
+  | "isScheduleNotificationEnabled"
+  | "notificationHours"
+  | "pushNotificationToken"
+  | "scheduledNotificationIds"
   | "studyPlanSetup"
 >;
 
@@ -126,6 +148,11 @@ const defaultStudyPlanSetup: StudyPlanSetupDraft = {
   minutesPerDay: null,
   schoolCode: "",
 };
+
+export const DEFAULT_NOTIFICATION_HOURS: NotificationHour[] = [
+  { hour: 8, minute: 0 },
+  { hour: 21, minute: 0 },
+];
 
 function createCompletedOnboardingProgress(): OnboardingProgress {
   return {
@@ -155,12 +182,25 @@ function getNextMockUser(mockUser: AppUser | null) {
   return isMockAuthEnabled && mockUser?.provider === "mock" ? mockUser : null;
 }
 
+function normalizePersistedLocale(
+  locale: SupportedLocale | null | undefined,
+): SupportedLocale {
+  return normalizeSupportedLocale(locale ?? null) ?? DEFAULT_LOCALE;
+}
+
 function normalizePersistedShellState(
   persistedState: Partial<PersistedAppShellState> | undefined,
 ): PersistedAppShellState {
   const nextMockUser = getNextMockUser(persistedState?.mockUser ?? null);
   const authMode =
     persistedState?.authMode === "mock" && nextMockUser ? "mock" : "supabase";
+  const hasChosenPreferredLocale =
+    persistedState?.hasChosenPreferredLocale ??
+    persistedState?.onboardingProgress?.languageDone ??
+    false;
+  const resolvedPreferredLocale = hasChosenPreferredLocale
+    ? normalizePersistedLocale(persistedState?.preferredLocale)
+    : getSupportedDeviceLocale();
 
   return {
     authMode,
@@ -171,8 +211,16 @@ function normalizePersistedShellState(
     onboardingProgress:
       persistedState?.onboardingProgress ?? defaultOnboardingProgress,
     preferredCategory: persistedState?.preferredCategory ?? DEFAULT_CATEGORY,
-    preferredLocale: persistedState?.preferredLocale ?? DEFAULT_LOCALE,
+    preferredLocale: resolvedPreferredLocale,
+    hasChosenPreferredLocale,
     enablePjmTracks: persistedState?.enablePjmTracks ?? false,
+    isScheduleNotificationEnabled:
+      persistedState?.isScheduleNotificationEnabled ?? false,
+    notificationHours:
+      persistedState?.notificationHours ?? DEFAULT_NOTIFICATION_HOURS,
+    pushNotificationToken: persistedState?.pushNotificationToken ?? null,
+    scheduledNotificationIds:
+      persistedState?.scheduledNotificationIds ?? [],
     studyPlanSetup: persistedState?.studyPlanSetup ?? defaultStudyPlanSetup,
   };
 }
@@ -188,8 +236,13 @@ export const useAppShellStore = create<AppShellState>()(
       onboardingCompleted: false,
       onboardingProgress: defaultOnboardingProgress,
       preferredCategory: DEFAULT_CATEGORY,
-      preferredLocale: DEFAULT_LOCALE,
+      preferredLocale: getSupportedDeviceLocale(),
+      hasChosenPreferredLocale: false,
       enablePjmTracks: false,
+      isScheduleNotificationEnabled: false,
+      notificationHours: DEFAULT_NOTIFICATION_HOURS,
+      pushNotificationToken: null,
+      scheduledNotificationIds: [],
       sessionResolved: false,
       studyPlanSetup: defaultStudyPlanSetup,
       supabaseUser: null,
@@ -204,6 +257,7 @@ export const useAppShellStore = create<AppShellState>()(
         })),
       completeLanguageStep: () =>
         set((state) => ({
+          hasChosenPreferredLocale: true,
           onboardingProgress: {
             ...state.onboardingProgress,
             languageDone: true,
@@ -221,7 +275,8 @@ export const useAppShellStore = create<AppShellState>()(
             ? createCompletedOnboardingProgress()
             : state.onboardingProgress,
           preferredCategory,
-          preferredLocale,
+          preferredLocale: normalizePersistedLocale(preferredLocale),
+          hasChosenPreferredLocale: true,
         })),
       hydrateRemoteStudyPlan: ({ plan, remoteId }) =>
         set((state) => ({
@@ -251,8 +306,13 @@ export const useAppShellStore = create<AppShellState>()(
           onboardingCompleted: false,
           onboardingProgress: defaultOnboardingProgress,
           preferredCategory: DEFAULT_CATEGORY,
-          preferredLocale: DEFAULT_LOCALE,
+          preferredLocale: getSupportedDeviceLocale(),
+          hasChosenPreferredLocale: false,
           enablePjmTracks: false,
+          isScheduleNotificationEnabled: false,
+          notificationHours: DEFAULT_NOTIFICATION_HOURS,
+          pushNotificationToken: null,
+          scheduledNotificationIds: [],
           sessionResolved: true,
           studyPlanSetup: defaultStudyPlanSetup,
           supabaseUser: null,
@@ -302,7 +362,17 @@ export const useAppShellStore = create<AppShellState>()(
           },
         })),
       setPreferredCategory: (preferredCategory) => set({ preferredCategory }),
-      setPreferredLocale: (preferredLocale) => set({ preferredLocale }),
+      setPreferredLocale: (preferredLocale) =>
+        set({
+          preferredLocale: normalizePersistedLocale(preferredLocale),
+          hasChosenPreferredLocale: true,
+        }),
+      setPushNotificationToken: (pushNotificationToken) =>
+        set({ pushNotificationToken }),
+      setScheduleNotificationEnabled: (isScheduleNotificationEnabled) =>
+        set({ isScheduleNotificationEnabled }),
+      setScheduledNotificationIds: (scheduledNotificationIds) =>
+        set({ scheduledNotificationIds }),
       setEnablePjmTracks: (enablePjmTracks) => set({ enablePjmTracks }),
       setSchoolCode: (schoolCode) =>
         set((state) => ({
@@ -355,13 +425,19 @@ export const useAppShellStore = create<AppShellState>()(
           onboardingCompleted: false,
           onboardingProgress: defaultOnboardingProgress,
           studyPlanSetup: defaultStudyPlanSetup,
+          preferredLocale: getSupportedDeviceLocale(),
+          hasChosenPreferredLocale: false,
+          isScheduleNotificationEnabled: false,
+          notificationHours: DEFAULT_NOTIFICATION_HOURS,
+          pushNotificationToken: null,
+          scheduledNotificationIds: [],
           supabaseUser: null,
         }),
     }),
     {
       name: "prawko-mobile-shell",
       storage: createJSONStorage(() => AsyncStorage),
-      version: 3,
+      version: 4,
       migrate: (persistedState) =>
         normalizePersistedShellState(
           (persistedState as Partial<PersistedAppShellState> | undefined) ??
@@ -376,7 +452,12 @@ export const useAppShellStore = create<AppShellState>()(
         onboardingProgress: state.onboardingProgress,
         preferredCategory: state.preferredCategory,
         preferredLocale: state.preferredLocale,
+        hasChosenPreferredLocale: state.hasChosenPreferredLocale,
         enablePjmTracks: state.enablePjmTracks,
+        isScheduleNotificationEnabled: state.isScheduleNotificationEnabled,
+        notificationHours: state.notificationHours,
+        pushNotificationToken: state.pushNotificationToken,
+        scheduledNotificationIds: state.scheduledNotificationIds,
         studyPlanSetup: state.studyPlanSetup,
       }),
       onRehydrateStorage: () => (state) => {

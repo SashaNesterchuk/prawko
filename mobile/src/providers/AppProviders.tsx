@@ -10,6 +10,7 @@ import { useResponsiveStyles } from "../portable-ui";
 import { AnalyticsProvider } from "./AnalyticsProvider";
 import { ErrorLoggingProvider } from "./ErrorLoggingProvider";
 import { LocaleSyncProvider } from "./LocaleSyncProvider";
+import { NotificationSetupProvider } from "./NotificationSetupProvider";
 import { QuestionCatalogProvider } from "./QuestionCatalogProvider";
 import { RevenueCatProvider } from "./RevenueCatProvider";
 import { RemoteEntitlementsProvider } from "./RemoteEntitlementsProvider";
@@ -31,17 +32,19 @@ export function AppProviders({ children }: PropsWithChildren) {
                 <RemoteEntitlementsProvider>
                   <RevenueCatProvider>
                     <RemoteLearningStateProvider>
-                      <LocaleSyncProvider>
-                        <UserProvider>
-                          <QuestionCatalogProvider>
-                            <AdProvider>
-                              <AppResumeAdListener />
-                              {children}
-                              <Toast />
-                            </AdProvider>
-                          </QuestionCatalogProvider>
-                        </UserProvider>
-                      </LocaleSyncProvider>
+                      <NotificationSetupProvider>
+                        <LocaleSyncProvider>
+                          <UserProvider>
+                            <QuestionCatalogProvider>
+                              <AdProvider>
+                                <AppResumeAdListener />
+                                {children}
+                                <Toast />
+                              </AdProvider>
+                            </QuestionCatalogProvider>
+                          </UserProvider>
+                        </LocaleSyncProvider>
+                      </NotificationSetupProvider>
                     </RemoteLearningStateProvider>
                   </RevenueCatProvider>
                 </RemoteEntitlementsProvider>

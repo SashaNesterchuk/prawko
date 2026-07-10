@@ -1,6 +1,6 @@
 import { Pressable, Text } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { getFontFamily, useResponsiveStyles } from "../../portable-ui";
 
 type AppButtonVariant = "primary" | "secondary" | "ghost";
 
@@ -76,7 +76,7 @@ function useStyles() {
     },
     label: {
       fontSize: responsiveFont(15),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
     },
     primaryLabel: {
       color: colors.onAccent,

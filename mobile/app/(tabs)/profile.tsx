@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { router } from "expo-router";
-import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,6 +26,11 @@ import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import { fetchRecentExamSessions } from "../../src/features/exam/supabase-exam";
 import {
+  disableStudyNotificationsAsync,
+  enableStudyNotificationsAsync,
+  syncNotificationStateAsync,
+} from "../../src/features/notifications/runtime";
+import {
   buildWeekActivity,
   formatProfileExamDate,
   getProfileStatMetrics,
@@ -36,6 +40,7 @@ import {
 } from "../../src/features/study-plan/generate-local-study-plan";
 import { getMobileSupabaseClient } from "../../src/lib/supabase";
 import {
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../src/portable-ui";
@@ -60,6 +65,9 @@ export default function ProfileTabScreen() {
   const styles = useStyles({ safeBottom });
   const isFocused = useIsFocused();
   const authMode = useAppShellStore((state) => state.authMode);
+  const notificationsEnabled = useAppShellStore(
+    (state) => state.isScheduleNotificationEnabled
+  );
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const signOutLocal = useAppShellStore((state) => state.signOutLocal);
@@ -68,20 +76,13 @@ export default function ProfileTabScreen() {
   const resetProgress = useQuestionProgressStore((state) => state.resetProgress);
   const hasPlusAccess = useHasPlusAccess();
   const [examCount, setExamCount] = useState(0);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   useEffect(() => {
     if (!isFocused) {
       return;
     }
 
-    void Notifications.getPermissionsAsync()
-      .then(({ status }) => {
-        setNotificationsEnabled(status === "granted");
-      })
-      .catch(() => {
-        setNotificationsEnabled(false);
-      });
+    void syncNotificationStateAsync();
   }, [isFocused]);
 
   useEffect(() => {
@@ -131,19 +132,11 @@ export default function ProfileTabScreen() {
 
   const handleToggleNotifications = async (nextValue: boolean) => {
     if (nextValue) {
-      try {
-        const { status } = await Notifications.requestPermissionsAsync();
-        setNotificationsEnabled(status === "granted");
-      } catch {
-        setNotificationsEnabled(false);
-      }
+      await enableStudyNotificationsAsync();
       return;
     }
 
-    Alert.alert(
-      t("profile.notificationsDisableTitle"),
-      t("profile.notificationsDisableMessage")
-    );
+    await disableStudyNotificationsAsync();
   };
 
   const handleResetAll = () => {
@@ -413,7 +406,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
         flex: 1,
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "600",
+        fontFamily: getFontFamily("medium"),
         letterSpacing: -0.16,
         color: accents.red.ink,
       },
