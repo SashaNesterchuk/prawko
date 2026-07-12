@@ -63,6 +63,7 @@ export function QuestionMediaCard({
   );
   const hasPreview = Boolean(previewUrl) && !previewFailed;
   const isVideo = media.type === "video";
+  const showVideoPlaceholder = isVideo && (!previewUrl || previewFailed);
 
   const openViewer = (asset: QuestionDeliveryAsset, label: string) => {
     router.push({
@@ -79,6 +80,69 @@ export function QuestionMediaCard({
     setIsLoaded(false);
     setReloadKey((value) => value + 1);
   };
+
+  if (showVideoPlaceholder) {
+    return (
+      <View style={styles.root}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("question.media.openPreviewAccessibility", {
+            type: t(`question.mediaTypes.${media.type}`),
+          })}
+          disabled={!assetUrl}
+          onPress={() => openViewer(media.asset, primaryLabel)}
+          style={({ pressed }) => [
+            styles.frame,
+            styles.videoPlaceholderFrame,
+            pressed ? styles.mediaPressed : null,
+          ]}
+        >
+          <Text style={styles.videoPlaceholderLabel}>{primaryLabel}</Text>
+          <Text style={styles.videoPlaceholderBody}>
+            {t("question.media.tapToOpen")}
+          </Text>
+
+          <View pointerEvents="none" style={styles.playBadge}>
+            <MaterialCommunityIcons
+              name="play"
+              size={playIconSize}
+              color={colors.textPrimary}
+            />
+          </View>
+
+          {enablePjmTracks && pjmActions.length > 0 ? (
+            <View style={styles.pjmOverlay}>
+              {pjmActions.map((action) => {
+                const isEnabled = Boolean(
+                  getQuestionDeliveryAssetUrl(action.asset)
+                );
+
+                return (
+                  <Pressable
+                    key={`${action.shortLabel}:${action.asset.mediaKey}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={action.label}
+                    disabled={!isEnabled}
+                    onPress={(event) => {
+                      event.stopPropagation();
+                      openViewer(action.asset, action.label);
+                    }}
+                    style={({ pressed }) => [
+                      styles.pjmIconButton,
+                      !isEnabled ? styles.pjmIconButtonDisabled : null,
+                      pressed && isEnabled ? styles.pjmIconButtonPressed : null,
+                    ]}
+                  >
+                    <Text style={styles.pjmIconGlyph}>{action.shortLabel}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : null}
+        </Pressable>
+      </View>
+    );
+  }
 
   if (!hasPreview) {
     return (
@@ -302,6 +366,27 @@ function useStyles({ windowWidth }: { windowWidth: number }) {
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: colors.cardMuted,
+    },
+    videoPlaceholderFrame: {
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.exact(8),
+      paddingHorizontal: spacing.exact(24),
+      backgroundColor: colors.track,
+    },
+    videoPlaceholderLabel: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      color: colors.textPrimary,
+      textAlign: "center",
+    },
+    videoPlaceholderBody: {
+      maxWidth: "78%",
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(18),
+      color: colors.textMuted,
+      textAlign: "center",
     },
     errorFrame: {
       alignItems: "center",

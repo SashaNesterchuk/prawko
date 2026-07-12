@@ -23,6 +23,13 @@ export function buildStoragePublicUrl(
   bucket: string,
   storagePath: string
 ): string | null {
+  if (mobileEnv.mediaBaseUrl) {
+    const normalizedBaseUrl = mobileEnv.mediaBaseUrl.replace(/\/+$/, "");
+    return `${normalizedBaseUrl}/${encodeURIComponent(
+      bucket
+    )}/${encodeStoragePath(storagePath)}`;
+  }
+
   if (!mobileEnv.supabaseUrl) {
     return null;
   }
@@ -98,7 +105,7 @@ export function getQuestionMediaViewerPreviewUrl(
     );
   }
 
-  return getQuestionMediaViewerAssetUrl(params);
+  return null;
 }
 
 export function getQuestionMediaPreviewUrl(

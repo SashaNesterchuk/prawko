@@ -50,6 +50,7 @@ export default function MediaViewerModalScreen() {
   const assetUrl = getQuestionMediaViewerAssetUrl(viewer);
   const hasPreview = Boolean(previewUrl) && !previewFailed;
   const isVideo = viewer?.mediaType === "video";
+  const showVideoPlaceholder = Boolean(viewer) && isVideo && (!previewUrl || previewFailed);
   const title = viewer?.label ?? t("question.media.viewerTitle");
   const subtitle =
     viewer?.mediaType === "video"
@@ -126,6 +127,30 @@ export default function MediaViewerModalScreen() {
               <Text style={styles.errorBody}>
                 {t("question.media.viewerMissingAsset")}
               </Text>
+            </View>
+          ) : showVideoPlaceholder ? (
+            <View style={[styles.frame, styles.videoPlaceholderFrame]}>
+              <Text style={styles.videoPlaceholderTitle}>{title}</Text>
+              <Text style={styles.videoPlaceholderBody}>
+                {t("question.media.tapToOpen")}
+              </Text>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t("question.media.viewerOpenExternal")}
+                disabled={!assetUrl}
+                onPress={() => void handleOpenExternally()}
+                style={({ pressed }) => [
+                  styles.playBadge,
+                  pressed ? styles.pressed : null,
+                ]}
+              >
+                <MaterialCommunityIcons
+                  color={colors.textPrimary}
+                  name="play"
+                  size={playIconSize}
+                />
+              </Pressable>
             </View>
           ) : !hasPreview ? (
             <View style={[styles.frame, styles.errorFrame]}>
@@ -357,6 +382,28 @@ function useStyles({
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: colors.glassHeavy,
+      },
+      videoPlaceholderFrame: {
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.exact(10),
+        paddingHorizontal: horizontalPadding,
+        backgroundColor: colors.track,
+      },
+      videoPlaceholderTitle: {
+        maxWidth: "72%",
+        fontSize: responsiveFont(18),
+        lineHeight: responsiveFont(26),
+        fontWeight: "700",
+        textAlign: "center",
+        color: colors.textPrimary,
+      },
+      videoPlaceholderBody: {
+        maxWidth: "72%",
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        textAlign: "center",
+        color: colors.textMuted,
       },
       errorFrame: {
         alignItems: "center",

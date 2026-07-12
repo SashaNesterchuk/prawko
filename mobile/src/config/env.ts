@@ -17,6 +17,7 @@ function parseBooleanEnv(value: string | undefined, fallback = false) {
 }
 
 export const mobileEnv = {
+  mediaBaseUrl: process.env.EXPO_PUBLIC_MEDIA_BASE_URL ?? "",
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "",
   posthogKey: process.env.EXPO_PUBLIC_POSTHOG_KEY ?? "",
