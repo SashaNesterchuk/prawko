@@ -1,6 +1,8 @@
 import { Pressable, Text, View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { Icon } from "../icons";
+import { useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
 import { ProgressRing } from "./ProgressRing";
 
 type ReadinessIndexCardProps = {
@@ -24,6 +26,8 @@ export function ReadinessIndexCard({
   onPress,
   onPressDetails,
 }: ReadinessIndexCardProps) {
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles();
   const clamped = Math.max(0, Math.min(progress, 100));
   const handlePress = onPress ?? onPressDetails;
@@ -50,7 +54,11 @@ export function ReadinessIndexCard({
         {detailsLabel ? (
           <View style={styles.detailsRow}>
             <Text style={styles.detailsLabel}>{detailsLabel}</Text>
-            <View style={styles.chevron} />
+            <Icon
+              color={theme.accents.blue.ink}
+              name="chevron"
+              size={responsiveFont(20)}
+            />
           </View>
         ) : null}
       </View>
@@ -121,14 +129,6 @@ function useStyles() {
       lineHeight: responsiveFont(20),
       fontWeight: "400",
       color: theme.accents.blue.ink,
-    },
-    chevron: {
-      width: spacing.exact(8),
-      height: spacing.exact(8),
-      borderTopWidth: 2,
-      borderRightWidth: 2,
-      borderColor: theme.accents.blue.ink,
-      transform: [{ rotate: "45deg" }],
     },
   }));
 }

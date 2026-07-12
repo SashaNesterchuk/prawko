@@ -6,16 +6,15 @@ import { useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 export function GreenWaveScreen({ children }: PropsWithChildren) {
-  const { colors } = useTheme();
+  const { background } = useTheme();
   const styles = useStyles();
 
   return (
     <View style={styles.root}>
       <LinearGradient
-        // colors={[colors.backgroundSky, colors.paper, colors.paper]}
-        colors={[colors.backgroundSky, colors.paper, colors.paper]}
+        colors={[background.start, background.end, background.end]}
         end={{ x: 0.5, y: 1 }}
-        locations={[0, 0.38, 1]}
+        locations={[0, 0.32, 1]}
         pointerEvents="none"
         start={{ x: 0.5, y: 0 }}
         style={StyleSheet.absoluteFill}

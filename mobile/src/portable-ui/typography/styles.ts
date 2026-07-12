@@ -1,9 +1,15 @@
 import { StyleSheet, type TextStyle } from "react-native";
 
 import {
+  typographyPresets,
+  type TypographyStyleKey,
+} from "../../theme/tokens/typography";
+import {
   createFontFamilyStyle,
   type FontWeightKey,
 } from "./fontRegistry";
+
+export type { TypographyStyleKey };
 
 export type TextSizeKey =
   | "s72"
@@ -41,16 +47,39 @@ export const fontSizes = StyleSheet.create({
   size52: { fontSize: 52 },
   size44: { fontSize: 44, lineHeight: 52 },
   size36: { fontSize: 36, lineHeight: 48 },
-  size32: { fontSize: 32, lineHeight: 40 },
+  size32: { fontSize: 32, lineHeight: 32 },
   size28: { fontSize: 28, lineHeight: 40 },
-  size24: { fontSize: 24, lineHeight: 28 },
+  size24: { fontSize: 24, lineHeight: 32 },
   size20: { fontSize: 20, lineHeight: 28 },
-  size18: { fontSize: 18, lineHeight: 24 },
+  size18: { fontSize: 18, lineHeight: 28 },
   size16: { fontSize: 16, lineHeight: 24 },
   size14: { fontSize: 14, lineHeight: 20 },
   size12: { fontSize: 12, lineHeight: 16 },
   size10: { fontSize: 10, lineHeight: 14 },
 });
+
+const TYPOGRAPHY_FONT_KEY: Record<
+  (typeof typographyPresets)[TypographyStyleKey]["fontFamilyKey"],
+  FontWeightKey
+> = {
+  bold: "bold",
+  medium: "medium",
+  regular: "regular",
+  mono: "regular",
+};
+
+export function getTypographyStyle(key: TypographyStyleKey): TextStyle {
+  const preset = typographyPresets[key];
+  const fontWeightKey = TYPOGRAPHY_FONT_KEY[preset.fontFamilyKey];
+
+  return {
+    fontSize: preset.fontSize,
+    lineHeight: preset.lineHeight,
+    letterSpacing: preset.letterSpacing,
+    fontWeight: preset.fontWeight,
+    ...createFontFamilyStyle(fontWeightKey),
+  };
+}
 
 export function getFontSizeMetrics(sizeKey: TextSizeKey) {
   const metricsKey =
@@ -106,31 +135,31 @@ export const textWeight = {
 
 export const textStyle = StyleSheet.create({
   s32: getTextSizeStyle("s36"),
-  h1: getTextSizeStyle("s32"),
-  h2: getTextSizeStyle("s24"),
-  h3: getTextSizeStyle("s20"),
-  h3Half: getTextSizeStyle("s18"),
-  h4: getTextSizeStyle("s16"),
-  h5: getTextSizeStyle("s14"),
-  bExt: getTextSizeStyle("s20"),
-  b1: getTextSizeStyle("s16"),
-  b2: getTextSizeStyle("s14"),
-  b3: getTextSizeStyle("s12"),
-  c1: getTextSizeStyle("s12"),
-  c2: getTextSizeStyle("s12"),
-  c3: getTextSizeStyle("s10"),
-  input: getTextSizeStyle("s14"),
+  h1: getTypographyStyle("displayL"),
+  h2: getTypographyStyle("headingL"),
+  h3: getTypographyStyle("headingM"),
+  h3Half: getTypographyStyle("bodyL"),
+  h4: getTypographyStyle("headingS"),
+  h5: getTypographyStyle("bodyS"),
+  bExt: getTypographyStyle("bodyL"),
+  b1: getTypographyStyle("bodyM"),
+  b2: getTypographyStyle("bodyS"),
+  b3: getTypographyStyle("bodyXS"),
+  c1: getTypographyStyle("labelS"),
+  c2: getTypographyStyle("labelXS"),
+  c3: getTypographyStyle("labelXS"),
+  input: getTypographyStyle("bodyS"),
 });
 
 export const globalStyles = StyleSheet.create({
   shadow: {
-    shadowColor: "#2B2626",
+    shadowColor: "#142D21",
     shadowOffset: {
       width: 0,
-      height: 0,
+      height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    elevation: 5,
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
 });

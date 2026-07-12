@@ -22,6 +22,13 @@ type QuestionProgressState = {
   attempts: QuestionAttempt[];
   hasHydrated: boolean;
   questionUserState: QuestionUserStateMap;
+  applyQuestionAttemptOutcome: (
+    questionId: string,
+    input: {
+      answeredAt: string;
+      isCorrect: boolean;
+    }
+  ) => void;
   advanceSession: () => void;
   answerCurrentQuestion: (
     selectedAnswer: QuestionOptionValue
@@ -45,6 +52,24 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
       attempts: [],
       hasHydrated: false,
       questionUserState: {},
+      applyQuestionAttemptOutcome: (questionId, input) =>
+        set((state) => {
+          const previousState = getQuestionUserState(
+            state.questionUserState,
+            questionId
+          );
+          const nextState = getNextQuestionUserStateAfterAttempt(previousState, {
+            answeredAt: input.answeredAt,
+            isCorrect: input.isCorrect,
+          });
+
+          return {
+            questionUserState: {
+              ...state.questionUserState,
+              [questionId]: nextState,
+            },
+          };
+        }),
       advanceSession: () =>
         set((state) => {
           if (!state.activeSession) {

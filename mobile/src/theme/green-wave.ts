@@ -3,30 +3,23 @@ import { appTheme, type AppThemeAccent } from ".";
 export const greenWave = {
   color: {
     ink: appTheme.colors.ink,
-    inkSecondary: appTheme.colors.inkSecondary,
-    inkMuted: appTheme.colors.inkMuted,
+    inkSecondary: appTheme.colors.ink2,
+    inkMuted: appTheme.colors.ink3,
     surface: appTheme.colors.surface,
+    surface2: appTheme.colors.surface2,
+    inset: appTheme.colors.inset,
+    icon: appTheme.colors.icon,
     onAccent: appTheme.colors.onAccent,
     paper: appTheme.colors.paper,
-    skySoft: appTheme.colors.skySoft,
+    skySoft: appTheme.colors.paper,
     line: appTheme.colors.line,
-    track: appTheme.colors.track,
+    track: appTheme.colors.line,
     shadow: appTheme.colors.shadow,
   },
-  radius: {
-    md: appTheme.radius.md,
-    lg: appTheme.radius.lg,
-    xl: appTheme.radius.xl,
-    xxl: appTheme.radius.xxl,
-    pill: appTheme.radius.pill,
-  },
-  spacing: {
-    xs: 4,
-    sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 24,
-  },
+  radius: appTheme.radius,
+  spacing: appTheme.spacing,
+  elevation: appTheme.elevation,
+  typography: appTheme.typography,
 } as const;
 
 export type GreenWaveAccent = AppThemeAccent;

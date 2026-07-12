@@ -15,12 +15,13 @@ export {
   getFontSizeMetrics,
   getTextSizeStyle,
   getTextWeightStyle,
+  getTypographyStyle,
   globalStyles,
   textSize,
   textStyle,
   textWeight,
 } from "./typography/styles";
-export type { TextSizeKey } from "./typography/styles";
+export type { TextSizeKey, TypographyStyleKey } from "./typography/styles";
 
 export { useResponsiveFonts } from "./hooks/useResponsiveFonts";
 export type { ResponsiveFontHook } from "./hooks/useResponsiveFonts";

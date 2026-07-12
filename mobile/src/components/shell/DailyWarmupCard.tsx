@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 
+import { Icon } from "../icons";
 import {
   useResponsiveFonts,
   useResponsiveStyles,
@@ -59,9 +59,9 @@ function BoltIcon() {
   const { responsiveFont } = useResponsiveFonts();
 
   return (
-    <Ionicons
+    <Icon
       color={theme.accents.amber.fill}
-      name="flash-outline"
+      name="bolt"
       size={responsiveFont(24)}
     />
   );

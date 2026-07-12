@@ -128,6 +128,11 @@ export const EXAM_RULES = {
   passingPoints: 68,
 } as const;
 
+export const QUESTION_MASTERY_RULES = {
+  consecutiveCorrect: 3,
+  minTotalCorrect: 3,
+} as const;
+
 export const STUDY_PLAN_LIMITS = {
   minDays: 7,
   recommendedDays: 14,

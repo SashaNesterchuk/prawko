@@ -33,6 +33,7 @@ import {
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
+import { useQuestionProgressStore } from "../../src/state/question-progress";
 import type { RemoteExamSnapshot } from "../../src/features/exam/types";
 
 const URGENT_THRESHOLD_SECONDS = 180;
@@ -47,6 +48,9 @@ export default function ExamSessionScreen() {
   }>();
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const questionCatalogVersion = useQuestionCatalogVersion();
+  const applyQuestionAttemptOutcome = useQuestionProgressStore(
+    (state) => state.applyQuestionAttemptOutcome
+  );
   const [snapshot, setSnapshot] = useState<RemoteExamSnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -223,6 +227,8 @@ export default function ExamSessionScreen() {
     setErrorMessage(null);
 
     try {
+      const answeredAt = new Date().toISOString();
+      const isCorrect = currentQuestion.correctAnswer === selectedAnswerId;
       const nextSnapshot = await submitExamAnswer({
         answerDurationMs: Math.max(0, Date.now() - questionStartedAtRef.current),
         answerGiven: selectedAnswerId,
@@ -233,6 +239,11 @@ export default function ExamSessionScreen() {
           question_source_id: currentQuestionRef.questionSourceId,
         },
         sessionId,
+      });
+
+      applyQuestionAttemptOutcome(currentQuestionRef.questionSourceId, {
+        answeredAt,
+        isCorrect,
       });
 
       setSnapshot(nextSnapshot);
@@ -313,7 +324,7 @@ export default function ExamSessionScreen() {
           title={t("exam.sessionErrorTitle")}
           description={errorMessage ?? t("exam.sessionErrorBody")}
           actionLabel={t("exam.backToPracticeCta")}
-          onAction={() => router.replace("/practice")}
+          onAction={() => router.replace("/(tabs)")}
         />
       </SafeAreaView>
     );
@@ -376,7 +387,7 @@ export default function ExamSessionScreen() {
           title={t("exam.sessionErrorTitle")}
           description={errorMessage ?? t("exam.sessionErrorBody")}
           actionLabel={t("exam.backToPracticeCta")}
-          onAction={() => router.replace("/practice")}
+          onAction={() => router.replace("/(tabs)")}
         />
       </SafeAreaView>
     );

@@ -134,7 +134,7 @@ export default function ExamResultScreen() {
           title={t("exam.resultMissingTitle")}
           description={errorMessage ?? t("exam.resultMissingBody")}
           actionLabel={t("exam.backToPracticeCta")}
-          onAction={() => router.replace("/practice")}
+          onAction={() => router.replace("/(tabs)")}
         />
       </SafeAreaView>
     );
@@ -181,7 +181,7 @@ export default function ExamResultScreen() {
             accessibilityRole="button"
             accessibilityLabel={t("common.close")}
             hitSlop={8}
-            onPress={() => router.replace("/practice")}
+            onPress={() => router.replace("/(tabs)")}
             style={styles.headerButton}
           >
             <MaterialCommunityIcons
@@ -282,7 +282,7 @@ export default function ExamResultScreen() {
         <Pressable
           accessibilityRole="button"
           style={styles.ghostButton}
-          onPress={() => router.replace("/practice")}
+          onPress={() => router.replace("/(tabs)")}
         >
           <Text style={styles.ghostText}>{t("exam.later")}</Text>
         </Pressable>

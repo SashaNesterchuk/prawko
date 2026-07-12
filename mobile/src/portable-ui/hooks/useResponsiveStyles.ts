@@ -12,6 +12,7 @@ export interface ResponsiveStylesContext {
   colors: ReturnType<typeof useTheme>["colors"];
   accents: ReturnType<typeof useTheme>["accents"];
   radius: ReturnType<typeof useTheme>["radius"];
+  elevation: ReturnType<typeof useTheme>["elevation"];
 }
 
 export function useResponsiveStyles<T extends StyleSheet.NamedStyles<T>>(
@@ -20,7 +21,7 @@ export function useResponsiveStyles<T extends StyleSheet.NamedStyles<T>>(
   const spacing = useResponsiveSpacing();
   const { responsiveFont } = useResponsiveFonts();
   const theme = useTheme();
-  const { accents, colors, radius } = theme;
+  const { accents, colors, elevation, radius } = theme;
 
   return useMemo(
     () =>
@@ -32,8 +33,9 @@ export function useResponsiveStyles<T extends StyleSheet.NamedStyles<T>>(
           colors,
           accents,
           radius,
+          elevation,
         })
       ),
-    [factory, theme, spacing, responsiveFont, colors, accents, radius]
+    [factory, theme, spacing, responsiveFont, colors, accents, radius, elevation]
   );
 }

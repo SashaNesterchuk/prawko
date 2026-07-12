@@ -7,7 +7,10 @@ import { useTranslation } from "react-i18next";
 import { IconPlaceholder } from "../../../components/shell/IconPlaceholder";
 import { TrainingExitDialog } from "../../../components/shell/TrainingExitDialog";
 import { useTheme } from "../../../providers/ThemeProvider";
-import { getLocalizedText } from "../question-engine";
+import {
+  getLocalizedText,
+  isQuestionMastered,
+} from "../question-engine";
 import { QuestionMediaCard } from "../QuestionMediaCard";
 import { QuestionChoiceOption } from "./QuestionChoiceOption";
 import { QuestionStepPill } from "./QuestionStepPill";
@@ -32,6 +35,7 @@ type QuestionTrainingViewProps = Pick<
   | "handleDismissExitDialog"
   | "handleRequestExit"
   | "handleToggleBookmark"
+  | "masteryProgress"
   | "questionChoices"
   | "showExitDialog"
   | "summary"
@@ -55,6 +59,7 @@ export function QuestionTrainingView({
   handleDismissExitDialog,
   handleRequestExit,
   handleToggleBookmark,
+  masteryProgress,
   questionChoices,
   showExitDialog,
   summary,
@@ -74,6 +79,10 @@ export function QuestionTrainingView({
     displayLocale
   );
   const scopeLabel = t(`question.scopes.${currentQuestion.scope}`);
+  const showMasteryProgress =
+    isCorrectAnswer &&
+    !isQuestionMastered(currentQuestionState) &&
+    currentQuestionState.timesWrong > 0;
 
   return (
     <SafeAreaView style={trainerStyles.safeArea} edges={["top", "bottom"]}>
@@ -189,6 +198,16 @@ export function QuestionTrainingView({
 
             {explanationText ? (
               <Text style={trainerStyles.feedbackBody}>{explanationText}</Text>
+            ) : null}
+
+            {showMasteryProgress ? (
+              <Text style={trainerStyles.masteryProgress}>
+                {t("question.masteryProgress", {
+                  current: masteryProgress.current,
+                  target: masteryProgress.target,
+                  defaultValue: "Закріплення: {{current}}/{{target}}",
+                })}
+              </Text>
             ) : null}
 
             <Pressable

@@ -1,9 +1,16 @@
 import type { ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { Icon } from "../icons";
+import {
+  getTypographyStyle,
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { type GreenWaveAccent } from "../../theme/green-wave";
+
+type ActionTileStyle = "default" | "raised" | "inactive" | "faded";
 
 type ActionTileProps = {
   title: string;
@@ -12,6 +19,7 @@ type ActionTileProps = {
   premium?: boolean;
   icon?: ReactNode;
   onPress?: () => void;
+  style?: ActionTileStyle;
 };
 
 export function ActionTile({
@@ -21,15 +29,17 @@ export function ActionTile({
   premium = false,
   icon,
   onPress,
+  style = "default",
 }: ActionTileProps) {
   const theme = useTheme();
-  const accentColor = theme.accents[accent];
-  const styles = useStyles({ iconBackground: accentColor.soft });
+  const styles = useStyles({ style });
 
   const body = (
     <>
       <View style={styles.iconWrap}>
-        {icon ? <View style={styles.icon}>{icon}</View> : null}
+        {icon ? (
+          <View style={styles.icon}>{icon}</View>
+        ) : null}
       </View>
 
       <View style={styles.copy}>
@@ -50,8 +60,12 @@ export function ActionTile({
     return (
       <Pressable
         accessibilityRole="button"
+        disabled={style === "inactive"}
         onPress={onPress}
-        style={({ pressed }) => [styles.tile, pressed ? styles.pressed : null]}
+        style={({ pressed }) => [
+          styles.tile,
+          pressed && style !== "inactive" ? styles.pressed : null,
+        ]}
       >
         {body}
       </Pressable>
@@ -62,18 +76,23 @@ export function ActionTile({
 }
 
 function PremiumBadge() {
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles();
 
   return (
     <View style={styles.badge}>
-      <View style={styles.lockShackle} />
-      <View style={styles.lockBody} />
+      <Icon
+        color={theme.colors.onAccent}
+        name="premiumSmall"
+        size={responsiveFont(12)}
+      />
     </View>
   );
 }
 
-function useStyles({ iconBackground }: { iconBackground?: string } = {}) {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+function useStyles({ style = "default" }: { style?: ActionTileStyle } = {}) {
+  return useResponsiveStyles(({ colors, elevation, radius, spacing, theme }) => ({
     tile: {
       flex: 1,
       minWidth: spacing.exact(100),
@@ -83,16 +102,14 @@ function useStyles({ iconBackground }: { iconBackground?: string } = {}) {
       alignContent: "center",
       gap: spacing.md,
       padding: spacing.lg,
-      borderRadius: radius.xl,
-      backgroundColor: colors.surface,
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.05,
-      shadowRadius: spacing.exact(6),
-      shadowOffset: { width: 0, height: spacing.exact(2) },
-      elevation: 1,
+      borderRadius: radius.xxl,
+      backgroundColor:
+        style === "faded" ? "rgba(255,255,255,0.6)" : colors.white,
+      opacity: style === "inactive" ? 0.4 : 1,
+      ...(style === "raised" ? elevation.sharp : null),
     },
     pressed: {
-      opacity: 0.9,
+      opacity: style === "inactive" ? 0.4 : 0.9,
     },
     iconWrap: {
       alignItems: "center",
@@ -100,7 +117,7 @@ function useStyles({ iconBackground }: { iconBackground?: string } = {}) {
       padding: spacing.sm,
       borderRadius: radius.md,
       overflow: "hidden",
-      backgroundColor: iconBackground,
+      backgroundColor: colors.paper,
     },
     icon: {
       width: spacing.exact(24),
@@ -112,7 +129,7 @@ function useStyles({ iconBackground }: { iconBackground?: string } = {}) {
       flex: 1,
       minWidth: spacing.exact(100),
       flexDirection: "column",
-      gap: spacing.xs,
+      gap: spacing.exact(0),
     },
     titleRow: {
       flexDirection: "row",
@@ -121,43 +138,21 @@ function useStyles({ iconBackground }: { iconBackground?: string } = {}) {
     },
     title: {
       flex: 1,
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
-      fontWeight: "600",
-      letterSpacing: -0.16,
+      ...getTypographyStyle("headingS"),
       color: colors.ink,
     },
     subtitle: {
       width: "100%",
-      fontSize: responsiveFont(12),
-      lineHeight: responsiveFont(16),
-      fontWeight: "400",
-      color: colors.inkMuted,
+      ...getTypographyStyle("labelS"),
+      color: colors.ink3,
     },
     badge: {
-      width: spacing.exact(24),
-      height: spacing.exact(24),
+      width: spacing.exact(20),
+      height: spacing.exact(20),
       alignItems: "center",
       justifyContent: "center",
-      padding: spacing.xs,
       borderRadius: radius.pill,
       backgroundColor: theme.accents.green.fill,
-    },
-    lockShackle: {
-      width: spacing.exact(8),
-      height: spacing.exact(5),
-      borderWidth: 1.5,
-      borderBottomWidth: 0,
-      borderColor: colors.onAccent,
-      borderTopLeftRadius: spacing.exact(4),
-      borderTopRightRadius: spacing.exact(4),
-      marginBottom: -1,
-    },
-    lockBody: {
-      width: spacing.exact(11),
-      height: spacing.exact(7),
-      borderRadius: spacing.exact(2),
-      backgroundColor: colors.onAccent,
     },
   }));
 }

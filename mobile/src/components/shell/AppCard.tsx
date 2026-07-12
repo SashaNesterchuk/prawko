@@ -31,25 +31,15 @@ export function AppCard({ accent = false, children, onPress }: AppCardProps) {
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ colors, radius, spacing }) => ({
+  return useResponsiveStyles(({ colors, elevation, radius, spacing, theme }) => ({
     base: {
-      borderRadius: radius.xlarge,
-      padding: spacing.exact(18),
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.borderSoft,
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.08,
-      shadowRadius: spacing.exact(16),
-      shadowOffset: {
-        width: 0,
-        height: spacing.exact(8),
-      },
-      elevation: 2,
+      borderRadius: radius.xl,
+      padding: spacing.lg,
+      backgroundColor: colors.white,
+      ...elevation.card,
     },
     accent: {
-      borderColor: colors.accentMuted,
-      backgroundColor: colors.cardAccent,
+      backgroundColor: theme.accents.green.soft,
     },
     pressed: {
       opacity: 0.88,

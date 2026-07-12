@@ -99,6 +99,7 @@ export default function QuestionScreen() {
       handleDismissExitDialog={session.handleDismissExitDialog}
       handleRequestExit={session.handleRequestExit}
       handleToggleBookmark={session.handleToggleBookmark}
+      masteryProgress={session.masteryProgress}
       questionChoices={session.questionChoices}
       showExitDialog={session.showExitDialog}
       summary={session.summary}

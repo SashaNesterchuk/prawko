@@ -1,5 +1,6 @@
 import {
   EXAM_RULES,
+  QUESTION_MASTERY_RULES,
   QUESTION_SESSION_MODES,
   TOPIC_BLOCK_IDS,
   type QuestionSessionMode,
@@ -96,7 +97,10 @@ export function normalizeQuestionUserState(
   const isMastered =
     typeof state?.isMastered === "boolean"
       ? state.isMastered
-      : consecutiveCorrect >= 3 && mergedState.timesCorrect >= 3;
+      : isQuestionMastered({
+          ...mergedState,
+          consecutiveCorrect,
+        });
 
   return {
     ...mergedState,
@@ -165,6 +169,13 @@ export function getDerivedQuestionState(
     };
   }
 
+  if (isQuestionConsolidating(state)) {
+    return {
+      isReviewDue: isQuestionReviewDue(state, now),
+      status: "consolidating",
+    };
+  }
+
   if (state.timesCorrect > 0 || state.consecutiveCorrect > 0) {
     return {
       isReviewDue: isQuestionReviewDue(state, now),
@@ -179,7 +190,29 @@ export function getDerivedQuestionState(
 }
 
 export function isQuestionMastered(state: QuestionUserState) {
-  return state.isMastered || (state.consecutiveCorrect >= 3 && state.timesCorrect >= 3);
+  return (
+    state.isMastered ||
+    (state.consecutiveCorrect >= QUESTION_MASTERY_RULES.consecutiveCorrect &&
+      state.timesCorrect >= QUESTION_MASTERY_RULES.minTotalCorrect)
+  );
+}
+
+export function isQuestionConsolidating(state: QuestionUserState) {
+  return (
+    state.timesWrong > 0 &&
+    !isQuestionUnresolvedWrong(state) &&
+    !isQuestionMastered(state)
+  );
+}
+
+export function getMasteryProgress(state: QuestionUserState) {
+  return {
+    current: Math.min(
+      state.consecutiveCorrect,
+      QUESTION_MASTERY_RULES.consecutiveCorrect
+    ),
+    target: QUESTION_MASTERY_RULES.consecutiveCorrect,
+  };
 }
 
 export function isQuestionUnresolvedWrong(state: QuestionUserState) {
@@ -349,6 +382,59 @@ export function getOverallMistakesStats(userStates: QuestionUserStateMap) {
     correct,
     wrong,
     readiness,
+  };
+}
+
+export function getOverallConsolidationStats(userStates: QuestionUserStateMap) {
+  const questionBank = getQuestionBank();
+  const states = questionBank.map((question) =>
+    getQuestionUserState(userStates, question.id)
+  );
+  const consolidating = states.filter((state) =>
+    isQuestionConsolidating(state)
+  ).length;
+  const total = questionBank.length;
+  const readiness =
+    total === 0
+      ? 100
+      : Math.round(
+          (states.filter((state) => isQuestionMastered(state)).length / total) *
+            100
+        );
+
+  return {
+    total,
+    consolidating,
+    readiness,
+  };
+}
+
+export function getTopicConsolidationProgress(
+  topicBlock: TopicBlockId,
+  userStates: QuestionUserStateMap
+) {
+  const questions = getQuestionBank().filter(
+    (question) => question.topicBlock === topicBlock
+  );
+  const states = questions.map((question) =>
+    getQuestionUserState(userStates, question.id)
+  );
+  const consolidating = states.filter((state) =>
+    isQuestionConsolidating(state)
+  ).length;
+  const total = questions.length;
+  const progress =
+    total === 0
+      ? 100
+      : Math.round(
+          (states.filter((state) => isQuestionMastered(state)).length / total) *
+            100
+        );
+
+  return {
+    total,
+    consolidating,
+    progress,
   };
 }
 
@@ -867,7 +953,7 @@ function getConsolidationPriorityScore(
 ) {
   let score = question.difficultySeed;
 
-  if (state.consecutiveCorrect >= 2) {
+  if (state.consecutiveCorrect >= QUESTION_MASTERY_RULES.consecutiveCorrect - 1) {
     score -= 26;
   } else if (state.consecutiveCorrect === 1) {
     score -= 14;
@@ -995,7 +1081,7 @@ function resolveConsecutiveCorrect(
   }
 
   if (lastWrongAt === null) {
-    return Math.min(state.timesCorrect, 3);
+    return Math.min(state.timesCorrect, QUESTION_MASTERY_RULES.consecutiveCorrect);
   }
 
   if (lastWrongAt >= lastCorrectAt) {
@@ -1038,11 +1124,11 @@ function getReviewDueAtForState(state: QuestionUserState) {
     return addDays(state.lastSeenAt, 1);
   }
 
-  if (state.consecutiveCorrect >= 3) {
+  if (state.consecutiveCorrect >= QUESTION_MASTERY_RULES.consecutiveCorrect) {
     return addDays(state.lastSeenAt, 14);
   }
 
-  if (state.consecutiveCorrect === 2) {
+  if (state.consecutiveCorrect === QUESTION_MASTERY_RULES.consecutiveCorrect - 1) {
     return addDays(state.lastSeenAt, 7);
   }
 

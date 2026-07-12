@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
 
 import type { SupportedLocale } from "@prawko/config";
+import { QUESTION_MASTERY_RULES } from "@prawko/config";
 
 import { isMobileSupabaseConfigured } from "../../../config/env";
 import { recordQuestionAnsweredForAds } from "../../ads/ad-session-policy";
@@ -18,6 +19,7 @@ import {
 } from "../../../state/question-progress";
 import {
   getLocalizedText,
+  getMasteryProgress,
   getQuestionById,
   getQuestionChoices,
   getQuestionSessionSummary,
@@ -148,6 +150,12 @@ export function useQuestionTrainingSession() {
   const currentQuestionState = currentQuestionId
     ? getQuestionUserState(questionUserState, currentQuestionId)
     : null;
+  const masteryProgress = currentQuestionState
+    ? getMasteryProgress(currentQuestionState)
+    : {
+        current: 0,
+        target: QUESTION_MASTERY_RULES.consecutiveCorrect,
+      };
   const questionChoices = currentQuestion
     ? getQuestionChoices(currentQuestion, displayLocale)
     : [];
@@ -323,6 +331,7 @@ export function useQuestionTrainingSession() {
     isCompleted,
     isEmptyState,
     isReady: questionProgressHydrated && Boolean(activeSession),
+    masteryProgress,
     questionChoices,
     resultIconSize,
     routeParams,

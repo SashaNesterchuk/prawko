@@ -137,7 +137,7 @@ export default function HomeTabScreen() {
       subtitle: t("dash.tileTrainerSubtitle", {
         defaultValue: "Вільне тестування",
       }),
-      icon: <HomeActionIcon accent="green" name="trainer" />,
+      icon: <HomeActionIcon accent="green" name="target" />,
       onPress: () =>
         router.push({
           pathname: "/question",
@@ -148,9 +148,13 @@ export default function HomeTabScreen() {
       key: "exam",
       accent: "blue",
       title: t("dash.tileExamTitle", { defaultValue: "Іспит" }),
-      subtitle: t("dash.tileExamSubtitle", {
-        defaultValue: recentExamPassed ? "Симуляція 1/1" : "Симуляція 0/1",
-      }),
+      subtitle: recentExamPassed
+        ? t("dash.tileExamSubtitlePassed", {
+          defaultValue: "Симуляція 1/1",
+        })
+        : t("dash.tileExamSubtitlePending", {
+          defaultValue: "Симуляція 0/1",
+        }),
       icon: <HomeActionIcon accent="blue" name="exam" />,
       onPress: () =>
         router.push({
@@ -161,6 +165,7 @@ export default function HomeTabScreen() {
     {
       key: "mistakes",
       accent: "red",
+      premium: true,
       title: t("dash.tileMistakesTitle", { defaultValue: "Помилки" }),
       subtitle: t("dash.tileMistakesSubtitle", {
         defaultValue: "{{count}} для повторення",
@@ -170,14 +175,19 @@ export default function HomeTabScreen() {
       onPress: () => router.push("/mistakes"),
     },
     {
-      key: "signs",
+      key: "traps",
       accent: "amber",
-      title: t("dash.tileSignsTitle", { defaultValue: "Знаки" }),
-      subtitle: t("dash.tileSignsSubtitle", {
-        defaultValue: "Швидкий тренажер",
+      premium: true,
+      title: t("dash.tileTrapsTitle", { defaultValue: "Пастки" }),
+      subtitle: t("dash.tileTrapsSubtitle", {
+        defaultValue: "Часто плутають",
       }),
-      icon: <HomeActionIcon accent="amber" name="roadSign" />,
-      onPress: () => router.push("/(tabs)/signs"),
+      icon: <HomeActionIcon accent="amber" name="warning" />,
+      onPress: () =>
+        router.push({
+          pathname: "/question",
+          params: buildQuestionRouteParams({ mode: "hard_questions" }),
+        }),
     },
   ];
 
@@ -199,17 +209,19 @@ export default function HomeTabScreen() {
               defaultValue: "готовність",
             })}
             subtitle={readinessSubtitle}
-            detailsLabel={t("dash.readinessDetails", { defaultValue: "Деталі" })}
+            detailsLabel={t("dash.readinessDetails", {
+              defaultValue: "Оціни знання",
+            })}
             onPress={() => router.push("/statistics")}
           />
 
           <View style={styles.stack}>
             <DailyWarmupCard
               title={t("dash.warmupTitle", {
-                defaultValue: "Щоденна розминка",
+                defaultValue: "Швидка сесія",
               })}
               description={t("dash.warmupDescription", {
-                defaultValue: "Повтори слабкі місця та часті помилки.",
+                defaultValue: "10 випадкових питань",
               })}
               badgeLabel={warmupBadgeLabel}
               buttonLabel={t("dash.warmupButton", { defaultValue: "Повторити" })}
@@ -232,7 +244,7 @@ export default function HomeTabScreen() {
               title={t("dash.statusTitle", {
                 defaultValue: "Як пройшов іспит?",
               })}
-              onPress={() => router.push("/practice")}
+              onPress={() => router.push("/modals/plan-adjust")}
             />
           ) : null}
         </ScrollView>

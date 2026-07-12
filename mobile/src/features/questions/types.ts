@@ -121,6 +121,7 @@ export type QuestionDerivedState = {
     | "unseen"
     | "seen"
     | "correct_once"
+    | "consolidating"
     | "wrong_recently"
     | "hard"
     | "mastered";

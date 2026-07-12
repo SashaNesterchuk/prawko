@@ -212,7 +212,7 @@ export default function ProfileTabScreen() {
               streak: t("profile.statStreak"),
             }}
             weekDays={weekDays}
-            onPressDetails={() => router.push("/practice")}
+            onPressDetails={() => router.push("/statistics")}
           />
 
           {!hasPlusAccess ? (

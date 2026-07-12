@@ -1,6 +1,6 @@
 import { Pressable, Text } from "react-native";
 
-import { getFontFamily, useResponsiveStyles } from "../../portable-ui";
+import { getTypographyStyle, useResponsiveStyles } from "../../portable-ui";
 
 type AppButtonVariant = "primary" | "secondary" | "ghost";
 
@@ -29,8 +29,9 @@ export function AppButton({
         variant === "primary" ? styles.primary : null,
         variant === "secondary" ? styles.secondary : null,
         variant === "ghost" ? styles.ghost : null,
-        disabled ? styles.disabled : null,
-        pressed ? styles.pressed : null,
+        variant === "primary" && !disabled ? styles.primaryShadow : null,
+        disabled && variant === "primary" ? styles.primaryDisabled : null,
+        pressed && !disabled ? styles.pressed : null,
       ]}
     >
       <Text
@@ -38,6 +39,7 @@ export function AppButton({
           styles.label,
           variant === "primary" ? styles.primaryLabel : styles.secondaryLabel,
           variant === "ghost" ? styles.ghostLabel : null,
+          disabled && variant === "primary" ? styles.primaryDisabledLabel : null,
         ]}
       >
         {label}
@@ -47,45 +49,51 @@ export function AppButton({
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+  return useResponsiveStyles(({ colors, elevation, radius, spacing, theme }) => ({
     base: {
-      minHeight: spacing.exact(54),
-      borderRadius: radius.large,
+      minHeight: spacing.exact(52),
+      borderRadius: radius.pill,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: spacing.exact(18),
+      paddingHorizontal: spacing.xxl,
+      paddingVertical: spacing.md,
     },
     primary: {
-      backgroundColor: colors.accent,
+      backgroundColor: theme.accents.green.fill,
+    },
+    primaryShadow: {
+      ...elevation.raised,
+    },
+    primaryDisabled: {
+      backgroundColor: colors.surface2,
     },
     secondary: {
-      backgroundColor: colors.cardMuted,
+      backgroundColor: colors.paper,
       borderWidth: 1,
-      borderColor: colors.borderStrong,
+      borderColor: colors.line,
     },
     ghost: {
       backgroundColor: colors.transparent,
       borderWidth: 1,
-      borderColor: colors.borderSoft,
+      borderColor: colors.line,
     },
     pressed: {
-      opacity: 0.82,
-    },
-    disabled: {
-      opacity: 0.45,
+      opacity: 0.96,
     },
     label: {
-      fontSize: responsiveFont(15),
-      fontFamily: getFontFamily("bold"),
+      ...getTypographyStyle("headingM"),
     },
     primaryLabel: {
       color: colors.onAccent,
     },
+    primaryDisabledLabel: {
+      color: colors.ink3,
+    },
     secondaryLabel: {
-      color: colors.textPrimary,
+      color: colors.ink,
     },
     ghostLabel: {
-      color: colors.textPrimary,
+      color: colors.ink,
     },
   }));
 }

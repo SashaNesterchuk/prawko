@@ -13,7 +13,9 @@ import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { TopicReadinessCard } from "../../src/components/shell/TopicReadinessCard";
 import { TopicsOverviewCard } from "../../src/components/shell/TopicsOverviewCard";
 import {
+  getOverallConsolidationStats,
   getOverallMistakesStats,
+  getTopicConsolidationProgress,
   getTopicMistakeProgress,
 } from "../../src/features/questions/question-engine";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
@@ -44,6 +46,11 @@ export default function MistakesScreen() {
     [questionCatalogVersion, questionUserState]
   );
 
+  const consolidationStats = useMemo(
+    () => getOverallConsolidationStats(questionUserState),
+    [questionCatalogVersion, questionUserState]
+  );
+
   const topicsWithMistakes = useMemo(
     () =>
       TOPIC_BLOCK_IDS.filter(
@@ -52,7 +59,19 @@ export default function MistakesScreen() {
     [questionCatalogVersion, questionUserState]
   );
 
+  const topicsWithConsolidation = useMemo(
+    () =>
+      TOPIC_BLOCK_IDS.filter(
+        (topic) =>
+          getTopicConsolidationProgress(topic, questionUserState).consolidating >
+          0
+      ),
+    [questionCatalogVersion, questionUserState]
+  );
+
   const hasMistakes = overallStats.wrong > 0;
+  const hasConsolidation = consolidationStats.consolidating > 0;
+  const hasWork = hasMistakes || hasConsolidation;
 
   const openQuestionMode = (
     mode: Parameters<typeof buildQuestionRouteParams>[0]["mode"],
@@ -92,36 +111,98 @@ export default function MistakesScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {hasMistakes ? (
+          {hasWork ? (
             <>
-              <TopicsOverviewCard
-                title={t("mistakes.overviewTitle", { defaultValue: "Помилки" })}
-                answeredLabel={t("mistakes.overviewAnsweredLabel", {
-                  defaultValue: "Питань з помилками",
-                })}
-                readiness={overallStats.readiness}
-                answered={overallStats.wrong}
-                total={overallStats.total}
-                correct={overallStats.correct}
-                wrong={overallStats.wrong}
-              />
-
-              {topicsWithMistakes.map((topic) => {
-                const progress = getTopicMistakeProgress(topic, questionUserState);
-
-                return (
-                  <TopicReadinessCard
-                    key={topic}
-                    title={t(`topics.${topic}`)}
-                    seen={progress.seen}
-                    total={progress.total}
-                    readiness={progress.progress}
-                    correct={progress.correct}
-                    wrong={progress.wrong}
-                    onPress={() => openQuestionMode("wrong_answers", topic)}
+              {hasMistakes ? (
+                <>
+                  <TopicsOverviewCard
+                    title={t("mistakes.overviewTitle", { defaultValue: "Помилки" })}
+                    answeredLabel={t("mistakes.overviewAnsweredLabel", {
+                      defaultValue: "Питань з помилками",
+                    })}
+                    readiness={overallStats.readiness}
+                    answered={overallStats.wrong}
+                    total={overallStats.total}
+                    correct={overallStats.correct}
+                    wrong={overallStats.wrong}
                   />
-                );
-              })}
+
+                  {topicsWithMistakes.map((topic) => {
+                    const progress = getTopicMistakeProgress(
+                      topic,
+                      questionUserState
+                    );
+
+                    return (
+                      <TopicReadinessCard
+                        key={topic}
+                        title={t(`topics.${topic}`)}
+                        seen={progress.seen}
+                        total={progress.total}
+                        readiness={progress.progress}
+                        correct={progress.correct}
+                        wrong={progress.wrong}
+                        onPress={() => openQuestionMode("wrong_answers", topic)}
+                      />
+                    );
+                  })}
+                </>
+              ) : null}
+
+              {hasConsolidation ? (
+                <View style={hasMistakes ? styles.sectionGap : null}>
+                  <Text style={styles.sectionTitle}>
+                    {t("mistakes.consolidationTitle", {
+                      defaultValue: "Закріплення",
+                    })}
+                  </Text>
+                  <Text style={styles.sectionSubtitle}>
+                    {t("mistakes.consolidationSubtitle", {
+                      count: consolidationStats.consolidating,
+                      defaultValue:
+                        "{{count}} питань виправлено, але ще не закріплено",
+                    })}
+                  </Text>
+
+                  <ActionTile
+                    accent="blue"
+                    title={t("mistakes.consolidationCta", {
+                      defaultValue: "Повторити для закріплення",
+                    })}
+                    subtitle={t("mistakes.consolidationCtaSubtitle", {
+                      count: consolidationStats.consolidating,
+                      defaultValue: "{{count}} питань чекають на 3 правильні підряд",
+                    })}
+                    icon={
+                      <Ionicons
+                        color={accents.blue.fill}
+                        name="refresh-outline"
+                        size={iconSize}
+                      />
+                    }
+                    onPress={() => openQuestionMode("seen_not_mastered")}
+                  />
+
+                  {topicsWithConsolidation.map((topic) => {
+                    const progress = getTopicConsolidationProgress(
+                      topic,
+                      questionUserState
+                    );
+
+                    return (
+                      <TopicReadinessCard
+                        key={`consolidation-${topic}`}
+                        title={t(`topics.${topic}`)}
+                        seen={progress.consolidating}
+                        total={progress.total}
+                        readiness={progress.progress}
+                        wrong={progress.consolidating}
+                        onPress={() => openQuestionMode("seen_not_mastered", topic)}
+                      />
+                    );
+                  })}
+                </View>
+              ) : null}
             </>
           ) : (
             <View style={styles.emptyState}>
@@ -224,6 +305,23 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       padding: spacing.exact(24),
       paddingBottom: spacing.exact(24) + safeBottom,
       gap: spacing.exact(8),
+    },
+    sectionGap: {
+      marginTop: spacing.exact(16),
+      gap: spacing.exact(8),
+    },
+    sectionTitle: {
+      fontSize: responsiveFont(18),
+      lineHeight: responsiveFont(26),
+      fontWeight: "600",
+      letterSpacing: -0.18,
+      color: colors.textPrimary,
+    },
+    sectionSubtitle: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      color: colors.textSecondary,
+      marginBottom: spacing.exact(4),
     },
     pressed: {
       opacity: 0.9,

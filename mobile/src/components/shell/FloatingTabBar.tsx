@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon, type IconName } from "../icons";
 import {
+  getTypographyStyle,
   useResponsiveFonts,
   useResponsiveSpacing,
   useResponsiveStyles,
@@ -33,7 +34,7 @@ export function FloatingTabBar({
   const { responsiveFont } = useResponsiveFonts();
   const { bottom } = useSafeAreaInsets();
   const activePalette = theme.accents.green;
-  const inactiveInk = theme.colors.inkMuted;
+  const inactiveInk = theme.colors.ink3;
   const styles = useStyles({
     bottomPadding: bottom > 0 ? bottom : spacing.md,
   });
@@ -103,13 +104,13 @@ function useStyles({
 }: {
   bottomPadding: number;
 }) {
-  return useResponsiveStyles(({ colors, responsiveFont, spacing, theme }) => ({
+  return useResponsiveStyles(({ colors, elevation, radius, spacing, theme }) => ({
     wrap: {
       position: "absolute",
       left: 0,
       right: 0,
       bottom: 0,
-      paddingHorizontal: spacing.exact(24),
+      paddingHorizontal: spacing.xxl,
       paddingTop: spacing.sm,
       paddingBottom: bottomPadding,
       backgroundColor: colors.transparent,
@@ -117,13 +118,9 @@ function useStyles({
     menu: {
       flexDirection: "row",
       padding: spacing.xs,
-      borderRadius: spacing.exact(28),
-      backgroundColor: colors.surfaceStrong,
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.1,
-      shadowRadius: spacing.exact(18),
-      shadowOffset: { width: 0, height: spacing.exact(14) },
-      elevation: 8,
+      borderRadius: radius.xxxxl,
+      backgroundColor: colors.surface,
+      ...elevation.raised,
     },
     tab: {
       flex: 1,
@@ -131,22 +128,20 @@ function useStyles({
       justifyContent: "center",
       gap: spacing.xs,
       paddingVertical: spacing.sm,
-      borderRadius: spacing.exact(24),
+      borderRadius: radius.xxxl,
       overflow: "hidden",
     },
     tabActive: {
       backgroundColor: theme.accents.green.soft,
     },
     label: {
-      fontSize: responsiveFont(11),
-      lineHeight: responsiveFont(12),
-      fontWeight: "500",
+      ...getTypographyStyle("labelXS"),
     },
     labelActive: {
       color: theme.accents.green.ink,
     },
     labelInactive: {
-      color: colors.inkMuted,
+      color: colors.ink3,
     },
   }));
 }

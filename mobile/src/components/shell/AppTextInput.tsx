@@ -5,7 +5,7 @@ import {
   type TextInputProps,
 } from "react-native";
 
-import { getFontFamily, useResponsiveStyles } from "../../portable-ui";
+import { getTypographyStyle, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type AppTextInputProps = {
@@ -54,7 +54,7 @@ export function AppTextInput({
         multiline={multiline}
         numberOfLines={numberOfLines}
         placeholder={placeholder}
-        placeholderTextColor={theme.colors.textMuted}
+        placeholderTextColor={theme.colors.ink3}
         secureTextEntry={secureTextEntry}
         style={[styles.input, multiline ? styles.multilineInput : null]}
         textContentType={textContentType}
@@ -66,29 +66,27 @@ export function AppTextInput({
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+  return useResponsiveStyles(({ colors, radius, spacing }) => ({
     wrapper: {
-      gap: spacing.exact(8),
+      gap: spacing.sm,
     },
     label: {
-      fontSize: responsiveFont(13),
-      fontFamily: getFontFamily("bold"),
-      color: colors.textSecondary,
+      ...getTypographyStyle("labelS"),
+      color: colors.ink2,
       textTransform: "uppercase",
     },
     input: {
       minHeight: spacing.exact(56),
-      borderRadius: radius.large,
+      borderRadius: radius.xl,
       borderWidth: 1,
-      borderColor: colors.borderSoft,
-      backgroundColor: colors.surface,
-      paddingHorizontal: spacing.exact(16),
-      fontSize: responsiveFont(16),
-      fontFamily: getFontFamily("regular"),
-      color: colors.textPrimary,
+      borderColor: colors.line,
+      backgroundColor: colors.inset,
+      paddingHorizontal: spacing.lg,
+      ...getTypographyStyle("bodyM"),
+      color: colors.ink,
     },
     multilineInput: {
-      paddingVertical: spacing.exact(14),
+      paddingVertical: spacing.md,
       textAlignVertical: "top",
     },
   }));
