@@ -40,6 +40,8 @@ const QUESTION_CATALOG_SELECT = [
   "points",
   "scope",
   "topic_block",
+  "primary_topic_id",
+  "topic_ids",
   "difficulty_seed",
   "media_asset",
   "pjm_question_asset",

@@ -31,6 +31,7 @@ export type { ResponsiveSpacingApi } from "./hooks/useResponsiveSpacing";
 
 export { useResponsiveStyles } from "./hooks/useResponsiveStyles";
 export type { ResponsiveStylesContext } from "./hooks/useResponsiveStyles";
+export type { PercentageString } from "./types";
 
 export {
   darkNavigationPalette,

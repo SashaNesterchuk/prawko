@@ -29,20 +29,6 @@ function chunkRows<T>(rows: T[], size: number): T[][] {
 export async function syncQuestionsToSupabase(
   options: PipelineOptions = {}
 ): Promise<QuestionSyncResult> {
-  await loadLocalEnvFiles();
-
-  const supabaseUrl =
-    process.env.SUPABASE_URL ??
-    process.env.EXPO_PUBLIC_SUPABASE_URL ??
-    process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error(
-      "Missing Supabase credentials. Expected SUPABASE_SERVICE_ROLE_KEY and a Supabase URL in env files."
-    );
-  }
-
   const inputPath = resolveRepoPath(
     options.inputPath ??
       path.join(EXPORTS_GENERATED_DIR, "supabase.questions.category-b.json")
@@ -67,6 +53,20 @@ export async function syncQuestionsToSupabase(
   }> = [];
 
   if (!options.dryRun) {
+    await loadLocalEnvFiles();
+
+    const supabaseUrl =
+      process.env.SUPABASE_URL ??
+      process.env.EXPO_PUBLIC_SUPABASE_URL ??
+      process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      throw new Error(
+        "Missing Supabase credentials. Expected SUPABASE_SERVICE_ROLE_KEY and a Supabase URL in env files."
+      );
+    }
+
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: {
         autoRefreshToken: false,

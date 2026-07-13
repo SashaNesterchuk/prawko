@@ -1,4 +1,4 @@
-import type { QuestionSessionMode, TopicBlockId } from "@prawko/config";
+import type { LearningTopicId, QuestionSessionMode } from "@prawko/config";
 
 import { createQuestionSessionKey } from "./question-engine";
 
@@ -17,7 +17,7 @@ export function buildQuestionRouteParams(input: {
   mode: QuestionSessionMode;
   questionLimit?: number | null;
   studyPlanTaskId?: string | null;
-  topic?: TopicBlockId;
+  topic?: LearningTopicId;
 }) {
   const params: Record<string, string> = {
     mode: input.mode,

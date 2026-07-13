@@ -6,12 +6,14 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { TOPIC_BLOCK_IDS } from "@prawko/config";
-
 import { ActionTile } from "../../src/components/shell/ActionTile";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { TopicReadinessCard } from "../../src/components/shell/TopicReadinessCard";
 import { TopicsOverviewCard } from "../../src/components/shell/TopicsOverviewCard";
+import {
+  getQuestionTopicIds,
+  getQuestionTopicTitle,
+} from "../../src/features/question-topics/catalog";
 import {
   getOverallConsolidationStats,
   getOverallMistakesStats,
@@ -24,6 +26,7 @@ import {
   useResponsiveStyles,
 } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
+import { useAppShellStore } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 
@@ -33,6 +36,7 @@ export default function MistakesScreen() {
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles({ safeBottom });
+  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
@@ -53,7 +57,7 @@ export default function MistakesScreen() {
 
   const topicsWithMistakes = useMemo(
     () =>
-      TOPIC_BLOCK_IDS.filter(
+      getQuestionTopicIds().filter(
         (topic) => getTopicMistakeProgress(topic, questionUserState).wrong > 0
       ),
     [questionCatalogVersion, questionUserState]
@@ -61,7 +65,7 @@ export default function MistakesScreen() {
 
   const topicsWithConsolidation = useMemo(
     () =>
-      TOPIC_BLOCK_IDS.filter(
+      getQuestionTopicIds().filter(
         (topic) =>
           getTopicConsolidationProgress(topic, questionUserState).consolidating >
           0
@@ -136,7 +140,7 @@ export default function MistakesScreen() {
                     return (
                       <TopicReadinessCard
                         key={topic}
-                        title={t(`topics.${topic}`)}
+                        title={getQuestionTopicTitle(topic, preferredLocale)}
                         seen={progress.seen}
                         total={progress.total}
                         readiness={progress.progress}
@@ -192,7 +196,7 @@ export default function MistakesScreen() {
                     return (
                       <TopicReadinessCard
                         key={`consolidation-${topic}`}
-                        title={t(`topics.${topic}`)}
+                        title={getQuestionTopicTitle(topic, preferredLocale)}
                         seen={progress.consolidating}
                         total={progress.total}
                         readiness={progress.progress}

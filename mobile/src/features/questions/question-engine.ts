@@ -2,10 +2,12 @@ import {
   EXAM_RULES,
   QUESTION_MASTERY_RULES,
   QUESTION_SESSION_MODES,
-  TOPIC_BLOCK_IDS,
+  getQuestionTopicFallbackFromTopicBlock,
+  isTopicBlockId,
+  type LearningTopicId,
   type QuestionSessionMode,
+  type QuestionTopicId,
   type SupportedLocale,
-  type TopicBlockId,
 } from "@prawko/config";
 
 import { getQuestionBank, getQuestionBankById } from "./question-bank";
@@ -44,13 +46,39 @@ export function isQuestionSessionMode(value: string): value is QuestionSessionMo
   return QUESTION_SESSION_MODES.includes(value as QuestionSessionMode);
 }
 
-export function isTopicBlockId(value: string): value is TopicBlockId {
-  return TOPIC_BLOCK_IDS.includes(value as TopicBlockId);
+export function getQuestionTopicIds(question: LocalQuestion): QuestionTopicId[] {
+  const fallback = getQuestionTopicFallbackFromTopicBlock(question.topicBlock);
+
+  if (question.topicIds && question.topicIds.length > 0) {
+    return [...new Set(question.topicIds)];
+  }
+
+  return fallback.topicIds;
+}
+
+export function getQuestionPrimaryTopicId(question: LocalQuestion): QuestionTopicId {
+  const topicIds = getQuestionTopicIds(question);
+  const fallback = getQuestionTopicFallbackFromTopicBlock(question.topicBlock);
+
+  if (question.primaryTopicId && topicIds.includes(question.primaryTopicId)) {
+    return question.primaryTopicId;
+  }
+
+  return topicIds[0] ?? fallback.primaryTopicId;
+}
+
+function questionMatchesTopic(
+  question: LocalQuestion,
+  topic: LearningTopicId
+) {
+  return isTopicBlockId(topic)
+    ? question.topicBlock === topic
+    : getQuestionTopicIds(question).includes(topic);
 }
 
 export function createQuestionSessionKey(input: {
   mode: QuestionSessionMode;
-  topic?: TopicBlockId;
+  topic?: LearningTopicId;
 }) {
   return `${input.mode}-${input.topic ?? "all"}-${Date.now().toString(36)}`;
 }
@@ -410,11 +438,11 @@ export function getOverallConsolidationStats(userStates: QuestionUserStateMap) {
 }
 
 export function getTopicConsolidationProgress(
-  topicBlock: TopicBlockId,
+  topic: LearningTopicId,
   userStates: QuestionUserStateMap
 ) {
   const questions = getQuestionBank().filter(
-    (question) => question.topicBlock === topicBlock
+    (question) => questionMatchesTopic(question, topic)
   );
   const states = questions.map((question) =>
     getQuestionUserState(userStates, question.id)
@@ -439,11 +467,11 @@ export function getTopicConsolidationProgress(
 }
 
 export function getTopicMistakeProgress(
-  topicBlock: TopicBlockId,
+  topic: LearningTopicId,
   userStates: QuestionUserStateMap
 ) {
   const questions = getQuestionBank().filter(
-    (question) => question.topicBlock === topicBlock
+    (question) => questionMatchesTopic(question, topic)
   );
   const states = questions.map((question) =>
     getQuestionUserState(userStates, question.id)
@@ -465,11 +493,11 @@ export function getTopicMistakeProgress(
 }
 
 export function getTopicProgress(
-  topicBlock: TopicBlockId,
+  topic: LearningTopicId,
   userStates: QuestionUserStateMap
 ) {
   const questions = getQuestionBank().filter(
-    (question) => question.topicBlock === topicBlock
+    (question) => questionMatchesTopic(question, topic)
   );
   const states = questions.map((question) =>
     getQuestionUserState(userStates, question.id)
@@ -574,13 +602,13 @@ function getQuestionIdsForMode(
 }
 
 function getLearningQuestionIds(
-  topic: TopicBlockId | undefined,
+  topic: LearningTopicId | undefined,
   userStates: QuestionUserStateMap,
   now: Date
 ) {
   const questionBank = getQuestionBank();
   const topicQuestions = topic
-    ? questionBank.filter((question) => question.topicBlock === topic)
+    ? questionBank.filter((question) => questionMatchesTopic(question, topic))
     : questionBank;
   const unseen = getUnseenQuestions(topicQuestions, userStates, now);
   const reviewDue = getReviewDueQuestions(topicQuestions, userStates, now);
@@ -641,10 +669,10 @@ function getSavedQuestionIds(userStates: QuestionUserStateMap, now: Date) {
 function getWrongAnswerQuestionIds(
   userStates: QuestionUserStateMap,
   now: Date,
-  topic?: TopicBlockId
+  topic?: LearningTopicId
 ) {
   const questionBank = topic
-    ? getQuestionBank().filter((question) => question.topicBlock === topic)
+    ? getQuestionBank().filter((question) => questionMatchesTopic(question, topic))
     : getQuestionBank();
   return getWrongQuestions(questionBank, userStates, now).map(
     (question) => question.id

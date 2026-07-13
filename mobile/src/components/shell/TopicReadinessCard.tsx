@@ -1,6 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 export type TopicReadinessStatus = "not_started" | "bad" | "normal" | "good";
@@ -57,7 +57,7 @@ export function TopicReadinessCard({
   const styles = useStyles({
     readinessFillColor: statusColor?.fill ?? theme.colors.track,
     readinessTextColor: statusColor?.ink ?? theme.colors.inkMuted,
-    readinessWidth: `${normalizedReadiness}%`,
+    readinessWidth: `${normalizedReadiness}%` as PercentageString,
   });
 
   const resolvedWrong = wrong ?? mistakes ?? 0;
@@ -66,7 +66,7 @@ export function TopicReadinessCard({
   const body = (
     <View style={styles.inner}>
       <View style={styles.headerRow}>
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={styles.title} numberOfLines={2}>
           {title}
         </Text>
         {isStarted && resolvedStatus === "good" ? (
@@ -132,7 +132,7 @@ function useStyles({
 }: {
   readinessFillColor: string;
   readinessTextColor: string;
-  readinessWidth: string;
+  readinessWidth: PercentageString;
 }) {
   return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
     card: {
@@ -159,12 +159,13 @@ function useStyles({
     },
     headerRow: {
       flexDirection: "row",
-      alignItems: "flex-end",
+      alignItems: "flex-start",
       justifyContent: "space-between",
       gap: spacing.exact(10),
     },
     title: {
       flex: 1,
+      minWidth: 0,
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
       fontWeight: "600",

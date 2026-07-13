@@ -29,6 +29,8 @@ export interface PipelineOptions {
   aliasesPath?: string;
   deliveryDir?: string;
   inputPath?: string;
+  topicCatalogPath?: string;
+  topicAssignmentsPath?: string;
   failOnWarnings?: boolean;
   skipExisting?: boolean;
   dryRun?: boolean;
@@ -98,5 +100,25 @@ export interface QuestionSyncResult {
   syncedRows: number;
   failedRows: number;
   batchCount: number;
+  syncReportPath: string;
+}
+
+export interface QuestionTopicPrepareResult {
+  baseQuestionExportPath: string;
+  topicAssignmentsPath: string;
+  topicCatalogInputPath: string | null;
+  questionExportWithTopicsPath: string;
+  topicCatalogExportPath: string;
+  topicAssignmentsExportPath: string;
+  questionCount: number;
+  topicCount: number;
+  assignmentCount: number;
+}
+
+export interface QuestionTopicSyncResult {
+  prepared: QuestionTopicPrepareResult;
+  topicCatalogSyncedRows: number;
+  topicCatalogFailedRows: number;
+  questionSync: QuestionSyncResult;
   syncReportPath: string;
 }

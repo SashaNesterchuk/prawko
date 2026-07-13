@@ -1,0 +1,1 @@
+export type PercentageString = `${number}%`;

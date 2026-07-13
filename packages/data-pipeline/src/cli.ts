@@ -6,6 +6,10 @@ import { EXPORTS_GENERATED_DIR, NORMALIZED_GENERATED_DIR } from "./constants";
 import type { PipelineOptions } from "./types";
 import { runInspect, runPipeline, runValidate } from "./pipeline";
 import { executeMediaBuild, uploadBuiltMedia } from "./media-build";
+import {
+  prepareNormalizedQuestionTopics,
+  syncNormalizedQuestionTopicsToSupabase,
+} from "./question-topic-sync";
 import { syncQuestionsToSupabase } from "./question-sync";
 import { clearQuestionMediaStorage } from "./storage-clear";
 import { pathExists, readJsonFile, resolveRepoPath } from "./utils";
@@ -86,6 +90,18 @@ function parseArgs(argv: string[]): { command: string; options: PipelineOptions 
 
     if (token === "--input") {
       options.inputPath = rest[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (token === "--topic-catalog") {
+      options.topicCatalogPath = rest[index + 1];
+      index += 1;
+      continue;
+    }
+
+    if (token === "--topic-assignments") {
+      options.topicAssignmentsPath = rest[index + 1];
       index += 1;
       continue;
     }
@@ -203,8 +219,20 @@ async function main() {
     return;
   }
 
+  if (command === "question-topics:prepare") {
+    const result = await prepareNormalizedQuestionTopics(options);
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "question-topics:sync") {
+    const result = await syncNormalizedQuestionTopicsToSupabase(options);
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
   throw new Error(
-    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, storage:clear, questions:sync.`
+    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, storage:clear, questions:sync, question-topics:prepare, question-topics:sync.`
   );
 }
 

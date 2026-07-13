@@ -1,6 +1,6 @@
 import { View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
 
 type ProgressBarProps = {
   progress: number;
@@ -8,7 +8,7 @@ type ProgressBarProps = {
 
 export function ProgressBar({ progress }: ProgressBarProps) {
   const normalized = Math.max(0, Math.min(progress, 100));
-  const styles = useStyles({ fillWidth: `${normalized}%` });
+  const styles = useStyles({ fillWidth: `${normalized}%` as PercentageString });
 
   return (
     <View style={styles.track}>
@@ -17,7 +17,7 @@ export function ProgressBar({ progress }: ProgressBarProps) {
   );
 }
 
-function useStyles({ fillWidth }: { fillWidth: string }) {
+function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
   return useResponsiveStyles(({ colors, radius, spacing }) => ({
     track: {
       height: spacing.exact(10),

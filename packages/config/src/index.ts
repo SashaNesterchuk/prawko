@@ -33,6 +33,10 @@ export const TOPIC_BLOCK_IDS = [
 ] as const;
 export type TopicBlockId = (typeof TOPIC_BLOCK_IDS)[number];
 
+export function isTopicBlockId(value: string): value is TopicBlockId {
+  return TOPIC_BLOCK_IDS.includes(value as TopicBlockId);
+}
+
 export const QUESTION_SCOPES = ["base", "specialist"] as const;
 export type QuestionScope = (typeof QUESTION_SCOPES)[number];
 
@@ -168,3 +172,5 @@ export const AI_LIMITS = {
 export const FREE_TIER_LIMITS = {
   questionPracticePerDay: 20,
 } as const;
+
+export * from "./question-topics";

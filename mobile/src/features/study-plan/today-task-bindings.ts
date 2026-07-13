@@ -1,4 +1,5 @@
 import type {
+  LearningTopicId,
   QuestionSessionMode,
   TopicBlockId,
 } from "@prawko/config";
@@ -12,7 +13,7 @@ export type QuestionSessionBinding = {
   mode: QuestionSessionMode;
   questionLimit?: number;
   studyPlanTaskId?: string;
-  topic?: TopicBlockId;
+  topic?: LearningTopicId;
 };
 
 type CreateTaskSessionBindingOptions = {

@@ -7,8 +7,6 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { TOPIC_BLOCK_IDS, type TopicBlockId } from "@prawko/config";
-
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { ProgressRing } from "../../src/components/shell/ProgressRing";
 import { StatisticsActivityCard } from "../../src/components/shell/StatisticsActivityCard";
@@ -25,6 +23,10 @@ import {
   ROAD_SIGN_CATEGORIES,
   getRoadSignsByCategory,
 } from "../../src/features/road-signs/catalog";
+import {
+  getQuestionTopicIds,
+  getQuestionTopicTitle,
+} from "../../src/features/question-topics/catalog";
 import {
   getQuestionDisplayStats,
   getTopicProgress,
@@ -194,18 +196,20 @@ export default function StatisticsScreen() {
 
   const topicRows = useMemo(
     () =>
-      TOPIC_BLOCK_IDS.map((topicId) => {
-        const progress = getTopicProgress(topicId, questionUserState);
+      getQuestionTopicIds()
+        .map((topicId) => {
+          const progress = getTopicProgress(topicId, questionUserState);
 
-        return {
-          topicId,
-          title: t(`topics.${topicId}`),
-          seen: progress.seen,
-          total: progress.total,
-          progress: progress.progress,
-        };
-      }),
-    [questionUserState, questionCatalogVersion, t]
+          return {
+            topicId,
+            title: getQuestionTopicTitle(topicId, preferredLocale),
+            seen: progress.seen,
+            total: progress.total,
+            progress: progress.progress,
+          };
+        })
+        .filter((topic) => topic.total > 0),
+    [preferredLocale, questionUserState, questionCatalogVersion]
   );
 
   const signsTopic = useMemo(
@@ -272,7 +276,9 @@ export default function StatisticsScreen() {
         )
       : 100;
 
-  const openTopicTraining = (topicId: TopicBlockId) =>
+  const openTopicTraining = (
+    topicId: ReturnType<typeof getQuestionTopicIds>[number]
+  ) =>
     router.push({
       pathname: "/question",
       params: buildQuestionRouteParams({

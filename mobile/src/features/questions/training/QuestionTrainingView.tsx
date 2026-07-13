@@ -41,7 +41,14 @@ type QuestionTrainingViewProps = Pick<
   | "summary"
   | "trainerStyles"
   | "visibleSteps"
->;
+> & {
+  activeSession: NonNullable<QuestionTrainingSession["activeSession"]>;
+  currentQuestion: NonNullable<QuestionTrainingSession["currentQuestion"]>;
+  currentQuestionId: NonNullable<QuestionTrainingSession["currentQuestionId"]>;
+  currentQuestionState: NonNullable<
+    QuestionTrainingSession["currentQuestionState"]
+  >;
+};
 
 export function QuestionTrainingView({
   activeSession,

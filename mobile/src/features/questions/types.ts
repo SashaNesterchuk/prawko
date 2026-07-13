@@ -1,6 +1,8 @@
 import type {
+  LearningTopicId,
   QuestionAnswerType,
   QuestionMediaType,
+  QuestionTopicId,
   QuestionScope,
   QuestionSessionMode,
   SupportedLocale,
@@ -41,6 +43,8 @@ export type LocalQuestion = {
   points: number;
   scope: QuestionScope;
   topicBlock: TopicBlockId;
+  primaryTopicId?: QuestionTopicId | null;
+  topicIds?: QuestionTopicId[];
   difficultySeed: number;
 };
 
@@ -94,7 +98,7 @@ export type QuestionSessionRequest = {
   questionLimit?: number | null;
   sessionKey: string;
   studyPlanTaskId?: string | null;
-  topic?: TopicBlockId;
+  topic?: LearningTopicId;
 };
 
 export type QuestionSession = {

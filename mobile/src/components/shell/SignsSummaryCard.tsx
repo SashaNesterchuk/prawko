@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 
 import { Icon } from "../icons";
-import { useResponsiveStyles } from "../../portable-ui";
+import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type SignsSummaryCardProps = {
@@ -25,7 +25,7 @@ export function SignsSummaryCard({
 }: SignsSummaryCardProps) {
   const theme = useTheme();
   const clamped = Math.max(0, Math.min(readiness, 100));
-  const styles = useStyles({ fillWidth: `${clamped}%` });
+  const styles = useStyles({ fillWidth: `${clamped}%` as PercentageString });
   const trainLabel = trainAllLabel.replace(/\s*>\s*$/, "");
 
   return (
@@ -58,7 +58,7 @@ export function SignsSummaryCard({
   );
 }
 
-function useStyles({ fillWidth }: { fillWidth: string }) {
+function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
   return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
     card: {
       gap: spacing.md,

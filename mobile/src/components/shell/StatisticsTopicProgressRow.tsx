@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { resolveTopicReadinessStatus } from "./TopicReadinessCard";
 
@@ -30,13 +30,13 @@ export function StatisticsTopicProgressRow({
           : theme.colors.track;
   const styles = useStyles({
     fillColor: barColor,
-    fillWidth: `${normalized}%`,
+    fillWidth: `${normalized}%` as PercentageString,
   });
 
   return (
     <View style={styles.row}>
       <View style={styles.copy}>
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={styles.title} numberOfLines={2}>
           {title}
         </Text>
         <Text style={styles.meta}>{`${seen} / ${total}`}</Text>
@@ -57,7 +57,7 @@ function useStyles({
   fillWidth,
 }: {
   fillColor: string;
-  fillWidth: string;
+  fillWidth: PercentageString;
 }) {
   return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     row: {

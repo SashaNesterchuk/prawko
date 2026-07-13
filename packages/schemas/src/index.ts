@@ -4,6 +4,7 @@ import {
   AI_MESSAGE_KINDS,
   AI_MESSAGE_ROLES,
   AI_PROVIDER_IDS,
+  QUESTION_TOPIC_IDS,
   MEDIA_MATCH_STRATEGIES,
   MEDIA_SOURCE_KINDS,
   MEDIA_STORAGE_BUCKET_IDS,
@@ -23,6 +24,9 @@ export const localeSchema = z.enum(SUPPORTED_LOCALES);
 export const categorySchema = z.enum(ACTIVE_CATEGORIES);
 export const planLevelSchema = z.enum(PLAN_LEVELS);
 export const topicBlockSchema = z.enum(TOPIC_BLOCK_IDS);
+export const questionTopicIdSchema = z.enum(
+  QUESTION_TOPIC_IDS as [string, ...string[]]
+);
 export const questionScopeSchema = z.enum(QUESTION_SCOPES);
 export const answerTypeSchema = z.enum(QUESTION_ANSWER_TYPES);
 export const mediaTypeSchema = z.enum(QUESTION_MEDIA_TYPES);
@@ -186,8 +190,27 @@ export const normalizedQuestionSchema = z.object({
   scope: questionScopeSchema,
   categories: z.array(z.string().min(1)).min(1),
   topicBlock: topicBlockSchema,
+  primaryTopicId: questionTopicIdSchema.nullable().optional(),
+  topicIds: z.array(questionTopicIdSchema).optional(),
   difficultySeed: z.number().int().min(1).max(100),
   hasMedia: z.boolean(),
+});
+
+export const questionTopicCatalogEntrySchema = z.object({
+  id: questionTopicIdSchema,
+  sortOrder: z.number().int().positive(),
+  titleUa: z.string().min(1),
+  titlePl: z.string().min(1),
+  titleEn: z.string().min(1),
+  sourceLabelUa: z.string().min(1),
+  notesUa: z.string().min(1).nullable().optional(),
+});
+
+export const questionTopicAssignmentSchema = z.object({
+  questionSourceId: z.string().min(1),
+  sourceRowNumber: z.number().int().positive(),
+  primaryTopicId: questionTopicIdSchema,
+  topicIds: z.array(questionTopicIdSchema).min(1),
 });
 
 export const mediaManifestEntrySchema = z.object({
@@ -278,6 +301,10 @@ export type GeneratedStudyPlanSummary = z.infer<
 >;
 export type GeneratedStudyPlan = z.infer<typeof generatedStudyPlanSchema>;
 export type QuestionChatMessage = z.infer<typeof questionChatMessageSchema>;
+export type QuestionTopicCatalogEntry = z.infer<
+  typeof questionTopicCatalogEntrySchema
+>;
+export type QuestionTopicAssignment = z.infer<typeof questionTopicAssignmentSchema>;
 export type QuestionChatOption = z.infer<typeof questionChatOptionSchema>;
 export type QuestionChatContext = z.infer<typeof questionChatContextSchema>;
 export type QuestionChatRequest = z.infer<typeof questionChatRequestSchema>;

@@ -1,6 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
 
 type JourneyCardProps = {
   eyebrow: string;
@@ -24,7 +24,7 @@ export function JourneyCard({
   onPress,
 }: JourneyCardProps) {
   const clamped = Math.max(0, Math.min(progress, 100));
-  const styles = useStyles({ progressWidth: `${clamped}%` });
+  const styles = useStyles({ progressWidth: `${clamped}%` as PercentageString });
 
   return (
     <View style={styles.card}>
@@ -37,7 +37,7 @@ export function JourneyCard({
           </Text>
         </View>
 
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={styles.title} numberOfLines={2}>
           {title}
         </Text>
 
@@ -92,7 +92,7 @@ function BookIcon() {
 function useStyles({
   progressWidth,
 }: {
-  progressWidth?: string;
+  progressWidth?: PercentageString;
 } = {}) {
   return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
     card: {

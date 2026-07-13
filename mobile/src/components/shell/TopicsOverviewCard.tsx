@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { resolveTopicReadinessStatus } from "./TopicReadinessCard";
 
@@ -37,7 +37,7 @@ export function TopicsOverviewCard({
   const styles = useStyles({
     readinessFillColor: statusColor.fill,
     readinessTextColor: statusColor.ink,
-    readinessWidth: `${clamped}%`,
+    readinessWidth: `${clamped}%` as PercentageString,
   });
 
   return (
@@ -81,7 +81,7 @@ function useStyles({
 }: {
   readinessFillColor: string;
   readinessTextColor: string;
-  readinessWidth: string;
+  readinessWidth: PercentageString;
 }) {
   return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
     card: {

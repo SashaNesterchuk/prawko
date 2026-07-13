@@ -12,6 +12,7 @@ import { useResponsiveFonts } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 import { useAppShellStore } from "../../../state/app-shell";
 import { useQuestionCatalogVersion } from "../../../state/question-catalog";
+import { getLearningTopicTitle } from "../../question-topics/catalog";
 import {
   useActiveQuestionSession,
   useQuestionProgressHydrated,
@@ -196,7 +197,7 @@ export function useQuestionTrainingSession() {
           total: summary.total || 1,
           mode: t(`modes.${sessionMode}`),
           topic: sessionTopic
-            ? t(`topics.${sessionTopic}`)
+            ? getLearningTopicTitle(sessionTopic, displayLocale, t)
             : t("question.generalPool"),
         });
 
@@ -243,6 +244,8 @@ export function useQuestionTrainingSession() {
         study_plan_task_id: activeSession?.request.studyPlanTaskId ?? null,
         session_question_limit: activeSession?.request.questionLimit ?? null,
         topic_block: currentQuestion.topicBlock,
+        primary_topic_id: currentQuestion.primaryTopicId ?? null,
+        topic_ids: currentQuestion.topicIds ?? [],
       },
     }).catch((error) => {
       console.warn(

@@ -7,13 +7,15 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { TOPIC_BLOCK_IDS, type TopicBlockId } from "@prawko/config";
-
 import { ActionTile } from "../../src/components/shell/ActionTile";
 import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { JourneyCard } from "../../src/components/shell/JourneyCard";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
+import {
+  getQuestionTopicIds,
+  getQuestionTopicTitle,
+} from "../../src/features/question-topics/catalog";
 import {
   useResponsiveFonts,
   useResponsiveStyles,
@@ -39,15 +41,15 @@ function resolveCurrentTopicId(
   questionUserState: ReturnType<
     typeof useQuestionProgressStore.getState
   >["questionUserState"]
-): TopicBlockId {
-  for (const topic of TOPIC_BLOCK_IDS) {
+): ReturnType<typeof getQuestionTopicIds>[number] {
+  for (const topic of getQuestionTopicIds()) {
     const progress = getTopicProgress(topic, questionUserState);
     if (progress.seen < progress.total) {
       return topic;
     }
   }
 
-  return TOPIC_BLOCK_IDS[0];
+  return getQuestionTopicIds()[0];
 }
 
 function LearnActionIcon({
@@ -77,6 +79,7 @@ export default function LearnTabScreen() {
   const currentStudyPlanRemoteId = useAppShellStore(
     (state) => state.currentStudyPlanRemoteId
   );
+  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
@@ -126,11 +129,26 @@ export default function LearnTabScreen() {
     () => resolveCurrentTopicId(questionUserState),
     [questionCatalogVersion, questionUserState]
   );
-  const currentTopicProgress = useMemo(
-    () => getTopicProgress(currentTopicId, questionUserState),
-    [currentTopicId, questionCatalogVersion, questionUserState]
+  const availableTopicIds = useMemo(
+    () =>
+      getQuestionTopicIds().filter(
+        (topicId) => getTopicProgress(topicId, questionUserState).total > 0
+      ),
+    [questionCatalogVersion, questionUserState]
   );
-  const currentTopicIndex = TOPIC_BLOCK_IDS.indexOf(currentTopicId);
+  const displayTopicIds =
+    availableTopicIds.length > 0 ? availableTopicIds : getQuestionTopicIds();
+  const resolvedCurrentTopicId = displayTopicIds.includes(currentTopicId)
+    ? currentTopicId
+    : displayTopicIds[0] ?? currentTopicId;
+  const currentTopicProgress = useMemo(
+    () => getTopicProgress(resolvedCurrentTopicId, questionUserState),
+    [questionCatalogVersion, questionUserState, resolvedCurrentTopicId]
+  );
+  const currentTopicIndex = Math.max(
+    0,
+    displayTopicIds.indexOf(resolvedCurrentTopicId)
+  );
 
   const journeyProgress =
     currentTopicProgress.total > 0
@@ -236,11 +254,14 @@ export default function LearnTabScreen() {
         >
           <JourneyCard
             eyebrow={t("learn.journeyEyebrow", { defaultValue: "Подорож" })}
-            title={t(`topics.${currentTopicId}`)}
+            title={getQuestionTopicTitle(
+              resolvedCurrentTopicId,
+              preferredLocale
+            )}
             sectionLabel={t("learn.journeySectionIndex", {
               defaultValue: "Секція {{current}} з {{total}}",
               current: currentTopicIndex + 1,
-              total: TOPIC_BLOCK_IDS.length,
+              total: displayTopicIds.length,
             })}
             progress={journeyProgress}
             nextLabel={t("learn.journeyNextLabel", { defaultValue: "Далі:" })}
@@ -253,7 +274,7 @@ export default function LearnTabScreen() {
                 pathname: "/question",
                 params: buildQuestionRouteParams({
                   mode: "learning",
-                  topic: currentTopicId,
+                  topic: resolvedCurrentTopicId,
                 }),
               })
             }

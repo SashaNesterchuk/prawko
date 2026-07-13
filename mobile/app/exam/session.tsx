@@ -27,6 +27,7 @@ import {
   getQuestionChoices,
 } from "../../src/features/questions/question-engine";
 import {
+  type PercentageString,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../src/portable-ui";
@@ -91,13 +92,16 @@ export default function ExamSessionScreen() {
   const questionChoices = currentQuestion
     ? getQuestionChoices(currentQuestion, displayLocale)
     : [];
+  const completeIconSize = responsiveFont(40);
   const totalSessionSeconds = snapshot ? getTotalSessionSeconds(snapshot) : null;
   const remainingSeconds = snapshot?.session.remainingSeconds ?? null;
   const progressFraction =
     totalSessionSeconds && remainingSeconds != null
       ? Math.max(0, Math.min(1, remainingSeconds / totalSessionSeconds))
       : 1;
-  const styles = useStyles({ progressWidth: `${progressFraction * 100}%` });
+  const styles = useStyles({
+    progressWidth: `${progressFraction * 100}%` as PercentageString,
+  });
 
   useEffect(() => {
     if (!sessionId) {
@@ -405,7 +409,6 @@ export default function ExamSessionScreen() {
   const isBoolean = currentQuestion.answerType === "boolean";
   const isBusy = isSubmitting || isEnding;
   const primaryDisabled = !selectedAnswerId || isBusy;
-  const completeIconSize = responsiveFont(40);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
@@ -750,7 +753,11 @@ function getErrorMessage(error: unknown) {
     : "Unable to continue this exam session.";
 }
 
-function useStyles({ progressWidth }: { progressWidth?: string } = {}) {
+function useStyles({
+  progressWidth,
+}: {
+  progressWidth?: PercentageString;
+} = {}) {
   return useResponsiveStyles(
     ({ accents, colors, radius, responsiveFont, spacing }) => ({
       safeArea: {

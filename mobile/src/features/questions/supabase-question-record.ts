@@ -1,7 +1,9 @@
-import type {
-  QuestionAnswerType,
-  QuestionScope,
-  TopicBlockId,
+import {
+  getQuestionTopicFallbackFromTopicBlock,
+  type QuestionTopicId,
+  type QuestionAnswerType,
+  type QuestionScope,
+  type TopicBlockId,
 } from "@prawko/config";
 import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
@@ -29,6 +31,8 @@ export type SupabaseQuestionRecord = {
   points: number;
   scope: QuestionScope;
   topic_block: TopicBlockId;
+  primary_topic_id: QuestionTopicId | null;
+  topic_ids: QuestionTopicId[] | null;
   difficulty_seed: number;
   media_asset: QuestionDeliveryAsset | null;
   pjm_question_asset: QuestionDeliveryAsset | null;
@@ -68,6 +72,16 @@ function createChoice(
 export function mapSupabaseQuestionRecordToLocalQuestion(
   record: SupabaseQuestionRecord
 ): LocalQuestion {
+  const fallbackTopics = getQuestionTopicFallbackFromTopicBlock(record.topic_block);
+  const topicIds =
+    record.topic_ids && record.topic_ids.length > 0
+      ? record.topic_ids
+      : fallbackTopics.topicIds;
+  const primaryTopicId =
+    record.primary_topic_id && topicIds.includes(record.primary_topic_id)
+      ? record.primary_topic_id
+      : topicIds[0] ?? fallbackTopics.primaryTopicId;
+
   const choices = [
     createChoice("A", record.option_a, record.option_a, record.option_a),
     createChoice("B", record.option_b, record.option_b, record.option_b),
@@ -119,6 +133,8 @@ export function mapSupabaseQuestionRecordToLocalQuestion(
     points: record.points,
     scope: record.scope,
     topicBlock: record.topic_block,
+    primaryTopicId,
+    topicIds,
     difficultySeed: record.difficulty_seed,
   };
 }

@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { useLocalSearchParams } from "expo-router";
 
-import type { QuestionSessionMode, TopicBlockId } from "@prawko/config";
+import type { LearningTopicId, QuestionSessionMode } from "@prawko/config";
 
 import {
   createQuestionSessionKey,
   isQuestionSessionMode,
-  isTopicBlockId,
 } from "../question-engine";
+import { isLearningTopicId } from "../../question-topics/catalog";
 import { isUuidString } from "../question-routes";
 
 export function getSingleParam(value: string | string[] | undefined) {
@@ -34,7 +34,7 @@ export type QuestionRouteParams = {
   routeSessionKey?: string;
   sessionKey: string;
   studyPlanTaskId?: string;
-  topic?: TopicBlockId;
+  topic?: LearningTopicId;
 };
 
 export function useQuestionRouteParams(): QuestionRouteParams {
@@ -56,7 +56,7 @@ export function useQuestionRouteParams(): QuestionRouteParams {
   const studyPlanTaskId = isUuidString(rawStudyPlanTaskId)
     ? rawStudyPlanTaskId
     : undefined;
-  const topic = rawTopic && isTopicBlockId(rawTopic) ? rawTopic : undefined;
+  const topic = rawTopic && isLearningTopicId(rawTopic) ? rawTopic : undefined;
   const sessionKey = useMemo(
     () => routeSessionKey ?? createQuestionSessionKey({ mode, topic }),
     [mode, routeSessionKey, topic]
