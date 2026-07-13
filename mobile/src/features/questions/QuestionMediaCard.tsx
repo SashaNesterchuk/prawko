@@ -154,6 +154,11 @@ export function QuestionMediaCard({
           <Text style={styles.errorBody}>
             {t("question.media.mediaUnavailableBody")}
           </Text>
+          {__DEV__ && previewUrl ? (
+            <Text selectable style={styles.debugUrl}>
+              {previewUrl}
+            </Text>
+          ) : null}
           {previewUrl ? (
             <Pressable
               accessibilityRole="button"
@@ -217,9 +222,17 @@ export function QuestionMediaCard({
                 source_kind: media.asset.sourceKind,
                 storage_bucket: media.asset.storageBucket,
                 storage_path: media.asset.storagePath,
+                preview_url: previewUrl,
+                asset_url: assetUrl,
               },
               severity: "warning",
             });
+            if (__DEV__) {
+              console.warn("[question_media] preview failed", {
+                previewUrl,
+                assetUrl,
+              });
+            }
           }}
         />
 
@@ -406,6 +419,14 @@ function useStyles({ windowWidth }: { windowWidth: number }) {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
       color: colors.textMuted,
+      textAlign: "center",
+    },
+    debugUrl: {
+      marginTop: spacing.exact(8),
+      maxWidth: "92%",
+      fontSize: responsiveFont(10),
+      lineHeight: responsiveFont(14),
+      color: colors.textSecondary,
       textAlign: "center",
     },
     retryButton: {

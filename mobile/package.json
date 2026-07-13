@@ -6,7 +6,7 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
-    "ios": "expo run:ios",
+    "ios": "EXPO_UNSTABLE_MCP_SERVER=1 expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "icons:generate": "node scripts/generate-icon-registry.mjs",
@@ -53,6 +53,7 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "^19.1.17",
+    "expo-mcp": "~0.2.1",
     "react-native-svg-transformer": "^1.5.3",
     "typescript": "^5.9.3"
   }

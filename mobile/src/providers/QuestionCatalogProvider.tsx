@@ -1,6 +1,9 @@
 import { PropsWithChildren, useEffect } from "react";
 
-import { isMobileSupabaseConfigured } from "../config/env";
+import {
+  isMobileSupabaseConfigured,
+  mobileEnv,
+} from "../config/env";
 import {
   getQuestionBank,
   hydrateQuestionBankFromSupabaseRecords,
@@ -95,11 +98,14 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
       });
     };
 
-    if (
-      authMode !== "supabase" ||
-      !currentUserId ||
-      !isMobileSupabaseConfigured
-    ) {
+    const requiresAuthForCatalog = mobileEnv.requireAuthForQuestionCatalog;
+    const hasCatalogAuthSession =
+      authMode === "supabase" && Boolean(currentUserId);
+    const canFetchRemoteCatalog =
+      isMobileSupabaseConfigured &&
+      (!requiresAuthForCatalog || hasCatalogAuthSession);
+
+    if (!canFetchRemoteCatalog) {
       applyMockCatalog();
       return;
     }

@@ -37,6 +37,12 @@ export const mobileEnv = {
     process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH,
     false
   ),
+  // When false, the question catalog loads from Supabase without a signed-in user.
+  // Set EXPO_PUBLIC_REQUIRE_AUTH_FOR_QUESTION_CATALOG=true once auth ships.
+  requireAuthForQuestionCatalog: parseBooleanEnv(
+    process.env.EXPO_PUBLIC_REQUIRE_AUTH_FOR_QUESTION_CATALOG,
+    false
+  ),
 };
 
 export const isMobileSupabaseConfigured = Boolean(
