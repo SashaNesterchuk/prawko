@@ -14,6 +14,8 @@ import type {
   QuestionOptionValue,
 } from "./types";
 
+export type QuestionAiExplanationMap = Partial<Record<string, string>>;
+
 export type SupabaseQuestionRecord = {
   question_source_id: string;
   source_row_number: number;
@@ -23,6 +25,7 @@ export type SupabaseQuestionRecord = {
   explanation_pl: string | null;
   explanation_ua: string | null;
   explanation_en: string | null;
+  ai_explanations?: QuestionAiExplanationMap | null;
   answer_type: QuestionAnswerType;
   correct_answer: QuestionOptionValue;
   option_a: string | null;
@@ -51,6 +54,35 @@ function localizedText(
     ua: ua ?? pl ?? "",
     en: en ?? pl ?? "",
   };
+}
+
+function readAiExplanation(
+  explanations: QuestionAiExplanationMap | null | undefined,
+  locale: "pl" | "ua" | "en"
+) {
+  const value = explanations?.[locale];
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function localizedExplanation(record: SupabaseQuestionRecord): LocalizedQuestionText {
+  const explanationPl =
+    readAiExplanation(record.ai_explanations, "pl") ?? record.explanation_pl;
+  const explanationUa =
+    readAiExplanation(record.ai_explanations, "ua") ??
+    record.explanation_ua ??
+    explanationPl;
+  const explanationEn =
+    readAiExplanation(record.ai_explanations, "en") ??
+    record.explanation_en ??
+    explanationPl;
+
+  return localizedText(explanationPl, explanationUa, explanationEn);
 }
 
 function createChoice(
@@ -96,11 +128,7 @@ export function mapSupabaseQuestionRecordToLocalQuestion(
       record.question_ua,
       record.question_en
     ),
-    explanation: localizedText(
-      record.explanation_pl,
-      record.explanation_ua,
-      record.explanation_en
-    ),
+    explanation: localizedExplanation(record),
     answerType: record.answer_type,
     correctAnswer: record.correct_answer,
     choices: record.answer_type === "abc" ? choices : undefined,

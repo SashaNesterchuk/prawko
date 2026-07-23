@@ -9,7 +9,10 @@ import {
   hydrateQuestionBankFromSupabaseRecords,
   resetQuestionBankToMock,
 } from "../features/questions/question-bank";
-import type { SupabaseQuestionRecord } from "../features/questions/supabase-question-record";
+import type {
+  QuestionAiExplanationMap,
+  SupabaseQuestionRecord,
+} from "../features/questions/supabase-question-record";
 import { getMobileSupabaseClient } from "../lib/supabase";
 import {
   useCurrentUser,
@@ -49,6 +52,91 @@ const QUESTION_CATALOG_SELECT = [
   "pjm_answer_b_asset",
   "pjm_answer_c_asset",
 ].join(", ");
+
+const QUESTION_AI_EXPLANATION_SELECT = [
+  "question_source_id",
+  "explanations",
+].join(", ");
+
+type SupabaseQuestionAiExplanationRecord = {
+  question_source_id: string;
+  explanations: QuestionAiExplanationMap | null;
+};
+
+function normalizeQuestionAiExplanationMap(
+  value: unknown
+): QuestionAiExplanationMap | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const entries = Object.entries(value).flatMap(([locale, text]) => {
+    if (typeof text !== "string") {
+      return [];
+    }
+
+    const normalized = text.trim();
+    return normalized ? ([[locale, normalized]] as const) : [];
+  });
+
+  if (entries.length === 0) {
+    return null;
+  }
+
+  return Object.fromEntries(entries) as QuestionAiExplanationMap;
+}
+
+function mergeQuestionAiExplanations(
+  records: SupabaseQuestionRecord[],
+  explanationRows: SupabaseQuestionAiExplanationRecord[]
+) {
+  if (explanationRows.length === 0) {
+    return records;
+  }
+
+  const explanationsByQuestionId = new Map<string, QuestionAiExplanationMap>();
+
+  for (const row of explanationRows) {
+    const questionSourceId = row.question_source_id?.trim();
+    const explanations = normalizeQuestionAiExplanationMap(row.explanations);
+
+    if (!questionSourceId || !explanations) {
+      continue;
+    }
+
+    explanationsByQuestionId.set(questionSourceId, explanations);
+  }
+
+  if (explanationsByQuestionId.size === 0) {
+    return records;
+  }
+
+  return records.map((record) => {
+    const aiExplanations = explanationsByQuestionId.get(
+      record.question_source_id
+    );
+
+    return aiExplanations
+      ? {
+          ...record,
+          ai_explanations: aiExplanations,
+        }
+      : record;
+  });
+}
+
+async function fetchQuestionAiExplanations() {
+  const { data, error } = await getMobileSupabaseClient()
+    .from("question_ai_explanations")
+    .select(QUESTION_AI_EXPLANATION_SELECT)
+    .order("source_row_number", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as unknown) as SupabaseQuestionAiExplanationRecord[];
+}
 
 export function QuestionCatalogProvider({ children }: PropsWithChildren) {
   const authMode = useAppShellStore((state) => state.authMode);
@@ -187,10 +275,34 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
           return;
         }
 
-        hydrateQuestionBankFromSupabaseRecords(records);
-        reconcileCatalog(records.map((record) => record.question_source_id));
+        let hydratedRecords = records;
+
+        try {
+          const explanationRows = await fetchQuestionAiExplanations();
+          hydratedRecords = mergeQuestionAiExplanations(
+            records,
+            explanationRows
+          );
+        } catch (error: unknown) {
+          captureError({
+            area: "question_catalog",
+            error,
+            eventName: "question_catalog_ai_explanations_fetch_failed",
+            message:
+              "Failed to fetch remote AI explanations, so the app continued with the base question explanation fields.",
+            metadata: {
+              category: preferredCategory,
+              reason: "remote_ai_explanations_query_failed",
+            },
+          });
+        }
+
+        hydrateQuestionBankFromSupabaseRecords(hydratedRecords);
+        reconcileCatalog(
+          hydratedRecords.map((record) => record.question_source_id)
+        );
         setRemote({
-          questionCount: records.length,
+          questionCount: hydratedRecords.length,
         });
       } catch (error: unknown) {
         if (cancelled) {
