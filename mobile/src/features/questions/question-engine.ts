@@ -2,7 +2,9 @@ import {
   EXAM_RULES,
   QUESTION_MASTERY_RULES,
   QUESTION_SESSION_MODES,
+  getExamBaseVideoMinTarget,
   getQuestionTopicFallbackFromTopicBlock,
+  getContentLocale,
   isTopicBlockId,
   type LearningTopicId,
   type QuestionSessionMode,
@@ -28,7 +30,7 @@ const SAVED_SPRINT_TOTAL = 10;
 
 const BOOLEAN_CHOICES: Record<
   "true" | "false",
-  Record<SupportedLocale, string>
+  Record<"pl" | "ua" | "en", string>
 > = {
   true: {
     pl: "Tak",
@@ -305,7 +307,8 @@ export function getLocalizedText(
   value: LocalizedQuestionText,
   locale: SupportedLocale
 ) {
-  return value[locale] ?? value.ua ?? value.en ?? value.pl;
+  const contentLocale = getContentLocale(locale);
+  return value[contentLocale] ?? value.ua ?? value.en ?? value.pl;
 }
 
 export function getQuestionChoices(
@@ -315,15 +318,17 @@ export function getQuestionChoices(
   id: QuestionChoice["id"];
   label: string;
 }> {
+  const contentLocale = getContentLocale(locale);
+
   if (question.answerType === "boolean") {
     return [
       {
         id: "true",
-        label: BOOLEAN_CHOICES.true[locale],
+        label: BOOLEAN_CHOICES.true[contentLocale],
       },
       {
         id: "false",
-        label: BOOLEAN_CHOICES.false[locale],
+        label: BOOLEAN_CHOICES.false[contentLocale],
       },
     ];
   }
@@ -364,6 +369,44 @@ export function getQuestionDisplayStats(userStates: QuestionUserStateMap) {
     seenNotMastered: states.filter((state) => isSeenNotMasteredState(state)).length,
     weakSpots: states.filter((state) => isWeakSpotState(state)).length,
   };
+}
+
+/**
+ * Questions ever answered wrong vs those later corrected (last correct after last wrong).
+ * `percent` is null when there are no mistaken questions yet.
+ */
+export function getMistakesFixedStats(userStates: QuestionUserStateMap) {
+  const questionBank = getQuestionBank();
+  let total = 0;
+  let fixed = 0;
+
+  for (const question of questionBank) {
+    const state = getQuestionUserState(userStates, question.id);
+
+    if (state.timesWrong <= 0) {
+      continue;
+    }
+
+    total += 1;
+
+    if (!isQuestionUnresolvedWrong(state)) {
+      fixed += 1;
+    }
+  }
+
+  return {
+    fixed,
+    total,
+    percent: total > 0 ? Math.round((fixed / total) * 100) : null,
+  };
+}
+
+export function getSeenQuestionIds(userStates: QuestionUserStateMap) {
+  return getQuestionBank()
+    .filter(
+      (question) => getQuestionUserState(userStates, question.id).timesSeen > 0
+    )
+    .map((question) => question.id);
 }
 
 export function getOverallLearningStats(userStates: QuestionUserStateMap) {
@@ -718,13 +761,50 @@ function getExamPreviewQuestionIds(
     specialistQuestions.length,
     Math.max(0, desiredTotal - targetBase)
   );
+  const selectedBase = pickBaseQuestionsWithSoftVideoQuota(
+    baseQuestions,
+    targetBase
+  );
   const selected = [
-    ...baseQuestions.slice(0, targetBase),
+    ...selectedBase,
     ...specialistQuestions.slice(0, targetSpecialist),
   ];
   const remaining = sortQuestionsForExam(questionBank, userStates, now);
 
   return uniqueQuestionIds([...selected, ...remaining]).slice(0, desiredTotal);
+}
+
+function isVideoQuestion(question: LocalQuestion) {
+  return question.media?.type === "video";
+}
+
+/**
+ * Soft video floor for base-scope picks: fill video quota from the
+ * priority-sorted video pool first, then remaining slots by priority
+ * among non-video (then leftover video). Never hard-fails if short on videos.
+ */
+function pickBaseQuestionsWithSoftVideoQuota(
+  sortedBaseQuestions: LocalQuestion[],
+  targetCount: number
+) {
+  if (targetCount <= 0) {
+    return [];
+  }
+
+  const videoMin = Math.min(
+    targetCount,
+    getExamBaseVideoMinTarget(targetCount),
+    sortedBaseQuestions.filter(isVideoQuestion).length
+  );
+  const videos = sortedBaseQuestions.filter(isVideoQuestion);
+  const nonVideos = sortedBaseQuestions.filter(
+    (question) => !isVideoQuestion(question)
+  );
+  const selected = videos.slice(0, videoMin);
+  const remainingSlots = targetCount - selected.length;
+  const filler = [...nonVideos, ...videos.slice(videoMin)];
+
+  return [...selected, ...filler.slice(0, remainingSlots)];
 }
 
 function getUnseenQuestions(

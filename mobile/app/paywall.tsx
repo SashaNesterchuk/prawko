@@ -1,4 +1,4 @@
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -11,7 +11,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
 
 import { APP_FEATURES, FEATURE_FLAGS, type AppFeature } from "@prawko/config";
 
@@ -20,6 +19,7 @@ import {
   type PaywallComparisonRow,
 } from "../src/components/shell/PaywallComparisonTable";
 import { PaywallScreen } from "../src/components/shell/PaywallScreen";
+import { NavigationButton } from "../src/components/shell/NavigationButton";
 import {
   getRevenueCatErrorMessage,
   isRevenueCatPurchaseCancelled,
@@ -53,6 +53,13 @@ export default function PaywallPage() {
   const { captureError } = useErrorLogger();
   const params = useLocalSearchParams<{
     feature?: string | string[];
+    locale?: string | string[];
+    mode?: string | string[];
+    questionId?: string | string[];
+    questionLimit?: string | string[];
+    returnTo?: string | string[];
+    selectedAnswer?: string | string[];
+    studyPlanTaskId?: string | string[];
   }>();
   const currentUser = useCurrentUser();
   const authMode = useAppShellStore((state) => state.authMode);
@@ -74,7 +81,49 @@ export default function PaywallPage() {
     message: string;
   } | null>(null);
   const targetFeature = getSingleParam(params.feature);
+  const returnTo = getSingleParam(params.returnTo);
+  const returnQuestionId = getSingleParam(params.questionId);
+  const returnLocale = getSingleParam(params.locale);
+  const returnSelectedAnswer = getSingleParam(params.selectedAnswer);
   const highlightedFeature = isAppFeature(targetFeature) ? targetFeature : null;
+
+  const returnExamMode = getSingleParam(params.mode);
+  const returnExamQuestionLimit = getSingleParam(params.questionLimit);
+  const returnExamStudyPlanTaskId = getSingleParam(params.studyPlanTaskId);
+
+  const continueAfterUnlock = () => {
+    if (returnTo === "ai-chat" && returnQuestionId) {
+      router.replace({
+        pathname: "/modals/ai-chat",
+        params: {
+          questionId: returnQuestionId,
+          ...(returnLocale ? { locale: returnLocale } : {}),
+          ...(returnSelectedAnswer
+            ? { selectedAnswer: returnSelectedAnswer }
+            : {}),
+        },
+      });
+      return;
+    }
+
+    if (returnTo === "exam") {
+      router.replace({
+        pathname: "/exam",
+        params: {
+          ...(returnExamMode ? { mode: returnExamMode } : {}),
+          ...(returnExamQuestionLimit
+            ? { questionLimit: returnExamQuestionLimit }
+            : {}),
+          ...(returnExamStudyPlanTaskId
+            ? { studyPlanTaskId: returnExamStudyPlanTaskId }
+            : {}),
+        },
+      });
+      return;
+    }
+
+    router.back();
+  };
 
   const canUseDirectPurchase =
     FEATURE_FLAGS.enablePlusPurchase &&
@@ -105,6 +154,13 @@ export default function PaywallPage() {
         key: "exam",
         title: t("paywall.rowExam"),
         free: { kind: "label", text: t("paywall.freeExamLimit") },
+        premium: { kind: "check" },
+      },
+      {
+        key: "readiness",
+        title: t("paywall.rowReadiness"),
+        subtitle: t("paywall.rowReadinessSub"),
+        free: { kind: "label", text: t("paywall.freeReadinessGeneral") },
         premium: { kind: "check" },
       },
       {
@@ -141,8 +197,7 @@ export default function PaywallPage() {
 
   const displayPrice =
     selectedPackage?.priceString ?? t("paywall.ctaFallbackPrice");
-  const closeIconSize = responsiveFont(28);
-  const crownIconSize = responsiveFont(32);
+  const crownIconSize = responsiveFont(24);
 
   useEffect(() => {
     if (!selectedPackageKey && recommendedPackage) {
@@ -242,13 +297,7 @@ export default function PaywallPage() {
           title: selectedPackage.title,
         }),
       });
-      Toast.show({
-        type: "success",
-        text1: t("toasts.purchaseSuccessTitle"),
-        text2: t("toasts.purchaseSuccessSubtitle", {
-          title: selectedPackage.title,
-        }),
-      });
+      continueAfterUnlock();
     } catch (error) {
       if (isRevenueCatPurchaseCancelled(error)) {
         setRevenueCatStatus("ready");
@@ -294,11 +343,6 @@ export default function PaywallPage() {
       setPurchaseFeedback({
         kind: "error",
         message,
-      });
-      Toast.show({
-        type: "error",
-        text1: t("toasts.purchaseFailedTitle"),
-        text2: message,
       });
     } finally {
       setIsPurchasing(false);
@@ -354,11 +398,7 @@ export default function PaywallPage() {
         kind: "success",
         message: t("paywall.restoreSuccess"),
       });
-      Toast.show({
-        type: "success",
-        text1: t("toasts.restoreSuccessTitle"),
-        text2: t("toasts.restoreSuccessSubtitle"),
-      });
+      continueAfterUnlock();
     } catch (error) {
       const message = getRevenueCatErrorMessage(error);
 
@@ -379,11 +419,6 @@ export default function PaywallPage() {
       setPurchaseFeedback({
         kind: "error",
         message,
-      });
-      Toast.show({
-        type: "error",
-        text1: t("toasts.restoreFailedTitle"),
-        text2: message,
       });
     } finally {
       setIsRestoring(false);
@@ -420,17 +455,12 @@ export default function PaywallPage() {
         <StatusBar style="light" />
 
         <View style={styles.header}>
-          <Pressable
+          <NavigationButton
             accessibilityLabel={t("common.close")}
-            accessibilityRole="button"
             onPress={() => router.back()}
-            style={({ pressed }) => [
-              styles.closeButton,
-              pressed ? styles.pressed : null,
-            ]}
-          >
-            <Ionicons color={colors.onAccent} name="close" size={closeIconSize} />
-          </Pressable>
+            tone="onAccent"
+            type="close"
+          />
         </View>
 
         <ScrollView
@@ -439,14 +469,16 @@ export default function PaywallPage() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.hero}>
-            <MaterialCommunityIcons
-              color={colors.onAccent}
-              name="crown-outline"
-              size={crownIconSize}
-            />
-            <Text style={styles.heroTitle}>
-              {t(hasPlusAccess ? "paywall.activeTitle" : "paywall.comparisonTitle")}
-            </Text>
+            <View style={styles.heroTitleRow}>
+              <MaterialCommunityIcons
+                color={colors.onAccent}
+                name="crown-outline"
+                size={crownIconSize}
+              />
+              <Text style={styles.heroTitle}>
+                {t(hasPlusAccess ? "paywall.activeTitle" : "paywall.comparisonTitle")}
+              </Text>
+            </View>
             {!hasPlusAccess ? (
               <Text style={styles.heroPrice}>
                 {t("paywall.priceHeadline", { price: displayPrice })}
@@ -550,7 +582,7 @@ export default function PaywallPage() {
           ) : (
             <Pressable
               accessibilityRole="button"
-              onPress={() => router.back()}
+              onPress={continueAfterUnlock}
               style={({ pressed }) => [
                 styles.cta,
                 pressed ? styles.pressed : null,
@@ -601,14 +633,8 @@ function useStyles() {
       flex: 1,
     },
     header: {
-      paddingHorizontal: spacing.exact(16),
+      paddingHorizontal: spacing.exact(24),
       paddingBottom: spacing.exact(4),
-    },
-    closeButton: {
-      alignSelf: "flex-start",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: spacing.exact(4),
     },
     pressed: {
       opacity: 0.85,
@@ -623,19 +649,26 @@ function useStyles() {
     },
     hero: {
       alignItems: "center",
-      gap: spacing.exact(8),
+      gap: spacing.exact(4),
       paddingBottom: spacing.exact(4),
     },
+    heroTitleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.exact(12),
+    },
     heroTitle: {
-      fontSize: responsiveFont(18),
-      lineHeight: responsiveFont(24),
-      fontWeight: "500",
+      fontSize: responsiveFont(20),
+      lineHeight: responsiveFont(28),
+      fontWeight: "600",
+      letterSpacing: -0.2,
       textAlign: "center",
       color: colors.onAccent,
     },
     heroPrice: {
       fontSize: responsiveFont(32),
-      lineHeight: responsiveFont(36),
+      lineHeight: responsiveFont(32),
       fontWeight: "700",
       letterSpacing: -0.64,
       textAlign: "center",

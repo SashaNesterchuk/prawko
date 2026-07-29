@@ -2,7 +2,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
-import Toast from "react-native-toast-message";
 
 import { STUDY_PLAN_LIMITS } from "@prawko/config";
 
@@ -138,23 +137,10 @@ export default function PlanAdjustModalScreen() {
         remoteId: nextRemoteId,
       });
 
-      Toast.show({
-        type: "success",
-        text1: t("toasts.planAdjustedTitle"),
-        text2: t("toasts.planAdjustedSubtitle", {
-          days: previewPlan.daysPlanned,
-        }),
-      });
-
       router.back();
     } catch (error) {
       console.warn("Failed to adjust study plan.", error);
       setFormError(t("modals.planAdjust.submitFailed"));
-      Toast.show({
-        type: "error",
-        text1: t("toasts.planAdjustFailedTitle"),
-        text2: t("toasts.planAdjustFailedSubtitle"),
-      });
     } finally {
       setIsSubmitting(false);
     }

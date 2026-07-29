@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,9 +7,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { STUDY_PLAN_LIMITS } from "@prawko/config";
 
+import { Icon } from "../../src/components/icons";
 import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
+import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
+import {
+  parseNullableIsoDate,
+  toIsoDate,
+} from "../../src/features/study-plan/exam-date";
 import {
   formatPlanDate,
   getDaysUntilExamFromDate,
@@ -18,41 +23,17 @@ import {
 } from "../../src/features/study-plan/generate-local-study-plan";
 import { useAppShellStore } from "../../src/state/app-shell";
 
-function toIsoDate(date: Date) {
-  const year = String(date.getFullYear());
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseIsoDate(value: string | null): Date | null {
-  if (!value) {
-    return null;
-  }
-  const [year, month, day] = value
-    .split("-")
-    .map((part) => Number.parseInt(part, 10));
-  if (
-    !Number.isFinite(year) ||
-    !Number.isFinite(month) ||
-    !Number.isFinite(day)
-  ) {
-    return null;
-  }
-  return new Date(year, month - 1, day);
-}
-
 export default function ExamScheduleScreen() {
   const { t, i18n } = useTranslation();
   const styles = useStyles();
-  const { accents, colors } = useTheme();
+  const { colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const setExamSchedule = useAppShellStore((state) => state.setExamSchedule);
 
   const [pickerVisible, setPickerVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
-    parseIsoDate(studyPlanSetup.examDate)
+    parseNullableIsoDate(studyPlanSetup.examDate)
   );
   const badgeIconSize = responsiveFont(28);
   const fieldIconSize = responsiveFont(20);
@@ -76,104 +57,83 @@ export default function ExamScheduleScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
-      <View style={styles.content}>
-        <View style={styles.body}>
-          <View style={styles.iconBadge}>
-            <MaterialCommunityIcons
-              name="calendar-month-outline"
-              size={badgeIconSize}
-              color={accents.amber.fill}
-            />
-          </View>
+    <GreenWaveScreen>
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <StatusBar style="dark" />
+        <View style={styles.content}>
+          <View style={styles.body}>
+            <View style={styles.iconBadge}>
+              <Icon name="calendar" size={badgeIconSize} color={colors.icon} />
+            </View>
 
-          <Text style={styles.title}>{t("onboarding.examDateTitle")}</Text>
-          <Text style={styles.subtitle}>
-            {t("onboarding.examDateSubtitle")}
-          </Text>
+            <Text style={styles.title}>{t("onboarding.examDateTitle")}</Text>
 
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => setPickerVisible(true)}
-            style={({ pressed }) => [
-              styles.field,
-              pressed ? styles.fieldPressed : null,
-            ]}
-          >
-            <MaterialCommunityIcons
-              name="calendar-blank-outline"
-              size={fieldIconSize}
-              color={
-                selectedDate
-                  ? colors.textPrimary
-                  : colors.textMuted
-              }
-            />
-            <Text
-              style={[
-                styles.fieldText,
-                selectedDate ? styles.fieldTextFilled : null,
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setPickerVisible(true)}
+              style={({ pressed }) => [
+                styles.field,
+                pressed ? styles.fieldPressed : null,
               ]}
             >
-              {selectedDate
-                ? formatPlanDate(toIsoDate(selectedDate))
-                : t("onboarding.examDatePlaceholder")}
-            </Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.footer}>
-          <View style={styles.paging}>
-            <View style={styles.dot} />
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dot} />
+              <Icon
+                name="calendar"
+                size={fieldIconSize}
+                color={
+                  selectedDate ? colors.textPrimary : colors.textMuted
+                }
+              />
+              <Text
+                style={[
+                  styles.fieldText,
+                  selectedDate ? styles.fieldTextFilled : null,
+                ]}
+              >
+                {selectedDate
+                  ? formatPlanDate(toIsoDate(selectedDate))
+                  : t("onboarding.examDatePlaceholder")}
+              </Text>
+            </Pressable>
           </View>
 
-          <Pressable
-            accessibilityRole="button"
-            onPress={goNext}
-            style={({ pressed }) => [
-              styles.cta,
-              pressed ? styles.ctaPressed : null,
-            ]}
-          >
-            <Text style={styles.ctaLabel}>{t("common.continue")}</Text>
-          </Pressable>
+          <View style={styles.footer}>
+            <View style={styles.paging}>
+              <View style={styles.dot} />
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dot} />
+            </View>
 
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => {
-              setSelectedDate(null);
-              goNext();
-            }}
-            style={({ pressed }) => [
-              styles.ghost,
-              pressed ? styles.ghostPressed : null,
-            ]}
-          >
-            <Text style={styles.ghostLabel}>{t("onboarding.examDateSkip")}</Text>
-          </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={goNext}
+              style={({ pressed }) => [
+                styles.cta,
+                pressed ? styles.ctaPressed : null,
+              ]}
+            >
+              <Text style={styles.ctaLabel}>{t("common.continue")}</Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
 
-      <CalendarSheet
-        visible={pickerVisible}
-        locale={i18n.language}
-        initialDate={selectedDate}
-        confirmLabel={t("onboarding.examDateConfirm")}
-        clearLabel={t("onboarding.examDateClear")}
-        onClose={() => setPickerVisible(false)}
-        onConfirm={(date) => {
-          setSelectedDate(date);
-          setPickerVisible(false);
-        }}
-        onClear={() => {
-          setSelectedDate(null);
-          setPickerVisible(false);
-        }}
-      />
-    </SafeAreaView>
+        <CalendarSheet
+          visible={pickerVisible}
+          locale={i18n.language}
+          initialDate={selectedDate}
+          confirmLabel={t("onboarding.examDateConfirm")}
+          clearLabel={t("onboarding.examDateClear")}
+          onClose={() => setPickerVisible(false)}
+          onConfirm={(date) => {
+            setSelectedDate(date);
+            setPickerVisible(false);
+          }}
+          onClear={() => {
+            setSelectedDate(null);
+            setPickerVisible(false);
+          }}
+        />
+      </SafeAreaView>
+    </GreenWaveScreen>
   );
 }
 
@@ -182,7 +142,6 @@ function useStyles() {
     ({ accents, colors, radius, responsiveFont, spacing }) => ({
       safeArea: {
         flex: 1,
-        backgroundColor: colors.background,
       },
       content: {
         flex: 1,
@@ -191,45 +150,37 @@ function useStyles() {
       },
       body: {
         flex: 1,
-        paddingTop: spacing.exact(8),
       },
       iconBadge: {
         width: spacing.exact(56),
         height: spacing.exact(56),
-        borderRadius: radius.lg,
+        borderRadius: spacing.exact(18),
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: colors.surface,
+        backgroundColor: colors.white,
       },
       title: {
         marginTop: spacing.exact(32),
         fontSize: responsiveFont(32),
-        lineHeight: responsiveFont(38),
+        lineHeight: responsiveFont(32),
         fontWeight: "700",
         letterSpacing: -0.64,
         color: colors.textPrimary,
       },
-      subtitle: {
-        marginTop: spacing.exact(12),
-        fontSize: responsiveFont(18),
-        lineHeight: responsiveFont(28),
-        fontWeight: "400",
-        color: colors.textSecondary,
-      },
       field: {
-        marginTop: spacing.exact(32),
+        marginTop: spacing.exact(16),
         flexDirection: "row",
         alignItems: "center",
         gap: spacing.exact(8),
         paddingHorizontal: spacing.exact(16),
         paddingVertical: spacing.exact(12),
-        borderRadius: radius.lg,
+        borderRadius: radius.xl,
         borderWidth: 1,
         borderColor: colors.line,
         backgroundColor: colors.surface,
         shadowColor: colors.shadow,
         shadowOpacity: 0.05,
-        shadowRadius: spacing.exact(6),
+        shadowRadius: spacing.exact(12),
         shadowOffset: { width: 0, height: spacing.exact(2) },
         elevation: 1,
       },
@@ -248,7 +199,7 @@ function useStyles() {
         fontWeight: "500",
       },
       footer: {
-        gap: spacing.exact(8),
+        gap: spacing.exact(20),
       },
       paging: {
         flexDirection: "row",
@@ -270,12 +221,13 @@ function useStyles() {
       cta: {
         alignItems: "center",
         justifyContent: "center",
-        paddingVertical: spacing.exact(16),
+        paddingVertical: spacing.exact(12),
+        paddingHorizontal: spacing.exact(24),
         borderRadius: radius.pill,
         backgroundColor: accents.green.fill,
         shadowColor: colors.shadow,
         shadowOpacity: 0.1,
-        shadowRadius: spacing.exact(18),
+        shadowRadius: spacing.exact(36),
         shadowOffset: { width: 0, height: spacing.exact(14) },
         elevation: 6,
       },
@@ -288,20 +240,6 @@ function useStyles() {
         fontWeight: "600",
         letterSpacing: -0.2,
         color: colors.onAccent,
-      },
-      ghost: {
-        alignItems: "center",
-        justifyContent: "center",
-        paddingVertical: spacing.exact(12),
-      },
-      ghostPressed: {
-        opacity: 0.6,
-      },
-      ghostLabel: {
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(24),
-        fontWeight: "400",
-        color: colors.textSecondary,
       },
     })
   );

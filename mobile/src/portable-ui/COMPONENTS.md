@@ -34,7 +34,7 @@
 
 **Размеры:** `s72` … `s10` (`TextSizeKey`).
 
-**Веса:** `regular`, `medium`, `bold`, `light`, `italic`, `boldItalic`, `sansBoldItalic`, `robotoSerifMediumItalic28`.
+**Веса:** `regular`, `medium`, `semiBold`, `bold`, `mono`.
 
 > Если вызываете `configureFonts` после импорта `textSize`/`textWeight`, предпочитайте `getTextSizeStyle` / `getTextWeightStyle` в рантайме (как в `CText`).
 

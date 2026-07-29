@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
 import { getFontFamily, useResponsiveStyles } from "../../portable-ui";
+import { GreenWaveScreen } from "./GreenWaveScreen";
 
 type AppScreenProps = PropsWithChildren<{
   title?: string;
@@ -36,20 +37,22 @@ export function AppScreen({
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
-      {scroll ? (
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {content}
-        </ScrollView>
-      ) : (
-        <View style={styles.flexContent}>{content}</View>
-      )}
-      {footer ? <View style={styles.footer}>{footer}</View> : null}
-    </SafeAreaView>
+    <GreenWaveScreen>
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <StatusBar style="dark" />
+        {scroll ? (
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {content}
+          </ScrollView>
+        ) : (
+          <View style={styles.flexContent}>{content}</View>
+        )}
+        {footer ? <View style={styles.footer}>{footer}</View> : null}
+      </SafeAreaView>
+    </GreenWaveScreen>
   );
 }
 
@@ -57,7 +60,6 @@ function useStyles() {
   return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
     safeArea: {
       flex: 1,
-      backgroundColor: colors.background,
     },
     flexContent: {
       flex: 1,
@@ -93,7 +95,6 @@ function useStyles() {
       paddingHorizontal: spacing.exact(20),
       paddingTop: spacing.exact(12),
       paddingBottom: spacing.exact(16),
-      backgroundColor: colors.background,
       borderTopWidth: 1,
       borderTopColor: colors.borderSoft,
     },

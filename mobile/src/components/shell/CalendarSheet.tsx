@@ -118,8 +118,8 @@ export function CalendarSheet({
   const theme = useTheme();
   const styles = useStyles();
   const today = useMemo(() => startOfDay(new Date()), []);
-  const months = MONTH_NAMES[locale] ?? MONTH_NAMES.ua;
-  const weekdays = WEEKDAY_NAMES[locale] ?? WEEKDAY_NAMES.ua;
+  const months = MONTH_NAMES[locale] ?? MONTH_NAMES.en;
+  const weekdays = WEEKDAY_NAMES[locale] ?? WEEKDAY_NAMES.en;
 
   const [viewMonth, setViewMonth] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1)

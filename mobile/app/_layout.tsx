@@ -10,32 +10,21 @@ import { configureFonts } from "../src/portable-ui";
 import { AppProviders } from "../src/providers/AppProviders";
 
 const appFonts = {
-  CustomSet: require("../assets/fonts/CustomSet-v2.0/fonts/CustomSet.ttf"),
-  "Roboto-Bold": require("../assets/fonts/Roboto/Roboto-Bold.ttf"),
-  "Roboto-Medium": require("../assets/fonts/Roboto/Roboto-Medium.ttf"),
   "Roboto-Regular": require("../assets/fonts/Roboto/Roboto-Regular.ttf"),
-  "Roboto-Light": require("../assets/fonts/Roboto/Roboto-Light.ttf"),
-  "Roboto-BoldItalic": require("../assets/fonts/Roboto/Roboto-BoldItalic.ttf"),
-  "SourceSans3-SemiBoldItalic": require(
-    "../assets/fonts/SourceSans/SourceSans3-SemiBoldItalic.ttf"
-  ),
-  "SourceSans3-BoldItalic": require(
-    "../assets/fonts/SourceSans/SourceSans3-BoldItalic.ttf"
-  ),
-  "RobotoSerif-MediumItalic28": require(
-    "../assets/fonts/RobotoSerif/RobotoSerif_28pt-MediumItalic.ttf"
+  "Roboto-Medium": require("../assets/fonts/Roboto/Roboto-Medium.ttf"),
+  "Roboto-SemiBold": require("../assets/fonts/Roboto/Roboto-SemiBold.ttf"),
+  "Roboto-Bold": require("../assets/fonts/Roboto/Roboto-Bold.ttf"),
+  "RobotoMono-Regular": require(
+    "../assets/fonts/Roboto_Mono/RobotoMono-Regular.ttf"
   ),
 };
 
 configureFonts({
   regular: "Roboto-Regular",
   medium: "Roboto-Medium",
+  semiBold: "Roboto-SemiBold",
   bold: "Roboto-Bold",
-  light: "Roboto-Light",
-  italic: "SourceSans3-SemiBoldItalic",
-  boldItalic: "Roboto-BoldItalic",
-  sansBoldItalic: "SourceSans3-BoldItalic",
-  robotoSerifMediumItalic28: "RobotoSerif-MediumItalic28",
+  mono: "RobotoMono-Regular",
 });
 
 void SplashScreen.preventAutoHideAsync();
@@ -65,7 +54,12 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="exam" />
+        <Stack.Screen
+          name="exam"
+          options={{
+            gestureEnabled: false,
+          }}
+        />
         <Stack.Screen
           name="question"
           options={{
@@ -161,8 +155,8 @@ export default function RootLayout() {
         <Stack.Screen
           name="modals/media-viewer"
           options={{
-            presentation: "modal",
-            animation: "slide_from_bottom",
+            presentation: "fullScreenModal",
+            animation: "fade",
           }}
         />
         <Stack.Screen

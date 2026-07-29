@@ -69,14 +69,7 @@ export function TopicReadinessCard({
         <Text style={styles.title} numberOfLines={2}>
           {title}
         </Text>
-        {isStarted && resolvedStatus === "good" ? (
-          <View style={styles.readinessGroup}>
-            <Text style={styles.readinessLabel}>Готовність</Text>
-            <Text style={styles.readinessValue}>{normalizedReadiness}%</Text>
-          </View>
-        ) : isStarted ? (
-          <Text style={styles.readinessValue}>{normalizedReadiness}%</Text>
-        ) : null}
+        <Text style={styles.readinessValue}>{normalizedReadiness}%</Text>
       </View>
 
       <View style={styles.track}>
@@ -94,7 +87,7 @@ export function TopicReadinessCard({
             <Text style={styles.footerLabel}>{resolvedWrong}</Text>
           </View>
         </View>
-        <Text style={styles.footerLabel}>{`${seen}/${total}`}</Text>
+        <Text style={styles.footerLabel}>{`${seen} / ${total}`}</Text>
       </View>
     </View>
   );
@@ -140,14 +133,9 @@ function useStyles({
       flexDirection: "row",
       alignItems: "center",
       padding: spacing.lg,
-      borderRadius: radius.lg,
-      backgroundColor: colors.surface,
+      borderRadius: radius.xxl,
+      backgroundColor: colors.white,
       overflow: "hidden",
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.05,
-      shadowRadius: spacing.exact(6),
-      shadowOffset: { width: 0, height: spacing.exact(2) },
-      elevation: 1,
     },
     pressed: {
       opacity: 0.9,
@@ -171,17 +159,6 @@ function useStyles({
       fontWeight: "600",
       letterSpacing: -0.16,
       color: colors.ink,
-    },
-    readinessGroup: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.xs,
-    },
-    readinessLabel: {
-      fontSize: responsiveFont(12),
-      lineHeight: responsiveFont(16),
-      fontWeight: "400",
-      color: colors.inkMuted,
     },
     readinessValue: {
       fontSize: responsiveFont(16),

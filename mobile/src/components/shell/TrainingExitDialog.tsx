@@ -1,12 +1,13 @@
 import { Modal, Pressable, Text, View } from "react-native";
 
 import { useResponsiveStyles } from "../../portable-ui";
-import { useTheme } from "../../providers/ThemeProvider";
 
 type TrainingExitDialogProps = {
   body: string;
   continueLabel: string;
   finishLabel: string;
+  /** vertical: finish on top (training/exam). horizontal: continue | finish side by side (reset). */
+  layout?: "vertical" | "horizontal";
   onContinue: () => void;
   onFinish: () => void;
   title: string;
@@ -17,18 +18,57 @@ export function TrainingExitDialog({
   body,
   continueLabel,
   finishLabel,
+  layout = "vertical",
   onContinue,
   onFinish,
   title,
   visible,
 }: TrainingExitDialogProps) {
-  const theme = useTheme();
   const styles = useStyles();
+  const isHorizontal = layout === "horizontal";
+
+  const finishButton = (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onFinish}
+      style={({ pressed }) => [
+        styles.actionButton,
+        isHorizontal ? styles.actionButtonGrow : null,
+        styles.finishButton,
+        pressed ? styles.pressed : null,
+      ]}
+    >
+      <Text style={styles.finishLabel}>{finishLabel}</Text>
+    </Pressable>
+  );
+
+  const continueButton = (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onContinue}
+      style={({ pressed }) => [
+        styles.actionButton,
+        isHorizontal ? styles.actionButtonGrow : null,
+        styles.continueButton,
+        pressed ? styles.pressed : null,
+      ]}
+    >
+      <Text
+        style={[
+          styles.continueLabel,
+          isHorizontal ? styles.continueLabelMuted : null,
+        ]}
+      >
+        {continueLabel}
+      </Text>
+    </Pressable>
+  );
 
   return (
     <Modal
       animationType="fade"
       onRequestClose={onContinue}
+      presentationStyle="overFullScreen"
       transparent
       visible={visible}
     >
@@ -37,30 +77,23 @@ export function TrainingExitDialog({
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.body}>{body}</Text>
 
-          <View style={styles.actions}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onContinue}
-              style={({ pressed }) => [
-                styles.actionButton,
-                styles.continueButton,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <Text style={styles.continueLabel}>{continueLabel}</Text>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={onFinish}
-              style={({ pressed }) => [
-                styles.actionButton,
-                styles.finishButton,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <Text style={styles.finishLabel}>{finishLabel}</Text>
-            </Pressable>
+          <View
+            style={[
+              styles.actions,
+              isHorizontal ? styles.actionsHorizontal : null,
+            ]}
+          >
+            {isHorizontal ? (
+              <>
+                {continueButton}
+                {finishButton}
+              </>
+            ) : (
+              <>
+                {finishButton}
+                {continueButton}
+              </>
+            )}
           </View>
         </View>
       </View>
@@ -79,15 +112,15 @@ function useStyles() {
     },
     card: {
       width: "100%",
-      borderRadius: radius.xxl,
-      padding: spacing.xl,
+      borderRadius: radius.xxxl,
+      padding: spacing.exact(32),
       backgroundColor: colors.paper,
       shadowColor: colors.shadow,
       shadowOpacity: 0.22,
       shadowRadius: spacing.exact(32),
       shadowOffset: { width: 0, height: spacing.exact(26) },
       elevation: 12,
-      gap: spacing.xl,
+      gap: spacing.exact(32),
     },
     title: {
       fontSize: responsiveFont(32),
@@ -101,39 +134,46 @@ function useStyles() {
       fontSize: responsiveFont(18),
       lineHeight: responsiveFont(28),
       textAlign: "center",
-      color: colors.inkSecondary,
+      color: colors.ink2,
     },
     actions: {
-      flexDirection: "row",
       gap: spacing.sm,
     },
+    actionsHorizontal: {
+      flexDirection: "row",
+    },
     actionButton: {
-      flex: 1,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: spacing.xl,
       paddingVertical: spacing.md,
       borderRadius: radius.pill,
     },
-    continueButton: {
-      backgroundColor: colors.white,
+    actionButtonGrow: {
+      flex: 1,
     },
     finishButton: {
       backgroundColor: theme.accents.red.fill,
     },
-    continueLabel: {
-      fontSize: responsiveFont(20),
-      lineHeight: responsiveFont(28),
-      fontWeight: "600",
-      letterSpacing: -0.2,
-      color: colors.inkSecondary,
+    continueButton: {
+      backgroundColor: colors.white,
     },
     finishLabel: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
       fontWeight: "600",
       letterSpacing: -0.2,
-      color: colors.onAccent,
+      color: colors.white,
+    },
+    continueLabel: {
+      fontSize: responsiveFont(20),
+      lineHeight: responsiveFont(28),
+      fontWeight: "600",
+      letterSpacing: -0.2,
+      color: colors.ink,
+    },
+    continueLabelMuted: {
+      color: colors.ink2,
     },
     pressed: {
       opacity: 0.88,

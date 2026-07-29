@@ -1,10 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 
 import { Icon } from "../icons";
-import {
-  useResponsiveFonts,
-  useResponsiveStyles,
-} from "../../portable-ui";
+import { useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type SignDetailNavProps = {
@@ -25,7 +22,6 @@ export function SignDetailNav({
   onForward,
 }: SignDetailNavProps) {
   const theme = useTheme();
-  const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles();
   const forwardLabelText = forwardLabel.replace(/\s*>\s*$/, "");
 
@@ -35,25 +31,27 @@ export function SignDetailNav({
         <Pressable
           accessibilityRole="button"
           onPress={onBack}
-          style={({ pressed }) => [styles.button, styles.buttonLeft, pressed ? styles.pressed : null]}
+          style={({ pressed }) => [styles.button, pressed ? styles.pressed : null]}
         >
-          <Icon color={theme.colors.inkSecondary} name="back" size={responsiveFont(18)} />
+          <Icon color={theme.colors.ink2} name="back" size={20} />
           <Text style={styles.buttonLabel}>{backLabel}</Text>
         </Pressable>
       ) : (
-        <View style={styles.spacer} />
+        <View style={styles.buttonPlaceholder} />
       )}
 
       {canGoForward ? (
         <Pressable
           accessibilityRole="button"
           onPress={onForward}
-          style={({ pressed }) => [styles.button, styles.buttonRight, pressed ? styles.pressed : null]}
+          style={({ pressed }) => [styles.button, pressed ? styles.pressed : null]}
         >
           <Text style={styles.buttonLabel}>{forwardLabelText}</Text>
-          <Icon color={theme.colors.inkSecondary} name="chevron" size={responsiveFont(18)} />
+          <Icon color={theme.colors.ink2} name="chevron" size={20} />
         </Pressable>
-      ) : null}
+      ) : (
+        <View style={styles.buttonPlaceholder} />
+      )}
     </View>
   );
 }
@@ -63,38 +61,27 @@ function useStyles() {
     row: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
-      gap: spacing.md,
+      gap: spacing.sm,
     },
     button: {
+      flex: 1,
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing.xs,
+      justifyContent: "center",
+      gap: 0,
       paddingVertical: spacing.md,
-      paddingHorizontal: spacing.lg,
+      paddingHorizontal: spacing.xl,
       borderRadius: radius.pill,
       backgroundColor: colors.surface,
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.05,
-      shadowRadius: spacing.exact(6),
-      shadowOffset: { width: 0, height: spacing.exact(2) },
-      elevation: 1,
     },
-    buttonLeft: {
-      alignSelf: "flex-start",
-    },
-    buttonRight: {
-      alignSelf: "flex-end",
-      marginLeft: "auto",
+    buttonPlaceholder: {
+      flex: 1,
     },
     buttonLabel: {
-      fontSize: responsiveFont(14),
-      lineHeight: responsiveFont(20),
-      fontWeight: "600",
-      color: colors.inkSecondary,
-    },
-    spacer: {
-      flex: 1,
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "400",
+      color: colors.ink2,
     },
     pressed: {
       opacity: 0.9,

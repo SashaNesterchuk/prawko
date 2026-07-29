@@ -42,7 +42,9 @@ function fileToName(filename) {
 function normalizeSvgContent(content) {
   return content
     .replace(/\sstyle="[^"]*fill:[^"]*"/gi, ' fill="currentColor"')
-    .replace(/\sstyle="[^"]*"/gi, "");
+    .replace(/\sstyle="[^"]*"/gi, "")
+    .replace(/\sfill="(?!none|currentColor)[^"]*"/gi, ' fill="currentColor"')
+    .replace(/\sstroke="(?!none|currentColor)[^"]*"/gi, ' stroke="currentColor"');
 }
 
 const files = fs.readdirSync(iconsDir).filter((file) => file.endsWith(".svg")).sort();

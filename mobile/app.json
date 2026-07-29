@@ -3,25 +3,75 @@
     "name": "Prawko",
     "slug": "prawko",
     "scheme": "prawko",
-    "version": "0.1.0",
+    "version": "1.0.2",
     "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#EEF4F2"
+    },
     "plugins": [
       "expo-router",
       "expo-font",
       "expo-localization",
-      "expo-notifications"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#1FB574"
+        }
+      ],
+      "expo-video",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-4994877133367352~1533006266",
+          "userTrackingUsageDescription": "This identifier may be used to deliver more relevant ads."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "android": {
-      "package": "com.mindjar.prawko"
+      "package": "com.mindjar.prawko",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#EEF4F2"
+      }
     },
     "ios": {
       "bundleIdentifier": "com.mindjar.prawko",
+      "supportsTablet": false,
+      "appleTeamId": "6ZQHZ3FP75",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "infoPlist": {
-        "NSUserNotificationUsageDescription": "This app uses notifications to remind you about study sessions."
+        "CFBundleDisplayName": "Prawko",
+        "GADApplicationIdentifier": "ca-app-pub-4994877133367352~1533006266",
+        "NSUserNotificationUsageDescription": "This app uses notifications to remind you about study sessions.",
+        "NSUserTrackingUsageDescription": "This identifier may be used to deliver more relevant ads."
       }
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "db4df591-0771-4d6f-a7bf-3fd1304bb080"
+      }
+    },
+    "owner": "mindjar"
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-3940256099942544~3347511713",
+    "ios_app_id": "ca-app-pub-4994877133367352~1533006266",
+    "user_tracking_usage_description": "This identifier may be used to deliver more relevant ads."
   }
 }

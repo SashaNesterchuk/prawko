@@ -13,6 +13,7 @@ import {
 import { getExamQuestionTarget, isExamSimulatorMode } from "../../src/features/exam/exam-config";
 import {
   fetchLatestActiveExamSession,
+  setExamSessionStatus,
   startExamSession,
 } from "../../src/features/exam/exam-session";
 import { isUuidString } from "../../src/features/questions/question-routes";
@@ -77,8 +78,25 @@ export default function ExamIntroScreen() {
       });
 
       if (activeSnapshot) {
-        openExamSession(activeSnapshot.session.id);
-        return;
+        // Drop a stale active session if its size no longer matches this launch
+        // (e.g. full exam that was wrongly started with a leftover mini-test limit).
+        if (
+          activeSnapshot.session.totalQuestionsTarget === totalQuestionsTarget
+        ) {
+          openExamSession(activeSnapshot.session.id);
+          return;
+        }
+
+        await setExamSessionStatus({
+          sessionId: activeSnapshot.session.id,
+          status: "abandoned",
+          metadata: {
+            reason: "question_target_mismatch",
+            expected_total_questions: totalQuestionsTarget,
+            previous_total_questions:
+              activeSnapshot.session.totalQuestionsTarget,
+          },
+        });
       }
 
       const snapshot = await startExamSession(
@@ -120,7 +138,7 @@ export default function ExamIntroScreen() {
             <AppButton
               variant="ghost"
               label={t("common.close")}
-              onPress={() => router.back()}
+              onPress={() => router.replace("/(tabs)")}
             />
           </View>
         }

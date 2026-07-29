@@ -1,11 +1,8 @@
 import { Pressable, Text, View } from "react-native";
 
 import { Icon } from "../icons";
-import {
-  hexToRgba,
-  useResponsiveSpacing,
-  useResponsiveStyles,
-} from "../../portable-ui";
+import { DualColorProgressBar } from "./DualColorProgressBar";
+import { useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { SignImage } from "../../features/road-signs/SignImage";
 import type { RoadSign, RoadSignCategory } from "../../features/road-signs/types";
@@ -23,27 +20,21 @@ type SignCategoryProgressCardProps = {
   previewSign?: RoadSign;
   progress: SignCategoryProgress;
   onPress?: () => void;
+  /** Flat row inside a parent card (Statistics Signs tab). */
+  embedded?: boolean;
 };
 
 export function SignCategoryProgressCard({
-  category,
   title,
   previewSign,
   progress,
   onPress,
+  embedded = false,
 }: SignCategoryProgressCardProps) {
   const theme = useTheme();
-  const spacing = useResponsiveSpacing();
-  const accent = theme.accents[category.accent];
   const answered = progress.correct + progress.wrong;
-  const percent =
-    progress.total > 0
-      ? Math.round((answered / progress.total) * 100)
-      : 0;
-  const styles = useStyles();
-  const previewWidth = spacing.exact(72);
-  const previewHeight = spacing.exact(92);
-  const iconSize = spacing.exact(14);
+  const styles = useStyles({ embedded });
+  const showPreview = !embedded && previewSign != null;
 
   return (
     <Pressable
@@ -56,32 +47,27 @@ export function SignCategoryProgressCard({
           {title}
         </Text>
 
-        <View style={styles.track}>
-          <View
-            style={[
-              styles.fill,
-              {
-                width: `${Math.min(percent, 100)}%`,
-                backgroundColor: accent.fill,
-              },
-            ]}
-          />
-        </View>
+        <DualColorProgressBar
+          correct={progress.correct}
+          wrong={progress.wrong}
+          total={progress.total}
+          height={4}
+        />
 
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Icon
-              color={theme.accents.green.ink}
+              color={theme.accents.green.fill}
               name="check"
-              size={iconSize}
+              size={16}
             />
             <Text style={styles.statValue}>{progress.correct}</Text>
           </View>
           <View style={styles.statItem}>
             <Icon
-              color={theme.accents.red.ink}
+              color={theme.accents.red.fill}
               name="close"
-              size={iconSize}
+              size={16}
             />
             <Text style={styles.statValue}>{progress.wrong}</Text>
           </View>
@@ -89,97 +75,70 @@ export function SignCategoryProgressCard({
         </View>
       </View>
 
-      {previewSign ? (
+      {showPreview && previewSign ? (
         <View style={styles.previewWrap} pointerEvents="none">
-          <SignImage
-            height={previewHeight}
-            inset={0}
-            sign={previewSign}
-            width={previewWidth}
-          />
+          <SignImage inset={0} sign={previewSign} size={56} />
         </View>
       ) : null}
     </Pressable>
   );
 }
 
-function useStyles() {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => {
-    const previewSlotWidth = spacing.exact(88);
-    const cardPaddingRight = previewSlotWidth + spacing.sm;
-
-    return {
-      card: {
-        position: "relative",
-        minHeight: spacing.exact(112),
-        paddingVertical: spacing.lg,
-        paddingLeft: spacing.lg,
-        paddingRight: cardPaddingRight,
-        borderRadius: radius.xl,
-        backgroundColor: hexToRgba(colors.white, 0.7),
-        overflow: "visible",
-        shadowColor: colors.shadow,
-        shadowOpacity: 0.05,
-        shadowRadius: spacing.exact(6),
-        shadowOffset: { width: 0, height: spacing.exact(2) },
-        elevation: 1,
-      },
-      pressed: {
-        opacity: 0.92,
-      },
-      content: {
-        gap: spacing.sm,
-      },
-      title: {
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(22),
-        fontWeight: "700",
-        letterSpacing: -0.16,
-        color: colors.ink,
-        paddingRight: spacing.sm,
-      },
-      track: {
-        height: spacing.exact(6),
-        borderRadius: radius.pill,
-        backgroundColor: colors.track,
-        overflow: "hidden",
-      },
-      fill: {
-        height: "100%",
-        borderRadius: radius.pill,
-      },
-      statsRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.md,
-      },
-      statItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.exact(4),
-      },
-      statValue: {
-        fontSize: responsiveFont(13),
-        lineHeight: responsiveFont(16),
-        fontWeight: "500",
-        color: colors.inkSecondary,
-      },
-      fraction: {
-        marginLeft: "auto",
-        fontSize: responsiveFont(13),
-        lineHeight: responsiveFont(16),
-        fontWeight: "500",
-        color: colors.inkSecondary,
-      },
-      previewWrap: {
-        position: "absolute",
-        right: spacing.exact(-4),
-        top: spacing.sm,
-        bottom: spacing.sm,
-        width: previewSlotWidth,
-        alignItems: "center",
-        justifyContent: "center",
-      },
-    };
-  });
+function useStyles({ embedded }: { embedded: boolean }) {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    card: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.exact(20),
+      padding: embedded ? 0 : spacing.lg,
+      borderRadius: embedded ? 0 : radius.lg,
+      backgroundColor: embedded ? colors.transparent : colors.surface,
+    },
+    pressed: {
+      opacity: 0.92,
+    },
+    content: {
+      flex: 1,
+      gap: spacing.exact(4),
+    },
+    title: {
+      fontSize: responsiveFont(embedded ? 14 : 16),
+      lineHeight: responsiveFont(embedded ? 20 : 24),
+      fontWeight: embedded ? "500" : "600",
+      letterSpacing: embedded ? 0 : -0.16,
+      color: colors.ink,
+    },
+    statsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+      marginTop: spacing.exact(4),
+    },
+    statItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.exact(4),
+      minWidth: spacing.exact(44),
+    },
+    statValue: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.ink2,
+    },
+    fraction: {
+      flex: 1,
+      textAlign: "right",
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.ink2,
+    },
+    previewWrap: {
+      width: spacing.exact(56),
+      height: spacing.exact(56),
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  }));
 }

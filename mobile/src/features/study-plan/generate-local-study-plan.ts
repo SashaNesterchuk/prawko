@@ -2,6 +2,7 @@ import {
   EXAM_RULES,
   STUDY_PLAN_LIMITS,
   TOPIC_BLOCK_IDS,
+  getContentLocale,
   type DrivingCategory,
   type StudyPlanTaskType,
   type SupportedLocale,
@@ -26,7 +27,7 @@ type StudyPlanBlueprint = {
   topicBlock?: TopicBlockId;
 };
 
-const topicLabels: Record<SupportedLocale, Record<TopicBlockId, string>> = {
+const topicLabels: Record<"pl" | "ua" | "en", Record<TopicBlockId, string>> = {
   pl: {
     signs: "Znaki",
     intersections: "Skrzyzowania",
@@ -476,7 +477,8 @@ function getTaskCopy(
   taskType: StudyPlanTaskType,
   topicBlock?: TopicBlockId
 ) {
-  const topic = topicBlock ? topicLabels[locale][topicBlock] : null;
+  const contentLocale = getContentLocale(locale);
+  const topic = topicBlock ? topicLabels[contentLocale][topicBlock] : null;
 
   switch (taskType) {
     case "learn_topic":
@@ -485,12 +487,12 @@ function getTaskCopy(
           pl: `Nauka: ${topic}`,
           ua: `Вчити: ${topic}`,
           en: `Learn: ${topic}`,
-        }[locale],
+        }[contentLocale],
         description: {
           pl: "Przejdz nowy blok pytan i utrwal zasady.",
           ua: "Пройди новий тематичний блок і закріпи правила.",
           en: "Work through a new topic block and lock in the rules.",
-        }[locale],
+        }[contentLocale],
       };
     case "review_weak_spots":
       return {
@@ -498,12 +500,12 @@ function getTaskCopy(
           pl: "Slabe miejsca",
           ua: "Слабкі місця",
           en: "Weak spots",
-        }[locale],
+        }[contentLocale],
         description: {
           pl: "Powtorz pytania, na ktorych najlatwiej tracisz punkty.",
           ua: "Повтори питання, на яких ти найчастіше втрачаєш бали.",
           en: "Replay the questions most likely to cost you points.",
-        }[locale],
+        }[contentLocale],
       };
     case "mini_test":
       return {
@@ -511,12 +513,12 @@ function getTaskCopy(
           pl: "Mini test",
           ua: "Міні тест",
           en: "Mini test",
-        }[locale],
+        }[contentLocale],
         description: {
           pl: "Krotki egzamin kontrolny, zeby sprawdzic tempo i uwage.",
           ua: "Короткий контрольний тест, щоб перевірити темп і уважність.",
           en: "A short controlled exam block to test pace and focus.",
-        }[locale],
+        }[contentLocale],
       };
     case "full_exam":
       return {
@@ -524,12 +526,12 @@ function getTaskCopy(
           pl: "Pelny egzamin",
           ua: "Повний іспит",
           en: "Full exam",
-        }[locale],
+        }[contentLocale],
         description: {
           pl: "Symulacja calego egzaminu przed finalnym sprintem.",
           ua: "Симуляція повного іспиту перед фінальним спринтом.",
           en: "A full exam simulation before the final sprint.",
-        }[locale],
+        }[contentLocale],
       };
     case "review_wrong_answers":
       return {
@@ -537,12 +539,12 @@ function getTaskCopy(
           pl: "Powtorka bledow",
           ua: "Повтор помилок",
           en: "Wrong answer review",
-        }[locale],
+        }[contentLocale],
         description: {
           pl: "Wroc do pytan, ktore juz raz zabraly Ci punkty.",
           ua: "Повернись до питань, які вже забрали в тебе бали.",
           en: "Return to the questions that already cost you points.",
-        }[locale],
+        }[contentLocale],
       };
     case "review_saved":
       return {
@@ -550,12 +552,12 @@ function getTaskCopy(
           pl: "Saved questions",
           ua: "Збережені питання",
           en: "Saved questions",
-        }[locale],
+        }[contentLocale],
         description: {
           pl: "Osobista kolejka pytan zapisanych na pozniej.",
           ua: "Персональна черга питань, які ти відклав на потім.",
           en: "A personal queue of questions you saved for later.",
-        }[locale],
+        }[contentLocale],
       };
   }
 
@@ -570,7 +572,7 @@ function getPlanTitle(locale: SupportedLocale, daysPlanned: number) {
     pl: `Plan nauki na ${daysPlanned} dni`,
     ua: `План підготовки на ${daysPlanned} днів`,
     en: `${daysPlanned}-day exam plan`,
-  }[locale];
+  }[getContentLocale(locale)];
 }
 
 function countTasks(

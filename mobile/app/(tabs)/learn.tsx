@@ -1,69 +1,56 @@
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Icon, type IconName } from "../../src/components/icons";
 import { ActionTile } from "../../src/components/shell/ActionTile";
+import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
 import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
-import { JourneyCard } from "../../src/components/shell/JourneyCard";
+import { TopicReadinessCard } from "../../src/components/shell/TopicReadinessCard";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   getQuestionTopicIds,
   getQuestionTopicTitle,
 } from "../../src/features/question-topics/catalog";
+import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
 import {
+  getQuestionDisplayStats,
+  getTopicProgress,
+} from "../../src/features/questions/question-engine";
+import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import {
+  fetchRemoteHomeProgress,
+  getWarsawIsoDate,
+  type RemoteReadinessSummary,
+} from "../../src/features/study-plan/supabase-study-plan-progress";
+import {
+  getTypographyStyle,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
-import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
-import { getTopicProgress } from "../../src/features/questions/question-engine";
-import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
-import {
-  buildLocalTodayPlan,
-  fetchRemoteTodayPlan,
-  getWarsawIsoDate,
-  type RemoteTodayPlan,
-} from "../../src/features/study-plan/supabase-study-plan-progress";
-import {
-  useAppShellStore,
-  useCurrentStudyPlan,
-} from "../../src/state/app-shell";
+import { useAppShellStore } from "../../src/state/app-shell";
+import { useHasPlusAccess } from "../../src/state/entitlements";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
-
-function resolveCurrentTopicId(
-  questionUserState: ReturnType<
-    typeof useQuestionProgressStore.getState
-  >["questionUserState"]
-): ReturnType<typeof getQuestionTopicIds>[number] {
-  for (const topic of getQuestionTopicIds()) {
-    const progress = getTopicProgress(topic, questionUserState);
-    if (progress.seen < progress.total) {
-      return topic;
-    }
-  }
-
-  return getQuestionTopicIds()[0];
-}
 
 function LearnActionIcon({
   accent,
   name,
 }: {
   accent: keyof ReturnType<typeof useTheme>["accents"];
-  name: keyof typeof Ionicons.glyphMap;
+  name: IconName;
 }) {
   const { accents } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
 
   return (
-    <Ionicons
+    <Icon
       color={accents[accent].fill}
       name={name}
       size={responsiveFont(24)}
@@ -76,19 +63,15 @@ export default function LearnTabScreen() {
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
   const authMode = useAppShellStore((state) => state.authMode);
-  const currentStudyPlanRemoteId = useAppShellStore(
-    (state) => state.currentStudyPlanRemoteId
-  );
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const hasPlusAccess = useHasPlusAccess();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
-  const currentStudyPlan = useCurrentStudyPlan();
   const isFocused = useIsFocused();
-  const [remoteTodayPlan, setRemoteTodayPlan] = useState<RemoteTodayPlan | null>(
-    null
-  );
+  const [readinessSummary, setReadinessSummary] =
+    useState<RemoteReadinessSummary | null>(null);
 
   useEffect(() => {
     if (!isFocused) {
@@ -96,40 +79,36 @@ export default function LearnTabScreen() {
     }
 
     if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
-      setRemoteTodayPlan(null);
+      setReadinessSummary(null);
       return;
     }
 
     let cancelled = false;
 
-    void fetchRemoteTodayPlan()
-      .then((todayPlan) => {
+    void fetchRemoteHomeProgress(getWarsawIsoDate())
+      .then(({ readinessSummary: summary }) => {
         if (!cancelled) {
-          setRemoteTodayPlan(todayPlan);
+          setReadinessSummary(summary);
         }
       })
       .catch((error) => {
         if (!cancelled) {
-          console.warn("Failed to fetch remote today plan for Learn.", error);
-          setRemoteTodayPlan(null);
+          console.warn("Failed to fetch readiness summary for Learn.", error);
+          setReadinessSummary(null);
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [authMode, currentStudyPlanRemoteId, isFocused]);
+  }, [authMode, isFocused]);
 
-  const todayPlan = useMemo(
-    () => remoteTodayPlan ?? buildLocalTodayPlan(currentStudyPlan, getWarsawIsoDate()),
-    [currentStudyPlan, remoteTodayPlan]
-  );
-
-  const currentTopicId = useMemo(
-    () => resolveCurrentTopicId(questionUserState),
+  const stats = useMemo(
+    () => getQuestionDisplayStats(questionUserState),
     [questionCatalogVersion, questionUserState]
   );
-  const availableTopicIds = useMemo(
+
+  const topicIds = useMemo(
     () =>
       getQuestionTopicIds().filter(
         (topicId) => getTopicProgress(topicId, questionUserState).total > 0
@@ -137,32 +116,10 @@ export default function LearnTabScreen() {
     [questionCatalogVersion, questionUserState]
   );
   const displayTopicIds =
-    availableTopicIds.length > 0 ? availableTopicIds : getQuestionTopicIds();
-  const resolvedCurrentTopicId = displayTopicIds.includes(currentTopicId)
-    ? currentTopicId
-    : displayTopicIds[0] ?? currentTopicId;
-  const currentTopicProgress = useMemo(
-    () => getTopicProgress(resolvedCurrentTopicId, questionUserState),
-    [questionCatalogVersion, questionUserState, resolvedCurrentTopicId]
-  );
-  const currentTopicIndex = Math.max(
-    0,
-    displayTopicIds.indexOf(resolvedCurrentTopicId)
-  );
+    topicIds.length > 0 ? topicIds : getQuestionTopicIds();
 
-  const journeyProgress =
-    currentTopicProgress.total > 0
-      ? Math.round(
-          (currentTopicProgress.seen / currentTopicProgress.total) * 100
-        )
-      : 0;
-  const nextTaskTitle =
-    todayPlan?.tasks.find(
-      (task) => task.status === "pending" || task.status === "in_progress"
-    )?.title ??
-    t("learn.journeyNextFallback", {
-      defaultValue: "Контроль: знаки + першість",
-    });
+  const recentExamPassed = readinessSummary?.recentExamStatus === "completed";
+  const dueReviews = readinessSummary?.dueReviews ?? stats.reviewDue;
 
   const openQuestionMode = (
     mode: Parameters<typeof buildQuestionRouteParams>[0]["mode"]
@@ -172,74 +129,91 @@ export default function LearnTabScreen() {
       params: buildQuestionRouteParams({ mode }),
     });
 
-  const actionTiles: ActionTileItem[] = [
+  const openPlusOrPaywall = (open: () => void) => {
+    if (hasPlusAccess) {
+      open();
+      return;
+    }
+
+    router.push({
+      pathname: "/paywall",
+      params: { feature: "premium_access" },
+    });
+  };
+
+  const primaryTiles: ActionTileItem[] = [
     {
       key: "trainer",
       accent: "green",
-      title: t("learn.tileTrainerTitle", { defaultValue: "Тренер" }),
+      title: t("learn.tileTrainerTitle", { defaultValue: "Тренування" }),
       subtitle: t("learn.tileTrainerSubtitleShort", {
         defaultValue: "Вільне тестування",
       }),
-      icon: <LearnActionIcon accent="green" name="barbell-outline" />,
+      icon: <LearnActionIcon accent="green" name="target" />,
       onPress: () => openQuestionMode("learning"),
     },
     {
-      key: "topics",
-      accent: "green",
-      title: t("learn.topicsTitle", { defaultValue: "Теми" }),
-      subtitle: t("learn.tileTopicsSubtitle", {
-        defaultValue: "Тренування по темам",
-      }),
-      icon: <LearnActionIcon accent="green" name="list-outline" />,
-      onPress: () => router.push("/topics"),
-    },
-    {
       key: "exam",
-      accent: "blue",
-      title: t("learn.tileExamTitle", { defaultValue: "Симуляція іспиту" }),
-      subtitle: t("learn.tileExamSubtitle", {
-        defaultValue: "Офіційний формат, на час",
-      }),
-      icon: <LearnActionIcon accent="blue" name="timer-outline" />,
+      accent: "green",
+      title: t("learn.tileExamTitle", { defaultValue: "Іспит" }),
+      subtitle: recentExamPassed
+        ? t("learn.tileExamSubtitlePassed", {
+            defaultValue: "Симуляція: 1/1",
+          })
+        : t("learn.tileExamSubtitlePending", {
+            defaultValue: "Симуляція: 0/1",
+          }),
+      icon: <LearnActionIcon accent="green" name="exam" />,
       onPress: () =>
         router.push({
           pathname: "/exam",
           params: buildExamRouteParams({ mode: "exam" }),
         }),
     },
+  ];
+
+  const personalizedTiles: ActionTileItem[] = [
     {
       key: "mistakes",
-      accent: "amber",
+      accent: "red",
+      premium: true,
+      style: "faded",
       title: t("learn.tileMistakesTitle", {
-        defaultValue: "Робота над помилками",
+        defaultValue: "Виправити помилки",
       }),
       subtitle: t("learn.tileMistakesSubtitle", {
-        defaultValue: "Виправ свої помилки",
+        defaultValue: "Невиправлених помилок: {{count}}",
+        count: stats.wrongAnswers,
       }),
-      icon: <LearnActionIcon accent="amber" name="warning-outline" />,
-      onPress: () => router.push("/mistakes"),
+      icon: <LearnActionIcon accent="red" name="alert" />,
+      onPress: () => openPlusOrPaywall(() => router.push("/mistakes")),
+    },
+    {
+      key: "srs",
+      accent: "amber",
+      premium: true,
+      style: "faded",
+      title: t("learn.tileSrsTitle", { defaultValue: "Розумні повторення" }),
+      subtitle: t("learn.tileSrsSubtitle", {
+        defaultValue: "Питання на сьогодні: {{count}}",
+        count: dueReviews,
+      }),
+      icon: <LearnActionIcon accent="amber" name="idea" />,
+      onPress: () =>
+        openPlusOrPaywall(() => openQuestionMode("seen_not_mastered")),
     },
     {
       key: "traps",
-      accent: "red",
+      accent: "amber",
       premium: true,
+      style: "faded",
       title: t("learn.tileTrapsTitle", { defaultValue: "Питання-пастки" }),
       subtitle: t("learn.tileTrapsSubtitle", {
         defaultValue: "Найчастіше плутають",
       }),
-      icon: <LearnActionIcon accent="red" name="alert-circle-outline" />,
-      onPress: () => openQuestionMode("hard_questions"),
-    },
-    {
-      key: "srs",
-      accent: "blue",
-      premium: true,
-      title: t("learn.tileSrsTitle", { defaultValue: "Розумні повторення" }),
-      subtitle: t("learn.tileSrsSubtitle", {
-        defaultValue: "Повторюй в оптимальний момент",
-      }),
-      icon: <LearnActionIcon accent="blue" name="refresh-outline" />,
-      onPress: () => openQuestionMode("seen_not_mastered"),
+      icon: <LearnActionIcon accent="amber" name="warning" />,
+      onPress: () =>
+        openPlusOrPaywall(() => openQuestionMode("hard_questions")),
     },
   ];
 
@@ -252,46 +226,75 @@ export default function LearnTabScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          <JourneyCard
-            eyebrow={t("learn.journeyEyebrow", { defaultValue: "Подорож" })}
-            title={getQuestionTopicTitle(
-              resolvedCurrentTopicId,
-              preferredLocale
-            )}
-            sectionLabel={t("learn.journeySectionIndex", {
-              defaultValue: "Секція {{current}} з {{total}}",
-              current: currentTopicIndex + 1,
-              total: displayTopicIds.length,
-            })}
-            progress={journeyProgress}
-            nextLabel={t("learn.journeyNextLabel", { defaultValue: "Далі:" })}
-            nextValue={nextTaskTitle}
-            buttonLabel={t("learn.journeyButton", {
-              defaultValue: "Продовжити",
-            })}
-            onPress={() =>
-              router.push({
-                pathname: "/question",
-                params: buildQuestionRouteParams({
-                  mode: "learning",
-                  topic: resolvedCurrentTopicId,
-                }),
-              })
-            }
-          />
-
           <View style={styles.stack}>
-            {actionTiles.map((tile) => (
-              <ActionTile
-                key={tile.key}
-                title={tile.title}
-                subtitle={tile.subtitle}
-                accent={tile.accent}
-                premium={tile.premium}
-                icon={tile.icon}
-                onPress={tile.onPress}
-              />
-            ))}
+            <ActionTileGrid items={primaryTiles} />
+
+            <ActionTile
+              title={t("learn.tileSavedTitle", {
+                defaultValue: "Збережені питання",
+              })}
+              subtitle={t("learn.tileSavedSubtitle", {
+                defaultValue: "Переглядай питання з відповідями: {{count}}",
+                count: stats.saved,
+              })}
+              accent="green"
+              style="faded"
+              icon={<LearnActionIcon accent="green" name="stateDefault" />}
+              onPress={() => openQuestionMode("saved")}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {t("learn.personalizedTitle", {
+                defaultValue: "Персоналізоване тренування",
+              })}
+            </Text>
+            <View style={styles.stack}>
+              {personalizedTiles.map((tile) => (
+                <ActionTile
+                  key={tile.key}
+                  title={tile.title}
+                  subtitle={tile.subtitle}
+                  accent={tile.accent}
+                  premium={tile.premium}
+                  style={tile.style}
+                  icon={tile.icon}
+                  onPress={tile.onPress}
+                />
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {t("learn.topicsByThemeTitle", {
+                defaultValue: "Навчання за темами",
+              })}
+            </Text>
+            <View style={styles.stack}>
+              {displayTopicIds.map((topic) => {
+                const progress = getTopicProgress(topic, questionUserState);
+
+                return (
+                  <TopicReadinessCard
+                    key={topic}
+                    title={getQuestionTopicTitle(topic, preferredLocale)}
+                    seen={progress.seen}
+                    total={progress.total}
+                    readiness={progress.progress}
+                    correct={progress.correct}
+                    wrong={progress.wrong}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/topic/[topicId]",
+                        params: { topicId: topic },
+                      })
+                    }
+                  />
+                );
+              })}
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -300,7 +303,7 @@ export default function LearnTabScreen() {
 }
 
 function useStyles({ safeBottom }: { safeBottom: number }) {
-  return useResponsiveStyles(({ spacing }) => ({
+  return useResponsiveStyles(({ colors, spacing }) => ({
     safeArea: {
       flex: 1,
     },
@@ -314,6 +317,13 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
     },
     stack: {
       gap: spacing.exact(8),
+    },
+    section: {
+      gap: spacing.exact(8),
+    },
+    sectionTitle: {
+      ...getTypographyStyle("bodyM"),
+      color: colors.ink3,
     },
   }));
 }

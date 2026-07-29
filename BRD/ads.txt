@@ -1,0 +1,310 @@
+Тебе нужна Rewarded Video Ad — пользователь сам нажимает «Посмотреть рекламу», после просмотра получает награду: дополнительную AI-генерацию, ещё одну практику, премиум-функцию на один раз и т. п.
+
+Для Expo сейчас нормальный вариант — react-native-google-mobile-ads + Google AdMob. Библиотека поддерживает rewarded video, interstitial, banner и другие форматы.
+
+1. Создай приложение в AdMob
+
+В Google AdMob:
+
+Создай приложение отдельно для iOS и Android.
+Создай рекламный блок типа Rewarded.
+Получишь два разных значения:
+App ID:
+ca-app-pub-4994877133367352~1533006266
+Ad Unit ID (rewarded, iOS):
+ca-app-pub-4994877133367352/3803946389
+
+Для этого проекта:
+- App в AdMob: Prawko: Prawo jazdy (iOS)
+- Ad unit name: ios_rewarded_main
+
+Обрати внимание:
+
+~ — это App ID, он идёт в app.json.
+/ — это Ad Unit ID, он используется в коде.
+
+2. Что именно делать дальше (по шагам из AdMob UI)
+
+Next, place the ad unit inside your app:
+
+1) Complete the Google Mobile Ads SDK setup with this App ID:
+Prawko: Prawo jazdy
+ca-app-pub-4994877133367352~1533006266
+
+2) Follow the rewarded implementation guide and use this Ad unit ID in code:
+ios_rewarded_main
+ca-app-pub-4994877133367352/3803946389
+
+3) Review AdMob policies and make sure implementation is compliant.
+3. Установи библиотеку
+npx expo install react-native-google-mobile-ads
+
+Это нативная библиотека, поэтому в обычном Expo Go она не заработает. После настройки нужно создать development build или обычную EAS-сборку.
+
+4. Добавь App ID в app.json
+{
+  "expo": {
+    "name": "Prawko",
+    "slug": "prawko",
+    "ios": {
+      "bundleIdentifier": "com.mindjar.prawko"
+    },
+    "android": {
+      "package": "com.mindjar.prawko"
+    }
+  },
+  "react-native-google-mobile-ads": {
+    "ios_app_id": "ca-app-pub-4994877133367352~1533006266",
+    "android_app_id": "ca-app-pub-XXXXXXXXXXXX~ANDROID_APP_ID",
+    "user_tracking_usage_description": "This identifier may be used to deliver more relevant ads."
+  }
+}
+
+Без корректного AdMob App ID приложение может падать при запуске или не собираться.
+
+После изменения конфигурации нужно пересобрать нативное приложение:
+
+eas build --profile development --platform ios
+
+Или:
+
+eas build --profile development --platform android
+
+Для локальной native-сборки:
+
+npx expo prebuild
+npx expo run:ios
+5. Инициализируй рекламу
+
+Например, в корневом App.tsx или layout Expo Router:
+
+import { useEffect } from 'react';
+import mobileAds from 'react-native-google-mobile-ads';
+
+export default function App() {
+  useEffect(() => {
+    const initializeAds = async () => {
+      try {
+        const adapterStatuses = await mobileAds().initialize();
+
+        console.log('AdMob initialized:', adapterStatuses);
+      } catch (error) {
+        console.error('Failed to initialize AdMob:', error);
+      }
+    };
+
+    void initializeAds();
+  }, []);
+
+  return null;
+}
+
+Google Mobile Ads SDK достаточно инициализировать один раз при запуске приложения.
+
+6. Сделай хук для rewarded video
+// useRewardedAd.ts
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Platform } from 'react-native';
+import {
+  AdEventType,
+  RewardedAd,
+  RewardedAdEventType,
+  TestIds,
+} from 'react-native-google-mobile-ads';
+
+const IOS_REWARDED_AD_UNIT_ID =
+  'ca-app-pub-XXXXXXXXXXXXXXXX/IOS_REWARDED_UNIT_ID';
+
+const ANDROID_REWARDED_AD_UNIT_ID =
+  'ca-app-pub-XXXXXXXXXXXXXXXX/ANDROID_REWARDED_UNIT_ID';
+
+const productionAdUnitId = Platform.select({
+  ios: IOS_REWARDED_AD_UNIT_ID,
+  android: ANDROID_REWARDED_AD_UNIT_ID,
+});
+
+const adUnitId = __DEV__
+  ? TestIds.REWARDED
+  : productionAdUnitId ?? TestIds.REWARDED;
+
+type UseRewardedAdOptions = {
+  onRewardEarned: () => void | Promise<void>;
+};
+
+export function useRewardedAd({
+  onRewardEarned,
+}: UseRewardedAdOptions) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isShowing, setIsShowing] = useState(false);
+
+  const onRewardEarnedRef = useRef(onRewardEarned);
+
+  useEffect(() => {
+    onRewardEarnedRef.current = onRewardEarned;
+  }, [onRewardEarned]);
+
+  const rewardedAdRef = useRef(
+    RewardedAd.createForAdRequest(adUnitId, {
+      requestNonPersonalizedAdsOnly: true,
+    }),
+  );
+
+  const loadAd = useCallback(() => {
+    setIsLoaded(false);
+    rewardedAdRef.current.load();
+  }, []);
+
+  useEffect(() => {
+    const rewardedAd = rewardedAdRef.current;
+
+    const unsubscribeLoaded = rewardedAd.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        setIsLoaded(true);
+      },
+    );
+
+    const unsubscribeEarnedReward = rewardedAd.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      async reward => {
+        console.log('Reward earned:', reward);
+
+        try {
+          await onRewardEarnedRef.current();
+        } catch (error) {
+          console.error('Failed to grant reward:', error);
+        }
+      },
+    );
+
+    const unsubscribeClosed = rewardedAd.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        setIsShowing(false);
+        setIsLoaded(false);
+
+        // Загружаем следующую рекламу заранее.
+        rewardedAd.load();
+      },
+    );
+
+    const unsubscribeError = rewardedAd.addAdEventListener(
+      AdEventType.ERROR,
+      error => {
+        console.error('Rewarded ad error:', error);
+
+        setIsShowing(false);
+        setIsLoaded(false);
+      },
+    );
+
+    rewardedAd.load();
+
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeEarnedReward();
+      unsubscribeClosed();
+      unsubscribeError();
+    };
+  }, []);
+
+  const showAd = useCallback(async () => {
+    if (!isLoaded || isShowing) {
+      return false;
+    }
+
+    try {
+      setIsShowing(true);
+      await rewardedAdRef.current.show();
+
+      return true;
+    } catch (error) {
+      console.error('Failed to show rewarded ad:', error);
+
+      setIsShowing(false);
+      setIsLoaded(false);
+      rewardedAdRef.current.load();
+
+      return false;
+    }
+  }, [isLoaded, isShowing]);
+
+  return {
+    isLoaded,
+    isShowing,
+    showAd,
+    loadAd,
+  };
+}
+7. Кнопка «Посмотреть рекламу»
+import { Alert, Button, View } from 'react-native';
+import { useRewardedAd } from './useRewardedAd';
+
+export function WatchAdButton() {
+  const { isLoaded, isShowing, showAd } = useRewardedAd({
+    onRewardEarned: async () => {
+      // Здесь выдаёшь награду.
+      // Например:
+      // await supabase.rpc('grant_extra_ai_review');
+
+      Alert.alert(
+        'Готово',
+        'Вы получили ещё одну бесплатную AI-генерацию.',
+      );
+    },
+  });
+
+  const handlePress = async () => {
+    const shown = await showAd();
+
+    if (!shown) {
+      Alert.alert(
+        'Реклама пока не готова',
+        'Попробуйте ещё раз через несколько секунд.',
+      );
+    }
+  };
+
+  return (
+    <View>
+      <Button
+        title={
+          isShowing
+            ? 'Открываем рекламу...'
+            : isLoaded
+              ? 'Посмотреть рекламу'
+              : 'Загружаем рекламу...'
+        }
+        disabled={!isLoaded || isShowing}
+        onPress={handlePress}
+      />
+    </View>
+  );
+}
+
+Награду нужно выдавать именно после события:
+
+RewardedAdEventType.EARNED_REWARD
+
+А не после CLOSED, потому что пользователь может закрыть рекламу до выполнения условий.
+
+8. Во время разработки используй только тестовую рекламу
+
+В коде выше это уже сделано:
+
+const adUnitId = __DEV__
+  ? TestIds.REWARDED
+  : productionAdUnitId;
+
+Google прямо предупреждает, что тестирование на реальных рекламных ID и клики по собственной рекламе могут привести к блокировке AdMob-аккаунта.
+
+Официальные тестовые ID:
+
+iOS rewarded:
+ca-app-pub-3940256099942544/1712485313
+
+Android rewarded:
+ca-app-pub-3940256099942544/5224354917
+
+Но лучше пользоваться TestIds.REWARDED, чтобы библиотека сама выбрала нужный ID.

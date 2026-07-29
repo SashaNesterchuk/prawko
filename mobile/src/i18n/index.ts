@@ -10,7 +10,11 @@ const initialLanguage = getSupportedDeviceLocale() ?? DEFAULT_LOCALE;
 void i18n.use(initReactI18next).init({
   compatibilityJSON: "v4",
   lng: initialLanguage,
-  fallbackLng: DEFAULT_LOCALE,
+  fallbackLng: {
+    de: ["en"],
+    es: ["en"],
+    default: [DEFAULT_LOCALE],
+  },
   interpolation: {
     escapeValue: false,
   },

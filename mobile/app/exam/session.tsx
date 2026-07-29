@@ -1,36 +1,35 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { SUPPORTED_LOCALES } from "@prawko/config";
-
+import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { TrainingExitDialog } from "../../src/components/shell/TrainingExitDialog";
 import { setExamSessionActive } from "../../src/features/ads/ad-session-policy";
 import {
   formatExamCountdown,
+  formatQuestionCountdown,
   getRemainingExamSeconds,
 } from "../../src/features/exam/exam-config";
+import { ExamQuestionProgressBar } from "../../src/features/exam/ExamQuestionProgressBar";
 import {
   fetchExamSessionSnapshot,
   isExamSessionId,
   setExamSessionStatus,
   submitExamAnswer,
 } from "../../src/features/exam/exam-session";
+import { useExamQuestionTimer } from "../../src/features/exam/useExamQuestionTimer";
 import { QuestionMediaCard } from "../../src/features/questions/QuestionMediaCard";
+import { QuestionMediaEmptyPlaceholder } from "../../src/features/questions/QuestionMediaEmptyPlaceholder";
 import {
   getLocalizedText,
   getQuestionById,
   getQuestionChoices,
 } from "../../src/features/questions/question-engine";
-import {
-  type PercentageString,
-  useResponsiveFonts,
-  useResponsiveStyles,
-} from "../../src/portable-ui";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
@@ -39,10 +38,25 @@ import type { RemoteExamSnapshot } from "../../src/features/exam/types";
 
 const URGENT_THRESHOLD_SECONDS = 180;
 
+type ExamSessionShellProps = {
+  children: ReactNode;
+  styles: { safeArea: object };
+};
+
+function ExamSessionShell({ children, styles }: ExamSessionShellProps) {
+  return (
+    <GreenWaveScreen>
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <StatusBar style="dark" />
+        {children}
+      </SafeAreaView>
+    </GreenWaveScreen>
+  );
+}
+
 export default function ExamSessionScreen() {
   const { t } = useTranslation();
   const { accents, colors } = useTheme();
-  const { responsiveFont } = useResponsiveFonts();
   const navigation = useNavigation();
   const params = useLocalSearchParams<{
     sessionId?: string | string[];
@@ -58,9 +72,12 @@ export default function ExamSessionScreen() {
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
+  const [showExitDialog, setShowExitDialog] = useState(false);
   const allowNavigationRef = useRef(false);
   const timeoutHandledRef = useRef(false);
+  const questionTimeoutHandledRef = useRef(false);
   const questionStartedAtRef = useRef(Date.now());
+  const resultNavigationHandledRef = useRef(false);
 
   const rawSessionId = getSingleParam(params.sessionId);
   const sessionId = isExamSessionId(rawSessionId) ? rawSessionId : null;
@@ -80,28 +97,36 @@ export default function ExamSessionScreen() {
       currentQuestionRef ? getQuestionById(currentQuestionRef.questionSourceId) : null,
     [currentQuestionRef, questionCatalogVersion]
   );
-  const displayLocale = useMemo(() => {
-    if (!snapshot) {
-      return preferredLocale;
-    }
-
-    return SUPPORTED_LOCALES.includes(snapshot.session.sessionLocale)
-      ? snapshot.session.sessionLocale
-      : preferredLocale;
-  }, [preferredLocale, snapshot]);
+  // Follow live preferred locale (same as training) so mid-exam language
+  // changes update question text immediately, not only after a reload.
+  const displayLocale = preferredLocale;
   const questionChoices = currentQuestion
     ? getQuestionChoices(currentQuestion, displayLocale)
     : [];
-  const completeIconSize = responsiveFont(40);
-  const totalSessionSeconds = snapshot ? getTotalSessionSeconds(snapshot) : null;
   const remainingSeconds = snapshot?.session.remainingSeconds ?? null;
-  const progressFraction =
-    totalSessionSeconds && remainingSeconds != null
-      ? Math.max(0, Math.min(1, remainingSeconds / totalSessionSeconds))
-      : 1;
-  const styles = useStyles({
-    progressWidth: `${progressFraction * 100}%` as PercentageString,
+  const hasVideo = currentQuestion?.media?.type === "video";
+  const questionTimer = useExamQuestionTimer({
+    enabled: snapshot?.session.status === "active",
+    hasVideo: Boolean(hasVideo),
+    questionId: currentQuestion?.id ?? null,
+    scope: currentQuestion?.scope ?? null,
   });
+  const styles = useStyles();
+
+  function navigateToResult(nextSessionId: string) {
+    if (resultNavigationHandledRef.current) {
+      return;
+    }
+
+    resultNavigationHandledRef.current = true;
+    allowNavigationRef.current = true;
+    router.replace({
+      pathname: "/exam/result",
+      params: {
+        sessionId: nextSessionId,
+      },
+    });
+  }
 
   useEffect(() => {
     if (!sessionId) {
@@ -111,6 +136,8 @@ export default function ExamSessionScreen() {
     }
 
     let cancelled = false;
+    resultNavigationHandledRef.current = false;
+    allowNavigationRef.current = false;
     setIsLoading(true);
     setErrorMessage(null);
 
@@ -156,7 +183,9 @@ export default function ExamSessionScreen() {
         return;
       }
 
+      // Swipe / hardware back must match the close button: show exit dialog.
       event.preventDefault();
+      setShowExitDialog(true);
     });
 
     return unsubscribe;
@@ -214,16 +243,37 @@ export default function ExamSessionScreen() {
     });
   }, [snapshot]);
 
-  const handleAdvance = async () => {
+  useEffect(() => {
+    if (!snapshot || snapshot.session.status === "active") {
+      return;
+    }
+
+    navigateToResult(snapshot.session.id);
+  }, [snapshot?.session.id, snapshot?.session.status]);
+
+  const handleAdvance = async (options?: {
+    answer?: string | null;
+    timedOut?: boolean;
+  }) => {
     if (
       !sessionId ||
       !snapshot ||
       !currentQuestionRef ||
       !currentQuestion ||
-      !selectedAnswerId ||
       isSubmitting ||
       isEnding
     ) {
+      return;
+    }
+
+    const answerGiven =
+      options?.answer ??
+      selectedAnswerId ??
+      (options?.timedOut
+        ? pickTimeoutAnswer(currentQuestion, questionChoices)
+        : null);
+
+    if (!answerGiven) {
       return;
     }
 
@@ -232,15 +282,16 @@ export default function ExamSessionScreen() {
 
     try {
       const answeredAt = new Date().toISOString();
-      const isCorrect = currentQuestion.correctAnswer === selectedAnswerId;
+      const isCorrect = currentQuestion.correctAnswer === answerGiven;
       const nextSnapshot = await submitExamAnswer({
         answerDurationMs: Math.max(0, Date.now() - questionStartedAtRef.current),
-        answerGiven: selectedAnswerId,
+        answerGiven,
         locale: displayLocale,
         metadata: {
           source: "mobile_exam_session",
           question_order: currentQuestionRef.order,
           question_source_id: currentQuestionRef.questionSourceId,
+          timed_out: Boolean(options?.timedOut),
         },
         sessionId,
       });
@@ -258,6 +309,29 @@ export default function ExamSessionScreen() {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    questionTimeoutHandledRef.current = false;
+  }, [currentQuestion?.id]);
+
+  useEffect(() => {
+    if (
+      !snapshot ||
+      snapshot.session.status !== "active" ||
+      !questionTimer.isAnswerTimedOut ||
+      isSubmitting ||
+      isEnding ||
+      questionTimeoutHandledRef.current
+    ) {
+      return;
+    }
+
+    questionTimeoutHandledRef.current = true;
+    void handleAdvance({
+      answer: selectedAnswerId,
+      timedOut: true,
+    });
+  }, [questionTimer.isAnswerTimedOut]);
 
   const handleEndSession = async (
     status: "abandoned" | "expired",
@@ -290,114 +364,139 @@ export default function ExamSessionScreen() {
     }
   };
 
+  const handleDevFillRemaining = async (mode: "success" | "random") => {
+    if (!__DEV__ || !sessionId || !snapshot || isSubmitting || isEnding) {
+      return;
+    }
+
+    questionTimeoutHandledRef.current = true;
+    timeoutHandledRef.current = true;
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      let current = snapshot;
+
+      while (current.session.status === "active") {
+        const questionRef = current.questions.find(
+          (question) => question.order === current.session.currentQuestionIndex
+        );
+
+        if (!questionRef) {
+          break;
+        }
+
+        const question = getQuestionById(questionRef.questionSourceId);
+
+        if (!question) {
+          break;
+        }
+
+        const choices = getQuestionChoices(question, displayLocale);
+        const answerGiven =
+          mode === "success"
+            ? question.correctAnswer
+            : choices[Math.floor(Math.random() * Math.max(1, choices.length))]
+                ?.id ?? question.correctAnswer;
+
+        const isCorrect = question.correctAnswer === answerGiven;
+        current = await submitExamAnswer({
+          answerDurationMs: 50,
+          answerGiven,
+          locale: displayLocale,
+          metadata: {
+            source: "mobile_exam_session_dev",
+            question_order: questionRef.order,
+            question_source_id: questionRef.questionSourceId,
+            timed_out: false,
+            fill_mode: mode,
+          },
+          sessionId,
+        });
+
+        applyQuestionAttemptOutcome(questionRef.questionSourceId, {
+          answeredAt: new Date().toISOString(),
+          isCorrect,
+        });
+      }
+
+      setSnapshot(current);
+    } catch (error) {
+      console.warn("Dev exam fill failed.", error);
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleExitPress = () => {
     if (isEnding) {
       return;
     }
 
-    Alert.alert(t("exam.exitConfirmTitle"), t("exam.exitConfirmBody"), [
-      { text: t("exam.exitConfirmCancel"), style: "cancel" },
-      {
-        text: t("exam.exitConfirmConfirm"),
-        style: "destructive",
-        onPress: () =>
-          void handleEndSession("abandoned", {
-            reason: "user_ended_early",
-          }),
-      },
-    ]);
+    setShowExitDialog(true);
+  };
+
+  const handleDismissExitDialog = () => {
+    setShowExitDialog(false);
+  };
+
+  const handleConfirmExit = () => {
+    setShowExitDialog(false);
+    void handleEndSession("abandoned", {
+      reason: "user_ended_early",
+    });
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-        <StatusBar style="dark" />
+      <ExamSessionShell styles={styles}>
         <CenteredState
           title={t("states.loadingTitle")}
           description={t("exam.sessionLoading")}
         />
-      </SafeAreaView>
+      </ExamSessionShell>
     );
   }
 
   if (!snapshot) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-        <StatusBar style="dark" />
+      <ExamSessionShell styles={styles}>
         <CenteredState
           title={t("exam.sessionErrorTitle")}
           description={errorMessage ?? t("exam.sessionErrorBody")}
           actionLabel={t("exam.backToPracticeCta")}
           onAction={() => router.replace("/(tabs)")}
         />
-      </SafeAreaView>
+      </ExamSessionShell>
     );
   }
 
   if (snapshot.session.status !== "active") {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-        <StatusBar style="dark" />
-        <View style={styles.completeContainer}>
-          <View style={styles.completeHeader}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t("common.close")}
-              hitSlop={8}
-              onPress={() => navigateToResult(snapshot.session.id)}
-              style={({ pressed }) => [
-                styles.iconButton,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <CloseIcon color={colors.textPrimary} />
-            </Pressable>
-          </View>
-
-          <View style={styles.completeBody}>
-            <View style={styles.completeBadge}>
-              <MaterialCommunityIcons
-                name="check"
-                size={completeIconSize}
-                color={accents.green.ink}
-              />
-            </View>
-            <Text style={styles.completeTitle}>{t("exam.completeTitle")}</Text>
-            <Text style={styles.completeMessage}>{t("exam.completeBody")}</Text>
-          </View>
-
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => navigateToResult(snapshot.session.id)}
-            style={({ pressed }) => [
-              styles.primaryButton,
-              pressed ? styles.pressed : null,
-            ]}
-          >
-            <Text style={styles.primaryButtonLabel}>
-              {t("exam.viewResultCta")}
-            </Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
+      <ExamSessionShell styles={styles}>
+        <CenteredState
+          title={t("states.loadingTitle")}
+          description={t("exam.sessionLoading")}
+        />
+      </ExamSessionShell>
     );
   }
 
   if (!currentQuestion || !currentQuestionRef) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-        <StatusBar style="dark" />
+      <ExamSessionShell styles={styles}>
         <CenteredState
           title={t("exam.sessionErrorTitle")}
           description={errorMessage ?? t("exam.sessionErrorBody")}
           actionLabel={t("exam.backToPracticeCta")}
           onAction={() => router.replace("/(tabs)")}
         />
-      </SafeAreaView>
+      </ExamSessionShell>
     );
   }
 
-  const isUrgent =
+  const isSessionUrgent =
     remainingSeconds != null && remainingSeconds <= URGENT_THRESHOLD_SECONDS;
   const orderIndex = snapshot.questions.findIndex(
     (question) => question.order === snapshot.session.currentQuestionIndex
@@ -408,12 +507,67 @@ export default function ExamSessionScreen() {
   const isLastQuestion = questionNumber >= totalQuestions;
   const isBoolean = currentQuestion.answerType === "boolean";
   const isBusy = isSubmitting || isEnding;
+  // WORD never disables answers during a question — only block while submitting.
+  const answersDisabled = isBusy;
   const primaryDisabled = !selectedAnswerId || isBusy;
+  const questionTimerLabel =
+    questionTimer.phase === "media" || questionTimer.isTimerPaused
+      ? t("exam.questionMediaPausedLabel")
+      : questionTimer.phase === "read"
+        ? t("exam.questionReadTimeLabel")
+        : t("exam.questionAnswerTimeLabel");
+  const progressAnimationKey = `${currentQuestion.id}:${questionTimer.phase}:${questionTimer.phaseEpoch}`;
+  const timedProgressMs =
+    questionTimer.phase === "media" || questionTimer.isTimerPaused
+      ? null
+      : Math.max(0, questionTimer.phaseTotalSeconds * 1000);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
+    <ExamSessionShell styles={styles}>
       <View style={styles.container}>
+        {__DEV__ ? (
+          <View style={styles.devCheatBar} pointerEvents="box-none">
+            <Pressable
+              accessibilityRole="button"
+              disabled={isBusy}
+              onPress={() => {
+                void handleDevFillRemaining("success");
+              }}
+              style={({ pressed }) => [
+                styles.devCheatButton,
+                pressed ? styles.pressed : null,
+              ]}
+            >
+              <Text style={styles.devCheatLabel}>OK</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={isBusy}
+              onPress={() => {
+                void handleDevFillRemaining("random");
+              }}
+              style={({ pressed }) => [
+                styles.devCheatButton,
+                pressed ? styles.pressed : null,
+              ]}
+            >
+              <Text style={styles.devCheatLabel}>Rnd</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={isBusy}
+              onPress={() => {
+                void handleEndSession("abandoned", { reason: "dev_skip" });
+              }}
+              style={({ pressed }) => [
+                styles.devCheatButton,
+                pressed ? styles.pressed : null,
+              ]}
+            >
+              <Text style={styles.devCheatLabel}>Skip</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <View style={styles.headerBlock}>
           <View style={styles.topBar}>
             <Pressable
@@ -440,15 +594,18 @@ export default function ExamSessionScreen() {
             </View>
 
             <View
-              style={[styles.timerPill, isUrgent ? styles.timerPillUrgent : null]}
+              style={[
+                styles.timerPill,
+                isSessionUrgent ? styles.timerPillUrgent : null,
+              ]}
             >
               <ClockIcon
-                color={isUrgent ? accents.red.ink : colors.textPrimary}
+                color={isSessionUrgent ? accents.red.ink : colors.textPrimary}
               />
               <Text
                 style={[
                   styles.timerPillText,
-                  isUrgent ? styles.timerPillTextUrgent : null,
+                  isSessionUrgent ? styles.timerPillTextUrgent : null,
                 ]}
               >
                 {formatExamCountdown(remainingSeconds)}
@@ -470,32 +627,35 @@ export default function ExamSessionScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {currentQuestion.media ? (
-            <View style={styles.mediaBleed}>
+          <View style={styles.mediaBleed}>
+            {currentQuestion.media ? (
               <QuestionMediaCard
+                key={currentQuestion.id}
+                autoPlayVideo={false}
                 locale={displayLocale}
                 media={currentQuestion.media}
+                onVideoEnded={questionTimer.handleVideoEnded}
+                onVideoStarted={questionTimer.handleVideoStarted}
+                // Manual play once; lock after the learner has started the film.
+                playbackLocked={Boolean(hasVideo && questionTimer.hasPlayedVideo)}
               />
-            </View>
-          ) : null}
+            ) : (
+              <QuestionMediaEmptyPlaceholder />
+            )}
+          </View>
 
           <View style={styles.timerBlock}>
             <View style={styles.timerLabelRow}>
-              <Text style={styles.timerLabel}>
-                {t("exam.timeRemainingLabel")}
-              </Text>
+              <Text style={styles.timerLabel}>{questionTimerLabel}</Text>
               <Text style={styles.timerValue}>
-                {formatExamCountdown(remainingSeconds)}
+                {formatQuestionCountdown(questionTimer.remainingSeconds)}
               </Text>
             </View>
-            <View style={styles.progressTrack}>
-              <View
-                style={[
-                  styles.progressFill,
-                  isUrgent ? styles.progressFillUrgent : null,
-                ]}
-              />
-            </View>
+            <ExamQuestionProgressBar
+              animationKey={progressAnimationKey}
+              progressFraction={questionTimer.progressFraction}
+              timedDurationMs={timedProgressMs}
+            />
           </View>
 
           <Text style={styles.promptText}>
@@ -512,11 +672,12 @@ export default function ExamSessionScreen() {
                     key={choice.id}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
-                    disabled={isBusy}
+                    disabled={answersDisabled}
                     onPress={() => setSelectedAnswerId(choice.id)}
                     style={[
                       styles.booleanOption,
                       selected ? styles.optionSelected : null,
+                      answersDisabled ? styles.optionDisabled : null,
                     ]}
                   >
                     <Text
@@ -541,11 +702,12 @@ export default function ExamSessionScreen() {
                     key={choice.id}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
-                    disabled={isBusy}
+                    disabled={answersDisabled}
                     onPress={() => setSelectedAnswerId(choice.id)}
                     style={[
                       styles.multiOption,
                       selected ? styles.optionSelected : null,
+                      answersDisabled ? styles.optionDisabled : null,
                     ]}
                   >
                     <View
@@ -600,18 +762,18 @@ export default function ExamSessionScreen() {
           </Pressable>
         </View>
       </View>
-    </SafeAreaView>
-  );
 
-  function navigateToResult(nextSessionId: string) {
-    allowNavigationRef.current = true;
-    router.replace({
-      pathname: "/exam/result",
-      params: {
-        sessionId: nextSessionId,
-      },
-    });
-  }
+      <TrainingExitDialog
+        body={t("exam.exitConfirmBody")}
+        continueLabel={t("exam.exitConfirmContinue")}
+        finishLabel={t("exam.exitConfirmFinish")}
+        onContinue={handleDismissExitDialog}
+        onFinish={handleConfirmExit}
+        title={t("exam.exitConfirmTitle")}
+        visible={showExitDialog}
+      />
+    </ExamSessionShell>
+  );
 }
 
 function CenteredState({
@@ -719,18 +881,15 @@ function ClockIcon({ color }: { color: string }) {
   );
 }
 
-function getTotalSessionSeconds(snapshot: RemoteExamSnapshot) {
-  const { expiresAt, startedAt } = snapshot.session;
-
-  if (!expiresAt || !startedAt) {
-    return null;
-  }
-
-  const diff = Math.floor(
-    (new Date(expiresAt).getTime() - new Date(startedAt).getTime()) / 1000
+function pickTimeoutAnswer(
+  question: NonNullable<ReturnType<typeof getQuestionById>>,
+  choices: ReturnType<typeof getQuestionChoices>
+) {
+  const wrongChoice = choices.find(
+    (choice) => choice.id !== question.correctAnswer
   );
 
-  return diff > 0 ? diff : null;
+  return wrongChoice?.id ?? choices[0]?.id ?? null;
 }
 
 function getSingleParam(value: string | string[] | undefined) {
@@ -753,23 +912,45 @@ function getErrorMessage(error: unknown) {
     : "Unable to continue this exam session.";
 }
 
-function useStyles({
-  progressWidth,
-}: {
-  progressWidth?: PercentageString;
-} = {}) {
+function useStyles() {
   return useResponsiveStyles(
     ({ accents, colors, radius, responsiveFont, spacing }) => ({
       safeArea: {
         flex: 1,
-        backgroundColor: colors.paper,
       },
       container: {
         flex: 1,
+      },
+      devCheatBar: {
+        position: "absolute",
+        top: spacing.exact(4),
+        right: spacing.exact(8),
+        zIndex: 20,
+        flexDirection: "row",
+        gap: spacing.exact(4),
+      },
+      devCheatButton: {
+        minWidth: spacing.exact(28),
+        paddingHorizontal: spacing.exact(6),
+        paddingVertical: spacing.exact(2),
+        borderRadius: radius.sm,
+        backgroundColor: colors.ink,
+        opacity: 0.45,
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      devCheatLabel: {
+        fontSize: responsiveFont(10),
+        lineHeight: responsiveFont(12),
+        fontWeight: "700",
+        color: colors.white,
+      },
+      contentPad: {
         paddingHorizontal: spacing.exact(24),
       },
       headerBlock: {
         paddingTop: spacing.exact(8),
+        paddingHorizontal: spacing.exact(24),
         gap: spacing.exact(12),
       },
       topBar: {
@@ -838,10 +1019,12 @@ function useStyles({
         gap: spacing.exact(12),
       },
       mediaBleed: {
-        marginHorizontal: -spacing.exact(24),
+        width: "100%",
+        position: "relative",
       },
       timerBlock: {
         gap: spacing.exact(4),
+        paddingHorizontal: spacing.exact(24),
       },
       timerLabelRow: {
         flexDirection: "row",
@@ -857,22 +1040,8 @@ function useStyles({
         fontSize: responsiveFont(12),
         lineHeight: responsiveFont(16),
         fontWeight: "600",
+        fontVariant: ["tabular-nums"],
         color: colors.textSecondary,
-      },
-      progressTrack: {
-        height: spacing.exact(12),
-        borderRadius: radius.pill,
-        backgroundColor: colors.track,
-        overflow: "hidden",
-      },
-      progressFill: {
-        width: progressWidth ?? "100%",
-        height: spacing.exact(12),
-        borderRadius: radius.pill,
-        backgroundColor: colors.textMuted,
-      },
-      progressFillUrgent: {
-        backgroundColor: accents.red.fill,
       },
       promptText: {
         fontSize: responsiveFont(16),
@@ -880,13 +1049,16 @@ function useStyles({
         fontWeight: "500",
         letterSpacing: -0.16,
         color: colors.textPrimary,
+        paddingHorizontal: spacing.exact(24),
       },
       optionsRow: {
         flexDirection: "row",
         gap: spacing.exact(4),
+        paddingHorizontal: spacing.exact(24),
       },
       optionsColumn: {
         gap: spacing.exact(4),
+        paddingHorizontal: spacing.exact(24),
       },
       booleanOption: {
         flex: 1,
@@ -896,6 +1068,9 @@ function useStyles({
         paddingVertical: spacing.exact(20),
         borderRadius: radius.lg,
         backgroundColor: colors.surface,
+      },
+      optionDisabled: {
+        opacity: 0.55,
       },
       booleanOptionLabel: {
         fontSize: responsiveFont(14),
@@ -948,6 +1123,7 @@ function useStyles({
         color: colors.textPrimary,
       },
       footer: {
+        paddingHorizontal: spacing.exact(24),
         paddingTop: spacing.exact(12),
         paddingBottom: spacing.exact(8),
         gap: spacing.exact(8),
@@ -983,45 +1159,6 @@ function useStyles({
         fontSize: responsiveFont(13),
         lineHeight: responsiveFont(20),
         color: accents.red.ink,
-      },
-      completeContainer: {
-        flex: 1,
-        paddingHorizontal: spacing.exact(24),
-        paddingBottom: spacing.exact(24),
-      },
-      completeHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-      },
-      completeBody: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: spacing.exact(12),
-      },
-      completeBadge: {
-        width: spacing.exact(96),
-        height: spacing.exact(96),
-        borderRadius: radius.pill,
-        backgroundColor: colors.surface,
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: spacing.exact(24),
-      },
-      completeTitle: {
-        fontSize: responsiveFont(32),
-        lineHeight: responsiveFont(36),
-        fontWeight: "700",
-        letterSpacing: -0.64,
-        textAlign: "center",
-        color: colors.textPrimary,
-        marginBottom: spacing.exact(16),
-      },
-      completeMessage: {
-        fontSize: responsiveFont(18),
-        lineHeight: responsiveFont(28),
-        textAlign: "center",
-        color: colors.textSecondary,
       },
       centeredState: {
         flex: 1,

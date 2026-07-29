@@ -25,7 +25,7 @@ type TypographyPreset = Pick<
   TextStyle,
   "fontSize" | "lineHeight" | "letterSpacing" | "fontWeight"
 > & {
-  fontFamilyKey: "bold" | "medium" | "regular" | "mono";
+  fontFamilyKey: "bold" | "semiBold" | "medium" | "regular" | "mono";
 };
 
 export const typographyPresets = {
@@ -62,21 +62,21 @@ export const typographyPresets = {
     lineHeight: 32,
     letterSpacing: -0.24,
     fontWeight: "600",
-    fontFamilyKey: "medium",
+    fontFamilyKey: "semiBold",
   },
   headingM: {
     fontSize: 20,
     lineHeight: 28,
     letterSpacing: -0.2,
     fontWeight: "600",
-    fontFamilyKey: "medium",
+    fontFamilyKey: "semiBold",
   },
   headingS: {
     fontSize: 16,
     lineHeight: 24,
     letterSpacing: -0.16,
     fontWeight: "600",
-    fontFamilyKey: "medium",
+    fontFamilyKey: "semiBold",
   },
   bodyL: {
     fontSize: 18,

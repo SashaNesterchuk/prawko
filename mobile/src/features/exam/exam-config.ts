@@ -1,6 +1,19 @@
-import { EXAM_RULES, type QuestionScope } from "@prawko/config";
+import {
+  EXAM_RULES,
+  getExamBaseVideoMinTarget,
+  type QuestionScope,
+} from "@prawko/config";
 
 import type { ExamSimulatorMode } from "./types";
+
+export { getExamBaseVideoMinTarget };
+
+export type ExamQuestionTimerPhase = "read" | "media" | "answer";
+
+export type ExamQuestionTiming = {
+  answerSeconds: number;
+  readSeconds: number;
+};
 
 const OFFICIAL_SCOPE_TOTALS: Record<QuestionScope, number> = {
   base: EXAM_RULES.baseQuestions,
@@ -39,6 +52,13 @@ export function getExamQuestionTarget(
   mode: ExamSimulatorMode,
   requestedTotalQuestions?: number | null
 ) {
+  // Official simulator is always WORD-sized. Custom limits are only for mini tests
+  // (study-plan scaling). Ignoring request here also guards against sticky
+  // `questionLimit` params left over from a previous /exam navigation.
+  if (mode !== "mini_test") {
+    return EXAM_RULES.totalQuestions;
+  }
+
   if (
     typeof requestedTotalQuestions === "number" &&
     Number.isFinite(requestedTotalQuestions)
@@ -50,9 +70,7 @@ export function getExamQuestionTarget(
     }
   }
 
-  return mode === "mini_test"
-    ? DEFAULT_MINI_TEST_QUESTIONS
-    : EXAM_RULES.totalQuestions;
+  return DEFAULT_MINI_TEST_QUESTIONS;
 }
 
 export function getExamDurationMinutes(totalQuestions: number) {
@@ -106,6 +124,59 @@ export function getExamPointTargets(scope: QuestionScope, scopeQuestionTarget: n
     .sort((left, right) => right.points - left.points);
 }
 
+/**
+ * Soft per-bucket video floors for base scope, proportional to point mix.
+ * Used when composing media quota with 3/2/1 point buckets.
+ */
+export function getExamBaseVideoTargetsByPoints(
+  pointTargets: Array<{ points: number; count: number }>,
+  videoMinTarget: number
+) {
+  const normalizedVideoMin = Math.max(0, Math.floor(videoMinTarget));
+  const totalSlots = pointTargets.reduce((sum, entry) => sum + entry.count, 0);
+
+  if (normalizedVideoMin <= 0 || totalSlots <= 0) {
+    return pointTargets.map((entry) => ({
+      points: entry.points,
+      count: entry.count,
+      videoMin: 0,
+    }));
+  }
+
+  const scaled = pointTargets.map((entry) => {
+    const raw = (entry.count * normalizedVideoMin) / totalSlots;
+    const floorCount = Math.floor(raw);
+
+    return {
+      points: entry.points,
+      count: entry.count,
+      floorCount,
+      remainder: raw - floorCount,
+    };
+  });
+  const remaining =
+    Math.min(normalizedVideoMin, totalSlots) -
+    scaled.reduce((sum, entry) => sum + entry.floorCount, 0);
+
+  return scaled
+    .sort((left, right) => {
+      if (left.remainder !== right.remainder) {
+        return right.remainder - left.remainder;
+      }
+
+      return right.points - left.points;
+    })
+    .map((entry, index) => ({
+      points: entry.points,
+      count: entry.count,
+      videoMin: Math.min(
+        entry.count,
+        entry.floorCount + (index < remaining ? 1 : 0)
+      ),
+    }))
+    .sort((left, right) => right.points - left.points);
+}
+
 export function getScaledExamPassPoints(totalPointsTarget: number) {
   return Math.max(
     1,
@@ -121,6 +192,40 @@ export function formatExamCountdown(totalSeconds: number | null | undefined) {
   const seconds = (normalized % 60).toString().padStart(2, "0");
 
   return `${minutes}:${seconds}`;
+}
+
+export function formatQuestionCountdown(totalSeconds: number | null | undefined) {
+  const normalized = Math.max(0, Math.ceil(totalSeconds ?? 0));
+  return `${normalized}s`;
+}
+
+export function getExamQuestionTiming(scope: QuestionScope): ExamQuestionTiming {
+  if (scope === "specialist") {
+    return {
+      readSeconds: 0,
+      answerSeconds: EXAM_RULES.specialistSeconds,
+    };
+  }
+
+  return {
+    readSeconds: EXAM_RULES.baseReadSeconds,
+    answerSeconds: EXAM_RULES.baseAnswerSeconds,
+  };
+}
+
+export function getExamQuestionPhaseDuration(
+  phase: ExamQuestionTimerPhase,
+  timing: ExamQuestionTiming
+) {
+  if (phase === "read") {
+    return timing.readSeconds;
+  }
+
+  if (phase === "answer") {
+    return timing.answerSeconds;
+  }
+
+  return 0;
 }
 
 export function getRemainingExamSeconds(expiresAt: string | null | undefined) {

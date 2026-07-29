@@ -5,7 +5,6 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   Linking,
   Pressable,
   ScrollView,
@@ -14,8 +13,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
 
+import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
 import { ProfilePremiumBanner } from "../../src/components/shell/ProfilePremiumBanner";
 import {
   ProfileSettingsGroup,
@@ -23,21 +22,31 @@ import {
 } from "../../src/components/shell/ProfileSettingsGroup";
 import { ProfileStatsCard } from "../../src/components/shell/ProfileStatsCard";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { TrainingExitDialog } from "../../src/components/shell/TrainingExitDialog";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
-import { fetchRecentExamSessions } from "../../src/features/exam/supabase-exam";
 import {
   disableStudyNotificationsAsync,
   enableStudyNotificationsAsync,
   syncNotificationStateAsync,
 } from "../../src/features/notifications/runtime";
 import {
-  buildWeekActivity,
   formatProfileExamDate,
-  getProfileStatMetrics,
+  getCurrentStreakFromAttempts,
 } from "../../src/features/profile/profile-stats";
+import { getQuestionDisplayStats } from "../../src/features/questions/question-engine";
+import {
+  applyExamDateChange,
+  parseNullableIsoDate,
+  toIsoDate,
+} from "../../src/features/study-plan/exam-date";
 import {
   getDaysUntilExamFromDate,
 } from "../../src/features/study-plan/generate-local-study-plan";
+import {
+  fetchRemoteHomeProgress,
+  getWarsawIsoDate,
+  type RemoteReadinessSummary,
+} from "../../src/features/study-plan/supabase-study-plan-progress";
 import { getMobileSupabaseClient } from "../../src/lib/supabase";
 import {
   getFontFamily,
@@ -52,13 +61,14 @@ import {
   useCurrentStudyPlan,
   useAppShellStore,
 } from "../../src/state/app-shell";
+import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 import { resetAppToFreshStart } from "../../src/state/reset-app";
 
 const SUPPORT_EMAIL = "support@prawko.app";
 
 export default function ProfileTabScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -70,12 +80,28 @@ export default function ProfileTabScreen() {
   );
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
+  const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
+  const currentStudyPlanRemoteId = useAppShellStore(
+    (state) => state.currentStudyPlanRemoteId
+  );
+  const hydrateRemoteStudyPlan = useAppShellStore(
+    (state) => state.hydrateRemoteStudyPlan
+  );
+  const patchExamDate = useAppShellStore((state) => state.patchExamDate);
   const signOutLocal = useAppShellStore((state) => state.signOutLocal);
   const currentStudyPlan = useCurrentStudyPlan();
   const attempts = useQuestionProgressStore((state) => state.attempts);
+  const questionUserState = useQuestionProgressStore(
+    (state) => state.questionUserState
+  );
   const resetProgress = useQuestionProgressStore((state) => state.resetProgress);
+  const questionCatalogVersion = useQuestionCatalogVersion();
   const hasPlusAccess = useHasPlusAccess();
-  const [examCount, setExamCount] = useState(0);
+  const [readinessSummary, setReadinessSummary] =
+    useState<RemoteReadinessSummary | null>(null);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [examDatePickerVisible, setExamDatePickerVisible] = useState(false);
+  const [isSavingExamDate, setIsSavingExamDate] = useState(false);
 
   useEffect(() => {
     if (!isFocused) {
@@ -91,21 +117,21 @@ export default function ProfileTabScreen() {
     }
 
     if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
-      setExamCount(0);
+      setReadinessSummary(null);
       return;
     }
 
     let cancelled = false;
 
-    void fetchRecentExamSessions(100)
-      .then((sessions) => {
+    void fetchRemoteHomeProgress(getWarsawIsoDate())
+      .then(({ readinessSummary: summary }) => {
         if (!cancelled) {
-          setExamCount(sessions.length);
+          setReadinessSummary(summary);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setExamCount(0);
+          setReadinessSummary(null);
         }
       });
 
@@ -114,45 +140,90 @@ export default function ProfileTabScreen() {
     };
   }, [authMode, isFocused]);
 
-  const metrics = useMemo(
-    () => getProfileStatMetrics(attempts, examCount),
-    [attempts, examCount]
+  const questionStats = useMemo(
+    () => getQuestionDisplayStats(questionUserState),
+    [questionCatalogVersion, questionUserState]
   );
 
-  const weekDays = useMemo(
-    () => buildWeekActivity(attempts, preferredLocale),
-    [attempts, preferredLocale]
-  );
+  const metrics = useMemo(() => {
+    const localReadiness =
+      questionStats.total > 0
+        ? Math.round((questionStats.seen / questionStats.total) * 100)
+        : 0;
+    const coverage =
+      questionStats.total > 0
+        ? Math.round((questionStats.seen / questionStats.total) * 100)
+        : 0;
 
-  const examDate = currentStudyPlan?.examDate ?? null;
+    return {
+      readiness: Math.round(
+        readinessSummary?.readinessScore ?? localReadiness
+      ),
+      coverage,
+      streak: getCurrentStreakFromAttempts(attempts),
+    };
+  }, [attempts, questionStats, readinessSummary]);
+
+  const examDate =
+    currentStudyPlan?.examDate ?? studyPlanSetup.examDate ?? null;
   const daysUntilExam =
     examDate != null ? getDaysUntilExamFromDate(examDate) : null;
   const localeLabel = t(`languages.${preferredLocale}.label`);
   const iconSize = responsiveFont(24);
 
-  const handleToggleNotifications = async (nextValue: boolean) => {
-    if (nextValue) {
-      await enableStudyNotificationsAsync();
+  const handleConfirmExamDate = async (date: Date) => {
+    if (isSavingExamDate) {
       return;
     }
 
-    await disableStudyNotificationsAsync();
+    setIsSavingExamDate(true);
+    try {
+      await applyExamDateChange({
+        authMode,
+        currentStudyPlan,
+        currentStudyPlanRemoteId,
+        examDate: toIsoDate(date),
+        hydrateRemoteStudyPlan,
+        preferredCategory,
+        preferredLocale,
+        patchExamDate,
+        schoolCode: studyPlanSetup.schoolCode,
+      });
+      setExamDatePickerVisible(false);
+    } catch (error) {
+      console.warn("Failed to update exam date.", error);
+    } finally {
+      setIsSavingExamDate(false);
+    }
+  };
+
+  const handleToggleNotifications = async (nextValue: boolean) => {
+    try {
+      if (nextValue) {
+        await enableStudyNotificationsAsync();
+        return;
+      }
+
+      await disableStudyNotificationsAsync();
+    } catch (error) {
+      console.warn("Failed to toggle study notifications.", error);
+    }
   };
 
   const handleResetAll = () => {
-    Alert.alert(t("profile.resetTitle"), t("profile.resetMessage"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("profile.resetConfirm"),
-        style: "destructive",
-        onPress: () => {
-          void (async () => {
-            await resetAppToFreshStart();
-            router.replace("/(onboarding)/category");
-          })();
-        },
-      },
-    ]);
+    setShowResetDialog(true);
+  };
+
+  const handleDismissResetDialog = () => {
+    setShowResetDialog(false);
+  };
+
+  const handleConfirmReset = () => {
+    setShowResetDialog(false);
+    void (async () => {
+      await resetAppToFreshStart();
+      router.replace("/(onboarding)/category");
+    })();
   };
 
   const handleSignOut = async () => {
@@ -166,11 +237,6 @@ export default function ProfileTabScreen() {
 
     signOutLocal();
     resetProgress();
-    Toast.show({
-      type: "success",
-      text1: t("toasts.signedOutTitle"),
-      text2: t("toasts.signedOutSubtitle"),
-    });
     router.replace("/(onboarding)/access");
   };
 
@@ -201,27 +267,28 @@ export default function ProfileTabScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
+          {!hasPlusAccess ? (
+            <ProfilePremiumBanner
+              title={t("profile.premiumTitle")}
+              description={t("profile.premiumDescription")}
+              priceBadge={t("profile.premiumPriceBadge", {
+                price: t("paywall.ctaFallbackPrice"),
+              })}
+              onPress={() => router.push("/paywall")}
+            />
+          ) : null}
+
           <ProfileStatsCard
             title={t("profile.statsTitle")}
             detailsLabel={t("profile.statsDetails")}
             metrics={metrics}
             metricLabels={{
-              sessions: t("profile.statSessions"),
-              accuracy: t("profile.statAccuracy"),
-              exams: t("profile.statExams"),
+              readiness: t("profile.statReadiness"),
+              coverage: t("profile.statCoverage"),
               streak: t("profile.statStreak"),
             }}
-            weekDays={weekDays}
             onPressDetails={() => router.push("/statistics")}
           />
-
-          {!hasPlusAccess ? (
-            <ProfilePremiumBanner
-              title={t("profile.premiumTitle")}
-              description={t("profile.premiumDescription")}
-              onPress={() => router.push("/paywall")}
-            />
-          ) : null}
 
           <ProfileSettingsGroup>
             <ProfileSettingsRow
@@ -243,7 +310,7 @@ export default function ProfileTabScreen() {
                   size={iconSize}
                 />
               }
-              onPress={() => router.push("/modals/plan-adjust")}
+              onPress={() => setExamDatePickerVisible(true)}
             />
             <ProfileSettingsRow
               title={t("profile.categoryTitle")}
@@ -255,7 +322,12 @@ export default function ProfileTabScreen() {
                   size={iconSize}
                 />
               }
-              onPress={() => router.push("/(onboarding)/category")}
+              onPress={() =>
+                router.push({
+                  pathname: "/(onboarding)/category",
+                  params: { mode: "settings" },
+                })
+              }
             />
             <ProfileSettingsRow
               title={t("profile.languageTitle")}
@@ -267,7 +339,12 @@ export default function ProfileTabScreen() {
                   size={iconSize}
                 />
               }
-              onPress={() => router.push("/(onboarding)/language")}
+              onPress={() =>
+                router.push({
+                  pathname: "/(onboarding)/language",
+                  params: { mode: "settings" },
+                })
+              }
             />
             <ProfileSettingsRow
               title={t("profile.notificationsTitle")}
@@ -361,6 +438,30 @@ export default function ProfileTabScreen() {
           </Pressable>
         </ScrollView>
       </SafeAreaView>
+
+      <TrainingExitDialog
+        body={t("profile.resetMessage")}
+        continueLabel={t("profile.resetCancel")}
+        finishLabel={t("profile.resetConfirm")}
+        layout="horizontal"
+        onContinue={handleDismissResetDialog}
+        onFinish={handleConfirmReset}
+        title={t("profile.resetTitle")}
+        visible={showResetDialog}
+      />
+
+      <CalendarSheet
+        visible={examDatePickerVisible}
+        locale={i18n.language}
+        initialDate={parseNullableIsoDate(examDate)}
+        confirmLabel={t("onboarding.examDateConfirm")}
+        clearLabel={t("onboarding.examDateClear")}
+        onClose={() => setExamDatePickerVisible(false)}
+        onConfirm={(date) => {
+          void handleConfirmExamDate(date);
+        }}
+        onClear={() => setExamDatePickerVisible(false)}
+      />
     </GreenWaveScreen>
   );
 }

@@ -43,6 +43,8 @@ type RevenueCatStatus = "idle" | "loading" | "ready";
 type EntitlementState = {
   clearEntitlements: (status?: EntitlementStatus) => void;
   clearRevenueCatState: (status?: RevenueCatStatus) => void;
+  /** __DEV__ only: force Plus on/off. `null` = use real entitlements. */
+  debugPlusOverride: boolean | null;
   entitlementStatus: EntitlementStatus;
   featureEntitlements: FeatureEntitlementMap;
   hydrateRemoteEntitlements: (payload: {
@@ -61,6 +63,7 @@ type EntitlementState = {
   revenueCatOfferings: RevenueCatPackageSummary[];
   revenueCatStatus: RevenueCatStatus;
   schoolAccess: SchoolAccessState | null;
+  setDebugPlusOverride: (value: boolean | null) => void;
   setEntitlementStatus: (status: EntitlementStatus) => void;
   setRevenueCatStatus: (status: RevenueCatStatus) => void;
 };
@@ -87,6 +90,7 @@ export const useEntitlementStore = create<EntitlementState>()((set) => ({
       revenueCatOfferings: [],
       revenueCatStatus: status,
     }),
+  debugPlusOverride: null,
   entitlementStatus: "idle",
   featureEntitlements: createEmptyFeatureEntitlements(),
   hydrateRemoteEntitlements: ({ featureEntitlements, schoolAccess }) =>
@@ -120,6 +124,7 @@ export const useEntitlementStore = create<EntitlementState>()((set) => ({
   revenueCatOfferings: [],
   revenueCatStatus: "idle",
   schoolAccess: null,
+  setDebugPlusOverride: (debugPlusOverride) => set({ debugPlusOverride }),
   setEntitlementStatus: (entitlementStatus) => set({ entitlementStatus }),
   setRevenueCatStatus: (revenueCatStatus) => set({ revenueCatStatus }),
 }));
@@ -171,9 +176,14 @@ export function useHasFeatureAccess(feature: AppFeature) {
 
 export function useHasPlusAccess() {
   const currentUser = useAppShellStore((state) => getCurrentUserFromState(state));
+  const debugPlusOverride = useEntitlementStore((state) => state.debugPlusOverride);
   const purchaseFeatureEntitlements = useEntitlementStore(
     (state) => state.revenueCatFeatureEntitlements
   );
+
+  if (__DEV__ && debugPlusOverride !== null) {
+    return debugPlusOverride;
+  }
 
   if (FEATURE_FLAGS.devPlusAccess) {
     return true;

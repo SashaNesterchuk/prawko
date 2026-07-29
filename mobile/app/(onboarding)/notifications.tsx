@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
@@ -8,6 +7,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { STUDY_PLAN_LIMITS } from "@prawko/config";
 
+import { Icon } from "../../src/components/icons";
+import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import {
   disableStudyNotificationsAsync,
   enableStudyNotificationsAsync,
@@ -26,17 +27,13 @@ const DEFAULT_MINUTES_PER_DAY = 20;
 export default function NotificationsScreen() {
   const { t } = useTranslation();
   const styles = useStyles();
-  const { accents } = useTheme();
+  const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const [isFinishing, setIsFinishing] = useState(false);
   const badgeIconSize = responsiveFont(28);
-  const pointCheckSize = responsiveFont(18);
+  const pointCheckSize = responsiveFont(24);
 
-  const points = [
-    t("onboarding.notifyPoint1"),
-    t("onboarding.notifyPoint2"),
-    t("onboarding.notifyPoint3"),
-  ];
+  const points = [t("onboarding.notifyPoint1"), t("onboarding.notifyPoint2")];
 
   const finishOnboarding = async (requestPermission: boolean) => {
     if (isFinishing) {
@@ -87,71 +84,77 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
-      <View style={styles.content}>
-        <View style={styles.body}>
-          <View style={styles.iconBadge}>
-            <MaterialCommunityIcons
-              name="bell-outline"
-              size={badgeIconSize}
-              color={accents.amber.fill}
-            />
-          </View>
-
-          <Text style={styles.title}>{t("onboarding.notifyTitle")}</Text>
-          <Text style={styles.subtitle}>{t("onboarding.notifySubtitle")}</Text>
-
-          <View style={styles.points}>
-            {points.map((point) => (
-              <View key={point} style={styles.pointRow}>
-                <View style={styles.pointIcon}>
-                  <MaterialCommunityIcons
-                    name="check"
-                    size={pointCheckSize}
-                    color={accents.green.fill}
-                  />
-                </View>
-                <Text style={styles.pointText}>{point}</Text>
+    <GreenWaveScreen>
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <StatusBar style="dark" />
+        <View style={styles.content}>
+          <View style={styles.body}>
+            <View style={styles.headerRow}>
+              <View style={styles.iconBadge}>
+                <Icon
+                  name="notification"
+                  size={badgeIconSize}
+                  color={colors.icon}
+                />
               </View>
-            ))}
+
+              <Pressable
+                accessibilityRole="button"
+                disabled={isFinishing}
+                onPress={() => void finishOnboarding(false)}
+                style={({ pressed }) => [
+                  styles.skip,
+                  pressed ? styles.skipPressed : null,
+                ]}
+              >
+                <Text style={styles.skipLabel}>
+                  {t("onboarding.notifyLater")}
+                </Text>
+              </Pressable>
+            </View>
+
+            <Text style={styles.title}>{t("onboarding.notifyTitle")}</Text>
+            <Text style={styles.subtitle}>{t("onboarding.notifySubtitle")}</Text>
+
+            <View style={styles.points}>
+              {points.map((point) => (
+                <View key={point} style={styles.pointRow}>
+                  <View style={styles.pointIcon}>
+                    <Icon
+                      name="check"
+                      size={pointCheckSize}
+                      color={accents.green.ink}
+                    />
+                  </View>
+                  <Text style={styles.pointText}>{point}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.footer}>
+            <View style={styles.paging}>
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+              <View style={[styles.dot, styles.dotActive]} />
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              disabled={isFinishing}
+              onPress={() => void finishOnboarding(true)}
+              style={({ pressed }) => [
+                styles.cta,
+                isFinishing ? styles.ctaDisabled : null,
+                pressed ? styles.ctaPressed : null,
+              ]}
+            >
+              <Text style={styles.ctaLabel}>{t("onboarding.notifyAllow")}</Text>
+            </Pressable>
           </View>
         </View>
-
-        <View style={styles.footer}>
-          <View style={styles.paging}>
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-            <View style={[styles.dot, styles.dotActive]} />
-          </View>
-
-          <Pressable
-            accessibilityRole="button"
-            disabled={isFinishing}
-            onPress={() => void finishOnboarding(true)}
-            style={({ pressed }) => [
-              styles.cta,
-              isFinishing ? styles.ctaDisabled : null,
-              pressed ? styles.ctaPressed : null,
-            ]}
-          >
-            <Text style={styles.ctaLabel}>{t("onboarding.notifyAllow")}</Text>
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            disabled={isFinishing}
-            onPress={() => void finishOnboarding(false)}
-            style={({ pressed }) => [
-              styles.ghost,
-              pressed ? styles.ghostPressed : null,
-            ]}
-          >
-            <Text style={styles.ghostLabel}>{t("onboarding.notifyLater")}</Text>
-          </Pressable>
-        </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </GreenWaveScreen>
   );
 }
 
@@ -160,7 +163,6 @@ function useStyles() {
     ({ accents, colors, radius, responsiveFont, spacing }) => ({
       safeArea: {
         flex: 1,
-        backgroundColor: colors.background,
       },
       content: {
         flex: 1,
@@ -169,26 +171,43 @@ function useStyles() {
       },
       body: {
         flex: 1,
-        paddingTop: spacing.exact(8),
+      },
+      headerRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
       },
       iconBadge: {
         width: spacing.exact(56),
         height: spacing.exact(56),
-        borderRadius: radius.lg,
+        borderRadius: spacing.exact(18),
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: colors.surface,
+        backgroundColor: colors.white,
+      },
+      skip: {
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(12),
+      },
+      skipPressed: {
+        opacity: 0.6,
+      },
+      skipLabel: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontFamily: getFontFamily("regular"),
+        color: colors.textSecondary,
       },
       title: {
         marginTop: spacing.exact(32),
         fontSize: responsiveFont(32),
-        lineHeight: responsiveFont(38),
+        lineHeight: responsiveFont(32),
         fontFamily: getFontFamily("bold"),
         letterSpacing: -0.64,
         color: colors.textPrimary,
       },
       subtitle: {
-        marginTop: spacing.exact(12),
+        marginTop: spacing.exact(16),
         fontSize: responsiveFont(18),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("regular"),
@@ -200,26 +219,27 @@ function useStyles() {
       },
       pointRow: {
         flexDirection: "row",
-        alignItems: "center",
+        alignItems: "flex-start",
         gap: spacing.exact(12),
       },
       pointIcon: {
-        width: spacing.exact(34),
-        height: spacing.exact(34),
-        borderRadius: spacing.exact(10),
+        width: spacing.exact(40),
+        height: spacing.exact(40),
+        borderRadius: radius.md,
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: accents.green.soft,
       },
       pointText: {
         flex: 1,
+        paddingVertical: spacing.exact(8),
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("regular"),
         color: colors.textPrimary,
       },
       footer: {
-        gap: spacing.exact(8),
+        gap: spacing.exact(20),
       },
       paging: {
         flexDirection: "row",
@@ -241,12 +261,13 @@ function useStyles() {
       cta: {
         alignItems: "center",
         justifyContent: "center",
-        paddingVertical: spacing.exact(16),
+        paddingVertical: spacing.exact(12),
+        paddingHorizontal: spacing.exact(24),
         borderRadius: radius.pill,
         backgroundColor: accents.green.fill,
         shadowColor: colors.shadow,
         shadowOpacity: 0.1,
-        shadowRadius: spacing.exact(18),
+        shadowRadius: spacing.exact(36),
         shadowOffset: { width: 0, height: spacing.exact(14) },
         elevation: 6,
       },
@@ -262,20 +283,6 @@ function useStyles() {
         fontFamily: getFontFamily("medium"),
         letterSpacing: -0.2,
         color: colors.onAccent,
-      },
-      ghost: {
-        alignItems: "center",
-        justifyContent: "center",
-        paddingVertical: spacing.exact(12),
-      },
-      ghostPressed: {
-        opacity: 0.6,
-      },
-      ghostLabel: {
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(24),
-        fontFamily: getFontFamily("regular"),
-        color: colors.textSecondary,
       },
     })
   );

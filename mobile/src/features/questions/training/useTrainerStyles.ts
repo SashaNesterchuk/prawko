@@ -1,38 +1,31 @@
 import { useResponsiveStyles } from "../../../portable-ui";
 
 export function useTrainerStyles({
-  feedbackBackgroundColor,
   feedbackTitleColor,
   resultPercentColor,
 }: {
-  feedbackBackgroundColor: string;
   feedbackTitleColor: string;
   resultPercentColor: string;
 }) {
   return useResponsiveStyles(
-    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+    ({ accents, colors, elevation, radius, responsiveFont, spacing }) => ({
       safeArea: {
         flex: 1,
-        backgroundColor: colors.paper,
       },
       footerStack: {
         gap: spacing.exact(10),
       },
       container: {
         flex: 1,
-        paddingHorizontal: spacing.exact(24),
         paddingBottom: spacing.exact(24),
+      },
+      contentPad: {
+        paddingHorizontal: spacing.exact(24),
       },
       header: {
         flexDirection: "row",
         alignItems: "center",
         gap: spacing.exact(8),
-      },
-      headerButton: {
-        width: spacing.exact(40),
-        height: spacing.exact(40),
-        alignItems: "center",
-        justifyContent: "center",
       },
       headerCenter: {
         flex: 1,
@@ -57,11 +50,13 @@ export function useTrainerStyles({
       stepper: {
         gap: spacing.exact(4),
         alignItems: "center",
+        paddingHorizontal: spacing.exact(24),
       },
       metaRow: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
+        paddingHorizontal: spacing.exact(24),
         paddingTop: spacing.exact(24),
         paddingBottom: spacing.exact(8),
       },
@@ -77,7 +72,7 @@ export function useTrainerStyles({
         paddingBottom: spacing.exact(12),
       },
       mediaBleed: {
-        marginHorizontal: -spacing.exact(24),
+        width: "100%",
         marginBottom: spacing.exact(12),
       },
       prompt: {
@@ -87,24 +82,38 @@ export function useTrainerStyles({
         letterSpacing: -0.16,
         color: colors.textPrimary,
         marginBottom: spacing.exact(12),
+        paddingHorizontal: spacing.exact(24),
       },
       options: {
         gap: spacing.exact(4),
+        paddingHorizontal: spacing.exact(24),
       },
       booleanOptions: {
         flexDirection: "row",
         gap: spacing.exact(4),
+        paddingHorizontal: spacing.exact(24),
       },
       feedbackCard: {
-        borderTopLeftRadius: radius.xxl,
-        borderTopRightRadius: radius.xxl,
-        padding: spacing.exact(24),
         marginHorizontal: -spacing.exact(24),
         marginBottom: -spacing.exact(24),
-        gap: spacing.exact(12),
-        backgroundColor: feedbackBackgroundColor,
+        borderTopLeftRadius: radius.xxxl,
+        borderTopRightRadius: radius.xxxl,
+        ...elevation.modal,
+      },
+      feedbackCardGradient: {
+        borderTopLeftRadius: radius.xxxl,
+        borderTopRightRadius: radius.xxxl,
+        padding: spacing.exact(24),
+        gap: 0,
+        overflow: "hidden",
       },
       feedbackHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(10),
+      },
+      feedbackTitleRow: {
+        flex: 1,
         flexDirection: "row",
         alignItems: "center",
         gap: spacing.exact(12),
@@ -117,7 +126,45 @@ export function useTrainerStyles({
         letterSpacing: -0.2,
         color: feedbackTitleColor,
       },
+      feedbackHeaderActions: {
+        flexDirection: "row",
+        alignItems: "center",
+      },
+      feedbackIconButton: {
+        width: spacing.exact(40),
+        height: spacing.exact(40),
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      feedbackSectionGapMd: {
+        height: spacing.exact(16),
+      },
+      feedbackSectionGapXs: {
+        height: spacing.exact(8),
+      },
       feedbackBody: {
+        alignSelf: "stretch",
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textSecondary,
+      },
+      feedbackBullets: {
+        alignSelf: "stretch",
+        gap: spacing.exact(8),
+      },
+      feedbackBulletRow: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: spacing.exact(4),
+      },
+      feedbackBulletIcon: {
+        width: spacing.exact(20),
+        height: spacing.exact(20),
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      feedbackBulletText: {
+        flex: 1,
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
         color: colors.textSecondary,
@@ -132,17 +179,18 @@ export function useTrainerStyles({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        gap: spacing.exact(8),
-        paddingVertical: spacing.exact(8),
+        gap: spacing.exact(10),
+        paddingVertical: spacing.exact(12),
+        alignSelf: "stretch",
       },
       explainText: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         color: accents.blue.ink,
       },
-      aiBadge: {
-        width: spacing.exact(24),
-        height: spacing.exact(24),
+      premiumBadge: {
+        width: spacing.exact(20),
+        height: spacing.exact(20),
         borderRadius: radius.pill,
         backgroundColor: accents.green.fill,
         alignItems: "center",

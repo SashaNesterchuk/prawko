@@ -1,5 +1,17 @@
-export const SUPPORTED_LOCALES = ["pl", "ua", "en"] as const;
+export const CONTENT_LOCALES = ["pl", "ua", "en"] as const;
+export type ContentLocale = (typeof CONTENT_LOCALES)[number];
+
+export const SUPPORTED_LOCALES = ["pl", "ua", "en", "de", "es"] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+
+/** Question / exam content language for a UI locale (es/de fall back to English). */
+export function getContentLocale(locale: SupportedLocale): ContentLocale {
+  if (locale === "pl" || locale === "ua" || locale === "en") {
+    return locale;
+  }
+
+  return "en";
+}
 
 export const ACTIVE_CATEGORIES = ["B"] as const;
 export type DrivingCategory = (typeof ACTIVE_CATEGORIES)[number];
@@ -130,7 +142,33 @@ export const EXAM_RULES = {
   durationMinutes: 25,
   maxPoints: 74,
   passingPoints: 68,
+  /** WORD: time to read a base (TAK/NIE) question before media/answer. */
+  baseReadSeconds: 20,
+  /** WORD: time to answer a base (TAK/NIE) question after media. */
+  baseAnswerSeconds: 15,
+  /**
+   * After the learner finishes a manually started exam video, add this many
+   * seconds back onto whatever remained on the question timer.
+   */
+  baseVideoResumeBonusSeconds: 5,
+  /** WORD: combined read + answer window for specialist (A/B/C) questions. */
+  specialistSeconds: 50,
+  /**
+   * Soft floor for video share among base-scope exam questions (~50–60%).
+   * Official rules do not fix film/photo quotas; WORD base mixes both.
+   * Soft: take what's available. Do not force specialist videos.
+   */
+  baseVideoMinRatio: 0.55,
 } as const;
+
+/** Soft min video count for a given base-scope slot count (catalog soft quota). */
+export function getExamBaseVideoMinTarget(baseQuestionTarget: number) {
+  const normalized = Math.max(0, Math.floor(baseQuestionTarget));
+  return Math.min(
+    normalized,
+    Math.round(normalized * EXAM_RULES.baseVideoMinRatio)
+  );
+}
 
 export const QUESTION_MASTERY_RULES = {
   consecutiveCorrect: 3,
@@ -150,7 +188,7 @@ export const FEATURE_FLAGS = {
   enableSchoolCodes: true,
   enableAiQuestionChat: true,
   enableExamSimulator: true,
-  enableAds: false,
+  enableAds: true,
   enablePlusPurchase: false,
   devPlusAccess: false,
 } as const;

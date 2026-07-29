@@ -13,6 +13,7 @@ export function QuestionTrainingFooter({
   currentAnswer,
   isCompleted,
   isEmptyState,
+  onClose,
   sessionMode,
   summary,
   topic,
@@ -28,7 +29,9 @@ export function QuestionTrainingFooter({
   | "summary"
   | "topic"
   | "trainerStyles"
->) {
+> & {
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
 
   return (
@@ -90,7 +93,7 @@ export function QuestionTrainingFooter({
       <AppButton
         variant="ghost"
         label={t("common.close")}
-        onPress={() => router.back()}
+        onPress={onClose}
       />
     </View>
   );

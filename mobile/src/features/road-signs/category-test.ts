@@ -39,15 +39,35 @@ export function buildSignTestQuestions(signIds: string[]): SignTestQuestion[] {
     .filter((question): question is SignTestQuestion => question != null);
 }
 
-export function buildAllSignTestQuestions(): SignTestQuestion[] {
-  return buildSignTestQuestions(getAllRoadSigns().map((sign) => sign.id));
+export function limitSignTestQuestions(
+  questions: SignTestQuestion[],
+  limit?: number | "all" | null
+): SignTestQuestion[] {
+  if (limit == null || limit === "all" || limit >= questions.length) {
+    return questions;
+  }
+
+  return questions.slice(0, Math.max(0, limit));
+}
+
+export function buildAllSignTestQuestions(
+  limit?: number | "all" | null
+): SignTestQuestion[] {
+  return limitSignTestQuestions(
+    buildSignTestQuestions(getAllRoadSigns().map((sign) => sign.id)),
+    limit
+  );
 }
 
 export function buildCategorySignTestQuestions(
-  categoryId: RoadSignCategoryId
+  categoryId: RoadSignCategoryId,
+  limit?: number | "all" | null
 ): SignTestQuestion[] {
-  return buildSignTestQuestions(
-    getRoadSignsByCategory(categoryId).map((sign) => sign.id)
+  return limitSignTestQuestions(
+    buildSignTestQuestions(
+      getRoadSignsByCategory(categoryId).map((sign) => sign.id)
+    ),
+    limit
   );
 }
 

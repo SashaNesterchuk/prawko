@@ -3,12 +3,9 @@ import type { TextStyle } from "react-native";
 export type FontWeightKey =
   | "regular"
   | "medium"
+  | "semiBold"
   | "bold"
-  | "light"
-  | "italic"
-  | "boldItalic"
-  | "sansBoldItalic"
-  | "robotoSerifMediumItalic28";
+  | "mono";
 
 export type FontRegistry = Partial<Record<FontWeightKey, string>>;
 

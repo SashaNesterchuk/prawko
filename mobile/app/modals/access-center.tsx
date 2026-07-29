@@ -2,7 +2,6 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Linking, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import Toast from "react-native-toast-message";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
@@ -108,11 +107,6 @@ export default function AccessCenterModalScreen() {
         kind: "success",
         message: t("paywall.restoreSuccess"),
       });
-      Toast.show({
-        type: "success",
-        text1: t("toasts.restoreSuccessTitle"),
-        text2: t("toasts.restoreSuccessSubtitle"),
-      });
     } catch (error) {
       const message = getRevenueCatErrorMessage(error);
 
@@ -133,11 +127,6 @@ export default function AccessCenterModalScreen() {
       setRestoreFeedback({
         kind: "error",
         message,
-      });
-      Toast.show({
-        type: "error",
-        text1: t("toasts.restoreFailedTitle"),
-        text2: message,
       });
     } finally {
       setIsRestoring(false);
@@ -160,11 +149,6 @@ export default function AccessCenterModalScreen() {
         metadata: {
           source: "access_center",
         },
-      });
-      Toast.show({
-        type: "error",
-        text1: t("accessCenter.manageSubscriptionFailedTitle"),
-        text2: t("accessCenter.manageSubscriptionFailedBody"),
       });
     }
   }

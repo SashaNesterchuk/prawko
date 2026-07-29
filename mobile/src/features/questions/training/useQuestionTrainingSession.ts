@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import Toast from "react-native-toast-message";
 
 import type { SupportedLocale } from "@prawko/config";
 import { QUESTION_MASTERY_RULES } from "@prawko/config";
@@ -43,7 +42,7 @@ import { getVisibleQuestionSteps } from "./visible-steps";
 
 export function useQuestionTrainingSession() {
   const { t } = useTranslation();
-  const { accents } = useTheme();
+  const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const routeParams = useQuestionRouteParams();
   const {
@@ -69,6 +68,7 @@ export function useQuestionTrainingSession() {
     (state) => state.answerCurrentQuestion
   );
   const advanceSession = useQuestionProgressStore((state) => state.advanceSession);
+  const retreatSession = useQuestionProgressStore((state) => state.retreatSession);
   const clearActiveSession = useQuestionProgressStore(
     (state) => state.clearActiveSession
   );
@@ -170,13 +170,19 @@ export function useQuestionTrainingSession() {
   const sessionResultAccent = sessionPassed ? accents.green : accents.amber;
   const currentAnswerCorrect = Boolean(currentAnswer?.isCorrect);
   const feedbackAccent = currentAnswerCorrect ? accents.green : accents.red;
+  const feedbackGradientColors = [
+    feedbackAccent.wash,
+    colors.white,
+  ] as const;
   const trainerStyles = useTrainerStyles({
-    feedbackBackgroundColor: feedbackAccent.soft,
     feedbackTitleColor: feedbackAccent.ink,
     resultPercentColor: sessionResultAccent.ink,
   });
   const resultIconSize = responsiveFont(40);
-  const aiIconSize = responsiveFont(14);
+  const premiumIconSize = responsiveFont(12);
+  const canGoPrevious = Boolean(
+    activeSession && activeSession.currentIndex > 0
+  );
   const visibleSteps = activeSession
     ? getVisibleQuestionSteps(
         activeSession.questionIds,
@@ -258,16 +264,6 @@ export function useQuestionTrainingSession() {
   const handleToggleBookmark = (questionId: string) => {
     const isBookmarked = toggleBookmark(questionId);
 
-    Toast.show({
-      type: "success",
-      text1: isBookmarked
-        ? t("toasts.bookmarkSavedTitle")
-        : t("toasts.bookmarkRemovedTitle"),
-      text2: isBookmarked
-        ? t("toasts.bookmarkSavedSubtitle")
-        : t("toasts.bookmarkRemovedSubtitle"),
-    });
-
     if (authMode === "supabase" && isMobileSupabaseConfigured) {
       void syncQuestionBookmarkState({
         questionSourceId: questionId,
@@ -318,7 +314,7 @@ export function useQuestionTrainingSession() {
   return {
     activeSession,
     advanceSession,
-    aiIconSize,
+    canGoPrevious,
     currentAnswer,
     currentAnswerCorrect,
     currentQuestion,
@@ -326,6 +322,7 @@ export function useQuestionTrainingSession() {
     currentQuestionState,
     displayLocale,
     feedbackAccent,
+    feedbackGradientColors,
     handleAnswer,
     handleConfirmExit,
     handleDismissExitDialog,
@@ -335,8 +332,10 @@ export function useQuestionTrainingSession() {
     isEmptyState,
     isReady: questionProgressHydrated && Boolean(activeSession),
     masteryProgress,
+    premiumIconSize,
     questionChoices,
     resultIconSize,
+    retreatSession,
     routeParams,
     screenSubtitle,
     sessionMode,

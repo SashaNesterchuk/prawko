@@ -50,9 +50,9 @@ import { configureFonts } from "./src/portable-ui";
 configureFonts({
   regular: "Roboto-Regular",
   medium: "Roboto-Medium",
+  semiBold: "Roboto-SemiBold",
   bold: "Roboto-Bold",
-  light: "Roboto-Light",
-  italic: "Roboto-Italic",
+  mono: "RobotoMono-Regular",
 });
 ```
 
@@ -60,8 +60,13 @@ configureFonts({
 
 ```ts
 const [loaded] = useFonts({
-  "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
-  // ...
+  "Roboto-Regular": require("../assets/fonts/Roboto/Roboto-Regular.ttf"),
+  "Roboto-Medium": require("../assets/fonts/Roboto/Roboto-Medium.ttf"),
+  "Roboto-SemiBold": require("../assets/fonts/Roboto/Roboto-SemiBold.ttf"),
+  "Roboto-Bold": require("../assets/fonts/Roboto/Roboto-Bold.ttf"),
+  "RobotoMono-Regular": require(
+    "../assets/fonts/Roboto_Mono/RobotoMono-Regular.ttf"
+  ),
 });
 ```
 

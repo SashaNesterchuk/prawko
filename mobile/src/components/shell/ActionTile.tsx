@@ -10,7 +10,7 @@ import {
 import { useTheme } from "../../providers/ThemeProvider";
 import { type GreenWaveAccent } from "../../theme/green-wave";
 
-type ActionTileStyle = "default" | "raised" | "inactive" | "faded";
+export type ActionTileStyle = "default" | "raised" | "inactive" | "faded";
 
 type ActionTileProps = {
   title: string;
@@ -25,34 +25,33 @@ type ActionTileProps = {
 export function ActionTile({
   title,
   subtitle,
-  accent = "green",
+  accent: _accent = "green",
   premium = false,
   icon,
   onPress,
   style = "default",
 }: ActionTileProps) {
-  const theme = useTheme();
-  const styles = useStyles({ style });
+  const isInline = style === "faded";
+  const styles = useStyles({ style, isInline });
 
   const body = (
     <>
-      <View style={styles.iconWrap}>
-        {icon ? (
+      {icon ? (
+        <View style={styles.iconWrap}>
           <View style={styles.icon}>{icon}</View>
-        ) : null}
-      </View>
+        </View>
+      ) : null}
 
       <View style={styles.copy}>
-        <View style={styles.titleRow}>
-          <Text style={styles.title} numberOfLines={1}>
-            {title}
-          </Text>
-          {premium ? <PremiumBadge /> : null}
-        </View>
+        <Text style={styles.title} numberOfLines={1}>
+          {title}
+        </Text>
         <Text style={styles.subtitle} numberOfLines={2}>
           {subtitle}
         </Text>
       </View>
+
+      {premium ? <PremiumBadge /> : null}
     </>
   );
 
@@ -91,15 +90,21 @@ function PremiumBadge() {
   );
 }
 
-function useStyles({ style = "default" }: { style?: ActionTileStyle } = {}) {
+function useStyles({
+  style = "default",
+  isInline = false,
+}: {
+  style?: ActionTileStyle;
+  isInline?: boolean;
+} = {}) {
   return useResponsiveStyles(({ colors, elevation, radius, spacing, theme }) => ({
     tile: {
-      flex: 1,
+      flex: isInline ? undefined : 1,
+      width: isInline ? ("100%" as const) : undefined,
       minWidth: spacing.exact(100),
-      flexDirection: "row",
-      flexWrap: "wrap",
-      alignItems: "center",
-      alignContent: "center",
+      position: "relative" as const,
+      flexDirection: isInline ? ("row" as const) : ("column" as const),
+      alignItems: isInline ? ("center" as const) : ("flex-start" as const),
       gap: spacing.md,
       padding: spacing.lg,
       borderRadius: radius.xxl,
@@ -112,45 +117,43 @@ function useStyles({ style = "default" }: { style?: ActionTileStyle } = {}) {
       opacity: style === "inactive" ? 0.4 : 0.9,
     },
     iconWrap: {
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
       padding: spacing.sm,
       borderRadius: radius.md,
-      overflow: "hidden",
+      overflow: "hidden" as const,
       backgroundColor: colors.paper,
     },
     icon: {
       width: spacing.exact(24),
       height: spacing.exact(24),
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
     },
     copy: {
-      flex: 1,
-      minWidth: spacing.exact(100),
-      flexDirection: "column",
+      flex: isInline ? 1 : undefined,
+      width: isInline ? undefined : ("100%" as const),
+      minWidth: 0,
+      flexDirection: "column" as const,
       gap: spacing.exact(0),
     },
-    titleRow: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      gap: spacing.exact(10),
-    },
     title: {
-      flex: 1,
       ...getTypographyStyle("headingS"),
       color: colors.ink,
     },
     subtitle: {
-      width: "100%",
+      width: "100%" as const,
       ...getTypographyStyle("labelS"),
       color: colors.ink3,
     },
     badge: {
+      position: "absolute" as const,
+      top: spacing.md,
+      right: spacing.md,
       width: spacing.exact(20),
       height: spacing.exact(20),
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
       borderRadius: radius.pill,
       backgroundColor: theme.accents.green.fill,
     },

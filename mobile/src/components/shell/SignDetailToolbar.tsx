@@ -2,11 +2,8 @@ import type { ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { Icon } from "../icons";
-
-import {
-  useResponsiveFonts,
-  useResponsiveStyles,
-} from "../../portable-ui";
+import { NavigationButton } from "./NavigationButton";
+import { useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type SignDetailToolbarProps = {
@@ -14,6 +11,9 @@ type SignDetailToolbarProps = {
   categoryLabel: string;
   currentIndex: number;
   totalCount: number;
+  isBookmarked?: boolean;
+  bookmarkLabel?: string;
+  onToggleBookmark?: () => void;
   onClose?: () => void;
   closeLabel?: string;
   rightSlot?: ReactNode;
@@ -24,25 +24,25 @@ export function SignDetailToolbar({
   categoryLabel,
   currentIndex,
   totalCount,
+  isBookmarked = false,
+  bookmarkLabel,
+  onToggleBookmark,
   onClose,
   closeLabel = "Close",
   rightSlot,
 }: SignDetailToolbarProps) {
   const theme = useTheme();
-  const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles();
 
   return (
     <View style={styles.header}>
       {onClose ? (
-        <Pressable
-          accessibilityRole="button"
+        <NavigationButton
           accessibilityLabel={closeLabel}
+          inset
           onPress={onClose}
-          style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
-        >
-          <Icon color={theme.colors.ink} name="close" size={responsiveFont(22)} />
-        </Pressable>
+          type="close"
+        />
       ) : (
         <View style={styles.iconSpacer} />
       )}
@@ -59,9 +59,20 @@ export function SignDetailToolbar({
         {rightSlot ?? (
           <Pressable
             accessibilityRole="button"
-            style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
+            accessibilityLabel={bookmarkLabel}
+            accessibilityState={{ selected: isBookmarked }}
+            disabled={!onToggleBookmark}
+            hitSlop={8}
+            onPress={onToggleBookmark}
+            style={({ pressed }) => [styles.bookmarkButton, pressed ? styles.pressed : null]}
           >
-            <Icon color={theme.colors.ink} name="star" size={responsiveFont(20)} />
+            <Icon
+              color={
+                isBookmarked ? theme.accents.amber.fill : theme.colors.icon
+              }
+              name={isBookmarked ? "stateActive" : "stateDefault"}
+              size={24}
+            />
           </Pressable>
         )}
       </View>
@@ -70,22 +81,14 @@ export function SignDetailToolbar({
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
     header: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing.sm,
-      paddingHorizontal: spacing.lg,
+      gap: spacing.lg,
+      paddingHorizontal: spacing.xl,
       paddingTop: spacing.sm,
       paddingBottom: spacing.md,
-    },
-    iconButton: {
-      width: spacing.exact(40),
-      height: spacing.exact(40),
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: radius.md,
-      backgroundColor: colors.surface,
     },
     iconSpacer: {
       width: spacing.exact(40),
@@ -93,18 +96,18 @@ function useStyles() {
     },
     titleBlock: {
       flex: 1,
-      gap: spacing.exact(2),
+      gap: 0,
     },
     code: {
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
-      fontWeight: "700",
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "400",
       color: colors.ink,
     },
     category: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      color: colors.inkMuted,
+      color: colors.ink3,
     },
     metaBlock: {
       flexDirection: "row",
@@ -114,7 +117,13 @@ function useStyles() {
     counter: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      color: colors.inkMuted,
+      color: colors.ink2,
+    },
+    bookmarkButton: {
+      width: spacing.exact(40),
+      height: spacing.exact(40),
+      alignItems: "center",
+      justifyContent: "center",
     },
     pressed: {
       opacity: 0.9,

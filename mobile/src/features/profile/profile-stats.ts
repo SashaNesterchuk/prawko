@@ -1,4 +1,5 @@
 import type { SupportedLocale } from "@prawko/config";
+import { getContentLocale } from "@prawko/config";
 
 import type { QuestionAttempt } from "../questions/types";
 import { getWarsawIsoDate } from "../study-plan/supabase-study-plan-progress";
@@ -19,7 +20,7 @@ export type WeekDayActivity = {
   isStreakDay: boolean;
 };
 
-const WEEKDAY_LABELS: Record<SupportedLocale, string[]> = {
+const WEEKDAY_LABELS: Record<"pl" | "ua" | "en", string[]> = {
   ua: ["П", "В", "С", "Ч", "П", "С", "Н"],
   pl: ["P", "W", "Ś", "C", "P", "S", "N"],
   en: ["M", "T", "W", "T", "F", "S", "S"],
@@ -47,6 +48,72 @@ export function getProfileStatMetrics(
   };
 }
 
+export function getCurrentStreakFromAttempts(attempts: QuestionAttempt[]) {
+  return getCurrentStreak(collectActivityDates(attempts));
+}
+
+/**
+ * Coverage-based readiness change over the last 7 Warsaw days.
+ * Questions without a local first-seen timestamp are treated as older than
+ * 7 days (common after remote sync) so the badge can still reflect recent
+ * local progress instead of disappearing.
+ */
+export function getCoverageReadinessWeekChangePercent(input: {
+  attempts: QuestionAttempt[];
+  seenQuestionIds: readonly string[];
+  totalQuestions: number;
+  referenceDate?: Date;
+}): number | null {
+  const { attempts, seenQuestionIds, totalQuestions } = input;
+
+  if (totalQuestions <= 0 || seenQuestionIds.length === 0) {
+    return null;
+  }
+
+  const firstSeenAtByQuestion = new Map<string, number>();
+
+  for (const attempt of attempts) {
+    const timestamp = Date.parse(attempt.answeredAt);
+
+    if (!Number.isFinite(timestamp)) {
+      continue;
+    }
+
+    const previous = firstSeenAtByQuestion.get(attempt.questionId);
+
+    if (previous == null || timestamp < previous) {
+      firstSeenAtByQuestion.set(attempt.questionId, timestamp);
+    }
+  }
+
+  const todayIso = getWarsawIsoDate(input.referenceDate ?? new Date());
+  const weekAgoIso = shiftIsoDate(todayIso, -7);
+  let newlySeenInLast7Days = 0;
+
+  for (const questionId of seenQuestionIds) {
+    const firstSeenAt = firstSeenAtByQuestion.get(questionId);
+
+    if (firstSeenAt == null) {
+      continue;
+    }
+
+    const firstSeenIso = getWarsawIsoDate(new Date(firstSeenAt));
+
+    if (firstSeenIso > weekAgoIso) {
+      newlySeenInLast7Days += 1;
+    }
+  }
+
+  const readinessNow = Math.round(
+    (seenQuestionIds.length / totalQuestions) * 100
+  );
+  const readinessWeekAgo = Math.round(
+    ((seenQuestionIds.length - newlySeenInLast7Days) / totalQuestions) * 100
+  );
+
+  return readinessNow - readinessWeekAgo;
+}
+
 export function buildWeekActivity(
   attempts: QuestionAttempt[],
   locale: SupportedLocale,
@@ -55,7 +122,7 @@ export function buildWeekActivity(
   const activityDates = collectActivityDates(attempts);
   const streakDates = getStreakDateSet(activityDates, getWarsawIsoDate(referenceDate));
   const weekStart = getMondayOfWeek(referenceDate);
-  const labels = WEEKDAY_LABELS[locale];
+  const labels = WEEKDAY_LABELS[getContentLocale(locale)];
   const todayIso = getWarsawIsoDate(referenceDate);
 
   return labels.map((weekdayLabel, index) => {
@@ -169,7 +236,15 @@ export function formatProfileExamDate(
   const [year, month, day] = isoDate.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
   const localeTag =
-    locale === "ua" ? "uk-UA" : locale === "pl" ? "pl-PL" : "en-GB";
+    locale === "ua"
+      ? "uk-UA"
+      : locale === "pl"
+        ? "pl-PL"
+        : locale === "de"
+          ? "de-DE"
+          : locale === "es"
+            ? "es-ES"
+            : "en-GB";
 
   return new Intl.DateTimeFormat(localeTag, {
     day: "numeric",

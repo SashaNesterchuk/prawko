@@ -4,6 +4,7 @@ export type AdInterstitialTrigger =
   | "after_question_answer"
   | "after_practice_session_complete"
   | "after_exam_complete"
+  | "exam_restart"
   | "app_resume";
 
 export type AdSkipReason =
@@ -85,6 +86,21 @@ export function isExamSessionActive() {
 
 export function markAppBackgrounded() {
   lastBackgroundAt = Date.now();
+}
+
+/** Clear resume-ad tracking (e.g. after an interstitial briefly backgrounds the app). */
+export function clearAppBackgroundMark() {
+  lastBackgroundAt = null;
+}
+
+let suppressAppResumeAdsUntil = 0;
+
+export function suppressAppResumeAds(durationMs = 8_000) {
+  suppressAppResumeAdsUntil = Date.now() + durationMs;
+}
+
+export function isAppResumeAdsSuppressed() {
+  return Date.now() < suppressAppResumeAdsUntil;
 }
 
 export function shouldShowInterstitialForTrigger(

@@ -7,13 +7,14 @@ import type {
   QuestionSessionMode,
   SupportedLocale,
   TopicBlockId,
+  ContentLocale,
 } from "@prawko/config";
 import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
 export type QuestionOptionValue = "A" | "B" | "C" | "true" | "false";
 export type QuestionMediaAnswerSlot = "A" | "B" | "C";
 
-export type LocalizedQuestionText = Record<SupportedLocale, string>;
+export type LocalizedQuestionText = Record<ContentLocale, string>;
 
 export type QuestionChoice = {
   id: QuestionOptionValue;

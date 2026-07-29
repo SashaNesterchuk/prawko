@@ -1,14 +1,24 @@
 import { Ionicons } from "@expo/vector-icons";
+import { TOPIC_BLOCK_IDS, type LearningTopicId } from "@prawko/config";
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Icon } from "../../src/components/icons";
+import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { ProgressRing } from "../../src/components/shell/ProgressRing";
+import {
+  resolveReadinessLevel,
+  resolveReadinessRingColor,
+} from "../../src/components/shell/ReadinessIndexCard";
+import { SignCategoryProgressCard } from "../../src/components/shell/SignCategoryProgressCard";
+import { SignQuestionCountDialog } from "../../src/components/shell/SignQuestionCountDialog";
+import { SignsSummaryCard } from "../../src/components/shell/SignsSummaryCard";
 import { StatisticsActivityCard } from "../../src/components/shell/StatisticsActivityCard";
 import { StatisticsTopicProgressRow } from "../../src/components/shell/StatisticsTopicProgressRow";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
@@ -16,22 +26,31 @@ import { fetchRecentExamSessions } from "../../src/features/exam/supabase-exam";
 import type { RemoteExamSession } from "../../src/features/exam/types";
 import {
   buildWeekActivity,
+  getCoverageReadinessWeekChangePercent,
   getLearningDaysCount,
   getProfileStatMetrics,
 } from "../../src/features/profile/profile-stats";
 import {
   ROAD_SIGN_CATEGORIES,
-  getRoadSignsByCategory,
 } from "../../src/features/road-signs/catalog";
+import { buildAllSignTestQuestions } from "../../src/features/road-signs/category-test";
 import {
-  getQuestionTopicIds,
-  getQuestionTopicTitle,
-} from "../../src/features/question-topics/catalog";
+  getAllSignsProgress,
+  getCategorySignProgress,
+} from "../../src/features/road-signs/sign-progress";
+import { getLearningTopicTitle } from "../../src/features/question-topics/catalog";
 import {
+  getMistakesFixedStats,
   getQuestionDisplayStats,
+  getSeenQuestionIds,
   getTopicProgress,
 } from "../../src/features/questions/question-engine";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import {
+  applyExamDateChange,
+  parseNullableIsoDate,
+  toIsoDate,
+} from "../../src/features/study-plan/exam-date";
 import { getDaysUntilExamFromDate } from "../../src/features/study-plan/generate-local-study-plan";
 import {
   useResponsiveFonts,
@@ -50,37 +69,9 @@ import {
 } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
+import { useSignPracticeProgressStore } from "../../src/state/sign-practice-progress";
 
 type StatisticsTab = "exam" | "signs";
-
-function resolveReadinessLevel(readiness: number) {
-  if (readiness >= 85) {
-    return "high" as const;
-  }
-
-  if (readiness >= 40) {
-    return "mid" as const;
-  }
-
-  return "low" as const;
-}
-
-function resolveRingColor(
-  readiness: number,
-  accents: ReturnType<typeof useTheme>["accents"]
-) {
-  const level = resolveReadinessLevel(readiness);
-
-  if (level === "high") {
-    return accents.green.fill;
-  }
-
-  if (level === "mid") {
-    return accents.amber.fill;
-  }
-
-  return accents.red.fill;
-}
 
 function getBestExamScore(sessions: RemoteExamSession[]) {
   if (sessions.length === 0) {
@@ -128,7 +119,7 @@ function getBestSessionAccuracy(
 }
 
 export default function StatisticsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -136,16 +127,40 @@ export default function StatisticsScreen() {
   const isFocused = useIsFocused();
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
+  const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
+  const currentStudyPlanRemoteId = useAppShellStore(
+    (state) => state.currentStudyPlanRemoteId
+  );
+  const hydrateRemoteStudyPlan = useAppShellStore(
+    (state) => state.hydrateRemoteStudyPlan
+  );
+  const patchExamDate = useAppShellStore((state) => state.patchExamDate);
   const currentStudyPlan = useCurrentStudyPlan();
   const attempts = useQuestionProgressStore((state) => state.attempts);
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
+  const signPracticeRecords = useSignPracticeProgressStore(
+    (state) => state.records
+  );
   const questionCatalogVersion = useQuestionCatalogVersion();
   const [activeTab, setActiveTab] = useState<StatisticsTab>("exam");
+  const [topicsInfoVisible, setTopicsInfoVisible] = useState(false);
+  const [signsCountDialogVisible, setSignsCountDialogVisible] = useState(false);
+  const [signsSelectedCount, setSignsSelectedCount] = useState<number | "all">(
+    20
+  );
+  const [examDatePickerVisible, setExamDatePickerVisible] = useState(false);
+  const [isSavingExamDate, setIsSavingExamDate] = useState(false);
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
   const [examSessions, setExamSessions] = useState<RemoteExamSession[]>([]);
+
+  const availableSignQuestions = useMemo(
+    () => buildAllSignTestQuestions(),
+    []
+  );
 
   useEffect(() => {
     if (!isFocused) {
@@ -196,48 +211,53 @@ export default function StatisticsScreen() {
 
   const topicRows = useMemo(
     () =>
-      getQuestionTopicIds()
-        .map((topicId) => {
-          const progress = getTopicProgress(topicId, questionUserState);
+      TOPIC_BLOCK_IDS.map((topicId) => {
+        const progress = getTopicProgress(topicId, questionUserState);
 
-          return {
-            topicId,
-            title: getQuestionTopicTitle(topicId, preferredLocale),
-            seen: progress.seen,
-            total: progress.total,
-            progress: progress.progress,
-          };
-        })
-        .filter((topic) => topic.total > 0),
-    [preferredLocale, questionUserState, questionCatalogVersion]
+        return {
+          topicId,
+          title: getLearningTopicTitle(topicId, preferredLocale, t),
+          seen: progress.seen,
+          total: progress.total,
+          progress: progress.progress,
+        };
+      }).filter((topic) => topic.total > 0),
+    [preferredLocale, questionUserState, questionCatalogVersion, t]
   );
 
-  const signsTopic = useMemo(
-    () => getTopicProgress("signs", questionUserState),
-    [questionUserState, questionCatalogVersion]
+  const signsCatalogProgress = useMemo(
+    () => getAllSignsProgress(signPracticeRecords),
+    [signPracticeRecords]
   );
 
   const signCategoryRows = useMemo(
     () =>
       ROAD_SIGN_CATEGORIES.map((category) => ({
         category,
-        count: getRoadSignsByCategory(category.id).length,
-      })),
-    []
+        progress: getCategorySignProgress(category.id, signPracticeRecords),
+      })).filter((row) => row.progress.total > 0),
+    [signPracticeRecords]
   );
 
   const localReadiness =
     stats.total > 0 ? Math.round((stats.seen / stats.total) * 100) : 0;
+  const usesLocalReadiness = readinessSummary == null;
   const examReadiness = Math.round(
     readinessSummary?.readinessScore ?? localReadiness
   );
-  const signsReadiness = signsTopic.progress;
-  const readiness = activeTab === "exam" ? examReadiness : signsReadiness;
+  const signsLearnedPercent =
+    signsCatalogProgress.total > 0
+      ? Math.round(
+          (signsCatalogProgress.seen / signsCatalogProgress.total) * 100
+        )
+      : 0;
+  const readiness = examReadiness;
   const readinessLevel = resolveReadinessLevel(readiness);
-  const ringColor = resolveRingColor(readiness, accents);
+  const ringColor = resolveReadinessRingColor(readiness, accents);
   const styles = useStyles({ ringColor, safeBottom });
   const backIconSize = responsiveFont(22);
   const smallIconSize = responsiveFont(16);
+  const weekBadgeIconSize = responsiveFont(12);
   const ringSize = spacing.exact(160);
   const ringStroke = spacing.exact(10);
 
@@ -254,9 +274,45 @@ export default function StatisticsScreen() {
     [attempts, preferredLocale]
   );
 
-  const daysUntilExam = currentStudyPlan?.examDate
-    ? getDaysUntilExamFromDate(currentStudyPlan.examDate)
-    : readinessSummary?.daysUntilExam ?? null;
+  const examDate =
+    currentStudyPlan?.examDate ??
+    studyPlanSetup.examDate ??
+    (readinessSummary?.examDate?.trim()
+      ? readinessSummary.examDate
+      : null);
+  const daysUntilExam =
+    examDate != null
+      ? getDaysUntilExamFromDate(examDate)
+      : readinessSummary?.daysUntilExam ?? null;
+
+  const readinessWeekChangePercent = useMemo(() => {
+    if (!usesLocalReadiness || stats.seen <= 0) {
+      return null;
+    }
+
+    return getCoverageReadinessWeekChangePercent({
+      attempts,
+      seenQuestionIds: getSeenQuestionIds(questionUserState),
+      totalQuestions: stats.total,
+    });
+  }, [
+    attempts,
+    questionCatalogVersion,
+    questionUserState,
+    stats.seen,
+    stats.total,
+    usesLocalReadiness,
+  ]);
+
+  const showWeekChangeBadge =
+    activeTab === "exam" && readinessWeekChangePercent != null;
+  const isWeekChangeUp = (readinessWeekChangePercent ?? 0) > 0;
+  const isWeekChangeFlat = readinessWeekChangePercent === 0;
+  const readinessWeekChangeLabel = isWeekChangeFlat
+    ? t("statistics.readinessWeekChangeNone")
+    : t("statistics.readinessWeekChange", {
+        value: Math.abs(readinessWeekChangePercent ?? 0),
+      });
 
   const weakTopics = useMemo(
     () =>
@@ -269,16 +325,12 @@ export default function StatisticsScreen() {
 
   const bestExam = getBestExamScore(examSessions);
   const bestTrainingAccuracy = getBestSessionAccuracy(attempts);
-  const mistakesFixedPercent =
-    stats.wrongAnswers + stats.seen > 0
-      ? Math.round(
-          ((stats.seen - stats.wrongAnswers) / Math.max(stats.seen, 1)) * 100
-        )
-      : 100;
+  const mistakesFixed = useMemo(
+    () => getMistakesFixedStats(questionUserState),
+    [questionCatalogVersion, questionUserState]
+  );
 
-  const openTopicTraining = (
-    topicId: ReturnType<typeof getQuestionTopicIds>[number]
-  ) =>
+  const openTopicTraining = (topicId: LearningTopicId) =>
     router.push({
       pathname: "/question",
       params: buildQuestionRouteParams({
@@ -293,6 +345,51 @@ export default function StatisticsScreen() {
       pathname: "/question",
       params: buildQuestionRouteParams({ mode: "seen_not_mastered" }),
     });
+  const openExamDate = () => setExamDatePickerVisible(true);
+
+  const handleConfirmExamDate = async (date: Date) => {
+    if (isSavingExamDate) {
+      return;
+    }
+
+    setIsSavingExamDate(true);
+    try {
+      await applyExamDateChange({
+        authMode,
+        currentStudyPlan,
+        currentStudyPlanRemoteId,
+        examDate: toIsoDate(date),
+        hydrateRemoteStudyPlan,
+        preferredCategory,
+        preferredLocale,
+        patchExamDate,
+        schoolCode: studyPlanSetup.schoolCode,
+      });
+      setExamDatePickerVisible(false);
+    } catch (error) {
+      console.warn("Failed to update exam date.", error);
+    } finally {
+      setIsSavingExamDate(false);
+    }
+  };
+
+  const openSignsTraining = () => {
+    setSignsSelectedCount(
+      availableSignQuestions.length >= 20 ? 20 : "all"
+    );
+    setSignsCountDialogVisible(true);
+  };
+
+  const startSignsTraining = () => {
+    setSignsCountDialogVisible(false);
+    router.push({
+      pathname: "/signs/test",
+      params: {
+        limit:
+          signsSelectedCount === "all" ? "all" : String(signsSelectedCount),
+      },
+    });
+  };
 
   return (
     <GreenWaveScreen>
@@ -301,7 +398,7 @@ export default function StatisticsScreen() {
         <View style={styles.header}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t("common.back", { defaultValue: "Назад" })}
+            accessibilityLabel={t("common.back")}
             onPress={() => router.back()}
             style={({ pressed }) => [styles.backButton, pressed ? styles.pressed : null]}
           >
@@ -312,7 +409,7 @@ export default function StatisticsScreen() {
             />
           </Pressable>
           <Text style={styles.headerTitle}>
-            {t("statistics.title", { defaultValue: "Статистика" })}
+            {t("statistics.title")}
           </Text>
         </View>
 
@@ -336,7 +433,7 @@ export default function StatisticsScreen() {
                   activeTab === "exam" ? styles.segmentLabelActive : null,
                 ]}
               >
-                {t("statistics.tabExam", { defaultValue: "Іспит" })}
+                {t("statistics.tabExam")}
               </Text>
             </Pressable>
             <Pressable
@@ -353,89 +450,136 @@ export default function StatisticsScreen() {
                   activeTab === "signs" ? styles.segmentLabelActive : null,
                 ]}
               >
-                {t("statistics.tabSigns", { defaultValue: "Знаки" })}
+                {t("statistics.tabSigns")}
               </Text>
             </Pressable>
           </View>
 
-          <View style={styles.overviewRow}>
-            <ProgressRing
-              progress={readiness}
-              size={ringSize}
-              stroke={ringStroke}
-              color={ringColor}
-            >
-              <Text style={styles.ringValue}>
-                {`${readiness}%`}
-              </Text>
-            </ProgressRing>
-
-            <View style={styles.overviewCopy}>
-              <View style={styles.overviewBlock}>
-                <Text style={styles.levelTitle}>
-                  {t(`statistics.level.${readinessLevel}`, {
-                    defaultValue:
-                      readinessLevel === "high"
-                        ? "Високий"
-                        : readinessLevel === "mid"
-                          ? "Середній"
-                          : "Низький",
-                  })}
-                </Text>
-                <Text style={styles.levelSubtitle}>
-                  {t("statistics.readinessIndex", {
-                    defaultValue: "Індекс готовності",
-                  })}
-                </Text>
-              </View>
-
-              {daysUntilExam != null ? (
-                <View style={styles.overviewBlock}>
-                  <Text style={styles.daysValue}>{daysUntilExam}</Text>
-                  <Text style={styles.levelSubtitle}>
-                    {t("statistics.daysUntilExam", {
-                      defaultValue: "Днів до іспиту",
-                    })}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          </View>
-
-          <StatisticsActivityCard
-            learningDays={learningDays}
-            sessions={metrics.sessions}
-            streak={metrics.streak}
-            weekDays={weekDays}
-            labels={{
-              learningDays: t("statistics.learningDays", {
-                defaultValue: "Дні навчання",
-              }),
-              sessions: t("statistics.sessions", {
-                defaultValue: "Сесій",
-              }),
-              streak: t("statistics.streak", {
-                defaultValue: "Стрік",
-              }),
-            }}
-          />
-
           {activeTab === "exam" ? (
             <>
+              <View style={styles.overviewRow}>
+                <ProgressRing
+                  progress={readiness}
+                  size={ringSize}
+                  stroke={ringStroke}
+                  color={ringColor}
+                >
+                  <Text style={styles.ringValue}>
+                    {`${readiness}%`}
+                  </Text>
+                </ProgressRing>
+
+                <View style={styles.overviewCopy}>
+                  <View style={styles.overviewBlock}>
+                    <Text style={styles.levelTitle}>
+                      {t(`statistics.level.${readinessLevel}`)}
+                    </Text>
+                    <Text style={styles.levelSubtitle}>
+                      {t("statistics.readinessIndex")}
+                    </Text>
+                  </View>
+
+                  {showWeekChangeBadge ? (
+                    <View
+                      style={[
+                        styles.weekBadge,
+                        isWeekChangeFlat
+                          ? styles.weekBadgeFlat
+                          : isWeekChangeUp
+                            ? styles.weekBadgeUp
+                            : styles.weekBadgeDown,
+                      ]}
+                    >
+                      {!isWeekChangeFlat ? (
+                        <Icon
+                          color={
+                            isWeekChangeUp
+                              ? accents.green.ink
+                              : accents.red.ink
+                          }
+                          name="arrow"
+                          size={weekBadgeIconSize}
+                          style={
+                            isWeekChangeUp ? styles.weekArrowUp : undefined
+                          }
+                        />
+                      ) : null}
+                      <Text
+                        style={[
+                          styles.weekBadgeLabel,
+                          isWeekChangeFlat
+                            ? styles.weekBadgeLabelFlat
+                            : isWeekChangeUp
+                              ? styles.weekBadgeLabelUp
+                              : styles.weekBadgeLabelDown,
+                        ]}
+                      >
+                        {readinessWeekChangeLabel}
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {daysUntilExam != null ? (
+                    <View style={styles.overviewBlock}>
+                      <Text style={styles.daysValue}>{daysUntilExam}</Text>
+                      <Text style={styles.levelSubtitle}>
+                        {t("statistics.daysUntilExam")}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={openExamDate}
+                      style={({ pressed }) => [
+                        styles.examDateCta,
+                        pressed ? styles.pressed : null,
+                      ]}
+                    >
+                      <Ionicons
+                        color={colors.textPrimary}
+                        name="calendar-outline"
+                        size={smallIconSize}
+                      />
+                      <Text style={styles.examDateCtaLabel}>
+                        {t("statistics.examDateCta")}
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+
+              <StatisticsActivityCard
+                learningDays={learningDays}
+                sessions={metrics.sessions}
+                streak={metrics.streak}
+                weekDays={weekDays}
+                labels={{
+                  learningDays: t("statistics.learningDays"),
+                  sessions: t("statistics.sessions"),
+                  streak: t("statistics.streak"),
+                }}
+              />
+
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.cardTitle}>
-                    {t("statistics.topicsTitle", {
-                      defaultValue: "Готовність за темами",
-                    })}
+                    {t("statistics.topicsTitle")}
                   </Text>
-                  <View style={styles.infoButton}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t("statistics.topicsInfoTitle")}
+                    onPress={() => setTopicsInfoVisible(true)}
+                    style={({ pressed }) => [
+                      styles.infoButton,
+                      pressed ? styles.pressed : null,
+                    ]}
+                  >
                     <Ionicons
                       color={colors.textSecondary}
                       name="information-circle-outline"
                       size={smallIconSize}
                     />
-                  </View>
+                  </Pressable>
                 </View>
 
                 <View style={styles.topicList}>
@@ -463,12 +607,8 @@ export default function StatisticsScreen() {
               <View style={styles.card}>
                 <StatisticsQueueRow
                   styles={styles}
-                  title={t("statistics.smartReviewTitle", {
-                    defaultValue: "Розумні повторення",
-                  })}
-                  subtitle={t("statistics.smartReviewSubtitle", {
-                    defaultValue: "Питання готові до повторення",
-                  })}
+                  title={t("statistics.smartReviewTitle")}
+                  subtitle={t("statistics.smartReviewSubtitle")}
                   count={stats.reviewDue}
                   accent="blue"
                   premium
@@ -477,12 +617,8 @@ export default function StatisticsScreen() {
                 <View style={styles.divider} />
                 <StatisticsQueueRow
                   styles={styles}
-                  title={t("statistics.mistakesTitle", {
-                    defaultValue: "Питання з помилками",
-                  })}
-                  subtitle={t("statistics.mistakesSubtitle", {
-                    defaultValue: "Виправ минулі помилки",
-                  })}
+                  title={t("statistics.mistakesTitle")}
+                  subtitle={t("statistics.mistakesSubtitle")}
                   count={stats.wrongAnswers}
                   accent="red"
                   onPress={openMistakes}
@@ -492,14 +628,10 @@ export default function StatisticsScreen() {
                     <View style={styles.divider} />
                     <View style={styles.weakSection}>
                       <Text style={styles.weakTitle}>
-                        {t("statistics.weakTopicsTitle", {
-                          defaultValue: "Потребують тренування",
-                        })}
+                        {t("statistics.weakTopicsTitle")}
                       </Text>
                       <Text style={styles.weakSubtitle}>
-                        {t("statistics.weakTopicsSubtitle", {
-                          defaultValue: "Найслабші теми",
-                        })}
+                        {t("statistics.weakTopicsSubtitle")}
                       </Text>
                       <View style={styles.chipRow}>
                         {weakTopics.map((topic) => (
@@ -529,21 +661,16 @@ export default function StatisticsScreen() {
               <View style={styles.card}>
                 <StatisticsSummaryRow
                   styles={styles}
-                  label={t("statistics.totalExams", {
-                    defaultValue: "Всього іспитів",
-                  })}
+                  label={t("statistics.totalExams")}
                   value={String(examSessions.length)}
                 />
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
                   styles={styles}
-                  label={t("statistics.bestExam", {
-                    defaultValue: "Кращий іспит",
-                  })}
+                  label={t("statistics.bestExam")}
                   value={
                     bestExam
                       ? t("statistics.bestExamValue", {
-                          defaultValue: "{{score}} / {{total}} балів",
                           score: bestExam.scorePoints,
                           total: bestExam.totalPointsTarget,
                         })
@@ -553,17 +680,13 @@ export default function StatisticsScreen() {
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
                   styles={styles}
-                  label={t("statistics.totalTrainings", {
-                    defaultValue: "Всього тренувань",
-                  })}
+                  label={t("statistics.totalTrainings")}
                   value={String(metrics.sessions)}
                 />
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
                   styles={styles}
-                  label={t("statistics.bestTraining", {
-                    defaultValue: "Краще тренування",
-                  })}
+                  label={t("statistics.bestTraining")}
                   value={
                     bestTrainingAccuracy > 0 ? `${bestTrainingAccuracy}%` : "—"
                   }
@@ -571,67 +694,97 @@ export default function StatisticsScreen() {
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
                   styles={styles}
-                  label={t("statistics.questionsCovered", {
-                    defaultValue: "Охоплено питань",
-                  })}
+                  label={t("statistics.questionsCovered")}
                   value={`${stats.seen} / ${stats.total}`}
                   badge={`${localReadiness}%`}
                 />
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
                   styles={styles}
-                  label={t("statistics.mistakesFixed", {
-                    defaultValue: "Виправлено помилок",
-                  })}
-                  value={`${Math.max(0, stats.seen - stats.wrongAnswers)}/${stats.seen}`}
-                  badge={`${mistakesFixedPercent}%`}
+                  label={t("statistics.mistakesFixed")}
+                  value={
+                    mistakesFixed.total > 0
+                      ? `${mistakesFixed.fixed}/${mistakesFixed.total}`
+                      : "—"
+                  }
+                  badge={
+                    mistakesFixed.percent != null
+                      ? `${mistakesFixed.percent}%`
+                      : undefined
+                  }
                 />
               </View>
             </>
           ) : (
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>
-                  {t("statistics.signCategoriesTitle", {
-                    defaultValue: "Категорії знаків",
-                  })}
-                </Text>
-              </View>
+            <>
+              <SignsSummaryCard
+                title={t("statistics.learned")}
+                progress={signsLearnedPercent}
+                seen={signsCatalogProgress.seen}
+                total={signsCatalogProgress.total}
+                correct={signsCatalogProgress.correct}
+                wrong={signsCatalogProgress.wrong}
+                correctAnswersLabel={t("statistics.correctAnswers")}
+                trainAllLabel={t("signs.trainAll")}
+                onTrainAll={openSignsTraining}
+              />
 
-              <View style={styles.topicList}>
-                {signCategoryRows.map(({ category, count }) => (
-                  <Pressable
-                    key={category.id}
-                    accessibilityRole="button"
-                    onPress={() =>
-                      router.push({
-                        pathname: "/signs/category/[categoryId]",
-                        params: { categoryId: category.id },
-                      })
-                    }
-                    style={({ pressed }) => [
-                      styles.topicPressable,
-                      pressed ? styles.pressed : null,
-                    ]}
-                  >
-                    <StatisticsTopicProgressRow
-                      title={category.titlePl}
-                      seen={Math.min(signsTopic.seen, count)}
-                      total={count}
-                      progress={
-                        count > 0
-                          ? Math.round(
-                              (Math.min(signsTopic.seen, count) / count) * 100
-                            )
-                          : 0
+              <View style={styles.card}>
+                <View style={styles.signCategoryList}>
+                  {signCategoryRows.map(({ category, progress }) => (
+                    <SignCategoryProgressCard
+                      key={category.id}
+                      category={category}
+                      embedded
+                      progress={progress}
+                      title={t(`signs.categories.${category.id}.title`)}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/signs/category/[categoryId]",
+                          params: { categoryId: category.id },
+                        })
                       }
                     />
-                  </Pressable>
-                ))}
+                  ))}
+                </View>
               </View>
-            </View>
+            </>
           )}
         </ScrollView>
+
+        <TopicsInfoDialog
+          visible={topicsInfoVisible}
+          title={t("statistics.topicsInfoTitle")}
+          body={t("statistics.topicsInfoBody")}
+          closeLabel={t("common.close")}
+          onClose={() => setTopicsInfoVisible(false)}
+        />
+
+        <SignQuestionCountDialog
+          title={t("signs.title")}
+          subtitle={t("signs.chooseQuestionCount")}
+          startLabel={t("signs.startTrainingCta")}
+          allLabel={t("signs.allQuestions")}
+          totalCount={availableSignQuestions.length}
+          selectedCount={signsSelectedCount}
+          visible={signsCountDialogVisible}
+          onClose={() => setSignsCountDialogVisible(false)}
+          onSelectCount={setSignsSelectedCount}
+          onStart={startSignsTraining}
+        />
+
+        <CalendarSheet
+          visible={examDatePickerVisible}
+          locale={i18n.language}
+          initialDate={parseNullableIsoDate(examDate)}
+          confirmLabel={t("onboarding.examDateConfirm")}
+          clearLabel={t("onboarding.examDateClear")}
+          onClose={() => setExamDatePickerVisible(false)}
+          onConfirm={(date) => {
+            void handleConfirmExamDate(date);
+          }}
+          onClear={() => setExamDatePickerVisible(false)}
+        />
       </SafeAreaView>
     </GreenWaveScreen>
   );
@@ -747,6 +900,95 @@ function StatisticsSummaryRow({
   );
 }
 
+function TopicsInfoDialog({
+  visible,
+  title,
+  body,
+  closeLabel,
+  onClose,
+}: {
+  visible: boolean;
+  title: string;
+  body: string;
+  closeLabel: string;
+  onClose: () => void;
+}) {
+  const styles = useTopicsInfoStyles();
+
+  return (
+    <Modal
+      animationType="fade"
+      onRequestClose={onClose}
+      transparent
+      visible={visible}
+    >
+      <View style={styles.overlay}>
+        <View style={styles.card}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.body}>{body}</Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onClose}
+            style={({ pressed }) => [
+              styles.closeButton,
+              pressed ? styles.pressed : null,
+            ]}
+          >
+            <Text style={styles.closeLabel}>{closeLabel}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function useTopicsInfoStyles() {
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+    overlay: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: spacing.xl,
+      backgroundColor: colors.overlayBackdrop,
+    },
+    card: {
+      width: "100%",
+      borderRadius: radius.xxl,
+      padding: spacing.exact(24),
+      backgroundColor: colors.paper,
+      gap: spacing.exact(16),
+    },
+    title: {
+      fontSize: responsiveFont(20),
+      lineHeight: responsiveFont(28),
+      fontWeight: "600",
+      letterSpacing: -0.2,
+      color: colors.ink,
+    },
+    body: {
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      color: colors.ink2,
+    },
+    closeButton: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: spacing.md,
+      borderRadius: radius.pill,
+      backgroundColor: colors.track,
+    },
+    closeLabel: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "600",
+      color: colors.ink,
+    },
+    pressed: {
+      opacity: 0.88,
+    },
+  }));
+}
+
 function useStyles({
   ringColor,
   safeBottom,
@@ -849,11 +1091,64 @@ function useStyles({
         lineHeight: responsiveFont(16),
         color: colors.textSecondary,
       },
+      weekBadge: {
+        alignSelf: "flex-start",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(2),
+        paddingVertical: spacing.exact(2),
+        paddingHorizontal: spacing.exact(4),
+        borderRadius: radius.pill,
+      },
+      weekBadgeFlat: {
+        backgroundColor: colors.track,
+      },
+      weekBadgeUp: {
+        backgroundColor: accents.green.soft,
+      },
+      weekBadgeDown: {
+        backgroundColor: accents.red.soft,
+      },
+      weekBadgeLabel: {
+        fontSize: responsiveFont(11),
+        lineHeight: responsiveFont(12),
+        fontWeight: "500",
+      },
+      weekBadgeLabelFlat: {
+        color: colors.textSecondary,
+      },
+      weekBadgeLabelUp: {
+        color: accents.green.ink,
+      },
+      weekBadgeLabelDown: {
+        color: accents.red.ink,
+      },
+      weekArrowUp: {
+        transform: [{ rotate: "180deg" }],
+      },
       daysValue: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontWeight: "600",
         letterSpacing: -0.2,
+        color: colors.textPrimary,
+      },
+      examDateCta: {
+        alignSelf: "flex-start",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(8),
+        paddingHorizontal: spacing.exact(12),
+        paddingVertical: spacing.exact(8),
+        borderRadius: radius.md,
+        borderWidth: 1,
+        borderColor: colors.line,
+        backgroundColor: colors.surfaceStrong,
+      },
+      examDateCtaLabel: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        fontWeight: "500",
         color: colors.textPrimary,
       },
       card: {
@@ -892,6 +1187,10 @@ function useStyles({
       topicList: {
         paddingHorizontal: spacing.exact(16),
         paddingBottom: spacing.exact(16),
+        gap: spacing.exact(8),
+      },
+      signCategoryList: {
+        padding: spacing.exact(16),
         gap: spacing.exact(8),
       },
       topicPressable: {

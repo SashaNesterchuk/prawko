@@ -49,15 +49,12 @@ export type CTextProps = TextProps & {
   center?: boolean;
   right?: boolean;
   left?: boolean;
-  italic?: boolean;
-  boldItalic?: boolean;
-  sansBoldItalic?: boolean;
-  robotoSerifMediumItalic28?: boolean;
-  light?: boolean;
   responsive?: boolean;
   regular?: boolean;
   medium?: boolean;
+  semiBold?: boolean;
   bold?: boolean;
+  mono?: boolean;
   textStyle?: TextSizeKey;
 };
 
@@ -65,12 +62,9 @@ interface TextSegment {
   text: string;
   bold?: boolean;
   medium?: boolean;
+  semiBold?: boolean;
   regular?: boolean;
-  italic?: boolean;
-  boldItalic?: boolean;
-  sansBoldItalic?: boolean;
-  robotoSerifMediumItalic28?: boolean;
-  light?: boolean;
+  mono?: boolean;
   dynamic?: boolean;
   size?: TextSizeKey;
   color?: string;
@@ -79,14 +73,14 @@ interface TextSegment {
 
 function stripStyleTags(text: string) {
   const tagRegex =
-    /<(style|bold|medium|regular|italic|light|boldItalic|sansBoldItalic|robotoSerifMediumItalic28)[^>]*>(.*?)<\/\1>/g;
+    /<(style|bold|semiBold|medium|regular|mono)[^>]*>(.*?)<\/\1>/g;
   return text.replace(tagRegex, "$2");
 }
 
 function parseTextWithTags(text: string): TextSegment[] {
   const segments: TextSegment[] = [];
   const tagRegex =
-    /<(style|bold|medium|regular|italic|light|boldItalic|sansBoldItalic|robotoSerifMediumItalic28)([^>]*)>(.*?)<\/\1>/g;
+    /<(style|bold|semiBold|medium|regular|mono)([^>]*)>(.*?)<\/\1>/g;
 
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -112,20 +106,14 @@ function parseTextWithTags(text: string): TextSegment[] {
           segment.size = attr as TextSizeKey;
         } else if (attr === "bold") {
           segment.bold = true;
+        } else if (attr === "semiBold") {
+          segment.semiBold = true;
         } else if (attr === "medium") {
           segment.medium = true;
         } else if (attr === "regular") {
           segment.regular = true;
-        } else if (attr === "italic") {
-          segment.italic = true;
-        } else if (attr === "light") {
-          segment.light = true;
-        } else if (attr === "boldItalic") {
-          segment.boldItalic = true;
-        } else if (attr === "sansBoldItalic") {
-          segment.sansBoldItalic = true;
-        } else if (attr === "robotoSerifMediumItalic28") {
-          segment.robotoSerifMediumItalic28 = true;
+        } else if (attr === "mono") {
+          segment.mono = true;
         } else if (attr === "dynamic") {
           segment.dynamic = true;
         } else if (attr.startsWith("opacity=")) {
@@ -139,20 +127,14 @@ function parseTextWithTags(text: string): TextSegment[] {
       });
     } else if (tagName === "bold") {
       segment.bold = true;
+    } else if (tagName === "semiBold") {
+      segment.semiBold = true;
     } else if (tagName === "medium") {
       segment.medium = true;
     } else if (tagName === "regular") {
       segment.regular = true;
-    } else if (tagName === "italic") {
-      segment.italic = true;
-    } else if (tagName === "light") {
-      segment.light = true;
-    } else if (tagName === "boldItalic") {
-      segment.boldItalic = true;
-    } else if (tagName === "sansBoldItalic") {
-      segment.sansBoldItalic = true;
-    } else if (tagName === "robotoSerifMediumItalic28") {
-      segment.robotoSerifMediumItalic28 = true;
+    } else if (tagName === "mono") {
+      segment.mono = true;
     }
 
     segments.push(segment);
@@ -174,32 +156,20 @@ function resolveWeightKey(props: CTextProps): FontWeightKey {
     return "bold";
   }
 
+  if (props.semiBold) {
+    return "semiBold";
+  }
+
   if (props.medium) {
     return "medium";
   }
 
+  if (props.mono) {
+    return "mono";
+  }
+
   if (props.regular) {
     return "regular";
-  }
-
-  if (props.light) {
-    return "light";
-  }
-
-  if (props.italic) {
-    return "italic";
-  }
-
-  if (props.boldItalic) {
-    return "boldItalic";
-  }
-
-  if (props.sansBoldItalic) {
-    return "sansBoldItalic";
-  }
-
-  if (props.robotoSerifMediumItalic28) {
-    return "robotoSerifMediumItalic28";
   }
 
   return "regular";
@@ -210,28 +180,16 @@ function resolveSegmentWeight(segment: TextSegment): TextStyle {
     return getTextWeightStyle("bold");
   }
 
+  if (segment.semiBold) {
+    return getTextWeightStyle("semiBold");
+  }
+
   if (segment.medium) {
     return getTextWeightStyle("medium");
   }
 
-  if (segment.italic) {
-    return getTextWeightStyle("italic");
-  }
-
-  if (segment.boldItalic) {
-    return getTextWeightStyle("boldItalic");
-  }
-
-  if (segment.light) {
-    return getTextWeightStyle("light");
-  }
-
-  if (segment.sansBoldItalic) {
-    return getTextWeightStyle("sansBoldItalic");
-  }
-
-  if (segment.robotoSerifMediumItalic28) {
-    return getTextWeightStyle("robotoSerifMediumItalic28");
+  if (segment.mono) {
+    return getTextWeightStyle("mono");
   }
 
   if (segment.regular) {
@@ -350,13 +308,10 @@ function useResolvedStyledSegments({
     const hasStyledSegments = segments.some(
       (segment) =>
         segment.bold ||
+        segment.semiBold ||
         segment.medium ||
         segment.regular ||
-        segment.italic ||
-        segment.boldItalic ||
-        segment.sansBoldItalic ||
-        segment.robotoSerifMediumItalic28 ||
-        segment.light ||
+        segment.mono ||
         segment.size ||
         segment.color ||
         segment.opacity !== undefined

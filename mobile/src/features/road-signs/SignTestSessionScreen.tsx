@@ -1,12 +1,13 @@
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
+import { NavigationButton } from "../../components/shell/NavigationButton";
+import { QuestionFeedbackBottomSheet } from "../questions/training/QuestionFeedbackBottomSheet";
 import {
   useResponsiveFonts,
   useResponsiveSpacing,
@@ -17,9 +18,11 @@ import { getRoadSignById } from "./catalog";
 import type { SignTestQuestion } from "./category-test";
 import { pickLocalized } from "./content/localized";
 import { SignImage } from "./SignImage";
+import { useSignBookmarksStore } from "../../state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../state/sign-practice-progress";
 
 const OPTION_LETTERS = ["A", "B", "C", "D"];
+const SUPPORT_EMAIL = "support@prawko.app";
 
 type SignTestSessionScreenProps = {
   questions: SignTestQuestion[];
@@ -33,17 +36,17 @@ export function SignTestSessionScreen({
   subtitle,
 }: SignTestSessionScreenProps) {
   const { t, i18n } = useTranslation();
-  const { bottom: safeBottom } = useSafeAreaInsets();
-  const { colors } = useTheme();
-  const { responsiveFont } = useResponsiveFonts();
+  const { accents, colors } = useTheme();
   const spacing = useResponsiveSpacing();
-  const styles = useStyles({ safeBottom });
-  const closeIconSize = responsiveFont(22);
-  const reportIconSize = responsiveFont(16);
+  const responsiveFont = useResponsiveFonts().responsiveFont;
+  const styles = useStyles();
   const signImageSize = spacing.exact(160);
+  const premiumIconSize = responsiveFont(12);
   const recordAttempt = useSignPracticeProgressStore(
     (state) => state.recordAttempt
   );
+  const isSignBookmarked = useSignBookmarksStore((state) => state.isSaved);
+  const toggleSignBookmark = useSignBookmarksStore((state) => state.toggleSaved);
   const recordedQuestionIdsRef = useRef<Set<string>>(new Set());
 
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -59,6 +62,23 @@ export function SignTestSessionScreen({
   const hasAnswered = selectedOptionId != null;
   const isCorrect =
     hasAnswered && selectedOptionId === currentQuestion?.correctOptionId;
+  const feedbackAccent = isCorrect ? accents.green : accents.red;
+  const feedbackGradientColors = [
+    feedbackAccent.wash,
+    colors.white,
+  ] as const;
+  const explanationText = currentQuestion?.explanation
+    ? pickLocalized(currentQuestion.explanation, i18n.language)
+    : null;
+  const correctChoiceBullets =
+    hasAnswered && !isCorrect && currentQuestion
+      ? currentQuestion.options
+          .filter((option) => option.id === currentQuestion.correctOptionId)
+          .map((option) => pickLocalized(option.label, i18n.language))
+      : [];
+  const isBookmarked = currentQuestion
+    ? isSignBookmarked(currentQuestion.signId)
+    : false;
 
   const handleSelectOption = (optionId: string) => {
     if (hasAnswered || !currentQuestion) {
@@ -91,6 +111,28 @@ export function SignTestSessionScreen({
     setSelectedOptionId(null);
   };
 
+  const handleReportProblem = () => {
+    if (!currentQuestion) {
+      return;
+    }
+
+    const subject = t("signs.reportProblemSubject", {
+      signId: currentQuestion.signId,
+      defaultValue: `Problem with sign ${currentQuestion.signId}`,
+    });
+    void Linking.openURL(
+      `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
+    );
+  };
+
+  const handleToggleBookmark = () => {
+    if (!currentQuestion) {
+      return;
+    }
+
+    toggleSignBookmark(currentQuestion.signId);
+  };
+
   if (questions.length === 0 || !currentQuestion || !currentSign) {
     return (
       <GreenWaveScreen>
@@ -114,27 +156,18 @@ export function SignTestSessionScreen({
     );
   }
 
-  const prompt =
-    currentQuestion.prompt != null
-      ? pickLocalized(currentQuestion.prompt, i18n.language)
-      : t("signs.testDefaultPrompt");
-
   return (
     <GreenWaveScreen>
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <StatusBar style="dark" />
 
         <View style={styles.header}>
-          <Pressable
-            accessibilityRole="button"
+          <NavigationButton
+            accessibilityLabel={t("common.close", { defaultValue: "Close" })}
+            inset
             onPress={() => router.back()}
-            style={({ pressed }) => [
-              styles.closeButton,
-              pressed ? styles.pressed : null,
-            ]}
-          >
-            <Ionicons color={colors.textPrimary} name="close" size={closeIconSize} />
-          </Pressable>
+            type="close"
+          />
 
           <View style={styles.headerCopy}>
             <Text style={styles.headerTitle}>{title}</Text>
@@ -148,66 +181,37 @@ export function SignTestSessionScreen({
           </Text>
         </View>
 
-        {questions.length > 6 ? (
-          <ScrollView
-            horizontal
-            style={styles.pillsScroll}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.pillsRow}
-          >
-            {questions.map((question, index) => {
-              const isActive = index === questionIndex;
-              const isDone = index < questionIndex;
+        <ScrollView
+          horizontal
+          style={styles.pillsScroll}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.pillsRow}
+        >
+          {questions.map((question, index) => {
+            const isActive = index === questionIndex;
+            const isDone = index < questionIndex;
 
-              return (
-                <View
-                  key={question.id}
+            return (
+              <View
+                key={question.id}
+                style={[
+                  styles.pill,
+                  isActive ? styles.pillActive : null,
+                  isDone ? styles.pillDone : null,
+                ]}
+              >
+                <Text
                   style={[
-                    styles.pill,
-                    isActive ? styles.pillActive : null,
-                    isDone ? styles.pillDone : null,
+                    styles.pillLabel,
+                    isActive ? styles.pillLabelActive : null,
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.pillLabel,
-                      isActive ? styles.pillLabelActive : null,
-                    ]}
-                  >
-                    {index + 1}
-                  </Text>
-                </View>
-              );
-            })}
-          </ScrollView>
-        ) : (
-          <View style={styles.pillsRowStatic}>
-            {questions.map((question, index) => {
-              const isActive = index === questionIndex;
-              const isDone = index < questionIndex;
-
-              return (
-                <View
-                  key={question.id}
-                  style={[
-                    styles.pill,
-                    isActive ? styles.pillActive : null,
-                    isDone ? styles.pillDone : null,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.pillLabel,
-                      isActive ? styles.pillLabelActive : null,
-                    ]}
-                  >
-                    {index + 1}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-        )}
+                  {index + 1}
+                </Text>
+              </View>
+            );
+          })}
+        </ScrollView>
 
         <ScrollView
           style={styles.scroll}
@@ -216,10 +220,8 @@ export function SignTestSessionScreen({
           bounces={false}
         >
           <View style={styles.imageCard}>
-            <SignImage sign={currentSign} size={signImageSize} />
+            <SignImage inset={0} sign={currentSign} size={signImageSize} />
           </View>
-
-          <Text style={styles.prompt}>{prompt}</Text>
 
           <View style={styles.options}>
             {currentQuestion.options.map((option, index) => {
@@ -255,52 +257,37 @@ export function SignTestSessionScreen({
               );
             })}
           </View>
-
-          {hasAnswered && currentQuestion.explanation ? (
-            <View style={styles.feedbackCard}>
-              <Text style={styles.feedbackTitle}>
-                {isCorrect
-                  ? t("signs.practiceCorrect")
-                  : t("signs.practiceIncorrect")}
-              </Text>
-              <Text style={styles.feedbackBody}>
-                {pickLocalized(currentQuestion.explanation, i18n.language)}
-              </Text>
-            </View>
-          ) : null}
-
-          {hasAnswered ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={handleContinue}
-              style={({ pressed }) => [
-                styles.continueButton,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <Text style={styles.continueButtonLabel}>
-                {questionIndex >= questions.length - 1
-                  ? t("signs.practiceFinish")
-                  : t("signs.practiceNext")}
-              </Text>
-            </Pressable>
-          ) : null}
-
-          <Pressable accessibilityRole="button" style={styles.reportRow}>
-            <Ionicons
-              color={colors.textMuted}
-              name="chatbox-ellipses-outline"
-              size={reportIconSize}
-            />
-            <Text style={styles.reportLabel}>{t("signs.reportProblem")}</Text>
-          </Pressable>
         </ScrollView>
       </SafeAreaView>
+
+      <QuestionFeedbackBottomSheet
+        visible={hasAnswered}
+        isCorrectAnswer={Boolean(isCorrect)}
+        explanationText={explanationText}
+        correctChoiceBullets={correctChoiceBullets}
+        showMasteryProgress={false}
+        masteryCurrent={0}
+        masteryTarget={0}
+        isBookmarked={isBookmarked}
+        nextLabel={
+          questionIndex >= questions.length - 1
+            ? t("question.finish")
+            : t("question.nextQuestion")
+        }
+        feedbackAccentFill={feedbackAccent.fill}
+        feedbackAccentInk={feedbackAccent.ink}
+        feedbackGradientColors={feedbackGradientColors}
+        premiumIconSize={premiumIconSize}
+        showExplain={false}
+        onReportProblem={handleReportProblem}
+        onToggleBookmark={handleToggleBookmark}
+        onNext={handleContinue}
+      />
     </GreenWaveScreen>
   );
 }
 
-function useStyles({ safeBottom }: { safeBottom: number }) {
+function useStyles() {
   return useResponsiveStyles(
     ({ accents, colors, radius, responsiveFont, spacing }) => ({
       safeArea: {
@@ -309,113 +296,93 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       header: {
         flexDirection: "row",
         alignItems: "center",
-        gap: spacing.exact(8),
-        paddingHorizontal: spacing.exact(16),
+        gap: spacing.exact(16),
+        paddingHorizontal: spacing.exact(24),
         paddingTop: spacing.exact(8),
         paddingBottom: spacing.exact(12),
       },
-      closeButton: {
-        width: spacing.exact(40),
-        height: spacing.exact(40),
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: radius.md,
-        backgroundColor: colors.surface,
-      },
       headerCopy: {
         flex: 1,
-        gap: spacing.exact(2),
+        gap: 0,
       },
       headerTitle: {
-        fontSize: responsiveFont(18),
-        lineHeight: responsiveFont(28),
-        fontWeight: "700",
-        color: colors.textPrimary,
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        fontWeight: "400",
+        color: colors.ink,
       },
       headerSubtitle: {
         fontSize: responsiveFont(12),
         lineHeight: responsiveFont(16),
-        color: colors.textMuted,
+        color: colors.ink3,
       },
       headerCounter: {
         fontSize: responsiveFont(12),
         lineHeight: responsiveFont(16),
-        color: colors.textMuted,
+        color: colors.ink2,
       },
       pillsScroll: {
         flexGrow: 0,
         flexShrink: 0,
-        maxHeight: spacing.exact(52),
+        maxHeight: spacing.exact(44),
       },
       pillsRow: {
-        gap: spacing.exact(8),
-        paddingHorizontal: spacing.exact(16),
+        gap: spacing.exact(4),
+        paddingHorizontal: spacing.exact(24),
         paddingBottom: spacing.exact(12),
         alignItems: "center",
       },
-      pillsRowStatic: {
-        flexDirection: "row",
-        gap: spacing.exact(8),
-        paddingHorizontal: spacing.exact(16),
-        paddingBottom: spacing.exact(12),
-      },
       pill: {
-        width: spacing.exact(36),
-        height: spacing.exact(36),
+        minWidth: spacing.exact(33),
+        height: spacing.exact(32),
+        paddingHorizontal: spacing.exact(12),
         alignItems: "center",
         justifyContent: "center",
         borderRadius: radius.pill,
         backgroundColor: colors.surface,
       },
       pillActive: {
-        backgroundColor: colors.textPrimary,
+        backgroundColor: colors.ink,
       },
       pillDone: {
         backgroundColor: colors.paper,
       },
       pillLabel: {
         fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        fontWeight: "600",
-        color: colors.textSecondary,
+        lineHeight: responsiveFont(24),
+        fontWeight: "400",
+        color: colors.ink2,
       },
       pillLabelActive: {
-        color: colors.onAccent,
+        color: colors.white,
       },
       scroll: {
         flex: 1,
       },
       content: {
         flexGrow: 0,
-        paddingHorizontal: spacing.exact(24),
-        paddingTop: spacing.exact(8),
-        paddingBottom: spacing.exact(24) + safeBottom,
+        paddingBottom: spacing.exact(24),
         gap: spacing.exact(12),
       },
       imageCard: {
         alignItems: "center",
         justifyContent: "center",
-        minHeight: spacing.exact(180),
-        borderRadius: radius.xl,
-        backgroundColor: colors.surface,
-        padding: spacing.exact(16),
-      },
-      prompt: {
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(24),
-        fontWeight: "600",
-        color: colors.textPrimary,
-        textAlign: "center",
+        minHeight: spacing.exact(220),
+        marginHorizontal: 0,
+        backgroundColor: colors.white,
+        paddingVertical: spacing.exact(39),
       },
       options: {
-        gap: spacing.exact(8),
+        gap: spacing.exact(4),
+        paddingHorizontal: spacing.exact(24),
       },
       option: {
         flexDirection: "row",
         alignItems: "center",
         gap: spacing.exact(12),
-        padding: spacing.exact(16),
-        borderRadius: radius.xl,
+        paddingVertical: spacing.exact(12),
+        paddingHorizontal: spacing.exact(12),
+        borderRadius: radius.lg,
         backgroundColor: colors.surface,
       },
       optionSelected: {
@@ -433,66 +400,24 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
         backgroundColor: accents.red.soft,
       },
       optionLetterWrap: {
-        width: spacing.exact(28),
-        height: spacing.exact(28),
+        width: spacing.exact(24),
+        height: spacing.exact(24),
         alignItems: "center",
         justifyContent: "center",
         borderRadius: radius.pill,
         backgroundColor: colors.paper,
       },
       optionLetter: {
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        fontWeight: "700",
-        color: colors.textSecondary,
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        fontWeight: "600",
+        color: colors.ink2,
       },
       optionLabel: {
         flex: 1,
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(24),
-        color: colors.textPrimary,
-      },
-      feedbackCard: {
-        gap: spacing.exact(4),
-        padding: spacing.exact(16),
-        borderRadius: radius.lg,
-        backgroundColor: colors.surface,
-      },
-      feedbackTitle: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "600",
-        color: colors.textPrimary,
-      },
-      feedbackBody: {
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(22),
-        color: colors.textSecondary,
-      },
-      continueButton: {
-        alignItems: "center",
-        justifyContent: "center",
-        paddingVertical: spacing.exact(12),
-        borderRadius: radius.pill,
-        backgroundColor: accents.green.fill,
-      },
-      continueButtonLabel: {
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(24),
-        fontWeight: "600",
-        color: colors.onAccent,
-      },
-      reportRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: spacing.exact(4),
-        paddingVertical: spacing.exact(12),
-      },
-      reportLabel: {
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        color: colors.textMuted,
+        color: colors.ink,
       },
       emptyState: {
         flex: 1,

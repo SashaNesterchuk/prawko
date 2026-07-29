@@ -2,10 +2,11 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
+import { SignDescriptionWithPlates } from "../../../src/components/shell/SignDescriptionWithPlates";
 import { SignDetailNav } from "../../../src/components/shell/SignDetailNav";
 import { SignDetailToolbar } from "../../../src/components/shell/SignDetailToolbar";
 import { SignStatusBadge } from "../../../src/components/shell/SignStatusBadge";
@@ -21,11 +22,10 @@ import {
 import {
   getSignDescription,
   getSignDisplayName,
-  getSignPractices,
-  hasSignPracticeContent,
 } from "../../../src/features/road-signs/content/registry";
 import { SignImage } from "../../../src/features/road-signs/SignImage";
 import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
+import { useSignBookmarksStore } from "../../../src/state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 
 export default function SignDetailScreen() {
@@ -50,6 +50,10 @@ export default function SignDetailScreen() {
   const signPracticeRecords = useSignPracticeProgressStore(
     (state) => state.records
   );
+  const isBookmarked = useSignBookmarksStore((state) =>
+    signId ? Boolean(state.savedSignIds[signId]) : false
+  );
+  const toggleSaved = useSignBookmarksStore((state) => state.toggleSaved);
 
   const currentIndex = useMemo(
     () => categorySigns.findIndex((item) => item.id === sign?.id),
@@ -68,7 +72,6 @@ export default function SignDetailScreen() {
         code: sign.code,
       })
     : "";
-  const practiceCount = sign ? getSignPractices(sign.id).length : 0;
 
   const learningStatus = sign
     ? getSignLearningStatus(sign.id, signPracticeRecords)
@@ -122,6 +125,11 @@ export default function SignDetailScreen() {
           }
           currentIndex={Math.max(currentIndex, 0)}
           totalCount={categorySigns.length}
+          isBookmarked={isBookmarked}
+          bookmarkLabel={
+            isBookmarked ? t("signs.removeBookmark") : t("signs.bookmark")
+          }
+          onToggleBookmark={() => toggleSaved(sign.id)}
           closeLabel={t("common.close", { defaultValue: "Close" })}
           onClose={() => router.back()}
         />
@@ -132,39 +140,17 @@ export default function SignDetailScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.imageWrap}>
-            <SignImage sign={sign} size={spacing.exact(220)} />
+            <SignImage inset={0} sign={sign} size={spacing.exact(160)} />
           </View>
 
-          {hasSignPracticeContent(sign.id) ? (
+          <View style={styles.descriptionBlock}>
             <SignStatusBadge status={learningStatus} label={statusLabel} />
-          ) : null}
-
-          <Text style={styles.name}>{displayName}</Text>
-          <Text style={styles.description}>{description}</Text>
-
-          {sign && hasSignPracticeContent(sign.id) ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() =>
-                router.push({
-                  pathname: "/signs/[signId]/practice",
-                  params: { signId: sign.id },
-                })
-              }
-              style={({ pressed }) => [
-                styles.practiceCard,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <View style={styles.practiceCopy}>
-                <Text style={styles.practiceTitle}>{t("signs.practiceTitle")}</Text>
-                <Text style={styles.practiceSubtitle}>
-                  {t("signs.practiceSubtitle", { count: practiceCount })}
-                </Text>
-              </View>
-              <Text style={styles.practiceCta}>{t("signs.startPractice")}</Text>
-            </Pressable>
-          ) : null}
+            <Text style={styles.name}>{displayName}</Text>
+            <SignDescriptionWithPlates
+              excludeSignId={sign.id}
+              text={description}
+            />
+          </View>
         </ScrollView>
 
         <View style={styles.footer}>
@@ -192,62 +178,32 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
     },
     content: {
       paddingHorizontal: spacing.xl,
-      paddingTop: spacing.sm,
+      paddingTop: 0,
       paddingBottom: spacing.exact(24) + safeBottom,
-      gap: spacing.lg,
     },
     imageWrap: {
       alignItems: "center",
       justifyContent: "center",
-      minHeight: spacing.exact(240),
+      paddingVertical: spacing.xl,
+      backgroundColor: colors.white,
+    },
+    descriptionBlock: {
+      gap: spacing.sm,
+      paddingTop: 0,
+      paddingBottom: spacing.exact(32),
     },
     name: {
-      fontSize: responsiveFont(24),
-      lineHeight: responsiveFont(32),
-      fontWeight: "700",
-      letterSpacing: -0.48,
+      marginTop: spacing.sm,
+      fontSize: responsiveFont(20),
+      lineHeight: responsiveFont(28),
+      fontWeight: "600",
+      letterSpacing: -0.2,
       color: colors.ink,
-    },
-    description: {
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
-      color: colors.inkSecondary,
     },
     footer: {
       paddingHorizontal: spacing.xl,
-      paddingTop: spacing.md,
-      paddingBottom: spacing.lg + safeBottom,
-    },
-    practiceCard: {
-      gap: spacing.sm,
-      padding: spacing.lg,
-      borderRadius: spacing.exact(24),
-      backgroundColor: colors.surface,
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.06,
-      shadowRadius: spacing.exact(8),
-      shadowOffset: { width: 0, height: spacing.exact(2) },
-      elevation: 2,
-    },
-    practiceCopy: {
-      gap: spacing.exact(4),
-    },
-    practiceTitle: {
-      fontSize: responsiveFont(18),
-      lineHeight: responsiveFont(26),
-      fontWeight: "700",
-      color: colors.ink,
-    },
-    practiceSubtitle: {
-      fontSize: responsiveFont(14),
-      lineHeight: responsiveFont(22),
-      color: colors.inkSecondary,
-    },
-    practiceCta: {
-      fontSize: responsiveFont(15),
-      lineHeight: responsiveFont(22),
-      fontWeight: "600",
-      color: colors.ink,
+      paddingTop: spacing.xl,
+      paddingBottom: spacing.xl + safeBottom,
     },
     missingState: {
       flex: 1,
@@ -261,9 +217,6 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       fontWeight: "600",
       color: colors.ink,
       textAlign: "center",
-    },
-    pressed: {
-      opacity: 0.92,
     },
   }));
 }

@@ -10,7 +10,8 @@ const CORS_HEADERS = {
 
 const PREGENERATED_EXPLANATION_MODEL = "pre-generated-explanation-v1";
 
-type SupportedLocale = "pl" | "ua" | "en";
+type SupportedLocale = "pl" | "ua" | "en" | "de" | "es";
+type ContentLocale = "pl" | "ua" | "en";
 type AiProviderId = "mock" | "openai" | "anthropic";
 type AppLogSeverity = "info" | "warning" | "error" | "critical";
 type QuestionChatMessage = {
@@ -304,7 +305,21 @@ function validateRequest(value: unknown): QuestionChatRequest {
 }
 
 function isSupportedLocale(value: unknown): value is SupportedLocale {
-  return value === "pl" || value === "ua" || value === "en";
+  return (
+    value === "pl" ||
+    value === "ua" ||
+    value === "en" ||
+    value === "de" ||
+    value === "es"
+  );
+}
+
+function getContentLocale(locale: SupportedLocale): ContentLocale {
+  if (locale === "pl" || locale === "ua" || locale === "en") {
+    return locale;
+  }
+
+  return "en";
 }
 
 function getRequiredEnv(name: string) {
@@ -653,11 +668,13 @@ function extractAnthropicText(data: Record<string, unknown>) {
 }
 
 function buildSystemPrompt(request: QuestionChatRequest) {
-  if (request.locale === "pl") {
+  const contentLocale = getContentLocale(request.locale);
+
+  if (contentLocale === "pl") {
     return "Jestes nauczycielem do egzaminu na prawo jazdy w Polsce. Odpowiadasz jasno, krotko i praktycznie. Wyjasniasz, dlaczego poprawna odpowiedz jest poprawna, bez wymyslania nowych przepisow. Jesli student wybral zla odpowiedz, spokojnie wskazujesz blad i dajesz jedna regule do zapamietania.";
   }
 
-  if (request.locale === "en") {
+  if (contentLocale === "en") {
     return "You are a driving-exam study coach for the Polish theory exam. Be concise, practical, and calm. Explain why the correct answer is right, avoid inventing rules, and give one short memory rule when helpful.";
   }
 
@@ -864,11 +881,13 @@ function getPromptIntent(
 }
 
 function getMemoryRule(locale: SupportedLocale) {
-  if (locale === "pl") {
+  const contentLocale = getContentLocale(locale);
+
+  if (contentLocale === "pl") {
     return "Patrz na dokladna zasade z pytania i wybieraj odpowiedz, ktora pasuje do niej 1:1, a nie tylko brzmi bezpiecznie.";
   }
 
-  if (locale === "en") {
+  if (contentLocale === "en") {
     return "Look for the exact rule being tested and choose the option that matches it 1:1, not the one that merely sounds safe.";
   }
 
@@ -876,11 +895,13 @@ function getMemoryRule(locale: SupportedLocale) {
 }
 
 function getMistakeLine(locale: SupportedLocale) {
-  if (locale === "pl") {
+  const contentLocale = getContentLocale(locale);
+
+  if (contentLocale === "pl") {
     return "Zgadywanie po intuicji albo wybieranie odpowiedzi, ktora brzmi ogolnie najbezpieczniej.";
   }
 
-  if (locale === "en") {
+  if (contentLocale === "en") {
     return "Guessing from intuition or choosing the option that sounds generally safest.";
   }
 
@@ -888,11 +909,13 @@ function getMistakeLine(locale: SupportedLocale) {
 }
 
 function getMissingExplanationFallback(locale: SupportedLocale) {
-  if (locale === "pl") {
+  const contentLocale = getContentLocale(locale);
+
+  if (contentLocale === "pl") {
     return "Brak oficjalnego wyjasnienia w bazie. Odpowiedz opiera sie na poprawnej odpowiedzi i logice pytania.";
   }
 
-  if (locale === "en") {
+  if (contentLocale === "en") {
     return "The official explanation is missing in the dataset, so this answer is based on the correct option and the question logic.";
   }
 

@@ -3,10 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { Icon } from "../icons";
 
-import {
-  useResponsiveFonts,
-  useResponsiveStyles,
-} from "../../portable-ui";
+import { useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { getSignDisplayName } from "../../features/road-signs/content/registry";
 import { SignImage } from "../../features/road-signs/SignImage";
@@ -15,17 +12,20 @@ import type { RoadSign } from "../../features/road-signs/types";
 type SignCatalogCardProps = {
   sign: RoadSign;
   showWrongBadge?: boolean;
+  isBookmarked?: boolean;
+  onToggleBookmark?: () => void;
   onPress?: () => void;
 };
 
 export function SignCatalogCard({
   sign,
   showWrongBadge = false,
+  isBookmarked = false,
+  onToggleBookmark,
   onPress,
 }: SignCatalogCardProps) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = useTheme();
-  const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles();
   const displayName = getSignDisplayName(sign.id, i18n.language, sign.code);
 
@@ -37,19 +37,54 @@ export function SignCatalogCard({
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
     >
       <View style={styles.topRow}>
-        <Text style={styles.code}>{sign.code}</Text>
-        <View style={styles.topActions}>
-          {showWrongBadge ? (
-            <View style={styles.wrongBadge}>
-              <Icon color={theme.accents.red.ink} name="close" size={responsiveFont(12)} />
-            </View>
-          ) : null}
-          <Icon color={theme.colors.inkMuted} name="star" size={responsiveFont(18)} />
+        <View style={styles.sideColumn}>
+          <Text style={styles.code}>{sign.code}</Text>
         </View>
-      </View>
 
-      <View style={styles.imageWrap}>
-        <SignImage sign={sign} size={120} />
+        <View style={styles.imageWrap}>
+          <SignImage sign={sign} size={80} />
+        </View>
+
+        <View style={[styles.sideColumn, styles.sideColumnRight]}>
+          <View style={styles.topActions}>
+            {showWrongBadge ? (
+              <Icon
+                color={theme.accents.red.fill}
+                name="bulletWrong"
+                size={24}
+              />
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                isBookmarked
+                  ? t("signs.removeBookmark")
+                  : t("signs.bookmark")
+              }
+              accessibilityState={{ selected: isBookmarked }}
+              disabled={!onToggleBookmark}
+              hitSlop={8}
+              onPress={(event) => {
+                event.stopPropagation?.();
+                onToggleBookmark?.();
+              }}
+              style={({ pressed }) => [
+                styles.bookmarkHit,
+                pressed ? styles.pressed : null,
+              ]}
+            >
+              <Icon
+                color={
+                  isBookmarked
+                    ? theme.accents.amber.fill
+                    : theme.colors.ink2
+                }
+                name={isBookmarked ? "stateActive" : "stateDefault"}
+                size={24}
+              />
+            </Pressable>
+          </View>
+        </View>
       </View>
 
       <Text style={styles.name} numberOfLines={3}>
@@ -60,15 +95,15 @@ export function SignCatalogCard({
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     card: {
-      gap: spacing.md,
+      gap: spacing.sm,
       padding: spacing.lg,
       borderRadius: radius.xl,
       backgroundColor: colors.surface,
       shadowColor: colors.shadow,
       shadowOpacity: 0.05,
-      shadowRadius: spacing.exact(6),
+      shadowRadius: spacing.exact(12),
       shadowOffset: { width: 0, height: spacing.exact(2) },
       elevation: 1,
     },
@@ -77,37 +112,39 @@ function useStyles() {
     },
     topRow: {
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-start",
       justifyContent: "space-between",
+    },
+    sideColumn: {
+      flex: 1,
+    },
+    sideColumnRight: {
+      alignItems: "flex-end",
     },
     code: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "600",
-      color: colors.inkMuted,
+      fontWeight: "400",
+      color: colors.ink2,
     },
     topActions: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing.sm,
+      gap: spacing.xs,
     },
-    wrongBadge: {
-      width: spacing.exact(22),
-      height: spacing.exact(22),
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: radius.pill,
-      backgroundColor: theme.accents.red.soft,
+    bookmarkHit: {
+      padding: spacing.exact(4),
     },
     imageWrap: {
+      width: spacing.exact(80),
+      height: spacing.exact(80),
       alignItems: "center",
       justifyContent: "center",
-      minHeight: spacing.exact(140),
     },
     name: {
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
+      fontWeight: "400",
       color: colors.ink,
       textAlign: "center",
     },

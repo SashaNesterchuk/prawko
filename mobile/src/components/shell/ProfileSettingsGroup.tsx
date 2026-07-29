@@ -1,7 +1,12 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import { Pressable, Switch, Text, View } from "react-native";
 
-import { getFontFamily, useResponsiveStyles } from "../../portable-ui";
+import {
+  getFontFamily,
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type ProfileSettingsRowProps = {
@@ -97,11 +102,17 @@ export function ProfileSettingsGroup({ children }: ProfileSettingsGroupProps) {
 }
 
 function PremiumMiniBadge() {
+  const { colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles();
 
   return (
     <View style={styles.badge}>
-      <View style={styles.badgeCrown} />
+      <MaterialCommunityIcons
+        color={colors.white}
+        name="crown-outline"
+        size={responsiveFont(14)}
+      />
     </View>
   );
 }
@@ -173,18 +184,8 @@ function useStyles({
       alignItems: "center",
       justifyContent: "center",
       padding: spacing.xs,
-      borderRadius: radius.pill,
+      borderRadius: radius.md,
       backgroundColor: theme.accents.green.fill,
-    },
-    badgeCrown: {
-      width: spacing.exact(10),
-      height: spacing.exact(8),
-      borderTopWidth: 2,
-      borderLeftWidth: 2,
-      borderRightWidth: 2,
-      borderColor: colors.white,
-      borderTopLeftRadius: spacing.exact(2),
-      borderTopRightRadius: spacing.exact(2),
     },
   }));
 }

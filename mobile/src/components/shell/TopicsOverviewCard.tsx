@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
 import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
@@ -20,10 +21,16 @@ export function TopicsOverviewCard({
   total,
   correct,
   wrong,
-  title = "Готовність",
-  answeredLabel = "Всього відповідей",
+  title,
+  answeredLabel,
 }: TopicsOverviewCardProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
+  const resolvedTitle =
+    title ?? t("learn.overviewReadiness", { defaultValue: "Готовність" });
+  const resolvedAnsweredLabel =
+    answeredLabel ??
+    t("learn.overviewTotalAnswers", { defaultValue: "Всього відповідей" });
   const clamped = Math.max(0, Math.min(readiness, 100));
   const status = resolveTopicReadinessStatus(answered, clamped);
   const statusColor =
@@ -43,7 +50,7 @@ export function TopicsOverviewCard({
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{resolvedTitle}</Text>
         <Text style={styles.readinessValue}>{clamped}%</Text>
       </View>
 
@@ -51,7 +58,7 @@ export function TopicsOverviewCard({
         {answered > 0 ? <View style={styles.fill} /> : null}
       </View>
 
-      <Text style={styles.answersLabel}>{answeredLabel}</Text>
+      <Text style={styles.answersLabel}>{resolvedAnsweredLabel}</Text>
       <Text style={styles.answersValue}>
         {`${answered} / ${total}`}
       </Text>

@@ -30,6 +30,7 @@ type QuestionProgressState = {
     }
   ) => void;
   advanceSession: () => void;
+  retreatSession: () => void;
   answerCurrentQuestion: (
     selectedAnswer: QuestionOptionValue
   ) => QuestionAttempt | null;
@@ -94,6 +95,20 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             activeSession: {
               ...state.activeSession,
               currentIndex: state.activeSession.currentIndex + 1,
+            },
+          };
+        }),
+      retreatSession: () =>
+        set((state) => {
+          if (!state.activeSession || state.activeSession.currentIndex <= 0) {
+            return state;
+          }
+
+          return {
+            activeSession: {
+              ...state.activeSession,
+              currentIndex: state.activeSession.currentIndex - 1,
+              finishedAt: null,
             },
           };
         }),

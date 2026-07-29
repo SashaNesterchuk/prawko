@@ -1,15 +1,17 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
 import { SignCatalogCard } from "../../../src/components/shell/SignCatalogCard";
+import {
+  SignQuestionCountDialog,
+} from "../../../src/components/shell/SignQuestionCountDialog";
 import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
 import {
-  useResponsiveSpacing,
   useResponsiveStyles,
 } from "../../../src/portable-ui";
 import {
@@ -19,6 +21,7 @@ import {
 } from "../../../src/features/road-signs/catalog";
 import { buildCategorySignTestQuestions } from "../../../src/features/road-signs/category-test";
 import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
+import { useSignBookmarksStore } from "../../../src/state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 
 export default function SignsCategoryScreen() {
@@ -41,15 +44,31 @@ export default function SignsCategoryScreen() {
   const signPracticeRecords = useSignPracticeProgressStore(
     (state) => state.records
   );
-  const hasCategoryTestQuestions = useMemo(
-    () => buildCategorySignTestQuestions(resolvedCategoryId).length > 0,
+  const savedSignIds = useSignBookmarksStore((state) => state.savedSignIds);
+  const toggleSaved = useSignBookmarksStore((state) => state.toggleSaved);
+  const availableQuestions = useMemo(
+    () => buildCategorySignTestQuestions(resolvedCategoryId),
     [resolvedCategoryId]
   );
+  const hasCategoryTestQuestions = availableQuestions.length > 0;
+  const [countDialogVisible, setCountDialogVisible] = useState(false);
+  const [selectedCount, setSelectedCount] = useState<number | "all">(20);
 
   const openCategoryTest = () => {
+    setSelectedCount(
+      availableQuestions.length >= 20 ? 20 : "all"
+    );
+    setCountDialogVisible(true);
+  };
+
+  const startCategoryTest = () => {
+    setCountDialogVisible(false);
     router.push({
       pathname: "/signs/category/[categoryId]/test",
-      params: { categoryId: resolvedCategoryId },
+      params: {
+        categoryId: resolvedCategoryId,
+        limit: selectedCount === "all" ? "all" : String(selectedCount),
+      },
     });
   };
 
@@ -77,9 +96,11 @@ export default function SignsCategoryScreen() {
               <SignCatalogCard
                 key={sign.id}
                 sign={sign}
+                isBookmarked={Boolean(savedSignIds[sign.id])}
                 showWrongBadge={
                   getSignLearningStatus(sign.id, signPracticeRecords) === "wrong"
                 }
+                onToggleBookmark={() => toggleSaved(sign.id)}
                 onPress={() =>
                   router.push({
                     pathname: "/signs/[signId]",
@@ -105,6 +126,23 @@ export default function SignsCategoryScreen() {
             <Text style={styles.trainButtonLabel}>{t("signs.trainCategory")}</Text>
           </Pressable>
         </View>
+
+        <SignQuestionCountDialog
+          title={
+            category
+              ? t(`signs.categories.${category.id}.title`)
+              : t("signs.title")
+          }
+          subtitle={t("signs.chooseQuestionCount")}
+          startLabel={t("signs.startTrainingCta")}
+          allLabel={t("signs.allQuestions")}
+          totalCount={availableQuestions.length}
+          selectedCount={selectedCount}
+          visible={countDialogVisible}
+          onClose={() => setCountDialogVisible(false)}
+          onSelectCount={setSelectedCount}
+          onStart={startCategoryTest}
+        />
       </SafeAreaView>
     </GreenWaveScreen>
   );

@@ -63,9 +63,10 @@ const TYPOGRAPHY_FONT_KEY: Record<
   FontWeightKey
 > = {
   bold: "bold",
+  semiBold: "semiBold",
   medium: "medium",
   regular: "regular",
-  mono: "regular",
+  mono: "mono",
 };
 
 export function getTypographyStyle(key: TypographyStyleKey): TextStyle {
@@ -125,12 +126,9 @@ export const textSize = StyleSheet.create(
 export const textWeight = {
   regular: getTextWeightStyle("regular"),
   medium: getTextWeightStyle("medium"),
+  semiBold: getTextWeightStyle("semiBold"),
   bold: getTextWeightStyle("bold"),
-  light: getTextWeightStyle("light"),
-  italic: getTextWeightStyle("italic"),
-  boldItalic: getTextWeightStyle("boldItalic"),
-  sansBoldItalic: getTextWeightStyle("sansBoldItalic"),
-  robotoSerifMediumItalic28: getTextWeightStyle("robotoSerifMediumItalic28"),
+  mono: getTextWeightStyle("mono"),
 } as const;
 
 export const textStyle = StyleSheet.create({

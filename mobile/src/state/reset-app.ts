@@ -8,6 +8,8 @@ import { useAppShellStore } from "./app-shell";
 import { useEntitlementStore } from "./entitlements";
 import { useFreeTierQuestionUsageStore } from "./free-tier-usage";
 import { useQuestionProgressStore } from "./question-progress";
+import { useSignBookmarksStore } from "./sign-bookmarks";
+import { useSignPracticeProgressStore } from "./sign-practice-progress";
 
 /**
  * Wipes every persisted store and resets in-memory state so the app behaves like
@@ -30,6 +32,8 @@ export async function resetAppToFreshStart() {
   useEntitlementStore.getState().clearEntitlements();
   useEntitlementStore.getState().clearRevenueCatState();
   useQuestionProgressStore.getState().resetProgress();
+  useSignBookmarksStore.getState().resetSaved();
+  useSignPracticeProgressStore.getState().resetProgress();
   useFreeTierQuestionUsageStore.setState({ answeredQuestionsByDate: {} });
   useAiChatStore.setState({
     conversations: {},

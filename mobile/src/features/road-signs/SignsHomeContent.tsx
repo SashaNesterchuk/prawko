@@ -1,10 +1,11 @@
 import { router } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SignCategoryProgressCard } from "../../components/shell/SignCategoryProgressCard";
+import { SignQuestionCountDialog } from "../../components/shell/SignQuestionCountDialog";
 import { SignsSummaryCard } from "../../components/shell/SignsSummaryCard";
 import {
   useResponsiveSpacing,
@@ -15,6 +16,7 @@ import {
   ROAD_SIGN_CATEGORIES,
   getRoadSignsByCategory,
 } from "./catalog";
+import { buildAllSignTestQuestions } from "./category-test";
 import {
   getAllSignsProgress,
   getCategorySignProgress,
@@ -35,6 +37,9 @@ export function SignsHomeContent({
   const signPracticeRecords = useSignPracticeProgressStore(
     (state) => state.records
   );
+  const availableQuestions = useMemo(() => buildAllSignTestQuestions(), []);
+  const [countDialogVisible, setCountDialogVisible] = useState(false);
+  const [selectedCount, setSelectedCount] = useState<number | "all">(20);
 
   const catalogProgress = useMemo(
     () => getAllSignsProgress(signPracticeRecords),
@@ -58,48 +63,75 @@ export function SignsHomeContent({
     [signPracticeRecords]
   );
 
-  const openSignsTraining = () =>
+  const openSignsTraining = () => {
+    setSelectedCount(availableQuestions.length >= 20 ? 20 : "all");
+    setCountDialogVisible(true);
+  };
+
+  const startSignsTraining = () => {
+    setCountDialogVisible(false);
     router.push({
       pathname: "/signs/test",
+      params: {
+        limit: selectedCount === "all" ? "all" : String(selectedCount),
+      },
     });
+  };
 
   const resolvedBottomPadding = bottomPadding ?? spacing.exact(96) + safeBottom;
   const styles = useStyles({ contentBottomPadding: resolvedBottomPadding });
 
   return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <SignsSummaryCard
-        title={t("signs.title")}
-        readiness={readiness}
-        seen={catalogProgress.seen}
-        total={catalogProgress.total}
-        totalAnswersLabel={t("signs.totalAnswers")}
-        trainAllLabel={t("signs.trainAll")}
-        onTrainAll={openSignsTraining}
-      />
+    <>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <SignsSummaryCard
+          title={t("signs.title")}
+          progress={readiness}
+          seen={catalogProgress.seen}
+          total={catalogProgress.total}
+          correct={catalogProgress.correct}
+          wrong={catalogProgress.wrong}
+          correctAnswersLabel={t("signs.correctAnswers")}
+          trainAllLabel={t("signs.trainAll")}
+          onTrainAll={openSignsTraining}
+        />
 
-      <View style={styles.categoryList}>
-        {categoryPreviews.map(({ category, previewSign, progress }) => (
-          <SignCategoryProgressCard
-            key={category.id}
-            category={category}
-            previewSign={previewSign}
-            progress={progress}
-            title={t(`signs.categories.${category.id}.title`)}
-            onPress={() =>
-              router.push({
-                pathname: "/signs/category/[categoryId]",
-                params: { categoryId: category.id },
-              })
-            }
-          />
-        ))}
-      </View>
-    </ScrollView>
+        <View style={styles.categoryList}>
+          {categoryPreviews.map(({ category, previewSign, progress }) => (
+            <SignCategoryProgressCard
+              key={category.id}
+              category={category}
+              previewSign={previewSign}
+              progress={progress}
+              title={t(`signs.categories.${category.id}.title`)}
+              onPress={() =>
+                router.push({
+                  pathname: "/signs/category/[categoryId]",
+                  params: { categoryId: category.id },
+                })
+              }
+            />
+          ))}
+        </View>
+      </ScrollView>
+
+      <SignQuestionCountDialog
+        title={t("signs.title")}
+        subtitle={t("signs.chooseQuestionCount")}
+        startLabel={t("signs.startTrainingCta")}
+        allLabel={t("signs.allQuestions")}
+        totalCount={availableQuestions.length}
+        selectedCount={selectedCount}
+        visible={countDialogVisible}
+        onClose={() => setCountDialogVisible(false)}
+        onSelectCount={setSelectedCount}
+        onStart={startSignsTraining}
+      />
+    </>
   );
 }
 

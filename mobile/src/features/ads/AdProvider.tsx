@@ -1,20 +1,36 @@
 import { PropsWithChildren, useEffect } from "react";
 
 import { isAdMobEnabled } from "./admob-config";
-import { setInterstitialLoaded } from "./show-interstitial";
+import {
+  initializeAdMobSdk,
+  startInterstitialPreload,
+  stopInterstitialPreload,
+} from "./interstitial-controller";
 
 export function AdProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!isAdMobEnabled()) {
-      setInterstitialLoaded(false);
+      stopInterstitialPreload();
       return;
     }
 
-    // Stub: mark inventory as ready for policy testing without native AdMob SDK.
-    setInterstitialLoaded(true);
+    let cancelled = false;
+    let stopPreload: (() => void) | undefined;
+
+    void (async () => {
+      await initializeAdMobSdk();
+
+      if (cancelled) {
+        return;
+      }
+
+      stopPreload = startInterstitialPreload();
+    })();
 
     return () => {
-      setInterstitialLoaded(false);
+      cancelled = true;
+      stopPreload?.();
+      stopInterstitialPreload();
     };
   }, []);
 

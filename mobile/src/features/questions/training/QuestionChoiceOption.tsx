@@ -1,6 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 
-import { IconPlaceholder } from "../../../components/shell/IconPlaceholder";
+import { Icon } from "../../../components/icons";
 import { useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 
@@ -46,7 +46,9 @@ export function QuestionChoiceOption({
     >
       {!isBooleanQuestion ? (
         revealCorrect || revealWrong ? (
-          <IconPlaceholder
+          <Icon
+            name={revealCorrect ? "bulletCorrect" : "bulletWrong"}
+            size={24}
             color={filled ? colors.onAccent : accents.green.fill}
           />
         ) : (

@@ -2,6 +2,8 @@ export type AccentPalette = {
   fill: string;
   ink: string;
   soft: string;
+  /** Solid wash used for feedback / result panel gradients. */
+  wash: string;
 };
 
 export type SemanticColors = {
@@ -82,21 +84,25 @@ export const lightAccentColors: AccentColors = {
     fill: "#1FB574",
     ink: "#0E7A4C",
     soft: "rgba(31,181,116,0.14)",
+    wash: "#C6E8CD",
   },
   red: {
     fill: "#F0563F",
     ink: "#C33825",
     soft: "rgba(240,86,63,0.13)",
+    wash: "#F4DFD8",
   },
   amber: {
     fill: "#F0A93A",
     ink: "#A9700D",
     soft: "rgba(240,169,58,0.16)",
+    wash: "#F8E6C8",
   },
   blue: {
     fill: "#3B82F6",
     ink: "#2563C4",
     soft: "rgba(59,130,246,0.13)",
+    wash: "#D6E4FF",
   },
 };
 
@@ -105,20 +111,24 @@ export const darkAccentColors: AccentColors = {
     fill: "#3DDC94",
     ink: "#84EDBC",
     soft: "rgba(61,220,148,0.16)",
+    wash: "#1A3A2C",
   },
   red: {
     fill: "#FF7A68",
     ink: "#FFB0A4",
     soft: "rgba(255,122,104,0.16)",
+    wash: "#3A221E",
   },
   amber: {
     fill: "#FFC15E",
     ink: "#FFD692",
     soft: "rgba(255,193,94,0.16)",
+    wash: "#3A2E16",
   },
   blue: {
     fill: "#6EA8FF",
     ink: "#A8C8FF",
     soft: "rgba(110,168,255,0.16)",
+    wash: "#1A2740",
   },
 };

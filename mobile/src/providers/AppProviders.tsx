@@ -1,7 +1,7 @@
 import { PropsWithChildren } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import Toast from "react-native-toast-message";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 import { AdProvider } from "../features/ads/AdProvider";
 import { AppResumeAdListener } from "../features/ads/AppResumeAdListener";
@@ -26,31 +26,32 @@ export function AppProviders({ children }: PropsWithChildren) {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <AnalyticsProvider>
-            <ErrorLoggingProvider>
-              <SessionProvider>
-                <RemoteEntitlementsProvider>
-                  <RevenueCatProvider>
-                    <RemoteLearningStateProvider>
-                      <NotificationSetupProvider>
-                        <LocaleSyncProvider>
-                          <UserProvider>
-                            <QuestionCatalogProvider>
-                              <AdProvider>
-                                <AppResumeAdListener />
-                                {children}
-                                <Toast />
-                              </AdProvider>
-                            </QuestionCatalogProvider>
-                          </UserProvider>
-                        </LocaleSyncProvider>
-                      </NotificationSetupProvider>
-                    </RemoteLearningStateProvider>
-                  </RevenueCatProvider>
-                </RemoteEntitlementsProvider>
-              </SessionProvider>
-            </ErrorLoggingProvider>
-          </AnalyticsProvider>
+          <BottomSheetModalProvider>
+            <AnalyticsProvider>
+              <ErrorLoggingProvider>
+                <SessionProvider>
+                  <RemoteEntitlementsProvider>
+                    <RevenueCatProvider>
+                      <RemoteLearningStateProvider>
+                        <NotificationSetupProvider>
+                          <LocaleSyncProvider>
+                            <UserProvider>
+                              <QuestionCatalogProvider>
+                                <AdProvider>
+                                  <AppResumeAdListener />
+                                  {children}
+                                </AdProvider>
+                              </QuestionCatalogProvider>
+                            </UserProvider>
+                          </LocaleSyncProvider>
+                        </NotificationSetupProvider>
+                      </RemoteLearningStateProvider>
+                    </RevenueCatProvider>
+                  </RemoteEntitlementsProvider>
+                </SessionProvider>
+              </ErrorLoggingProvider>
+            </AnalyticsProvider>
+          </BottomSheetModalProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

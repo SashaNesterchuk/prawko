@@ -81,6 +81,22 @@ function getActiveNotificationHours() {
   return hours.length > 0 ? hours : DEFAULT_NOTIFICATION_HOURS;
 }
 
+async function cancelAllStudyNotificationsAsync() {
+  const store = useAppShellStore.getState();
+  const knownIds = store.scheduledNotificationIds;
+
+  if (knownIds.length > 0) {
+    await Promise.all(
+      knownIds.map((id) =>
+        Notifications.cancelScheduledNotificationAsync(id).catch(() => undefined),
+      ),
+    );
+  }
+
+  await Notifications.cancelAllScheduledNotificationsAsync().catch(() => undefined);
+  store.setScheduledNotificationIds([]);
+}
+
 async function scheduleStudyNotificationsAsync(hours: NotificationHour[]) {
   const scheduledNotificationIds: string[] = [];
 
@@ -93,10 +109,10 @@ async function scheduleStudyNotificationsAsync(hours: NotificationHour[]) {
         sound: true,
       },
       trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
         hour: hour.hour,
         minute: hour.minute,
-        repeats: true,
-      } as Notifications.CalendarTriggerInput,
+      },
     });
 
     scheduledNotificationIds.push(identifier);
@@ -106,30 +122,8 @@ async function scheduleStudyNotificationsAsync(hours: NotificationHour[]) {
 }
 
 export async function disableStudyNotificationsAsync() {
-  const store = useAppShellStore.getState();
-  const knownIds = store.scheduledNotificationIds;
-
-  if (knownIds.length > 0) {
-    await Promise.all(
-      knownIds.map((id) =>
-        Notifications.cancelScheduledNotificationAsync(id).catch(() => undefined),
-      ),
-    );
-  } else {
-    const scheduledNotifications =
-      await Notifications.getAllScheduledNotificationsAsync();
-
-    await Promise.all(
-      scheduledNotifications.map((item) =>
-        Notifications.cancelScheduledNotificationAsync(item.identifier).catch(
-          () => undefined,
-        ),
-      ),
-    );
-  }
-
-  store.setScheduleNotificationEnabled(false);
-  store.setScheduledNotificationIds([]);
+  await cancelAllStudyNotificationsAsync();
+  useAppShellStore.getState().setScheduleNotificationEnabled(false);
 }
 
 export async function enableStudyNotificationsAsync() {
@@ -149,7 +143,7 @@ export async function enableStudyNotificationsAsync() {
   }
 
   await maybeStorePushTokenAsync();
-  await disableStudyNotificationsAsync();
+  await cancelAllStudyNotificationsAsync();
 
   const scheduledNotificationIds = await scheduleStudyNotificationsAsync(
     getActiveNotificationHours(),

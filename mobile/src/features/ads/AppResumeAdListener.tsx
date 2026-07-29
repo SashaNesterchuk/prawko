@@ -6,6 +6,7 @@ import { useHasPlusAccess } from "../../state/entitlements";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { isAdMobEnabled } from "./admob-config";
 import {
+  isAppResumeAdsSuppressed,
   markAppBackgrounded,
   touchAdSessionActivity,
 } from "./ad-session-policy";
@@ -39,6 +40,10 @@ export function AppResumeAdListener() {
         nextState === "active"
       ) {
         touchAdSessionActivity();
+
+        if (isAppResumeAdsSuppressed()) {
+          return;
+        }
 
         if (isAdRouteBlocked(pathname)) {
           return;

@@ -2,7 +2,6 @@ import { Redirect, router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
-import Toast from "react-native-toast-message";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
@@ -99,11 +98,6 @@ export default function PreviewScreen() {
       } catch (error) {
         setCurrentStudyPlanRemoteId(null);
         console.warn("Failed to sync study plan to Supabase.", error);
-        Toast.show({
-          type: "error",
-          text1: t("toasts.planSyncFailedTitle"),
-          text2: t("toasts.planSyncFailedSubtitle"),
-        });
       }
     } else {
       setCurrentStudyPlanRemoteId(null);

@@ -13,6 +13,7 @@ import type {
   QuestionAiExplanationMap,
   SupabaseQuestionRecord,
 } from "../features/questions/supabase-question-record";
+import { fetchAllSupabasePages } from "../lib/fetch-all-supabase-pages";
 import { getMobileSupabaseClient } from "../lib/supabase";
 import {
   useCurrentUser,
@@ -62,6 +63,27 @@ type SupabaseQuestionAiExplanationRecord = {
   question_source_id: string;
   explanations: QuestionAiExplanationMap | null;
 };
+
+async function fetchAllActiveQuestionsForCategory(
+  preferredCategory: string
+): Promise<SupabaseQuestionRecord[]> {
+  const client = getMobileSupabaseClient();
+
+  return fetchAllSupabasePages(async (from, to) => {
+    const { data, error } = await client
+      .from("questions")
+      .select(QUESTION_CATALOG_SELECT)
+      .eq("is_active", true)
+      .contains("categories", [preferredCategory])
+      .order("source_row_number", { ascending: true })
+      .range(from, to);
+
+    return {
+      data: ((data ?? []) as unknown) as SupabaseQuestionRecord[],
+      error,
+    };
+  });
+}
 
 function normalizeQuestionAiExplanationMap(
   value: unknown
@@ -126,16 +148,20 @@ function mergeQuestionAiExplanations(
 }
 
 async function fetchQuestionAiExplanations() {
-  const { data, error } = await getMobileSupabaseClient()
-    .from("question_ai_explanations")
-    .select(QUESTION_AI_EXPLANATION_SELECT)
-    .order("source_row_number", { ascending: true });
+  const client = getMobileSupabaseClient();
 
-  if (error) {
-    throw error;
-  }
+  return fetchAllSupabasePages(async (from, to) => {
+    const { data, error } = await client
+      .from("question_ai_explanations")
+      .select(QUESTION_AI_EXPLANATION_SELECT)
+      .order("source_row_number", { ascending: true })
+      .range(from, to);
 
-  return ((data ?? []) as unknown) as SupabaseQuestionAiExplanationRecord[];
+    return {
+      data: ((data ?? []) as unknown) as SupabaseQuestionAiExplanationRecord[],
+      error,
+    };
+  });
 }
 
 export function QuestionCatalogProvider({ children }: PropsWithChildren) {
@@ -204,18 +230,15 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
 
     void (async () => {
       try {
-        const { data, error } = await getMobileSupabaseClient()
-          .from("questions")
-          .select(QUESTION_CATALOG_SELECT)
-          .eq("is_active", true)
-          .contains("categories", [preferredCategory])
-          .order("source_row_number", { ascending: true });
+        let records: SupabaseQuestionRecord[];
 
-        if (cancelled) {
-          return;
-        }
+        try {
+          records = await fetchAllActiveQuestionsForCategory(preferredCategory);
+        } catch (error: unknown) {
+          if (cancelled) {
+            return;
+          }
 
-        if (error) {
           if (authMode !== "supabase") {
             captureFallback({
               area: "question_catalog",
@@ -246,7 +269,9 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
           return;
         }
 
-        const records = ((data ?? []) as unknown) as SupabaseQuestionRecord[];
+        if (cancelled) {
+          return;
+        }
 
         if (records.length === 0) {
           if (authMode !== "supabase") {

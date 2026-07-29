@@ -3,7 +3,7 @@ import { View } from "react-native";
 
 import { useResponsiveStyles } from "../../portable-ui";
 import { type GreenWaveAccent } from "../../theme/green-wave";
-import { ActionTile } from "./ActionTile";
+import { ActionTile, type ActionTileStyle } from "./ActionTile";
 
 export type ActionTileItem = {
   key: string;
@@ -11,6 +11,7 @@ export type ActionTileItem = {
   subtitle: string;
   accent?: GreenWaveAccent;
   premium?: boolean;
+  style?: ActionTileStyle;
   icon?: ReactNode;
   onPress?: () => void;
 };
@@ -35,6 +36,7 @@ export function ActionTileGrid({ items, columns = 2 }: ActionTileGridProps) {
               subtitle={item.subtitle}
               accent={item.accent}
               premium={item.premium}
+              style={item.style}
               icon={item.icon}
               onPress={item.onPress}
             />

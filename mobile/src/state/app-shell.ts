@@ -96,6 +96,11 @@ type AppShellState = {
     daysUntilExam: number;
     examDate: string;
   }) => void;
+  /** Updates exam date in setup without clearing an active study plan. */
+  patchExamDate: (payload: {
+    daysUntilExam: number;
+    examDate: string;
+  }) => void;
   setCurrentStudyPlanRemoteId: (remoteId: string | null) => void;
   setHasHydrated: (value: boolean) => void;
   setLevel: (level: PlanLevel) => void;
@@ -326,6 +331,14 @@ export const useAppShellStore = create<AppShellState>()(
             ...state.onboardingProgress,
             scheduleDone: true,
           },
+          studyPlanSetup: {
+            ...state.studyPlanSetup,
+            daysUntilExam,
+            examDate,
+          },
+        })),
+      patchExamDate: ({ daysUntilExam, examDate }) =>
+        set((state) => ({
           studyPlanSetup: {
             ...state.studyPlanSetup,
             daysUntilExam,

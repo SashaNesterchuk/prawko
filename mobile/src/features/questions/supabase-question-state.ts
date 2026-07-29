@@ -1,6 +1,7 @@
 import type { QuestionSessionMode, SupportedLocale } from "@prawko/config";
 
 import { isMobileSupabaseConfigured } from "../../config/env";
+import { fetchAllSupabasePages } from "../../lib/fetch-all-supabase-pages";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 import { createEmptyQuestionUserState } from "./question-engine";
 import type { QuestionUserStateMap } from "./types";
@@ -54,44 +55,49 @@ export async function fetchRemoteQuestionUserStateMap() {
   }
 
   const client = getMobileSupabaseClient();
-  const [questionStateResult, bookmarksResult] = await Promise.all([
-    client
-      .from("question_user_state")
-      .select(
-        [
-          "times_seen",
-          "times_correct",
-          "times_wrong",
-          "consecutive_correct",
-          "last_seen_at",
-          "last_correct_at",
-          "last_wrong_at",
-          "review_due_at",
-          "is_hard",
-          "is_mastered",
-          "mastery_score",
-          "question:questions!inner(question_source_id)",
-        ].join(", ")
-      ),
-    client
-      .from("bookmarks")
-      .select("question:questions!inner(question_source_id)"),
+  const questionStateSelect = [
+    "times_seen",
+    "times_correct",
+    "times_wrong",
+    "consecutive_correct",
+    "last_seen_at",
+    "last_correct_at",
+    "last_wrong_at",
+    "review_due_at",
+    "is_hard",
+    "is_mastered",
+    "mastery_score",
+    "question:questions!inner(question_source_id)",
+  ].join(", ");
+
+  const [questionStateRows, bookmarkRows] = await Promise.all([
+    fetchAllSupabasePages(async (from, to) => {
+      const { data, error } = await client
+        .from("question_user_state")
+        .select(questionStateSelect)
+        .order("question_id", { ascending: true })
+        .range(from, to);
+
+      return {
+        data: ((data ?? []) as unknown) as RemoteQuestionUserStateRow[],
+        error,
+      };
+    }),
+    fetchAllSupabasePages(async (from, to) => {
+      const { data, error } = await client
+        .from("bookmarks")
+        .select("question:questions!inner(question_source_id)")
+        .order("question_id", { ascending: true })
+        .range(from, to);
+
+      return {
+        data: ((data ?? []) as unknown) as RemoteBookmarkRow[],
+        error,
+      };
+    }),
   ]);
 
-  if (questionStateResult.error) {
-    throw questionStateResult.error;
-  }
-
-  if (bookmarksResult.error) {
-    throw bookmarksResult.error;
-  }
-
-  const questionUserState = buildQuestionUserStateMap(
-    ((questionStateResult.data ?? []) as unknown) as RemoteQuestionUserStateRow[],
-    ((bookmarksResult.data ?? []) as unknown) as RemoteBookmarkRow[]
-  );
-
-  return questionUserState;
+  return buildQuestionUserStateMap(questionStateRows, bookmarkRows);
 }
 
 export async function syncQuestionBookmarkState(input: SyncBookmarkInput) {

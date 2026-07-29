@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -59,6 +60,29 @@ export default function AiChatModalScreen() {
     hasAiChatAccess,
   });
 
+  useEffect(() => {
+    if (!aiChatHydrated || hasAiChatAccess || !questionId) {
+      return;
+    }
+
+    router.replace({
+      pathname: "/paywall",
+      params: {
+        feature: "ai_question_chat",
+        returnTo: "ai-chat",
+        questionId,
+        locale,
+        ...(selectedAnswer ? { selectedAnswer } : {}),
+      },
+    });
+  }, [
+    aiChatHydrated,
+    hasAiChatAccess,
+    locale,
+    questionId,
+    selectedAnswer,
+  ]);
+
   if (!aiChatHydrated) {
     return (
       <AppScreen
@@ -106,30 +130,13 @@ export default function AiChatModalScreen() {
     return (
       <AppScreen
         title={t("modals.aiTitle")}
-        subtitle={t("modals.aiPlusGateSubtitle")}
-        footer={
-          <View style={styles.footerStack}>
-            <AppButton
-              label={t("modals.aiOpenPaywall")}
-              onPress={() =>
-                router.push({
-                  pathname: "/paywall",
-                  params: { feature: "ai_question_chat" },
-                })
-              }
-            />
-            <AppButton
-              variant="ghost"
-              label={t("common.close")}
-              onPress={() => router.back()}
-            />
-          </View>
-        }
+        subtitle={t("modals.aiSubtitle")}
+        scroll={false}
       >
-        <AppCard accent>
-          <Text style={styles.sectionTitle}>{t("modals.aiPlusGateTitle")}</Text>
-          <Text style={styles.messageBody}>{t("modals.aiPlusGateBody")}</Text>
-        </AppCard>
+        <LoadingStateView
+          title={t("states.loadingTitle")}
+          description={t("modals.aiLoading")}
+        />
       </AppScreen>
     );
   }

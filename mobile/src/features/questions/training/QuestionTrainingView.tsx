@@ -1,28 +1,31 @@
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
-import { IconPlaceholder } from "../../../components/shell/IconPlaceholder";
+import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
+import { NavigationButton } from "../../../components/shell/NavigationButton";
 import { TrainingExitDialog } from "../../../components/shell/TrainingExitDialog";
-import { useTheme } from "../../../providers/ThemeProvider";
 import {
   getLocalizedText,
   isQuestionMastered,
 } from "../question-engine";
 import { QuestionMediaCard } from "../QuestionMediaCard";
+import { QuestionMediaEmptyPlaceholder } from "../QuestionMediaEmptyPlaceholder";
 import { QuestionChoiceOption } from "./QuestionChoiceOption";
+import { QuestionFeedbackBottomSheet } from "./QuestionFeedbackBottomSheet";
 import { QuestionStepPill } from "./QuestionStepPill";
 import type { QuestionTrainingSession } from "./useQuestionTrainingSession";
 import { getQuestionStepState } from "./visible-steps";
-import { Icon } from "../../../components/icons";
+import { useHasAiChatAccess } from "../../../state/entitlements";
+
+const SUPPORT_EMAIL = "support@prawko.app";
 
 type QuestionTrainingViewProps = Pick<
   QuestionTrainingSession,
   | "activeSession"
   | "advanceSession"
-  | "aiIconSize"
   | "currentAnswer"
   | "currentAnswerCorrect"
   | "currentQuestion"
@@ -30,12 +33,14 @@ type QuestionTrainingViewProps = Pick<
   | "currentQuestionState"
   | "displayLocale"
   | "feedbackAccent"
+  | "feedbackGradientColors"
   | "handleAnswer"
   | "handleConfirmExit"
   | "handleDismissExitDialog"
   | "handleRequestExit"
   | "handleToggleBookmark"
   | "masteryProgress"
+  | "premiumIconSize"
   | "questionChoices"
   | "showExitDialog"
   | "summary"
@@ -53,7 +58,6 @@ type QuestionTrainingViewProps = Pick<
 export function QuestionTrainingView({
   activeSession,
   advanceSession,
-  aiIconSize,
   currentAnswer,
   currentAnswerCorrect,
   currentQuestion,
@@ -61,12 +65,14 @@ export function QuestionTrainingView({
   currentQuestionState,
   displayLocale,
   feedbackAccent,
+  feedbackGradientColors,
   handleAnswer,
   handleConfirmExit,
   handleDismissExitDialog,
   handleRequestExit,
   handleToggleBookmark,
   masteryProgress,
+  premiumIconSize,
   questionChoices,
   showExitDialog,
   summary,
@@ -74,7 +80,7 @@ export function QuestionTrainingView({
   visibleSteps,
 }: QuestionTrainingViewProps) {
   const { t } = useTranslation();
-  const { accents, colors } = useTheme();
+  const hasAiChatAccess = useHasAiChatAccess();
 
   const hasAnswered = Boolean(currentAnswer);
   const isCorrectAnswer = currentAnswerCorrect;
@@ -90,209 +96,178 @@ export function QuestionTrainingView({
     isCorrectAnswer &&
     !isQuestionMastered(currentQuestionState) &&
     currentQuestionState.timesWrong > 0;
+  const correctChoiceBullets =
+    hasAnswered && !isCorrectAnswer
+      ? questionChoices
+          .filter((choice) => choice.id === currentQuestion.correctAnswer)
+          .map((choice) =>
+            isBooleanQuestion
+              ? choice.label
+              : `${choice.id}. ${choice.label}`
+          )
+      : [];
+
+  const handleReportProblem = () => {
+    const subject = t("question.reportProblemSubject", {
+      questionId: currentQuestionId,
+    });
+    void Linking.openURL(
+      `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
+    );
+  };
+
+  const handleExplainPress = () => {
+    const aiChatParams = {
+      questionId: currentQuestionId,
+      locale: displayLocale,
+      selectedAnswer: currentAnswer?.selectedAnswer,
+    };
+
+    if (hasAiChatAccess) {
+      router.push({
+        pathname: "/modals/ai-chat",
+        params: aiChatParams,
+      });
+      return;
+    }
+
+    router.push({
+      pathname: "/paywall",
+      params: {
+        feature: "ai_question_chat",
+        returnTo: "ai-chat",
+        ...aiChatParams,
+      },
+    });
+  };
 
   return (
-    <SafeAreaView style={trainerStyles.safeArea} edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
-      <View style={trainerStyles.container}>
-        <View style={trainerStyles.header}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t("common.close")}
-            onPress={handleRequestExit}
-            style={trainerStyles.headerButton}
-          >
-            <Icon name="close" size={24} color={colors.textPrimary} />
-          </Pressable>
-          <View style={trainerStyles.headerCenter}>
-            <Text style={trainerStyles.headerTitle}>
-              {t("question.trainerTitle")}
-            </Text>
-            <Text style={trainerStyles.headerCounter}>
-              {currentStep} / {totalQuestions}
-            </Text>
-          </View>
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={trainerStyles.stepperScroll}
-          contentContainerStyle={trainerStyles.stepper}
-        >
-          {visibleSteps.map(({ questionId, index }) => (
-            <QuestionStepPill
-              key={questionId}
-              index={index}
-              stepState={getQuestionStepState(
-                activeSession!.answers[questionId],
-                index,
-                activeSession!.currentIndex
-              )}
-            />
-          ))}
-        </ScrollView>
-
-        <View style={trainerStyles.metaRow}>
-          <Text style={trainerStyles.metaText}>{scopeLabel}</Text>
-          <Text style={trainerStyles.metaText}>
-            {t("question.pointsLabel", { points: currentQuestion.points })}
-          </Text>
-        </View>
-
-        <ScrollView
-          style={trainerStyles.body}
-          contentContainerStyle={trainerStyles.bodyContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {currentQuestion.media ? (
-            <View style={trainerStyles.mediaBleed}>
-              <QuestionMediaCard
-                locale={displayLocale}
-                media={currentQuestion.media}
+    <GreenWaveScreen>
+      <SafeAreaView style={trainerStyles.safeArea} edges={["top", "bottom"]}>
+        <StatusBar style="dark" />
+        <View style={trainerStyles.container}>
+          <View style={trainerStyles.contentPad}>
+            <View style={trainerStyles.header}>
+              <NavigationButton
+                inset
+                type="close"
+                accessibilityLabel={t("common.close")}
+                onPress={handleRequestExit}
               />
+              <View style={trainerStyles.headerCenter}>
+                <Text style={trainerStyles.headerTitle}>
+                  {t("question.trainerTitle")}
+                </Text>
+                <Text style={trainerStyles.headerCounter}>
+                  {currentStep} / {totalQuestions}
+                </Text>
+              </View>
             </View>
-          ) : null}
+          </View>
 
-          <Text style={trainerStyles.prompt}>
-            {getLocalizedText(currentQuestion.prompt, displayLocale)}
-          </Text>
-
-          <View
-            style={
-              isBooleanQuestion
-                ? trainerStyles.booleanOptions
-                : trainerStyles.options
-            }
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={trainerStyles.stepperScroll}
+            contentContainerStyle={trainerStyles.stepper}
           >
-            {questionChoices.map((choice) => (
-              <QuestionChoiceOption
-                key={choice.id}
-                choice={choice}
-                hasAnswered={hasAnswered}
-                isBooleanQuestion={isBooleanQuestion}
-                isCorrectChoice={currentQuestion.correctAnswer === choice.id}
-                isSelected={currentAnswer?.selectedAnswer === choice.id}
-                onPress={() => handleAnswer(choice.id)}
+            {visibleSteps.map(({ questionId, index }) => (
+              <QuestionStepPill
+                key={questionId}
+                index={index}
+                stepState={getQuestionStepState(
+                  activeSession!.answers[questionId],
+                  index,
+                  activeSession!.currentIndex
+                )}
               />
             ))}
-          </View>
-        </ScrollView>
+          </ScrollView>
 
-        {hasAnswered ? (
-          <View style={trainerStyles.feedbackCard}>
-            <View style={trainerStyles.feedbackHeader}>
-              <IconPlaceholder color={feedbackAccent.ink} />
-              <Text style={trainerStyles.feedbackTitle}>
-                {isCorrectAnswer
-                  ? t("question.resultCorrect")
-                  : t("question.resultWrong")}
-              </Text>
-              <Pressable
-                accessibilityRole="button"
-                hitSlop={8}
-                onPress={() => handleToggleBookmark(currentQuestionId)}
-              >
-                <IconPlaceholder
-                  color={
-                    currentQuestionState.isBookmarked
-                      ? accents.amber.fill
-                      : colors.textMuted
-                  }
+          <View style={trainerStyles.metaRow}>
+            <Text style={trainerStyles.metaText}>{scopeLabel}</Text>
+            <Text style={trainerStyles.metaText}>
+              {t("question.pointsLabel", { points: currentQuestion.points })}
+            </Text>
+          </View>
+
+          <ScrollView
+            style={trainerStyles.body}
+            contentContainerStyle={trainerStyles.bodyContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={trainerStyles.mediaBleed}>
+              {currentQuestion.media ? (
+                <QuestionMediaCard
+                  key={currentQuestion.id}
+                  locale={displayLocale}
+                  media={currentQuestion.media}
                 />
-              </Pressable>
+              ) : (
+                <QuestionMediaEmptyPlaceholder />
+              )}
             </View>
 
-            {explanationText ? (
-              <Text style={trainerStyles.feedbackBody}>{explanationText}</Text>
-            ) : null}
+            <Text style={trainerStyles.prompt}>
+              {getLocalizedText(currentQuestion.prompt, displayLocale)}
+            </Text>
 
-            {showMasteryProgress ? (
-              <Text style={trainerStyles.masteryProgress}>
-                {t("question.masteryProgress", {
-                  current: masteryProgress.current,
-                  target: masteryProgress.target,
-                  defaultValue: "Закріплення: {{current}}/{{target}}",
-                })}
-              </Text>
-            ) : null}
-
-            <Pressable
-              accessibilityRole="button"
-              style={trainerStyles.explainRow}
-              onPress={() =>
-                router.push({
-                  pathname: "/modals/ai-chat",
-                  params: {
-                    questionId: currentQuestionId,
-                    locale: displayLocale,
-                    selectedAnswer: currentAnswer?.selectedAnswer,
-                  },
-                })
+            <View
+              style={
+                isBooleanQuestion
+                  ? trainerStyles.booleanOptions
+                  : trainerStyles.options
               }
             >
-              <Text style={trainerStyles.explainText}>
-                {isCorrectAnswer
-                  ? t("question.explainOthers")
-                  : t("question.explainMistake")}
-              </Text>
-              <View style={trainerStyles.aiBadge}>
-                <IconPlaceholder color={colors.onAccent} size={aiIconSize} />
-              </View>
-            </Pressable>
+              {questionChoices.map((choice) => (
+                <QuestionChoiceOption
+                  key={choice.id}
+                  choice={choice}
+                  hasAnswered={hasAnswered}
+                  isBooleanQuestion={isBooleanQuestion}
+                  isCorrectChoice={currentQuestion.correctAnswer === choice.id}
+                  isSelected={currentAnswer?.selectedAnswer === choice.id}
+                  onPress={() => handleAnswer(choice.id)}
+                />
+              ))}
+            </View>
+          </ScrollView>
+        </View>
 
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => advanceSession()}
-              style={({ pressed }) => [
-                trainerStyles.primaryButton,
-                pressed ? trainerStyles.pressed : null,
-              ]}
-            >
-              <Text style={trainerStyles.primaryButtonText}>
-                {summary.answered >= summary.total
-                  ? t("question.finish")
-                  : isCorrectAnswer
-                    ? t("question.nextQuestion")
-                    : t("question.gotIt")}
-              </Text>
-            </Pressable>
+        <TrainingExitDialog
+          body={t("question.exitConfirmBody")}
+          continueLabel={t("question.exitConfirmContinue")}
+          finishLabel={t("question.exitConfirmFinish")}
+          onContinue={handleDismissExitDialog}
+          onFinish={handleConfirmExit}
+          title={t("question.exitConfirmTitle")}
+          visible={showExitDialog}
+        />
+      </SafeAreaView>
 
-            <Pressable
-              accessibilityRole="button"
-              style={trainerStyles.reportButton}
-              onPress={() => router.back()}
-            >
-              <Text style={trainerStyles.reportText}>
-                {t("question.reportProblem")}
-              </Text>
-            </Pressable>
-          </View>
-        ) : (
-          <Pressable
-            accessibilityRole="button"
-            style={trainerStyles.reportButton}
-            onPress={() => router.back()}
-          >
-            <Text style={trainerStyles.reportText}>
-              {t("question.reportProblem")}
-            </Text>
-          </Pressable>
-        )}
-      </View>
-
-      <TrainingExitDialog
-        body={t("question.exitConfirmBody")}
-        continueLabel={t("question.exitConfirmContinue")}
-        finishLabel={t("question.exitConfirmFinish")}
-        onContinue={handleDismissExitDialog}
-        onFinish={() => {
-          handleConfirmExit();
-          router.back();
-        }}
-        title={t("question.exitConfirmTitle")}
-        visible={showExitDialog}
+      <QuestionFeedbackBottomSheet
+        visible={hasAnswered}
+        isCorrectAnswer={isCorrectAnswer}
+        explanationText={explanationText || null}
+        correctChoiceBullets={correctChoiceBullets}
+        showMasteryProgress={showMasteryProgress}
+        masteryCurrent={masteryProgress.current}
+        masteryTarget={masteryProgress.target}
+        isBookmarked={currentQuestionState.isBookmarked}
+        nextLabel={
+          summary.answered >= summary.total
+            ? t("question.finish")
+            : t("question.nextQuestion")
+        }
+        feedbackAccentFill={feedbackAccent.fill}
+        feedbackAccentInk={feedbackAccent.ink}
+        feedbackGradientColors={feedbackGradientColors}
+        premiumIconSize={premiumIconSize}
+        onReportProblem={handleReportProblem}
+        onToggleBookmark={() => handleToggleBookmark(currentQuestionId)}
+        onExplain={handleExplainPress}
+        onNext={() => advanceSession()}
       />
-    </SafeAreaView>
+    </GreenWaveScreen>
   );
 }

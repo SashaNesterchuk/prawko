@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 
 import {
@@ -10,12 +10,14 @@ import { useTheme } from "../../providers/ThemeProvider";
 type ProfilePremiumBannerProps = {
   title: string;
   description: string;
+  priceBadge?: string;
   onPress?: () => void;
 };
 
 export function ProfilePremiumBanner({
   title,
   description,
+  priceBadge,
   onPress,
 }: ProfilePremiumBannerProps) {
   const theme = useTheme();
@@ -32,8 +34,19 @@ export function ProfilePremiumBanner({
         pressed ? styles.pressed : null,
       ]}
     >
-      <View style={styles.iconWrap}>
-        <Ionicons color={theme.colors.white} name="diamond" size={responsiveFont(24)} />
+      <View style={styles.topRow}>
+        <View style={styles.iconWrap}>
+          <MaterialCommunityIcons
+            color={theme.colors.white}
+            name="crown-outline"
+            size={responsiveFont(24)}
+          />
+        </View>
+        {priceBadge ? (
+          <View style={styles.priceBadge}>
+            <Text style={styles.priceBadgeText}>{priceBadge}</Text>
+          </View>
+        ) : null}
       </View>
       <View style={styles.copy}>
         <Text style={styles.title}>{title}</Text>
@@ -47,12 +60,8 @@ function useStyles() {
   return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
     banner: {
       width: "100%",
-      flexDirection: "row",
-      alignItems: "flex-start",
-      gap: spacing.lg,
-      paddingTop: spacing.lg,
-      paddingBottom: spacing.md,
-      paddingHorizontal: spacing.lg,
+      gap: spacing.md,
+      padding: spacing.exact(24),
       borderRadius: radius.xl,
       backgroundColor: theme.accents.green.fill,
       shadowColor: theme.colors.shadow,
@@ -64,6 +73,11 @@ function useStyles() {
     pressed: {
       opacity: 0.92,
     },
+    topRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+    },
     iconWrap: {
       alignItems: "center",
       justifyContent: "center",
@@ -71,20 +85,31 @@ function useStyles() {
       borderRadius: radius.md,
       backgroundColor: theme.accents.amber.fill,
     },
+    priceBadge: {
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: radius.pill,
+      backgroundColor: colors.white,
+    },
+    priceBadgeText: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: theme.accents.green.ink,
+    },
     copy: {
-      flex: 1,
       gap: spacing.xs,
     },
     title: {
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
+      fontSize: responsiveFont(20),
+      lineHeight: responsiveFont(28),
       fontWeight: "600",
-      letterSpacing: -0.16,
+      letterSpacing: -0.2,
       color: theme.colors.white,
     },
     description: {
-      fontSize: responsiveFont(12),
-      lineHeight: responsiveFont(16),
+      fontSize: responsiveFont(14),
+      lineHeight: responsiveFont(20),
       fontWeight: "400",
       color: colors.onAccentSoft,
     },

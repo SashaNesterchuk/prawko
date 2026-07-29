@@ -2,7 +2,6 @@ import { Redirect, router } from "expo-router";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import Toast from "react-native-toast-message";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
@@ -84,11 +83,6 @@ export default function AccessScreen() {
 
     setAuthFeedback(null);
     signInMock();
-    Toast.show({
-      type: "success",
-      text1: t("toasts.mockSessionStartedTitle"),
-      text2: t("toasts.mockSessionStartedSubtitle"),
-    });
   };
 
   const switchAuthMode = (nextMode: AccessAuthMode) => {
@@ -181,19 +175,7 @@ export default function AccessScreen() {
               email: normalizedEmail,
             }),
           });
-          Toast.show({
-            type: "success",
-            text1: t("toasts.authConfirmationTitle"),
-            text2: t("toasts.authConfirmationSubtitle", {
-              email: normalizedEmail,
-            }),
-          });
         } else {
-          Toast.show({
-            type: "success",
-            text1: t("toasts.authSignedUpTitle"),
-            text2: t("toasts.authSignedUpSubtitle"),
-          });
           await redeemPendingSchoolCode();
         }
       } else {
@@ -202,11 +184,6 @@ export default function AccessScreen() {
           password,
         });
 
-        Toast.show({
-          type: "success",
-          text1: t("toasts.authSignedInTitle"),
-          text2: t("toasts.authSignedInSubtitle"),
-        });
         await redeemPendingSchoolCode();
       }
     } catch (error) {
@@ -226,11 +203,6 @@ export default function AccessScreen() {
       setAuthFeedback({
         kind: "error",
         message,
-      });
-      Toast.show({
-        type: "error",
-        text1: t("toasts.authFailedTitle"),
-        text2: message,
       });
     } finally {
       setIsSubmitting(false);
@@ -261,18 +233,6 @@ export default function AccessScreen() {
         source: "access_auto_redeem",
         was_already_member: redemption.wasAlreadyMember,
       });
-      Toast.show({
-        type: "success",
-        text1: t("toasts.schoolCodeRedeemedTitle"),
-        text2: t(
-          redemption.wasAlreadyMember
-            ? "toasts.schoolCodeAlreadyActiveSubtitle"
-            : "toasts.schoolCodeRedeemedSubtitle",
-          {
-            school: redemption.schoolName,
-          }
-        ),
-      });
     } catch (error) {
       const message = getSchoolCodeRedeemErrorMessage(error);
 
@@ -291,11 +251,6 @@ export default function AccessScreen() {
         auth_mode: "supabase",
         message,
         source: "access_auto_redeem",
-      });
-      Toast.show({
-        type: "error",
-        text1: t("toasts.schoolCodeRedeemFailedTitle"),
-        text2: message,
       });
     }
   };
