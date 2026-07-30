@@ -27,6 +27,7 @@ import type {
 
 const EXAM_PREVIEW_TOTAL = 12;
 const SAVED_SPRINT_TOTAL = 10;
+const HIGH_POINTS_THRESHOLD = 3;
 
 const BOOLEAN_CHOICES: Record<
   "true" | "false",
@@ -76,6 +77,18 @@ function questionMatchesTopic(
   return isTopicBlockId(topic)
     ? question.topicBlock === topic
     : getQuestionTopicIds(question).includes(topic);
+}
+
+function getTopicScopedQuestions(topic?: LearningTopicId) {
+  const questionBank = getQuestionBank();
+
+  return topic
+    ? questionBank.filter((question) => questionMatchesTopic(question, topic))
+    : questionBank;
+}
+
+function isHighPointsQuestion(question: LocalQuestion) {
+  return question.points >= HIGH_POINTS_THRESHOLD;
 }
 
 export function createQuestionSessionKey(input: {
@@ -372,6 +385,46 @@ export function getQuestionDisplayStats(userStates: QuestionUserStateMap) {
 }
 
 /**
+ * Counts used by the trainer mode picker: how many questions each mode would
+ * queue right now, scoped to a topic when the picker was opened from one.
+ */
+export function getTrainerModeStats(
+  userStates: QuestionUserStateMap,
+  topic?: LearningTopicId
+) {
+  const questions = getTopicScopedQuestions(topic);
+  const states = questions.map((question) =>
+    getQuestionUserState(userStates, question.id)
+  );
+
+  return {
+    total: questions.length,
+    unseen: states.filter((state) => state.timesSeen === 0).length,
+    saved: states.filter((state) => state.isBookmarked).length,
+    wrongAnswers: states.filter((state) => isQuestionUnresolvedWrong(state))
+      .length,
+    highPoints: questions.filter(isHighPointsQuestion).length,
+  };
+}
+
+/** Length of the queue a mode would build, so the count picker can offer "all". */
+export function getQuestionCountForMode(
+  input: { mode: QuestionSessionMode; topic?: LearningTopicId },
+  userStates: QuestionUserStateMap,
+  now: Date = new Date()
+) {
+  return getQuestionIdsForMode(
+    {
+      mode: input.mode,
+      sessionKey: "count-probe",
+      topic: input.topic,
+    },
+    userStates,
+    now
+  ).length;
+}
+
+/**
  * Questions ever answered wrong vs those later corrected (last correct after last wrong).
  * `percent` is null when there are no mistaken questions yet.
  */
@@ -605,10 +658,23 @@ function getQuestionIdsForMode(
         getLearningQuestionIds(request.topic, userStates, now),
         questionLimit
       );
+    case "new_questions":
+      return applyQuestionLimit(
+        getNewQuestionIds(userStates, now, request.topic),
+        questionLimit
+      );
     case "weak_spots":
       return applyQuestionLimit(getWeakSpotQuestionIds(userStates, now), questionLimit);
     case "hard_questions":
-      return applyQuestionLimit(getHardQuestionIds(userStates, now), questionLimit);
+      return applyQuestionLimit(
+        getHardQuestionIds(userStates, now, request.topic),
+        questionLimit
+      );
+    case "high_points":
+      return applyQuestionLimit(
+        getHighPointsQuestionIds(userStates, now, request.topic),
+        questionLimit
+      );
     case "seen_not_mastered":
       return applyQuestionLimit(
         getSeenNotMasteredQuestionIds(userStates, now),
@@ -620,7 +686,10 @@ function getQuestionIdsForMode(
         questionLimit
       );
     case "saved":
-      return applyQuestionLimit(getSavedQuestionIds(userStates, now), questionLimit);
+      return applyQuestionLimit(
+        getSavedQuestionIds(userStates, now, request.topic),
+        questionLimit
+      );
     case "saved_sprint":
       return applyQuestionLimit(
         getSavedQuestionIds(userStates, now),
@@ -679,9 +748,39 @@ function getWeakSpotQuestionIds(
   ]);
 }
 
-function getHardQuestionIds(userStates: QuestionUserStateMap, now: Date) {
-  const questionBank = getQuestionBank();
-  return getHardQuestions(questionBank, userStates, now).map((question) => question.id);
+function getNewQuestionIds(
+  userStates: QuestionUserStateMap,
+  now: Date,
+  topic?: LearningTopicId
+) {
+  return getUnseenQuestions(
+    getTopicScopedQuestions(topic),
+    userStates,
+    now
+  ).map((question) => question.id);
+}
+
+function getHardQuestionIds(
+  userStates: QuestionUserStateMap,
+  now: Date,
+  topic?: LearningTopicId
+) {
+  return getHardQuestions(getTopicScopedQuestions(topic), userStates, now).map(
+    (question) => question.id
+  );
+}
+
+/** Highest exam weight bucket (3 points) — the questions that cost the most on a real exam. */
+function getHighPointsQuestionIds(
+  userStates: QuestionUserStateMap,
+  now: Date,
+  topic?: LearningTopicId
+) {
+  return sortQuestionsForLearning(
+    getTopicScopedQuestions(topic).filter(isHighPointsQuestion),
+    userStates,
+    now
+  ).map((question) => question.id);
 }
 
 function getSeenNotMasteredQuestionIds(
@@ -698,10 +797,13 @@ function getSeenNotMasteredQuestionIds(
   ).map((question) => question.id);
 }
 
-function getSavedQuestionIds(userStates: QuestionUserStateMap, now: Date) {
-  const questionBank = getQuestionBank();
+function getSavedQuestionIds(
+  userStates: QuestionUserStateMap,
+  now: Date,
+  topic?: LearningTopicId
+) {
   return sortQuestionsForReview(
-    questionBank.filter((question) =>
+    getTopicScopedQuestions(topic).filter((question) =>
       getQuestionUserState(userStates, question.id).isBookmarked
     ),
     userStates,
@@ -714,12 +816,11 @@ function getWrongAnswerQuestionIds(
   now: Date,
   topic?: LearningTopicId
 ) {
-  const questionBank = topic
-    ? getQuestionBank().filter((question) => questionMatchesTopic(question, topic))
-    : getQuestionBank();
-  return getWrongQuestions(questionBank, userStates, now).map(
-    (question) => question.id
-  );
+  return getWrongQuestions(
+    getTopicScopedQuestions(topic),
+    userStates,
+    now
+  ).map((question) => question.id);
 }
 
 function getExamTomorrowQuestionIds(
@@ -1150,12 +1251,20 @@ function getEmptyReason(
     return "saved_empty";
   }
 
+  if (request.mode === "new_questions") {
+    return "new_questions_empty";
+  }
+
   if (request.mode === "weak_spots") {
     return "weak_spots_empty";
   }
 
   if (request.mode === "hard_questions") {
     return "hard_questions_empty";
+  }
+
+  if (request.mode === "high_points") {
+    return "high_points_empty";
   }
 
   if (request.mode === "seen_not_mastered") {

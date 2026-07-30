@@ -17,7 +17,7 @@ import {
   resolveReadinessRingColor,
 } from "../../src/components/shell/ReadinessIndexCard";
 import { SignCategoryProgressCard } from "../../src/components/shell/SignCategoryProgressCard";
-import { SignQuestionCountDialog } from "../../src/components/shell/SignQuestionCountDialog";
+import { QuestionCountDialog } from "../../src/components/shell/QuestionCountDialog";
 import { SignsSummaryCard } from "../../src/components/shell/SignsSummaryCard";
 import { StatisticsActivityCard } from "../../src/components/shell/StatisticsActivityCard";
 import { StatisticsTopicProgressRow } from "../../src/components/shell/StatisticsTopicProgressRow";
@@ -248,7 +248,7 @@ export default function StatisticsScreen() {
   const signsLearnedPercent =
     signsCatalogProgress.total > 0
       ? Math.round(
-          (signsCatalogProgress.seen / signsCatalogProgress.total) * 100
+          (signsCatalogProgress.correct / signsCatalogProgress.total) * 100
         )
       : 0;
   const readiness = examReadiness;
@@ -722,9 +722,7 @@ export default function StatisticsScreen() {
                 progress={signsLearnedPercent}
                 seen={signsCatalogProgress.seen}
                 total={signsCatalogProgress.total}
-                correct={signsCatalogProgress.correct}
-                wrong={signsCatalogProgress.wrong}
-                correctAnswersLabel={t("statistics.correctAnswers")}
+                totalAnswersLabel={t("signs.totalAnswers")}
                 trainAllLabel={t("signs.trainAll")}
                 onTrainAll={openSignsTraining}
               />
@@ -760,7 +758,7 @@ export default function StatisticsScreen() {
           onClose={() => setTopicsInfoVisible(false)}
         />
 
-        <SignQuestionCountDialog
+        <QuestionCountDialog
           title={t("signs.title")}
           subtitle={t("signs.chooseQuestionCount")}
           startLabel={t("signs.startTrainingCta")}

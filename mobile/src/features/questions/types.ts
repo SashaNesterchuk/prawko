@@ -87,8 +87,10 @@ export type QuestionSessionAnswer = {
 
 export type QuestionSessionEmptyReason =
   | "saved_empty"
+  | "new_questions_empty"
   | "weak_spots_empty"
   | "hard_questions_empty"
+  | "high_points_empty"
   | "seen_not_mastered_empty"
   | "wrong_answers_empty"
   | "topic_empty"

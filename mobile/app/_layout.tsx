@@ -127,6 +127,12 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="trainer-modes"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
           name="topic/[topicId]"
           options={{
             animation: "slide_from_right",

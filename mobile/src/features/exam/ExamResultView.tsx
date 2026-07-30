@@ -1,14 +1,14 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { useRef, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-  type LayoutChangeEvent,
-} from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Icon } from "../../components/icons";
@@ -28,6 +28,9 @@ import {
   type ExamScoreDelta,
 } from "./exam-result-stats";
 
+/** How far the content has to scroll before the top fade is at full strength. */
+const TOP_FADE_RAMP = 16;
+
 type ExamResultViewProps = {
   correctAnswersCount: number;
   durationSeconds: number;
@@ -37,7 +40,6 @@ type ExamResultViewProps = {
   onReviewAnswers: () => void;
   outcome: ExamResultOutcome;
   passPoints: number;
-  questionsSectionY: RefObject<number>;
   scoreDelta: ExamScoreDelta | null;
   scorePoints: number;
   scopeSections: ExamResultScopeSection[];
@@ -56,7 +58,6 @@ export function ExamResultView({
   onReviewAnswers,
   outcome,
   passPoints,
-  questionsSectionY,
   scoreDelta,
   scorePoints,
   scopeSections,
@@ -67,7 +68,6 @@ export function ExamResultView({
 }: ExamResultViewProps) {
   const { t } = useTranslation();
   const { accents, background, colors } = useTheme();
-  const scrollRef = useRef<ScrollView>(null);
   const passed = outcome === "passed";
   const isPositiveResult = passed;
   const resultAccent = isPositiveResult ? accents.green : accents.red;
@@ -76,6 +76,18 @@ export function ExamResultView({
     statusBadgeColor: resultAccent.fill,
   });
   const durationParts = formatExamDurationParts(durationSeconds);
+  const scrollY = useSharedValue(0);
+  const handleScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+  const topFadeStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollY.value,
+      [0, TOP_FADE_RAMP],
+      [0, 1],
+      Extrapolation.CLAMP
+    ),
+  }));
 
   const title =
     outcome === "passed"
@@ -94,18 +106,6 @@ export function ExamResultView({
       ? t("exam.whatsNextFailedBody", { topic: weakestTopicLabel })
       : t("exam.whatsNextFailedBodyGeneric");
 
-  function handleQuestionsLayout(event: LayoutChangeEvent) {
-    questionsSectionY.current = event.nativeEvent.layout.y;
-  }
-
-  function handleReviewAnswers() {
-    onReviewAnswers();
-    const y = questionsSectionY.current;
-    if (typeof y === "number" && y > 0) {
-      scrollRef.current?.scrollTo({ y: Math.max(0, y - 12), animated: true });
-    }
-  }
-
   return (
     <GreenWaveScreen>
       <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
@@ -119,108 +119,125 @@ export function ExamResultView({
           />
         </View>
 
-        <ScrollView
-          ref={scrollRef}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.hero}>
-            <View style={styles.statusBadge}>
-              <Icon
-                name={isPositiveResult ? "check" : "close"}
-                size={40}
-                color={colors.white}
-              />
-            </View>
+        <View style={styles.scrollArea}>
+          <Animated.ScrollView
+            contentContainerStyle={styles.scrollContent}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.hero}>
+              <View style={styles.statusBadge}>
+                <Icon
+                  name={isPositiveResult ? "check" : "close"}
+                  size={40}
+                  color={colors.white}
+                />
+              </View>
 
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.passThreshold}>
-              {t("exam.passThresholdLine", { pass: passPoints })}
-            </Text>
-            <Text style={styles.score}>
-              {t("exam.scoreSlashTotal", {
-                score: scorePoints,
-                total: totalPointsTarget,
-              })}
-            </Text>
+              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.passThreshold}>
+                {t("exam.passThresholdLine", { pass: passPoints })}
+              </Text>
+              <Text style={styles.score}>
+                {t("exam.scoreSlashTotal", {
+                  score: scorePoints,
+                  total: totalPointsTarget,
+                })}
+              </Text>
 
-            {scoreDelta ? (
-              <View
-                style={[
-                  styles.deltaBadge,
-                  scoreDelta.percentPoints > 0
-                    ? styles.deltaBadgePositive
-                    : styles.deltaBadgeNegative,
-                ]}
-              >
-                <Text
+              {scoreDelta ? (
+                <View
                   style={[
-                    styles.deltaBadgeText,
+                    styles.deltaBadge,
                     scoreDelta.percentPoints > 0
-                      ? styles.deltaBadgeTextPositive
-                      : styles.deltaBadgeTextNegative,
+                      ? styles.deltaBadgePositive
+                      : styles.deltaBadgeNegative,
                   ]}
                 >
-                  {scoreDelta.percentPoints > 0
-                    ? t("exam.deltaBetter", {
-                        percent: Math.abs(scoreDelta.percentPoints),
-                      })
-                    : t("exam.deltaWorse", {
-                        percent: Math.abs(scoreDelta.percentPoints),
-                      })}
+                  <Text
+                    style={[
+                      styles.deltaBadgeText,
+                      scoreDelta.percentPoints > 0
+                        ? styles.deltaBadgeTextPositive
+                        : styles.deltaBadgeTextNegative,
+                    ]}
+                  >
+                    {scoreDelta.percentPoints > 0
+                      ? t("exam.deltaBetter", {
+                          percent: Math.abs(scoreDelta.percentPoints),
+                        })
+                      : t("exam.deltaWorse", {
+                          percent: Math.abs(scoreDelta.percentPoints),
+                        })}
+                  </Text>
+                </View>
+              ) : null}
+
+              <Text style={styles.statLine}>
+                {t("exam.correctAnswersLine", {
+                  correct: correctAnswersCount,
+                  total: totalQuestionsAnswered,
+                })}
+              </Text>
+
+              <View style={styles.timeRow}>
+                <Text style={styles.statLine}>
+                  {t("exam.examTimeLine", {
+                    minutes: durationParts.minutes,
+                    seconds: durationParts.seconds,
+                  })}
                 </Text>
+                {isPositiveResult ? (
+                  <Icon name="cup" size={16} color={accents.amber.fill} />
+                ) : null}
+              </View>
+            </View>
+
+            {topicStats.length > 0 ? (
+              <View style={styles.card}>
+                {topicStats.map((stat) => (
+                  <TopicProgressRow key={stat.topicBlock} stat={stat} />
+                ))}
               </View>
             ) : null}
 
-            <Text style={styles.statLine}>
-              {t("exam.correctAnswersLine", {
-                correct: correctAnswersCount,
-                total: totalQuestionsAnswered,
-              })}
-            </Text>
+            {scopeSections.length > 0 ? (
+              <View style={styles.card}>
+                {scopeSections.map((section) => (
+                  <ScopeQuestionsBlock
+                    key={section.scope}
+                    section={section}
+                    title={
+                      section.scope === "base"
+                        ? t("exam.baseQuestionsTitle")
+                        : t("exam.specialistQuestionsTitle")
+                    }
+                  />
+                ))}
+              </View>
+            ) : null}
 
-            <View style={styles.timeRow}>
-              <Text style={styles.statLine}>
-                {t("exam.examTimeLine", {
-                  minutes: durationParts.minutes,
-                  seconds: durationParts.seconds,
-                })}
-              </Text>
-              {isPositiveResult ? (
-                <Icon name="cup" size={16} color={accents.amber.fill} />
-              ) : null}
-            </View>
-          </View>
-
-          {topicStats.length > 0 ? (
             <View style={styles.card}>
-              {topicStats.map((stat) => (
-                <TopicProgressRow key={stat.topicBlock} stat={stat} />
-              ))}
+              <Text style={styles.whatsNextTitle}>
+                {t("exam.whatsNextTitle")}
+              </Text>
+              <Text style={styles.whatsNextBody}>{whatsNextBody}</Text>
             </View>
-          ) : null}
+          </Animated.ScrollView>
 
-          {scopeSections.length > 0 ? (
-            <View style={styles.card} onLayout={handleQuestionsLayout}>
-              {scopeSections.map((section) => (
-                <ScopeQuestionsBlock
-                  key={section.scope}
-                  section={section}
-                  title={
-                    section.scope === "base"
-                      ? t("exam.baseQuestionsTitle")
-                      : t("exam.specialistQuestionsTitle")
-                  }
-                />
-              ))}
-            </View>
-          ) : null}
-
-          <View style={styles.card}>
-            <Text style={styles.whatsNextTitle}>{t("exam.whatsNextTitle")}</Text>
-            <Text style={styles.whatsNextBody}>{whatsNextBody}</Text>
-          </View>
-        </ScrollView>
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.topFade, topFadeStyle]}
+          >
+            <LinearGradient
+              colors={[background.start, background.transparent]}
+              end={{ x: 0.5, y: 1 }}
+              start={{ x: 0.5, y: 0 }}
+              style={StyleSheet.absoluteFill}
+            />
+          </Animated.View>
+        </View>
 
         <View style={styles.footerWrap}>
           <LinearGradient
@@ -246,7 +263,7 @@ export function ExamResultView({
             <View style={styles.secondaryRow}>
               <Pressable
                 accessibilityRole="button"
-                onPress={handleReviewAnswers}
+                onPress={onReviewAnswers}
                 style={({ pressed }) => [
                   styles.secondaryButton,
                   pressed ? styles.pressed : null,
@@ -432,10 +449,20 @@ function useStyles({
         paddingHorizontal: spacing.exact(24),
         paddingBottom: spacing.exact(8),
       },
+      scrollArea: {
+        flex: 1,
+      },
       scrollContent: {
         paddingHorizontal: spacing.exact(24),
         paddingBottom: spacing.exact(160),
         gap: spacing.exact(8),
+      },
+      topFade: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: spacing.exact(48),
       },
       hero: {
         alignItems: "center",

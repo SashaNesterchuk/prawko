@@ -1,29 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   width="24"
-   height="24"
-   viewBox="0 0 24 24"
-   fill="none"
-   version="1.1"
-   id="svg1"
-   sodipodi:docname="Icon-24-Close.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs1" />
-  <sodipodi:namedview
-     id="namedview1"
-     pagecolor="#ffffff"
-     bordercolor="#111111"
-     borderopacity="1"
-     inkscape:showpageshadow="0"
-     inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="1"
-     inkscape:deskcolor="#d1d1d1" />
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path
-     fill="currentColor"
-     d="m 6,5 a 1,1 0 0 0 -0.7070313,0.2929687 1,1 0 0 0 0,1.4140625 L 10.585938,12 5.2929687,17.292969 a 1,1 0 0 0 0,1.414062 1,1 0 0 0 1.4140625,0 L 12,13.414063 l 5.292969,5.292968 a 1,1 0 0 0 1.414062,0 1,1 0 0 0 0,-1.414062 L 13.414063,12 18.707031,6.7070312 a 1,1 0 0 0 0,-1.4140625 1,1 0 0 0 -1.414062,0 L 12,10.585938 6.7070312,5.2929687 A 1,1 0 0 0 6,5 Z"
-     id="path1" />
+    d="M18 6L6 18M6 6L18 18"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
 </svg>

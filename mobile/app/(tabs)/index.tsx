@@ -6,9 +6,9 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ActionTile } from "../../src/components/shell/ActionTile";
 import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
 import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
-import { DailyWarmupCard } from "../../src/components/shell/DailyWarmupCard";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import {
   ReadinessIndexCard,
@@ -154,7 +154,6 @@ export default function HomeTabScreen() {
             value: Math.abs(readinessWeekChangePercent),
           });
   const wrongAnswers = stats.wrongAnswers;
-  const dueReviews = readinessSummary?.dueReviews ?? stats.reviewDue;
   const examPassed =
     readinessSummary != null && readinessSummary.daysUntilExam <= 0;
   const recentExamPassed =
@@ -168,14 +167,6 @@ export default function HomeTabScreen() {
           ? "Середній"
           : "Низький",
   });
-
-  const warmupBadgeLabel =
-    dueReviews > 0
-      ? t("dash.warmupBadge", {
-        defaultValue: "Повторень: {{count}}",
-        count: dueReviews,
-      })
-      : undefined;
 
   const openPlusOrPaywall = (open: () => void) => {
     if (hasPlusAccess) {
@@ -313,15 +304,16 @@ export default function HomeTabScreen() {
           />
 
           <View style={styles.stack}>
-            <DailyWarmupCard
+            <ActionTile
+              fullWidth
+              accent="amber"
               title={t("dash.warmupTitle", {
                 defaultValue: "Швидка сесія",
               })}
-              description={t("dash.warmupDescription", {
+              subtitle={t("dash.warmupDescription", {
                 defaultValue: "10 випадкових питань",
               })}
-              badgeLabel={warmupBadgeLabel}
-              buttonLabel={t("dash.warmupButton", { defaultValue: "Повторити" })}
+              icon={<HomeActionIcon accent="amber" name="bolt" />}
               onPress={() =>
                 router.push({
                   pathname: "/question",

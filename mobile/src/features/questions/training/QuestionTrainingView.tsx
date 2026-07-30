@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Linking, Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Linking, ScrollView, Text, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
@@ -15,6 +15,7 @@ import { QuestionMediaCard } from "../QuestionMediaCard";
 import { QuestionMediaEmptyPlaceholder } from "../QuestionMediaEmptyPlaceholder";
 import { QuestionChoiceOption } from "./QuestionChoiceOption";
 import { QuestionFeedbackBottomSheet } from "./QuestionFeedbackBottomSheet";
+import { QuestionFeedbackPushStage } from "./QuestionFeedbackPushStage";
 import { QuestionStepPill } from "./QuestionStepPill";
 import type { QuestionTrainingSession } from "./useQuestionTrainingSession";
 import { getQuestionStepState } from "./visible-steps";
@@ -81,6 +82,7 @@ export function QuestionTrainingView({
 }: QuestionTrainingViewProps) {
   const { t } = useTranslation();
   const hasAiChatAccess = useHasAiChatAccess();
+  const insets = useSafeAreaInsets();
 
   const hasAnswered = Boolean(currentAnswer);
   const isCorrectAnswer = currentAnswerCorrect;
@@ -141,9 +143,51 @@ export function QuestionTrainingView({
     });
   };
 
+  const questionBlock = (
+    <>
+      <View style={trainerStyles.mediaBleed}>
+        {currentQuestion.media ? (
+          <QuestionMediaCard
+            key={currentQuestion.id}
+            locale={displayLocale}
+            media={currentQuestion.media}
+          />
+        ) : (
+          <QuestionMediaEmptyPlaceholder />
+        )}
+      </View>
+
+      <Text style={trainerStyles.prompt}>
+        {getLocalizedText(currentQuestion.prompt, displayLocale)}
+      </Text>
+
+      <View
+        style={
+          isBooleanQuestion
+            ? trainerStyles.booleanOptions
+            : trainerStyles.options
+        }
+      >
+        {questionChoices.map((choice) => (
+          <QuestionChoiceOption
+            key={choice.id}
+            choice={choice}
+            hasAnswered={hasAnswered}
+            isBooleanQuestion={isBooleanQuestion}
+            isCorrectChoice={currentQuestion.correctAnswer === choice.id}
+            isSelected={currentAnswer?.selectedAnswer === choice.id}
+            onPress={() => handleAnswer(choice.id)}
+          />
+        ))}
+      </View>
+    </>
+  );
+
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={trainerStyles.safeArea} edges={["top", "bottom"]}>
+      {/* The panel has to reach the physical bottom edge, so it owns the
+          bottom inset instead of the safe area wrapper. */}
+      <SafeAreaView style={trainerStyles.safeArea} edges={["top"]}>
         <StatusBar style="dark" />
         <View style={trainerStyles.container}>
           <View style={trainerStyles.contentPad}>
@@ -191,47 +235,39 @@ export function QuestionTrainingView({
             </Text>
           </View>
 
-          <ScrollView
-            style={trainerStyles.body}
-            contentContainerStyle={trainerStyles.bodyContent}
-            showsVerticalScrollIndicator={false}
+          <QuestionFeedbackPushStage
+            visible={hasAnswered}
+            contentBottomInset={insets.bottom + 24}
+            feedback={
+              <QuestionFeedbackBottomSheet
+                visible
+                isCorrectAnswer={isCorrectAnswer}
+                explanationText={explanationText || null}
+                correctChoiceBullets={correctChoiceBullets}
+                showMasteryProgress={showMasteryProgress}
+                masteryCurrent={masteryProgress.current}
+                masteryTarget={masteryProgress.target}
+                isBookmarked={currentQuestionState.isBookmarked}
+                nextLabel={
+                  summary.answered >= summary.total
+                    ? t("question.finish")
+                    : t("question.nextQuestion")
+                }
+                feedbackAccentFill={feedbackAccent.fill}
+                feedbackAccentInk={feedbackAccent.ink}
+                feedbackGradientColors={feedbackGradientColors}
+                premiumIconSize={premiumIconSize}
+                onReportProblem={handleReportProblem}
+                onToggleBookmark={() =>
+                  handleToggleBookmark(currentQuestionId)
+                }
+                onExplain={handleExplainPress}
+                onNext={() => advanceSession()}
+              />
+            }
           >
-            <View style={trainerStyles.mediaBleed}>
-              {currentQuestion.media ? (
-                <QuestionMediaCard
-                  key={currentQuestion.id}
-                  locale={displayLocale}
-                  media={currentQuestion.media}
-                />
-              ) : (
-                <QuestionMediaEmptyPlaceholder />
-              )}
-            </View>
-
-            <Text style={trainerStyles.prompt}>
-              {getLocalizedText(currentQuestion.prompt, displayLocale)}
-            </Text>
-
-            <View
-              style={
-                isBooleanQuestion
-                  ? trainerStyles.booleanOptions
-                  : trainerStyles.options
-              }
-            >
-              {questionChoices.map((choice) => (
-                <QuestionChoiceOption
-                  key={choice.id}
-                  choice={choice}
-                  hasAnswered={hasAnswered}
-                  isBooleanQuestion={isBooleanQuestion}
-                  isCorrectChoice={currentQuestion.correctAnswer === choice.id}
-                  isSelected={currentAnswer?.selectedAnswer === choice.id}
-                  onPress={() => handleAnswer(choice.id)}
-                />
-              ))}
-            </View>
-          </ScrollView>
+            {questionBlock}
+          </QuestionFeedbackPushStage>
         </View>
 
         <TrainingExitDialog
@@ -244,30 +280,6 @@ export function QuestionTrainingView({
           visible={showExitDialog}
         />
       </SafeAreaView>
-
-      <QuestionFeedbackBottomSheet
-        visible={hasAnswered}
-        isCorrectAnswer={isCorrectAnswer}
-        explanationText={explanationText || null}
-        correctChoiceBullets={correctChoiceBullets}
-        showMasteryProgress={showMasteryProgress}
-        masteryCurrent={masteryProgress.current}
-        masteryTarget={masteryProgress.target}
-        isBookmarked={currentQuestionState.isBookmarked}
-        nextLabel={
-          summary.answered >= summary.total
-            ? t("question.finish")
-            : t("question.nextQuestion")
-        }
-        feedbackAccentFill={feedbackAccent.fill}
-        feedbackAccentInk={feedbackAccent.ink}
-        feedbackGradientColors={feedbackGradientColors}
-        premiumIconSize={premiumIconSize}
-        onReportProblem={handleReportProblem}
-        onToggleBookmark={() => handleToggleBookmark(currentQuestionId)}
-        onExplain={handleExplainPress}
-        onNext={() => advanceSession()}
-      />
     </GreenWaveScreen>
   );
 }

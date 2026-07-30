@@ -60,7 +60,7 @@ export function startExamSession(
 
 export function fetchExamSessionSnapshot(sessionId: string) {
   if (isLocalExamSessionId(sessionId)) {
-    return Promise.resolve(fetchLocalExamSessionSnapshot(sessionId));
+    return fetchLocalExamSessionSnapshot(sessionId);
   }
 
   return fetchRemoteExamSessionSnapshot(sessionId);
@@ -74,7 +74,7 @@ export function fetchLatestActiveExamSession(
     return fetchRemoteLatestActiveExamSession(mode);
   }
 
-  return Promise.resolve(fetchLatestActiveLocalExamSession(mode));
+  return fetchLatestActiveLocalExamSession(mode);
 }
 
 export function submitExamAnswer(input: SubmitExamAnswerInput) {

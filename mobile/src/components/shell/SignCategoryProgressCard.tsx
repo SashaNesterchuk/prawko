@@ -1,11 +1,13 @@
 import { Pressable, Text, View } from "react-native";
 
 import { Icon } from "../icons";
-import { DualColorProgressBar } from "./DualColorProgressBar";
-import { useResponsiveStyles } from "../../portable-ui";
+import {
+  useResponsiveStyles,
+  type PercentageString,
+} from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
-import { SignImage } from "../../features/road-signs/SignImage";
-import type { RoadSign, RoadSignCategory } from "../../features/road-signs/types";
+import { SignCategoryIcon } from "../../features/road-signs/SignCategoryIcon";
+import type { RoadSignCategory } from "../../features/road-signs/types";
 
 export type SignCategoryProgress = {
   correct: number;
@@ -17,7 +19,6 @@ export type SignCategoryProgress = {
 type SignCategoryProgressCardProps = {
   category: RoadSignCategory;
   title: string;
-  previewSign?: RoadSign;
   progress: SignCategoryProgress;
   onPress?: () => void;
   /** Flat row inside a parent card (Statistics Signs tab). */
@@ -25,16 +26,22 @@ type SignCategoryProgressCardProps = {
 };
 
 export function SignCategoryProgressCard({
+  category,
   title,
-  previewSign,
   progress,
   onPress,
   embedded = false,
 }: SignCategoryProgressCardProps) {
   const theme = useTheme();
   const answered = progress.correct + progress.wrong;
-  const styles = useStyles({ embedded });
-  const showPreview = !embedded && previewSign != null;
+  const fillPercent =
+    progress.total > 0
+      ? Math.min(100, (answered / progress.total) * 100)
+      : 0;
+  const styles = useStyles({
+    embedded,
+    fillWidth: `${fillPercent}%` as PercentageString,
+  });
 
   return (
     <Pressable
@@ -47,12 +54,9 @@ export function SignCategoryProgressCard({
           {title}
         </Text>
 
-        <DualColorProgressBar
-          correct={progress.correct}
-          wrong={progress.wrong}
-          total={progress.total}
-          height={4}
-        />
+        <View style={styles.track}>
+          {answered > 0 ? <View style={styles.fill} /> : null}
+        </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
@@ -75,16 +79,22 @@ export function SignCategoryProgressCard({
         </View>
       </View>
 
-      {showPreview && previewSign ? (
+      {!embedded ? (
         <View style={styles.previewWrap} pointerEvents="none">
-          <SignImage inset={0} sign={previewSign} size={56} />
+          <SignCategoryIcon categoryId={category.id} size={56} />
         </View>
       ) : null}
     </Pressable>
   );
 }
 
-function useStyles({ embedded }: { embedded: boolean }) {
+function useStyles({
+  embedded,
+  fillWidth,
+}: {
+  embedded: boolean;
+  fillWidth: PercentageString;
+}) {
   return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     card: {
       flexDirection: "row",
@@ -107,6 +117,18 @@ function useStyles({ embedded }: { embedded: boolean }) {
       fontWeight: embedded ? "500" : "600",
       letterSpacing: embedded ? 0 : -0.16,
       color: colors.ink,
+    },
+    track: {
+      height: spacing.exact(4),
+      borderRadius: radius.pill,
+      backgroundColor: colors.surface2,
+      overflow: "hidden",
+    },
+    fill: {
+      width: fillWidth,
+      height: "100%",
+      borderRadius: radius.pill,
+      backgroundColor: colors.ink3,
     },
     statsRow: {
       flexDirection: "row",

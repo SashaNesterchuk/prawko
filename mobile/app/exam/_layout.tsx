@@ -23,6 +23,12 @@ export default function ExamLayout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="answers"
+        options={{
+          animation: "slide_from_right",
+        }}
+      />
     </Stack>
   );
 }

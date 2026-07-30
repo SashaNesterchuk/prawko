@@ -17,7 +17,6 @@ export function useTrainerStyles({
       },
       container: {
         flex: 1,
-        paddingBottom: spacing.exact(24),
       },
       contentPad: {
         paddingHorizontal: spacing.exact(24),
@@ -67,9 +66,6 @@ export function useTrainerStyles({
       },
       body: {
         flex: 1,
-      },
-      bodyContent: {
-        paddingBottom: spacing.exact(12),
       },
       mediaBleed: {
         width: "100%",

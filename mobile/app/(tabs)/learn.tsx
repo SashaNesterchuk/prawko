@@ -150,7 +150,7 @@ export default function LearnTabScreen() {
         defaultValue: "Вільне тестування",
       }),
       icon: <LearnActionIcon accent="green" name="target" />,
-      onPress: () => openQuestionMode("learning"),
+      onPress: () => router.push("/trainer-modes"),
     },
     {
       key: "exam",

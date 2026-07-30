@@ -3,11 +3,12 @@ import { StatusBar } from "expo-status-bar";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
 import { QuestionFeedbackBottomSheet } from "../questions/training/QuestionFeedbackBottomSheet";
+import { QuestionFeedbackPushStage } from "../questions/training/QuestionFeedbackPushStage";
 import {
   useResponsiveFonts,
   useResponsiveSpacing,
@@ -39,13 +40,13 @@ export function SignTestSessionScreen({
   const { accents, colors } = useTheme();
   const spacing = useResponsiveSpacing();
   const responsiveFont = useResponsiveFonts().responsiveFont;
+  const insets = useSafeAreaInsets();
   const styles = useStyles();
   const signImageSize = spacing.exact(160);
   const premiumIconSize = responsiveFont(12);
   const recordAttempt = useSignPracticeProgressStore(
     (state) => state.recordAttempt
   );
-  const isSignBookmarked = useSignBookmarksStore((state) => state.isSaved);
   const toggleSignBookmark = useSignBookmarksStore((state) => state.toggleSaved);
   const recordedQuestionIdsRef = useRef<Set<string>>(new Set());
 
@@ -53,6 +54,10 @@ export function SignTestSessionScreen({
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
 
   const currentQuestion: SignTestQuestion | undefined = questions[questionIndex];
+  const currentSignId = currentQuestion?.signId;
+  const isBookmarked = useSignBookmarksStore((state) =>
+    currentSignId ? Boolean(state.savedSignIds[currentSignId]) : false
+  );
   const currentSign = useMemo(
     () =>
       currentQuestion ? getRoadSignById(currentQuestion.signId) : undefined,
@@ -76,9 +81,6 @@ export function SignTestSessionScreen({
           .filter((option) => option.id === currentQuestion.correctOptionId)
           .map((option) => pickLocalized(option.label, i18n.language))
       : [];
-  const isBookmarked = currentQuestion
-    ? isSignBookmarked(currentQuestion.signId)
-    : false;
 
   const handleSelectOption = (optionId: string) => {
     if (hasAnswered || !currentQuestion) {
@@ -213,11 +215,35 @@ export function SignTestSessionScreen({
           })}
         </ScrollView>
 
-        <ScrollView
-          style={styles.scroll}
+        <QuestionFeedbackPushStage
+          visible={hasAnswered}
+          contentBottomInset={insets.bottom + 24}
           contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
+          feedback={
+            <QuestionFeedbackBottomSheet
+              visible
+              isCorrectAnswer={Boolean(isCorrect)}
+              explanationText={explanationText}
+              correctChoiceBullets={correctChoiceBullets}
+              showMasteryProgress={false}
+              masteryCurrent={0}
+              masteryTarget={0}
+              isBookmarked={isBookmarked}
+              nextLabel={
+                questionIndex >= questions.length - 1
+                  ? t("question.finish")
+                  : t("question.nextQuestion")
+              }
+              feedbackAccentFill={feedbackAccent.fill}
+              feedbackAccentInk={feedbackAccent.ink}
+              feedbackGradientColors={feedbackGradientColors}
+              premiumIconSize={premiumIconSize}
+              showExplain={false}
+              onReportProblem={handleReportProblem}
+              onToggleBookmark={handleToggleBookmark}
+              onNext={handleContinue}
+            />
+          }
         >
           <View style={styles.imageCard}>
             <SignImage inset={0} sign={currentSign} size={signImageSize} />
@@ -237,12 +263,12 @@ export function SignTestSessionScreen({
                   onPress={() => handleSelectOption(option.id)}
                   style={({ pressed }) => [
                     styles.option,
-                    !hasAnswered && isSelected ? styles.optionSelected : null,
                     hasAnswered && isCorrectOption ? styles.optionCorrect : null,
                     hasAnswered && isSelected && !isCorrectOption
                       ? styles.optionWrong
                       : null,
-                    !hasAnswered && pressed ? styles.pressed : null,
+                    !hasAnswered && isSelected ? styles.optionSelected : null,
+                    pressed ? styles.pressed : null,
                   ]}
                 >
                   <View style={styles.optionLetterWrap}>
@@ -257,32 +283,8 @@ export function SignTestSessionScreen({
               );
             })}
           </View>
-        </ScrollView>
+        </QuestionFeedbackPushStage>
       </SafeAreaView>
-
-      <QuestionFeedbackBottomSheet
-        visible={hasAnswered}
-        isCorrectAnswer={Boolean(isCorrect)}
-        explanationText={explanationText}
-        correctChoiceBullets={correctChoiceBullets}
-        showMasteryProgress={false}
-        masteryCurrent={0}
-        masteryTarget={0}
-        isBookmarked={isBookmarked}
-        nextLabel={
-          questionIndex >= questions.length - 1
-            ? t("question.finish")
-            : t("question.nextQuestion")
-        }
-        feedbackAccentFill={feedbackAccent.fill}
-        feedbackAccentInk={feedbackAccent.ink}
-        feedbackGradientColors={feedbackGradientColors}
-        premiumIconSize={premiumIconSize}
-        showExplain={false}
-        onReportProblem={handleReportProblem}
-        onToggleBookmark={handleToggleBookmark}
-        onNext={handleContinue}
-      />
     </GreenWaveScreen>
   );
 }
@@ -361,7 +363,6 @@ function useStyles() {
       },
       content: {
         flexGrow: 0,
-        paddingBottom: spacing.exact(24),
         gap: spacing.exact(12),
       },
       imageCard: {
@@ -369,7 +370,6 @@ function useStyles() {
         justifyContent: "center",
         minHeight: spacing.exact(220),
         marginHorizontal: 0,
-        backgroundColor: colors.white,
         paddingVertical: spacing.exact(39),
       },
       options: {

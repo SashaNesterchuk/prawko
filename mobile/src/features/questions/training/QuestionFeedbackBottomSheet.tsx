@@ -23,6 +23,15 @@ type QuestionFeedbackBottomSheetProps = {
   feedbackGradientColors: readonly [string, string];
   premiumIconSize: number;
   showExplain?: boolean;
+  /**
+   * Training uses a single primary CTA. Exam answer review uses Previous/Next
+   * ghost controls as in Figma exam-answers frames.
+   */
+  navigationMode?: "next" | "previousNext";
+  canGoPrevious?: boolean;
+  canGoNext?: boolean;
+  previousLabel?: string;
+  onPrevious?: () => void;
   onReportProblem: () => void;
   onToggleBookmark: () => void;
   onExplain?: () => void;
@@ -44,6 +53,11 @@ export function QuestionFeedbackBottomSheet({
   feedbackGradientColors,
   premiumIconSize,
   showExplain = true,
+  navigationMode = "next",
+  canGoPrevious = false,
+  canGoNext = true,
+  previousLabel,
+  onPrevious,
   onReportProblem,
   onToggleBookmark,
   onExplain,
@@ -58,150 +72,172 @@ export function QuestionFeedbackBottomSheet({
     return null;
   }
 
+  const bottomPad = Math.max(insets.bottom, 24);
+  const resolvedPreviousLabel = previousLabel ?? t("question.previousShort");
+
   return (
-    <View pointerEvents="box-none" style={styles.host}>
-      <View pointerEvents="none" style={styles.scrim} />
-      <LinearGradient
-        colors={[...feedbackGradientColors]}
-        end={{ x: 0.5, y: 1 }}
-        start={{ x: 0.5, y: 0 }}
-        style={[
-          styles.sheet,
-          { paddingBottom: Math.max(insets.bottom, 24) },
-        ]}
-      >
-        <View style={styles.header}>
-          <View style={styles.titleRow}>
-            <Icon
-              name={isCorrectAnswer ? "bulletCorrect" : "bulletWrong"}
-              size={24}
-              color={feedbackAccentFill}
-            />
-            <Text style={styles.title}>
-              {isCorrectAnswer
-                ? t("question.resultCorrect")
-                : t("question.resultWrong")}
-            </Text>
-          </View>
-          <View style={styles.headerActions}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t("question.reportProblem")}
-              hitSlop={8}
-              onPress={onReportProblem}
-              style={styles.iconButton}
-            >
-              <Icon name="problem" size={24} color={colors.icon} />
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={
-                isBookmarked
-                  ? t("question.removeBookmark")
-                  : t("question.bookmark")
-              }
-              hitSlop={8}
-              onPress={onToggleBookmark}
-              style={styles.iconButton}
-            >
-              <Icon
-                name={isBookmarked ? "stateActive" : "stateDefault"}
-                size={24}
-                color={isBookmarked ? accents.amber.fill : colors.icon}
-              />
-            </Pressable>
-          </View>
+    <LinearGradient
+      colors={[...feedbackGradientColors]}
+      end={{ x: 0.5, y: 1 }}
+      start={{ x: 0.5, y: 0 }}
+      style={[styles.sheet, { paddingBottom: bottomPad }]}
+    >
+      <View style={styles.header}>
+        <View style={styles.titleRow}>
+          <Icon
+            name={isCorrectAnswer ? "bulletCorrect" : "bulletWrong"}
+            size={24}
+            color={feedbackAccentFill}
+          />
+          <Text style={styles.title}>
+            {isCorrectAnswer
+              ? t("question.resultCorrect")
+              : t("question.resultWrong")}
+          </Text>
         </View>
+        <View style={styles.headerActions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("question.reportProblem")}
+            hitSlop={8}
+            onPress={onReportProblem}
+            style={styles.iconButton}
+          >
+            <Icon name="problem" size={24} color={colors.icon} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              isBookmarked
+                ? t("question.removeBookmark")
+                : t("question.bookmark")
+            }
+            hitSlop={8}
+            onPress={onToggleBookmark}
+            style={styles.iconButton}
+          >
+            <Icon
+              name={isBookmarked ? "stateActive" : "stateDefault"}
+              size={24}
+              color={isBookmarked ? accents.amber.fill : colors.icon}
+            />
+          </Pressable>
+        </View>
+      </View>
 
-        <View style={styles.gapMd} />
+      <View style={styles.gapMd} />
 
-        {explanationText ? (
-          <Text style={styles.body}>{explanationText}</Text>
-        ) : null}
+      {explanationText ? (
+        <Text style={styles.body}>{explanationText}</Text>
+      ) : null}
 
-        {correctChoiceBullets.length > 0 ? (
-          <>
-            <View style={styles.gapXs} />
-            <View style={styles.bullets}>
-              {correctChoiceBullets.map((bullet) => (
-                <View key={bullet} style={styles.bulletRow}>
-                  <View style={styles.bulletIcon}>
-                    <Icon
-                      name="bulletDot"
-                      size={16}
-                      color={feedbackAccentInk}
-                    />
-                  </View>
-                  <Text style={styles.bulletText}>{bullet}</Text>
+      {correctChoiceBullets.length > 0 ? (
+        <>
+          <View style={styles.gapXs} />
+          <View style={styles.bullets}>
+            {correctChoiceBullets.map((bullet) => (
+              <View key={bullet} style={styles.bulletRow}>
+                <View style={styles.bulletIcon}>
+                  <Icon
+                    name="bulletDot"
+                    size={16}
+                    color={feedbackAccentInk}
+                  />
                 </View>
-              ))}
-            </View>
-          </>
-        ) : null}
-
-        {showMasteryProgress ? (
-          <>
-            <View style={styles.gapXs} />
-            <Text style={styles.masteryProgress}>
-              {t("question.masteryProgress", {
-                current: masteryCurrent,
-                target: masteryTarget,
-                defaultValue: "Закріплення: {{current}}/{{target}}",
-              })}
-            </Text>
-          </>
-        ) : null}
-
-        {showExplain ? (
-          <>
-            <View style={styles.gapMd} />
-            <Pressable
-              accessibilityRole="button"
-              style={styles.explainRow}
-              onPress={onExplain}
-            >
-              <Text style={styles.explainText}>
-                {isCorrectAnswer
-                  ? t("question.explainOthers")
-                  : t("question.explainMistake")}
-              </Text>
-              <View style={styles.premiumBadge}>
-                <Icon
-                  name="premiumSmall"
-                  size={premiumIconSize}
-                  color={colors.onAccent}
-                />
+                <Text style={styles.bulletText}>{bullet}</Text>
               </View>
-            </Pressable>
-          </>
-        ) : null}
+            ))}
+          </View>
+        </>
+      ) : null}
 
-        <View style={styles.gapMd} />
+      {showMasteryProgress ? (
+        <>
+          <View style={styles.gapXs} />
+          <Text style={styles.masteryProgress}>
+            {t("question.masteryProgress", {
+              current: masteryCurrent,
+              target: masteryTarget,
+              defaultValue: "Закріплення: {{current}}/{{target}}",
+            })}
+          </Text>
+        </>
+      ) : null}
 
+      {showExplain ? (
+        <>
+          <View style={styles.gapMd} />
+          <Pressable
+            accessibilityRole="button"
+            style={styles.explainRow}
+            onPress={onExplain}
+          >
+            <Text style={styles.explainText}>
+              {isCorrectAnswer
+                ? t("question.explainOthers")
+                : t("question.explainMistake")}
+            </Text>
+            <View style={styles.premiumBadge}>
+              <Icon
+                name="premiumSmall"
+                size={premiumIconSize}
+                color={colors.onAccent}
+              />
+            </View>
+          </Pressable>
+        </>
+      ) : null}
+
+      <View style={styles.gapMd} />
+
+      {navigationMode === "previousNext" ? (
+        <View style={styles.navRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canGoPrevious }}
+            disabled={!canGoPrevious}
+            onPress={onPrevious}
+            style={({ pressed }) => [
+              styles.navButton,
+              !canGoPrevious ? styles.navButtonDisabled : null,
+              pressed && canGoPrevious ? styles.navButtonPressed : null,
+            ]}
+          >
+            <Icon name="back" size={20} color={colors.ink2} />
+            <Text style={styles.navButtonText}>{resolvedPreviousLabel}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canGoNext }}
+            disabled={!canGoNext}
+            onPress={onNext}
+            style={({ pressed }) => [
+              styles.navButton,
+              !canGoNext ? styles.navButtonDisabled : null,
+              pressed && canGoNext ? styles.navButtonPressed : null,
+            ]}
+          >
+            <Text style={styles.navButtonText}>{nextLabel}</Text>
+            <Icon name="chevron" size={20} color={colors.ink2} />
+          </Pressable>
+        </View>
+      ) : (
         <AppButton label={nextLabel} onPress={onNext} />
-      </LinearGradient>
-    </View>
+      )}
+    </LinearGradient>
   );
 }
 
 function useStyles({ feedbackTitleColor }: { feedbackTitleColor: string }) {
   return useResponsiveStyles(
     ({ accents, colors, elevation, radius, responsiveFont, spacing }) => ({
-      host: {
-        ...StyleSheetAbsoluteFill,
-        justifyContent: "flex-end",
-        zIndex: 30,
-      },
-      scrim: {
-        ...StyleSheetAbsoluteFill,
-        backgroundColor: colors.overlayScrim,
-      },
       sheet: {
+        alignSelf: "stretch",
         borderTopLeftRadius: radius.xxxl,
         borderTopRightRadius: radius.xxxl,
         paddingHorizontal: spacing.exact(24),
         paddingTop: spacing.exact(24),
-        ...elevation.modal,
+        ...elevation.raised,
       },
       header: {
         flexDirection: "row",
@@ -292,14 +328,32 @@ function useStyles({ feedbackTitleColor }: { feedbackTitleColor: string }) {
         alignItems: "center",
         justifyContent: "center",
       },
+      navRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        alignSelf: "stretch",
+      },
+      navButton: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.exact(8),
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(12),
+        minHeight: spacing.exact(48),
+      },
+      navButtonDisabled: {
+        opacity: 0.2,
+      },
+      navButtonPressed: {
+        opacity: 0.85,
+      },
+      navButtonText: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        color: colors.ink2,
+      },
     })
   );
 }
-
-const StyleSheetAbsoluteFill = {
-  position: "absolute" as const,
-  top: 0,
-  right: 0,
-  bottom: 0,
-  left: 0,
-};

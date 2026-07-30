@@ -1,0 +1,361 @@
+import type { SupportedLocale } from "@prawko/config";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Linking, Text, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
+
+import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
+import { NavigationButton } from "../../components/shell/NavigationButton";
+import { useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
+import { useTheme } from "../../providers/ThemeProvider";
+import { useHasAiChatAccess } from "../../state/entitlements";
+import {
+  getLocalizedText,
+  getQuestionById,
+  getQuestionChoices,
+} from "../questions/question-engine";
+import { QuestionMediaCard } from "../questions/QuestionMediaCard";
+import { QuestionMediaEmptyPlaceholder } from "../questions/QuestionMediaEmptyPlaceholder";
+import { QuestionChoiceOption } from "../questions/training/QuestionChoiceOption";
+import { QuestionFeedbackBottomSheet } from "../questions/training/QuestionFeedbackBottomSheet";
+import { QuestionFeedbackPushStage } from "../questions/training/QuestionFeedbackPushStage";
+
+import type { RemoteExamAnswer, RemoteExamQuestionRef } from "./types";
+
+const SUPPORT_EMAIL = "support@prawko.app";
+
+type ExamAnswersReviewViewProps = {
+  answer: RemoteExamAnswer | null;
+  canGoNext: boolean;
+  canGoPrevious: boolean;
+  currentIndex: number;
+  displayLocale: SupportedLocale;
+  isBookmarked: boolean;
+  onBack: () => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  onToggleBookmark: () => void;
+  questionRef: RemoteExamQuestionRef;
+  totalQuestions: number;
+};
+
+export function ExamAnswersReviewView({
+  answer,
+  canGoNext,
+  canGoPrevious,
+  currentIndex,
+  displayLocale,
+  isBookmarked,
+  onBack,
+  onNext,
+  onPrevious,
+  onToggleBookmark,
+  questionRef,
+  totalQuestions,
+}: ExamAnswersReviewViewProps) {
+  const { t } = useTranslation();
+  const { accents, colors } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const hasAiChatAccess = useHasAiChatAccess();
+  const insets = useSafeAreaInsets();
+  const styles = useStyles();
+
+  const question = getQuestionById(questionRef.questionSourceId);
+  const questionChoices = question
+    ? getQuestionChoices(question, displayLocale)
+    : [];
+  const isCorrectAnswer = Boolean(answer?.isCorrect);
+  const hasAnswered = true;
+  const selectedAnswer = answer?.answerGiven ?? null;
+  const isBooleanQuestion = question?.answerType === "boolean";
+  const feedbackAccent = isCorrectAnswer ? accents.green : accents.red;
+  const feedbackGradientColors = [feedbackAccent.wash, colors.white] as const;
+  const premiumIconSize = responsiveFont(12);
+  const explanationText = question
+    ? getLocalizedText(question.explanation, displayLocale)
+    : "";
+  const scopeLabel = question
+    ? t(`question.scopes.${question.scope}`)
+    : t(`question.scopes.${questionRef.scope}`);
+  const points = question?.points ?? questionRef.points;
+  const correctChoiceBullets =
+    answer && !isCorrectAnswer && question
+      ? questionChoices
+          .filter((choice) => choice.id === question.correctAnswer)
+          .map((choice) =>
+            isBooleanQuestion
+              ? choice.label
+              : `${choice.id}. ${choice.label}`
+          )
+      : [];
+
+  function handleReportProblem() {
+    const subject = t("question.reportProblemSubject", {
+      questionId: questionRef.questionSourceId,
+    });
+    void Linking.openURL(
+      `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
+    );
+  }
+
+  function handleExplainPress() {
+    const aiChatParams = {
+      questionId: questionRef.questionSourceId,
+      locale: displayLocale,
+      selectedAnswer: selectedAnswer ?? undefined,
+    };
+
+    if (hasAiChatAccess) {
+      router.push({
+        pathname: "/modals/ai-chat",
+        params: aiChatParams,
+      });
+      return;
+    }
+
+    router.push({
+      pathname: "/paywall",
+      params: {
+        feature: "ai_question_chat",
+        returnTo: "ai-chat",
+        ...aiChatParams,
+      },
+    });
+  }
+
+  if (!question) {
+    return (
+      <GreenWaveScreen>
+        <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+          <StatusBar style="dark" />
+          <View style={styles.contentPad}>
+            <View style={styles.header}>
+              <NavigationButton
+                inset
+                type="back"
+                accessibilityLabel={t("common.back")}
+                onPress={onBack}
+              />
+              <View style={styles.headerCenter}>
+                <Text style={styles.headerTitle}>
+                  {t("exam.answersReviewTitle")}
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.missingState}>
+            <Text style={styles.missingTitle}>
+              {t("exam.questionUnavailable")}
+            </Text>
+            <Text style={styles.missingBody}>
+              {t("exam.sessionSubtitle", {
+                current: currentIndex + 1,
+                total: totalQuestions,
+              })}
+            </Text>
+          </View>
+        </SafeAreaView>
+      </GreenWaveScreen>
+    );
+  }
+
+  const questionBlock = (
+    <>
+      <View style={styles.mediaBleed}>
+        {question.media ? (
+          <QuestionMediaCard
+            key={question.id}
+            locale={displayLocale}
+            media={question.media}
+          />
+        ) : (
+          <QuestionMediaEmptyPlaceholder />
+        )}
+      </View>
+
+      <Text style={styles.prompt}>
+        {getLocalizedText(question.prompt, displayLocale)}
+      </Text>
+
+      <View style={isBooleanQuestion ? styles.booleanOptions : styles.options}>
+        {questionChoices.map((choice) => (
+          <QuestionChoiceOption
+            key={choice.id}
+            choice={choice}
+            hasAnswered={hasAnswered}
+            isBooleanQuestion={isBooleanQuestion}
+            isCorrectChoice={question.correctAnswer === choice.id}
+            isSelected={selectedAnswer === choice.id}
+            onPress={() => undefined}
+          />
+        ))}
+      </View>
+    </>
+  );
+
+  return (
+    <GreenWaveScreen>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <StatusBar style="dark" />
+        <View style={styles.container}>
+          <View style={styles.contentPad}>
+            <View style={styles.header}>
+              <NavigationButton
+                inset
+                type="back"
+                accessibilityLabel={t("common.back")}
+                onPress={onBack}
+              />
+              <View style={styles.headerCenter}>
+                <View style={styles.headerTitles}>
+                  <Text style={styles.headerTitle} numberOfLines={1}>
+                    {t("exam.answersReviewTitle")}
+                  </Text>
+                  <Text style={styles.headerCounter}>
+                    {t("exam.sessionSubtitle", {
+                      current: currentIndex + 1,
+                      total: totalQuestions,
+                    })}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.metaRow}>
+            <Text style={styles.metaText}>{scopeLabel}</Text>
+            <Text style={styles.metaText}>
+              {t("question.pointsLabel", { points })}
+            </Text>
+          </View>
+
+          <QuestionFeedbackPushStage
+            visible
+            contentBottomInset={insets.bottom + 24}
+            feedback={
+              <QuestionFeedbackBottomSheet
+                visible
+                isCorrectAnswer={isCorrectAnswer}
+                explanationText={explanationText || null}
+                correctChoiceBullets={correctChoiceBullets}
+                showMasteryProgress={false}
+                masteryCurrent={0}
+                masteryTarget={0}
+                isBookmarked={isBookmarked}
+                navigationMode="previousNext"
+                canGoPrevious={canGoPrevious}
+                canGoNext={canGoNext}
+                previousLabel={t("question.previousShort")}
+                nextLabel={t("question.nextShort")}
+                feedbackAccentFill={feedbackAccent.fill}
+                feedbackAccentInk={feedbackAccent.ink}
+                feedbackGradientColors={feedbackGradientColors}
+                premiumIconSize={premiumIconSize}
+                onReportProblem={handleReportProblem}
+                onToggleBookmark={onToggleBookmark}
+                onExplain={handleExplainPress}
+                onPrevious={onPrevious}
+                onNext={onNext}
+              />
+            }
+          >
+            {questionBlock}
+          </QuestionFeedbackPushStage>
+        </View>
+      </SafeAreaView>
+    </GreenWaveScreen>
+  );
+}
+
+function useStyles() {
+  return useResponsiveStyles(
+    ({ colors, responsiveFont, spacing }) => ({
+      safeArea: {
+        flex: 1,
+      },
+      container: {
+        flex: 1,
+      },
+      contentPad: {
+        paddingHorizontal: spacing.exact(24),
+      },
+      header: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(8),
+      },
+      headerCenter: {
+        flex: 1,
+      },
+      headerTitles: {
+        gap: spacing.exact(0),
+      },
+      headerTitle: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(20),
+        color: colors.textPrimary,
+      },
+      headerCounter: {
+        fontSize: responsiveFont(12),
+        lineHeight: responsiveFont(16),
+        color: colors.textSecondary,
+      },
+      metaRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: spacing.exact(24),
+        paddingTop: spacing.exact(12),
+        paddingBottom: spacing.exact(8),
+      },
+      metaText: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textSecondary,
+      },
+      mediaBleed: {
+        width: "100%",
+        marginBottom: spacing.exact(12),
+      },
+      prompt: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontWeight: "500",
+        letterSpacing: -0.16,
+        color: colors.textPrimary,
+        marginBottom: spacing.exact(12),
+        paddingHorizontal: spacing.exact(24),
+      },
+      options: {
+        gap: spacing.exact(4),
+        paddingHorizontal: spacing.exact(24),
+      },
+      booleanOptions: {
+        flexDirection: "row",
+        gap: spacing.exact(4),
+        paddingHorizontal: spacing.exact(24),
+      },
+      missingState: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: spacing.exact(24),
+        gap: spacing.exact(8),
+      },
+      missingTitle: {
+        fontSize: responsiveFont(20),
+        lineHeight: responsiveFont(28),
+        fontWeight: "600",
+        textAlign: "center",
+        color: colors.textPrimary,
+      },
+      missingBody: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        textAlign: "center",
+        color: colors.textSecondary,
+      },
+    })
+  );
+}

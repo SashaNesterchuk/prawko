@@ -5,7 +5,7 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SignCategoryProgressCard } from "../../components/shell/SignCategoryProgressCard";
-import { SignQuestionCountDialog } from "../../components/shell/SignQuestionCountDialog";
+import { QuestionCountDialog } from "../../components/shell/QuestionCountDialog";
 import { SignsSummaryCard } from "../../components/shell/SignsSummaryCard";
 import {
   useResponsiveSpacing,
@@ -14,7 +14,6 @@ import {
 import { useSignPracticeProgressStore } from "../../state/sign-practice-progress";
 import {
   ROAD_SIGN_CATEGORIES,
-  getRoadSignsByCategory,
 } from "./catalog";
 import { buildAllSignTestQuestions } from "./category-test";
 import {
@@ -57,7 +56,6 @@ export function SignsHomeContent({
     () =>
       ROAD_SIGN_CATEGORIES.map((category) => ({
         category,
-        previewSign: getRoadSignsByCategory(category.id)[0],
         progress: getCategorySignProgress(category.id, signPracticeRecords),
       })),
     [signPracticeRecords]
@@ -93,19 +91,16 @@ export function SignsHomeContent({
           progress={readiness}
           seen={catalogProgress.seen}
           total={catalogProgress.total}
-          correct={catalogProgress.correct}
-          wrong={catalogProgress.wrong}
-          correctAnswersLabel={t("signs.correctAnswers")}
+          totalAnswersLabel={t("signs.totalAnswers")}
           trainAllLabel={t("signs.trainAll")}
           onTrainAll={openSignsTraining}
         />
 
         <View style={styles.categoryList}>
-          {categoryPreviews.map(({ category, previewSign, progress }) => (
+          {categoryPreviews.map(({ category, progress }) => (
             <SignCategoryProgressCard
               key={category.id}
               category={category}
-              previewSign={previewSign}
               progress={progress}
               title={t(`signs.categories.${category.id}.title`)}
               onPress={() =>
@@ -119,7 +114,7 @@ export function SignsHomeContent({
         </View>
       </ScrollView>
 
-      <SignQuestionCountDialog
+      <QuestionCountDialog
         title={t("signs.title")}
         subtitle={t("signs.chooseQuestionCount")}
         startLabel={t("signs.startTrainingCta")}

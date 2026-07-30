@@ -97,8 +97,10 @@ export const MEDIA_STORAGE_BUCKETS = {
 
 export const QUESTION_SESSION_MODES = [
   "learning",
+  "new_questions",
   "weak_spots",
   "hard_questions",
+  "high_points",
   "seen_not_mastered",
   "wrong_answers",
   "saved",

@@ -7,9 +7,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
 import { SignCatalogCard } from "../../../src/components/shell/SignCatalogCard";
-import {
-  SignQuestionCountDialog,
-} from "../../../src/components/shell/SignQuestionCountDialog";
+import { QuestionCountDialog } from "../../../src/components/shell/QuestionCountDialog";
 import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
 import {
   useResponsiveStyles,
@@ -127,7 +125,7 @@ export default function SignsCategoryScreen() {
           </Pressable>
         </View>
 
-        <SignQuestionCountDialog
+        <QuestionCountDialog
           title={
             category
               ? t(`signs.categories.${category.id}.title`)

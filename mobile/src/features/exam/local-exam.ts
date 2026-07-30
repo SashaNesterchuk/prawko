@@ -12,6 +12,11 @@ import {
   getExamQuestionIds,
   getQuestionById,
 } from "../questions/question-engine";
+import {
+  cacheExamSnapshot,
+  loadPersistedActiveExamSnapshot,
+  loadPersistedExamSnapshot,
+} from "./exam-snapshot-cache";
 import type {
   ExamSimulatorMode,
   RemoteExamAnswer,
@@ -50,7 +55,7 @@ export function startLocalExamSession(
   input: StartLocalExamInput
 ): RemoteExamSnapshot {
   if (!input.replaceExisting) {
-    const activeSnapshot = fetchLatestActiveLocalExamSession(input.mode);
+    const activeSnapshot = findActiveLocalExamSessionInMemory(input.mode);
 
     if (activeSnapshot) {
       throw new Error("An active exam session already exists.");
@@ -105,24 +110,69 @@ export function startLocalExamSession(
   };
 
   sessions.set(sessionId, snapshot);
+  cacheExamSnapshot(snapshot);
   return cloneSnapshot(snapshot);
 }
 
-export function fetchLocalExamSessionSnapshot(
+export async function fetchLocalExamSessionSnapshot(
   sessionId: string
-): RemoteExamSnapshot {
+): Promise<RemoteExamSnapshot> {
   const snapshot = sessions.get(sessionId);
 
-  if (!snapshot) {
-    throw new Error("Local exam session not found.");
+  if (snapshot) {
+    return cloneSnapshot(snapshot);
   }
 
-  return cloneSnapshot(snapshot);
+  const persisted = await loadPersistedExamSnapshot(sessionId);
+  if (persisted) {
+    sessions.set(sessionId, persisted);
+    return cloneSnapshot(persisted);
+  }
+
+  throw new Error("Local exam session not found.");
 }
 
-export function fetchLatestActiveLocalExamSession(
+export async function fetchLatestActiveLocalExamSession(
   mode?: ExamSimulatorMode | null
-) {
+): Promise<RemoteExamSnapshot | null> {
+  const inMemory = findActiveLocalExamSessionInMemory(mode);
+
+  if (inMemory) {
+    return inMemory;
+  }
+
+  const persisted = await loadPersistedActiveExamSnapshot();
+
+  if (!persisted || (mode && persisted.session.mode !== mode)) {
+    return null;
+  }
+
+  const restored = cloneSnapshot(persisted);
+
+  // A session whose clock ran out while the app was closed must not be resumed;
+  // close it out so the next launch can start a fresh exam.
+  if ((restored.session.remainingSeconds ?? 0) <= 0) {
+    const expired: RemoteExamSnapshot = {
+      ...persisted,
+      session: {
+        ...persisted.session,
+        finishedAt: persisted.session.finishedAt ?? new Date().toISOString(),
+        passed: persisted.session.scorePoints >= persisted.session.passPoints,
+        remainingSeconds: 0,
+        status: "expired",
+      },
+    };
+
+    sessions.set(expired.session.id, expired);
+    cacheExamSnapshot(expired);
+    return null;
+  }
+
+  sessions.set(persisted.session.id, persisted);
+  return restored;
+}
+
+function findActiveLocalExamSessionInMemory(mode?: ExamSimulatorMode | null) {
   for (const snapshot of sessions.values()) {
     if (snapshot.session.status !== "active") {
       continue;
@@ -225,6 +275,7 @@ export function submitLocalExamAnswer(
   };
 
   sessions.set(input.sessionId, nextSnapshot);
+  cacheExamSnapshot(nextSnapshot);
   return cloneSnapshot(nextSnapshot);
 }
 
@@ -259,6 +310,7 @@ export function setLocalExamSessionStatus(
   };
 
   sessions.set(input.sessionId, nextSnapshot);
+  cacheExamSnapshot(nextSnapshot);
   return cloneSnapshot(nextSnapshot);
 }
 
@@ -288,7 +340,7 @@ function abandonActiveLocalExamSessions(mode: ExamSimulatorMode) {
       continue;
     }
 
-    sessions.set(sessionId, {
+    const abandoned: RemoteExamSnapshot = {
       ...snapshot,
       session: {
         ...snapshot.session,
@@ -297,7 +349,10 @@ function abandonActiveLocalExamSessions(mode: ExamSimulatorMode) {
         remainingSeconds: 0,
         status: "abandoned",
       },
-    });
+    };
+
+    sessions.set(sessionId, abandoned);
+    cacheExamSnapshot(abandoned);
   }
 }
 

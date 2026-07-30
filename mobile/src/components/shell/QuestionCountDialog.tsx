@@ -4,9 +4,9 @@ import { Icon } from "../icons";
 import { useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
-export const SIGN_TRAINING_COUNT_OPTIONS = [10, 20, 40] as const;
+export const QUESTION_COUNT_OPTIONS = [10, 20, 40] as const;
 
-type SignQuestionCountDialogProps = {
+type QuestionCountDialogProps = {
   title: string;
   subtitle: string;
   startLabel: string;
@@ -19,7 +19,7 @@ type SignQuestionCountDialogProps = {
   onStart: () => void;
 };
 
-export function SignQuestionCountDialog({
+export function QuestionCountDialog({
   title,
   subtitle,
   startLabel,
@@ -30,13 +30,10 @@ export function SignQuestionCountDialog({
   onClose,
   onSelectCount,
   onStart,
-}: SignQuestionCountDialogProps) {
+}: QuestionCountDialogProps) {
   const theme = useTheme();
   const styles = useStyles();
-  const options: Array<number | "all"> = [
-    ...SIGN_TRAINING_COUNT_OPTIONS,
-    "all",
-  ];
+  const options: Array<number | "all"> = [...QUESTION_COUNT_OPTIONS, "all"];
 
   return (
     <Modal

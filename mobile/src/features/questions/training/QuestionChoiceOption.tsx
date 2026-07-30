@@ -47,7 +47,7 @@ export function QuestionChoiceOption({
       {!isBooleanQuestion ? (
         revealCorrect || revealWrong ? (
           <Icon
-            name={revealCorrect ? "bulletCorrect" : "bulletWrong"}
+            name={revealCorrect ? "check" : "close"}
             size={24}
             color={filled ? colors.onAccent : accents.green.fill}
           />

@@ -3,9 +3,10 @@ import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Icon } from "../../src/components/icons";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { TrainingExitDialog } from "../../src/components/shell/TrainingExitDialog";
 import { setExamSessionActive } from "../../src/features/ads/ad-session-policy";
@@ -21,6 +22,12 @@ import {
   setExamSessionStatus,
   submitExamAnswer,
 } from "../../src/features/exam/exam-session";
+import {
+  cacheExamSnapshot,
+  getCachedExamSnapshot,
+  isFinishedExamStatus,
+  loadPersistedExamSnapshot,
+} from "../../src/features/exam/exam-snapshot-cache";
 import { useExamQuestionTimer } from "../../src/features/exam/useExamQuestionTimer";
 import { QuestionMediaCard } from "../../src/features/questions/QuestionMediaCard";
 import { QuestionMediaEmptyPlaceholder } from "../../src/features/questions/QuestionMediaEmptyPlaceholder";
@@ -28,7 +35,10 @@ import {
   getLocalizedText,
   getQuestionById,
   getQuestionChoices,
+  getQuestionUserState,
 } from "../../src/features/questions/question-engine";
+import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
+import { isMobileSupabaseConfigured } from "../../src/config/env";
 import { useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
@@ -37,6 +47,7 @@ import { useQuestionProgressStore } from "../../src/state/question-progress";
 import type { RemoteExamSnapshot } from "../../src/features/exam/types";
 
 const URGENT_THRESHOLD_SECONDS = 180;
+const SUPPORT_EMAIL = "support@prawko.app";
 
 type ExamSessionShellProps = {
   children: ReactNode;
@@ -61,10 +72,17 @@ export default function ExamSessionScreen() {
   const params = useLocalSearchParams<{
     sessionId?: string | string[];
   }>();
+  const authMode = useAppShellStore((state) => state.authMode);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const questionCatalogVersion = useQuestionCatalogVersion();
   const applyQuestionAttemptOutcome = useQuestionProgressStore(
     (state) => state.applyQuestionAttemptOutcome
+  );
+  const questionUserState = useQuestionProgressStore(
+    (state) => state.questionUserState
+  );
+  const toggleBookmark = useQuestionProgressStore(
+    (state) => state.toggleBookmark
   );
   const [snapshot, setSnapshot] = useState<RemoteExamSnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -113,9 +131,18 @@ export default function ExamSessionScreen() {
   });
   const styles = useStyles();
 
-  function navigateToResult(nextSessionId: string) {
+  function navigateToResult(
+    nextSessionId: string,
+    nextSnapshot?: RemoteExamSnapshot | null
+  ) {
     if (resultNavigationHandledRef.current) {
       return;
+    }
+
+    if (nextSnapshot) {
+      cacheExamSnapshot(nextSnapshot);
+    } else if (snapshot && snapshot.session.id === nextSessionId) {
+      cacheExamSnapshot(snapshot);
     }
 
     resultNavigationHandledRef.current = true;
@@ -141,23 +168,36 @@ export default function ExamSessionScreen() {
     setIsLoading(true);
     setErrorMessage(null);
 
-    void fetchExamSessionSnapshot(sessionId)
-      .then((nextSnapshot) => {
+    void (async () => {
+      try {
+        const nextSnapshot = await fetchExamSessionSnapshot(sessionId);
         if (!cancelled) {
           setSnapshot(nextSnapshot);
         }
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          console.warn("Failed to fetch exam session snapshot.", error);
-          setErrorMessage(getErrorMessage(error));
+      } catch (error) {
+        if (cancelled) {
+          return;
         }
-      })
-      .finally(() => {
+
+        console.warn("Failed to fetch exam session snapshot.", error);
+
+        const fallback =
+          getCachedExamSnapshot(sessionId) ??
+          (await loadPersistedExamSnapshot(sessionId));
+
+        if (fallback) {
+          // Finished sessions should open the result screen, not the error CTA.
+          setSnapshot(fallback);
+          return;
+        }
+
+        setErrorMessage(getErrorMessage(error));
+      } finally {
         if (!cancelled) {
           setIsLoading(false);
         }
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -248,8 +288,33 @@ export default function ExamSessionScreen() {
       return;
     }
 
-    navigateToResult(snapshot.session.id);
+    navigateToResult(snapshot.session.id, snapshot);
   }, [snapshot?.session.id, snapshot?.session.status]);
+
+  useEffect(() => {
+    if (!snapshot || snapshot.session.status !== "active") {
+      return;
+    }
+
+    const hasCurrentQuestion = snapshot.questions.some(
+      (question) => question.order === snapshot.session.currentQuestionIndex
+    );
+    const answeredOut =
+      snapshot.answers.length >= snapshot.session.totalQuestionsTarget;
+
+    // Remote completion sets currentQuestionIndex to total+1. Recover to result
+    // instead of painting sessionErrorTitle.
+    if (!hasCurrentQuestion && answeredOut) {
+      navigateToResult(snapshot.session.id, snapshot);
+    }
+  }, [
+    snapshot?.session.id,
+    snapshot?.session.status,
+    snapshot?.session.currentQuestionIndex,
+    snapshot?.session.totalQuestionsTarget,
+    snapshot?.answers.length,
+    snapshot?.questions,
+  ]);
 
   const handleAdvance = async (options?: {
     answer?: string | null;
@@ -354,7 +419,7 @@ export default function ExamSessionScreen() {
         status,
       });
 
-      navigateToResult(nextSnapshot.session.id);
+      navigateToResult(nextSnapshot.session.id, nextSnapshot);
     } catch (error) {
       console.warn("Failed to end exam session.", error);
       setErrorMessage(getErrorMessage(error));
@@ -429,6 +494,45 @@ export default function ExamSessionScreen() {
     }
   };
 
+  const handleReportProblem = () => {
+    if (!currentQuestionRef) {
+      return;
+    }
+
+    const subject = t("question.reportProblemSubject", {
+      questionId: currentQuestionRef.questionSourceId,
+    });
+    void Linking.openURL(
+      `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
+    );
+  };
+
+  const handleToggleBookmark = () => {
+    if (!currentQuestionRef) {
+      return;
+    }
+
+    const questionSourceId = currentQuestionRef.questionSourceId;
+    const isBookmarked = toggleBookmark(questionSourceId);
+
+    if (authMode === "supabase" && isMobileSupabaseConfigured) {
+      void syncQuestionBookmarkState({
+        questionSourceId,
+        isBookmarked,
+        savedFromMode: snapshot?.session.mode,
+        metadata: {
+          source: "mobile_exam_session",
+          exam_session_id: sessionId,
+        },
+      }).catch((error) => {
+        console.warn(
+          `Failed to sync bookmark state for ${questionSourceId}.`,
+          error
+        );
+      });
+    }
+  };
+
   const handleExitPress = () => {
     if (isEnding) {
       return;
@@ -484,6 +588,21 @@ export default function ExamSessionScreen() {
   }
 
   if (!currentQuestion || !currentQuestionRef) {
+    const answeredOut =
+      snapshot.answers.length >= snapshot.session.totalQuestionsTarget ||
+      isFinishedExamStatus(snapshot.session.status);
+
+    if (answeredOut) {
+      return (
+        <ExamSessionShell styles={styles}>
+          <CenteredState
+            title={t("states.loadingTitle")}
+            description={t("exam.sessionLoading")}
+          />
+        </ExamSessionShell>
+      );
+    }
+
     return (
       <ExamSessionShell styles={styles}>
         <CenteredState
@@ -506,6 +625,10 @@ export default function ExamSessionScreen() {
   const totalQuestions = snapshot.session.totalQuestionsTarget;
   const isLastQuestion = questionNumber >= totalQuestions;
   const isBoolean = currentQuestion.answerType === "boolean";
+  const isCurrentBookmarked = Boolean(
+    getQuestionUserState(questionUserState, currentQuestionRef.questionSourceId)
+      .isBookmarked
+  );
   const isBusy = isSubmitting || isEnding;
   // WORD never disables answers during a question — only block while submitting.
   const answersDisabled = isBusy;
@@ -760,6 +883,42 @@ export default function ExamSessionScreen() {
                 : t("exam.nextQuestionCta")}
             </Text>
           </Pressable>
+
+          <View style={styles.ghostRow}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("question.reportProblem")}
+              onPress={handleReportProblem}
+              style={({ pressed }) => [
+                styles.ghostButton,
+                pressed ? styles.pressed : null,
+              ]}
+            >
+              <Text style={styles.ghostButtonLabel}>{t("exam.reportCta")}</Text>
+              <Icon name="problem" size={20} color={colors.ink2} />
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                isCurrentBookmarked
+                  ? t("question.removeBookmark")
+                  : t("question.bookmark")
+              }
+              onPress={handleToggleBookmark}
+              style={({ pressed }) => [
+                styles.ghostButton,
+                pressed ? styles.pressed : null,
+              ]}
+            >
+              <Text style={styles.ghostButtonLabel}>{t("exam.saveCta")}</Text>
+              <Icon
+                name={isCurrentBookmarked ? "stateActive" : "stateDefault"}
+                size={20}
+                color={isCurrentBookmarked ? accents.amber.fill : colors.ink2}
+              />
+            </Pressable>
+          </View>
         </View>
       </View>
 
@@ -1144,6 +1303,25 @@ function useStyles() {
       },
       primaryButtonDisabled: {
         opacity: 0.45,
+      },
+      ghostRow: {
+        flexDirection: "row",
+        alignItems: "center",
+      },
+      ghostButton: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.exact(8),
+        paddingHorizontal: spacing.exact(16),
+        paddingVertical: spacing.exact(12),
+        minHeight: spacing.exact(48),
+      },
+      ghostButtonLabel: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        color: colors.ink2,
       },
       primaryButtonLabel: {
         fontSize: responsiveFont(20),

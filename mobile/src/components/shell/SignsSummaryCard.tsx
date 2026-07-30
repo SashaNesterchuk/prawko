@@ -1,18 +1,19 @@
 import { Pressable, Text, View } from "react-native";
 
 import { Icon } from "../icons";
-import { DualColorProgressBar } from "./DualColorProgressBar";
-import { useResponsiveStyles } from "../../portable-ui";
+import {
+  useResponsiveStyles,
+  type PercentageString,
+} from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type SignsSummaryCardProps = {
   title: string;
+  /** Mastery percent 0–100 (correct / total). Drives the bar fill. */
   progress: number;
   seen: number;
   total: number;
-  correct: number;
-  wrong: number;
-  correctAnswersLabel: string;
+  totalAnswersLabel: string;
   trainAllLabel: string;
   onTrainAll?: () => void;
 };
@@ -22,15 +23,15 @@ export function SignsSummaryCard({
   progress,
   seen,
   total,
-  correct,
-  wrong,
-  correctAnswersLabel,
+  totalAnswersLabel,
   trainAllLabel,
   onTrainAll,
 }: SignsSummaryCardProps) {
   const theme = useTheme();
   const clamped = Math.max(0, Math.min(progress, 100));
-  const styles = useStyles();
+  const styles = useStyles({
+    fillWidth: `${clamped}%` as PercentageString,
+  });
   const trainLabel = trainAllLabel.replace(/\s*>\s*$/, "");
 
   return (
@@ -41,20 +42,15 @@ export function SignsSummaryCard({
           <Text style={styles.readiness}>{`${Math.round(clamped)}%`}</Text>
         </View>
 
-        <Text style={styles.coverage}>{`${seen} / ${total}`}</Text>
-
-        <DualColorProgressBar
-          correct={correct}
-          wrong={wrong}
-          total={total}
-          height={8}
-        />
+        <View style={styles.track}>
+          {clamped > 0 ? <View style={styles.fill} /> : null}
+        </View>
       </View>
 
       <View style={styles.footerRow}>
         <View style={styles.statsCopy}>
-          <Text style={styles.statsLabel}>{correctAnswersLabel}</Text>
-          <Text style={styles.statsValue}>{`${correct} / ${seen}`}</Text>
+          <Text style={styles.statsLabel}>{totalAnswersLabel}</Text>
+          <Text style={styles.statsValue}>{`${seen} / ${total}`}</Text>
         </View>
 
         <Pressable
@@ -73,20 +69,16 @@ export function SignsSummaryCard({
   );
 }
 
-function useStyles() {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
+  return useResponsiveStyles(({ colors, elevation, radius, responsiveFont, spacing }) => ({
     card: {
-      borderRadius: radius.xl,
+      borderRadius: radius.xxl,
       backgroundColor: colors.white,
       overflow: "hidden",
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.07,
-      shadowRadius: spacing.exact(10),
-      shadowOffset: { width: 0, height: spacing.exact(4) },
-      elevation: 2,
+      ...elevation.raised,
     },
     topSection: {
-      gap: spacing.exact(0),
+      gap: spacing.exact(4),
       paddingTop: spacing.lg,
       paddingHorizontal: spacing.lg,
       paddingBottom: spacing.md,
@@ -112,12 +104,17 @@ function useStyles() {
       letterSpacing: -0.24,
       color: colors.ink,
     },
-    coverage: {
-      marginTop: 0,
-      marginBottom: spacing.exact(12),
-      fontSize: responsiveFont(12),
-      lineHeight: responsiveFont(16),
-      color: colors.ink,
+    track: {
+      height: spacing.exact(8),
+      borderRadius: radius.pill,
+      backgroundColor: colors.surface2,
+      overflow: "hidden",
+    },
+    fill: {
+      width: fillWidth,
+      height: "100%",
+      borderRadius: radius.pill,
+      backgroundColor: colors.ink3,
     },
     footerRow: {
       flexDirection: "row",

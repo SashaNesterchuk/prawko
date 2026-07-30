@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import { ExamRestartGateDialog } from "../../src/components/shell/ExamRestartGateDialog";
+import { ExamAnswersReviewView } from "../../src/features/exam/ExamAnswersReviewView";
 import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
 import {
   buildExamScopeSections,
@@ -18,6 +19,13 @@ import {
   ExamResultView,
 } from "../../src/features/exam/ExamResultView";
 import {
+  cacheExamSnapshot,
+  getCachedExamSnapshot,
+  isFinishedExamStatus,
+  loadPersistedExamSnapshot,
+  sortExamQuestionsByOrder,
+} from "../../src/features/exam/exam-snapshot-cache";
+import {
   fetchExamSessionSnapshot,
   isExamSessionId,
 } from "../../src/features/exam/exam-session";
@@ -29,6 +37,8 @@ import type {
 import { useAdInterstitialActions } from "../../src/features/ads/show-interstitial";
 import { ensureInterstitialReady } from "../../src/features/ads/interstitial-controller";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import { getQuestionUserState } from "../../src/features/questions/question-engine";
+import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
@@ -36,6 +46,7 @@ import { useQuestionProgressStore } from "../../src/state/question-progress";
 export default function ExamResultScreen() {
   const { t } = useTranslation();
   const authMode = useAppShellStore((state) => state.authMode);
+  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const params = useLocalSearchParams<{
     sessionId?: string | string[];
   }>();
@@ -44,19 +55,31 @@ export default function ExamResultScreen() {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
-  const [snapshot, setSnapshot] = useState<RemoteExamSnapshot | null>(null);
-  const [recentSessions, setRecentSessions] = useState<RemoteExamSession[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isRestartGateVisible, setIsRestartGateVisible] = useState(false);
-  const [isWatchingAd, setIsWatchingAd] = useState(false);
-  const questionsSectionY = useRef(0);
-  const modalHideResolverRef = useRef<(() => void) | null>(null);
+  const toggleBookmark = useQuestionProgressStore(
+    (state) => state.toggleBookmark
+  );
 
   const rawSessionId = getSingleParam(params.sessionId);
   const sessionId = isExamSessionId(rawSessionId) ? rawSessionId : null;
+
+  const [snapshot, setSnapshot] = useState<RemoteExamSnapshot | null>(() =>
+    sessionId ? getCachedExamSnapshot(sessionId) : null
+  );
+  const [recentSessions, setRecentSessions] = useState<RemoteExamSession[]>([]);
+  const [isLoading, setIsLoading] = useState(() => !snapshot);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isRestartGateVisible, setIsRestartGateVisible] = useState(false);
+  const [isWatchingAd, setIsWatchingAd] = useState(false);
+  const [reviewIndex, setReviewIndex] = useState<number | null>(null);
+  const modalHideResolverRef = useRef<(() => void) | null>(null);
+  const isReviewingRef = useRef(false);
+
   const canFetchRecent =
     authMode === "supabase" && isMobileSupabaseConfigured;
+
+  useEffect(() => {
+    isReviewingRef.current = reviewIndex !== null;
+  }, [reviewIndex]);
 
   useEffect(() => {
     if (!sessionId) {
@@ -66,26 +89,61 @@ export default function ExamResultScreen() {
     }
 
     let cancelled = false;
-    setIsLoading(true);
     setErrorMessage(null);
+    setReviewIndex(null);
 
-    void fetchExamSessionSnapshot(sessionId)
-      .then((nextSnapshot) => {
-        if (!cancelled) {
-          setSnapshot(nextSnapshot);
+    const memoryCached = getCachedExamSnapshot(sessionId);
+    if (memoryCached) {
+      setSnapshot(memoryCached);
+      setIsLoading(false);
+    } else {
+      setIsLoading(true);
+    }
+
+    void (async () => {
+      const persisted = memoryCached
+        ? memoryCached
+        : await loadPersistedExamSnapshot(sessionId);
+
+      if (cancelled) {
+        return;
+      }
+
+      if (persisted) {
+        setSnapshot(persisted);
+        setIsLoading(false);
+      }
+
+      try {
+        const nextSnapshot = await fetchExamSessionSnapshot(sessionId);
+        if (cancelled) {
+          return;
         }
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          console.warn("Failed to fetch exam result snapshot.", error);
+
+        cacheExamSnapshot(nextSnapshot);
+        setSnapshot(nextSnapshot);
+        setErrorMessage(null);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        console.warn("Failed to fetch exam result snapshot.", error);
+
+        // Keep a finished cached/persisted snapshot so Answers review still works
+        // even when the live session store was wiped (Fast Refresh / local Map).
+        if (!persisted || !isFinishedExamStatus(persisted.session.status)) {
           setErrorMessage(getErrorMessage(error));
+          if (!persisted) {
+            setSnapshot(null);
+          }
         }
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) {
           setIsLoading(false);
         }
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -113,8 +171,14 @@ export default function ExamResultScreen() {
     };
   }, [canFetchRecent, snapshot]);
 
+  // Only bounce an *active* session back to the player — never while reviewing
+  // answers, and never for finished sessions (completed/abandoned/expired).
   useEffect(() => {
     if (!snapshot || snapshot.session.status !== "active") {
+      return;
+    }
+
+    if (isReviewingRef.current) {
       return;
     }
 
@@ -148,6 +212,19 @@ export default function ExamResultScreen() {
   const weakestTopicLabel = weakestTopicBlock
     ? t(`topics.${weakestTopicBlock}`)
     : null;
+  const sortedQuestions = useMemo(
+    () => (snapshot ? sortExamQuestionsByOrder(snapshot.questions) : []),
+    [snapshot]
+  );
+  const answerByOrder = useMemo(() => {
+    if (!snapshot) {
+      return new Map<number, RemoteExamSnapshot["answers"][number]>();
+    }
+
+    return new Map(
+      (snapshot.answers ?? []).map((answer) => [answer.order, answer])
+    );
+  }, [snapshot]);
 
   if (isLoading) {
     return (
@@ -169,10 +246,24 @@ export default function ExamResultScreen() {
     );
   }
 
+  // Do not render the result CTA row (incl. Answers) for a still-active session —
+  // that race used to let users tap Answers right before replace → /exam/session
+  // which then failed with sessionErrorTitle when currentQuestionIndex was past end.
+  if (snapshot.session.status === "active") {
+    return (
+      <ExamResultCenteredState
+        title={t("states.loadingTitle")}
+        description={t("exam.sessionLoading")}
+      />
+    );
+  }
+
+  const loadedSnapshot = snapshot;
+
   const restartParams = buildExamRouteParams({
-    mode: snapshot.session.mode,
-    questionLimit: snapshot.session.totalQuestionsTarget,
-    studyPlanTaskId: getStudyPlanTaskId(snapshot.session.metadata),
+    mode: loadedSnapshot.session.mode,
+    questionLimit: loadedSnapshot.session.totalQuestionsTarget,
+    studyPlanTaskId: getStudyPlanTaskId(loadedSnapshot.session.metadata),
   });
 
   function goHome() {
@@ -203,7 +294,6 @@ export default function ExamResultScreen() {
 
       modalHideResolverRef.current = finish;
       setIsRestartGateVisible(false);
-      // Android has no Modal onDismiss — fall back after fade animation.
       setTimeout(finish, 450);
     });
   }
@@ -215,7 +305,6 @@ export default function ExamResultScreen() {
     }
 
     setIsRestartGateVisible(true);
-    // Warm inventory while the user reads the dialog — avoids first-tap miss.
     void ensureInterstitialReady({ attempts: 3, timeoutMs: 12_000 });
   }
 
@@ -227,17 +316,13 @@ export default function ExamResultScreen() {
     setIsWatchingAd(true);
 
     try {
-      // Wait until RN Modal fully dismisses — showing AdMob over a fading Modal
-      // makes the interstitial flash and can leave a touch-blocking overlay.
       await waitForModalHidden();
       const shown = await showInterstitialForUnlockGate();
 
       if (shown) {
-        // Let AdMob tear down its native view before navigating.
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
-      // No inventory / failed show — unlock quietly and continue.
       startNewExam();
     } catch (error) {
       console.warn("Exam restart ad failed.", error);
@@ -249,7 +334,6 @@ export default function ExamResultScreen() {
 
   function handlePremium() {
     setIsRestartGateVisible(false);
-    // Replace so paywall does not stack on top of result and reopen it on back.
     router.replace({
       pathname: "/paywall",
       params: {
@@ -269,24 +353,95 @@ export default function ExamResultScreen() {
     });
   }
 
+  function handleReviewAnswers() {
+    if (sortedQuestions.length === 0) {
+      console.warn("Exam Answers review has no questions in snapshot.", {
+        sessionId: loadedSnapshot.session.id,
+        status: loadedSnapshot.session.status,
+      });
+      return;
+    }
+
+    cacheExamSnapshot(loadedSnapshot);
+    setReviewIndex(0);
+  }
+
+  function handleToggleBookmark(questionSourceId: string) {
+    const isBookmarked = toggleBookmark(questionSourceId);
+
+    if (authMode === "supabase" && isMobileSupabaseConfigured) {
+      void syncQuestionBookmarkState({
+        questionSourceId,
+        isBookmarked,
+        savedFromMode: loadedSnapshot.session.mode,
+        metadata: {
+          source: "mobile_exam_answers_review",
+          exam_session_id: loadedSnapshot.session.id,
+        },
+      }).catch((error) => {
+        console.warn(
+          `Failed to sync bookmark state for ${questionSourceId}.`,
+          error
+        );
+      });
+    }
+  }
+
+  if (reviewIndex !== null) {
+    const questionRef = sortedQuestions[reviewIndex];
+
+    if (questionRef) {
+      const currentAnswer = answerByOrder.get(questionRef.order) ?? null;
+      const currentQuestionState = getQuestionUserState(
+        questionUserState,
+        questionRef.questionSourceId
+      );
+
+      return (
+        <ExamAnswersReviewView
+          answer={currentAnswer}
+          canGoNext
+          canGoPrevious={reviewIndex > 0}
+          currentIndex={reviewIndex}
+          displayLocale={preferredLocale}
+          isBookmarked={Boolean(currentQuestionState.isBookmarked)}
+          onBack={() => setReviewIndex(null)}
+          onNext={() => {
+            if (reviewIndex >= sortedQuestions.length - 1) {
+              setReviewIndex(null);
+              return;
+            }
+
+            setReviewIndex(reviewIndex + 1);
+          }}
+          onPrevious={() => setReviewIndex(Math.max(0, reviewIndex - 1))}
+          onToggleBookmark={() =>
+            handleToggleBookmark(questionRef.questionSourceId)
+          }
+          questionRef={questionRef}
+          totalQuestions={sortedQuestions.length}
+        />
+      );
+    }
+  }
+
   return (
     <>
       <ExamResultView
-        correctAnswersCount={snapshot.session.correctAnswersCount}
-        durationSeconds={getExamDurationSeconds(snapshot.session)}
+        correctAnswersCount={loadedSnapshot.session.correctAnswersCount}
+        durationSeconds={getExamDurationSeconds(loadedSnapshot.session)}
         onClose={goHome}
         onNewAttempt={handleNewAttempt}
         onPrimaryAction={outcome === "passed" ? goHome : goWorkOnMistakes}
-        onReviewAnswers={() => undefined}
+        onReviewAnswers={handleReviewAnswers}
         outcome={outcome}
-        passPoints={snapshot.session.passPoints}
-        questionsSectionY={questionsSectionY}
+        passPoints={loadedSnapshot.session.passPoints}
         scoreDelta={scoreDelta}
-        scorePoints={snapshot.session.scorePoints}
+        scorePoints={loadedSnapshot.session.scorePoints}
         scopeSections={scopeSections}
         topicStats={topicStats}
-        totalPointsTarget={snapshot.session.totalPointsTarget}
-        totalQuestionsAnswered={snapshot.session.totalQuestionsTarget}
+        totalPointsTarget={loadedSnapshot.session.totalPointsTarget}
+        totalQuestionsAnswered={loadedSnapshot.session.totalQuestionsTarget}
         weakestTopicLabel={weakestTopicLabel}
       />
 

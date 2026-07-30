@@ -20,6 +20,8 @@ type ActionTileProps = {
   icon?: ReactNode;
   onPress?: () => void;
   style?: ActionTileStyle;
+  /** Full-width horizontal layout (Figma Action tile at FILL width). */
+  fullWidth?: boolean;
 };
 
 export function ActionTile({
@@ -30,8 +32,9 @@ export function ActionTile({
   icon,
   onPress,
   style = "default",
+  fullWidth = false,
 }: ActionTileProps) {
-  const isInline = style === "faded";
+  const isInline = fullWidth || style === "faded";
   const styles = useStyles({ style, isInline });
 
   const body = (
