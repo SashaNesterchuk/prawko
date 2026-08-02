@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEvent, useEventListener } from "expo";
 import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Image,
   Pressable,
@@ -32,7 +32,8 @@ import type { QuestionMedia } from "./types";
 
 const MEDIA_HEIGHT = 220;
 
-export function QuestionMediaCard({
+/** Memoized: answering re-renders the trainer, but the media never changes. */
+export const QuestionMediaCard = memo(function QuestionMediaCard({
   autoPlayVideo = false,
   locale,
   media,
@@ -295,7 +296,7 @@ export function QuestionMediaCard({
       </View>
     </View>
   );
-}
+});
 
 function InlineQuestionVideo({
   accessibilityLabel,

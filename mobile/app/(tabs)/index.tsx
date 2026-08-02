@@ -168,18 +168,6 @@ export default function HomeTabScreen() {
           : "Низький",
   });
 
-  const openPlusOrPaywall = (open: () => void) => {
-    if (hasPlusAccess) {
-      open();
-      return;
-    }
-
-    router.push({
-      pathname: "/paywall",
-      params: { feature: "premium_access" },
-    });
-  };
-
   const tiles: ActionTileItem[] = [
     {
       key: "trainer",
@@ -216,31 +204,27 @@ export default function HomeTabScreen() {
     {
       key: "mistakes",
       accent: "red",
-      premium: true,
       title: t("dash.tileMistakesTitle", { defaultValue: "Помилки" }),
       subtitle: t("dash.tileMistakesSubtitle", {
         defaultValue: "{{count}} для повторення",
         count: wrongAnswers,
       }),
       icon: <HomeActionIcon accent="red" name="alert" />,
-      onPress: () => openPlusOrPaywall(() => router.push("/mistakes")),
+      onPress: () => router.push("/mistakes"),
     },
     {
       key: "traps",
       accent: "amber",
-      premium: true,
       title: t("dash.tileTrapsTitle", { defaultValue: "Пастки" }),
       subtitle: t("dash.tileTrapsSubtitle", {
         defaultValue: "Часто плутають",
       }),
       icon: <HomeActionIcon accent="amber" name="warning" />,
       onPress: () =>
-        openPlusOrPaywall(() =>
-          router.push({
-            pathname: "/question",
-            params: buildQuestionRouteParams({ mode: "hard_questions" }),
-          })
-        ),
+        router.push({
+          pathname: "/question",
+          params: buildQuestionRouteParams({ mode: "hard_questions" }),
+        }),
     },
   ];
 

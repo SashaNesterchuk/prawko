@@ -35,7 +35,6 @@ import {
 } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
-import { useHasPlusAccess } from "../../src/state/entitlements";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 
@@ -64,7 +63,6 @@ export default function LearnTabScreen() {
   const styles = useStyles({ safeBottom });
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const hasPlusAccess = useHasPlusAccess();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
@@ -129,18 +127,6 @@ export default function LearnTabScreen() {
       params: buildQuestionRouteParams({ mode }),
     });
 
-  const openPlusOrPaywall = (open: () => void) => {
-    if (hasPlusAccess) {
-      open();
-      return;
-    }
-
-    router.push({
-      pathname: "/paywall",
-      params: { feature: "premium_access" },
-    });
-  };
-
   const primaryTiles: ActionTileItem[] = [
     {
       key: "trainer",
@@ -176,7 +162,6 @@ export default function LearnTabScreen() {
     {
       key: "mistakes",
       accent: "red",
-      premium: true,
       style: "faded",
       title: t("learn.tileMistakesTitle", {
         defaultValue: "Виправити помилки",
@@ -186,12 +171,11 @@ export default function LearnTabScreen() {
         count: stats.wrongAnswers,
       }),
       icon: <LearnActionIcon accent="red" name="alert" />,
-      onPress: () => openPlusOrPaywall(() => router.push("/mistakes")),
+      onPress: () => router.push("/mistakes"),
     },
     {
       key: "srs",
       accent: "amber",
-      premium: true,
       style: "faded",
       title: t("learn.tileSrsTitle", { defaultValue: "Розумні повторення" }),
       subtitle: t("learn.tileSrsSubtitle", {
@@ -199,21 +183,18 @@ export default function LearnTabScreen() {
         count: dueReviews,
       }),
       icon: <LearnActionIcon accent="amber" name="idea" />,
-      onPress: () =>
-        openPlusOrPaywall(() => openQuestionMode("seen_not_mastered")),
+      onPress: () => openQuestionMode("seen_not_mastered"),
     },
     {
       key: "traps",
       accent: "amber",
-      premium: true,
       style: "faded",
       title: t("learn.tileTrapsTitle", { defaultValue: "Питання-пастки" }),
       subtitle: t("learn.tileTrapsSubtitle", {
         defaultValue: "Найчастіше плутають",
       }),
       icon: <LearnActionIcon accent="amber" name="warning" />,
-      onPress: () =>
-        openPlusOrPaywall(() => openQuestionMode("hard_questions")),
+      onPress: () => openQuestionMode("hard_questions"),
     },
   ];
 
@@ -257,7 +238,6 @@ export default function LearnTabScreen() {
                   title={tile.title}
                   subtitle={tile.subtitle}
                   accent={tile.accent}
-                  premium={tile.premium}
                   style={tile.style}
                   icon={tile.icon}
                   onPress={tile.onPress}

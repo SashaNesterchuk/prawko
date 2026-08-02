@@ -25,7 +25,6 @@ import {
 import { useTheme } from "../../../providers/ThemeProvider";
 import { type GreenWaveAccent } from "../../../theme/green-wave";
 import { useAppShellStore } from "../../../state/app-shell";
-import { useHasPlusAccess } from "../../../state/entitlements";
 import { useQuestionCatalogVersion } from "../../../state/question-catalog";
 import { useQuestionProgressStore } from "../../../state/question-progress";
 
@@ -38,7 +37,6 @@ type TrainerModeTile = {
   subtitle: string;
   accent: GreenWaveAccent;
   icon: IconName;
-  premium?: boolean;
 };
 
 type TrainerModesViewProps = {
@@ -51,7 +49,6 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const hasPlusAccess = useHasPlusAccess();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
@@ -144,7 +141,6 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
           mode: "wrong_answers",
           accent: "red",
           icon: "alert",
-          premium: true,
           title: t("trainerModes.mistakesTitle", {
             defaultValue: "Виправити помилки",
           }),
@@ -158,7 +154,6 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
           mode: "weak_spots",
           accent: "red",
           icon: "alert",
-          premium: true,
           title: t("trainerModes.weakTopicsTitle", {
             defaultValue: "Слабкі теми",
           }),
@@ -171,7 +166,6 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
       mode: "high_points",
       accent: "amber",
       icon: "warning",
-      premium: true,
       title: t("trainerModes.highPointsTitle", {
         defaultValue: "Складні питання",
       }),
@@ -189,14 +183,6 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   };
 
   const openCountDialog = (tile: TrainerModeTile) => {
-    if (tile.premium && !hasPlusAccess) {
-      router.push({
-        pathname: "/paywall",
-        params: { feature: "premium_access" },
-      });
-      return;
-    }
-
     const availableCount = getQuestionCountForMode(
       { mode: tile.mode, topic },
       questionUserState
@@ -231,7 +217,6 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
             key={tile.key}
             accent={tile.accent}
             style="faded"
-            premium={tile.premium}
             title={tile.title}
             subtitle={tile.subtitle}
             icon={<TrainerModeIcon accent={tile.accent} name={tile.icon} />}

@@ -200,7 +200,7 @@ export function useHasPlusAccess() {
 }
 
 export function useShouldShowAds() {
-  return !useHasPlusAccess();
+  return FEATURE_FLAGS.enableAds && !useHasPlusAccess();
 }
 
 export function useHasAiChatAccess() {

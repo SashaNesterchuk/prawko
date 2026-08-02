@@ -162,11 +162,43 @@ export function normalizeQuestionUserStateMap(userStates: QuestionUserStateMap) 
   ) as QuestionUserStateMap;
 }
 
+/**
+ * Stats screens normalize the whole bank (thousands of questions) on every
+ * answer, so the results are cached per stored object. Stored states are
+ * replaced, never mutated, which keeps the cache in sync.
+ */
+const normalizedStateCache = new WeakMap<object, QuestionUserState>();
+const emptyStateCache = new Map<string, QuestionUserState>();
+
 export function getQuestionUserState(
   userStates: QuestionUserStateMap,
   questionId: string
 ) {
-  return normalizeQuestionUserState(questionId, userStates[questionId]);
+  const storedState = userStates[questionId];
+
+  if (!storedState) {
+    const cachedEmptyState = emptyStateCache.get(questionId);
+
+    if (cachedEmptyState) {
+      return cachedEmptyState;
+    }
+
+    const emptyState = createEmptyQuestionUserState(questionId);
+    emptyStateCache.set(questionId, emptyState);
+
+    return emptyState;
+  }
+
+  const cachedState = normalizedStateCache.get(storedState);
+
+  if (cachedState && cachedState.questionId === questionId) {
+    return cachedState;
+  }
+
+  const normalizedState = normalizeQuestionUserState(questionId, storedState);
+  normalizedStateCache.set(storedState, normalizedState);
+
+  return normalizedState;
 }
 
 export function isQuestionReviewDue(
@@ -366,22 +398,113 @@ export function getQuestionSessionSummary(
   };
 }
 
-export function getQuestionDisplayStats(userStates: QuestionUserStateMap) {
-  const questionBank = getQuestionBank();
-  const states = questionBank.map((question) =>
-    getQuestionUserState(userStates, question.id)
-  );
+type QuestionDisplayStats = {
+  total: number;
+  hardQuestions: number;
+  wrongAnswers: number;
+  saved: number;
+  reviewDue: number;
+  seen: number;
+  seenNotMastered: number;
+  weakSpots: number;
+};
 
-  return {
+/**
+ * Home, learn, profile and the trainer all ask for these counters on the same
+ * state object, so the full-bank scan is shared. Review-due depends on the
+ * clock, hence the short TTL.
+ */
+const displayStatsCache = new WeakMap<
+  QuestionUserStateMap,
+  {
+    computedAt: number;
+    questionBank: LocalQuestion[];
+    stats: QuestionDisplayStats;
+  }
+>();
+const DISPLAY_STATS_TTL_MS = 30_000;
+
+export function getQuestionDisplayStats(
+  userStates: QuestionUserStateMap
+): QuestionDisplayStats {
+  const questionBank = getQuestionBank();
+  const cached = displayStatsCache.get(userStates);
+
+  if (
+    cached &&
+    cached.questionBank === questionBank &&
+    Date.now() - cached.computedAt < DISPLAY_STATS_TTL_MS
+  ) {
+    return cached.stats;
+  }
+
+  const stats = computeQuestionDisplayStats(userStates, questionBank);
+  displayStatsCache.set(userStates, {
+    computedAt: Date.now(),
+    questionBank,
+    stats,
+  });
+
+  return stats;
+}
+
+function computeQuestionDisplayStats(
+  userStates: QuestionUserStateMap,
+  questionBank: LocalQuestion[]
+): QuestionDisplayStats {
+  const now = new Date();
+  const stats: QuestionDisplayStats = {
     total: questionBank.length,
-    hardQuestions: states.filter((state) => state.isHard).length,
-    wrongAnswers: states.filter((state) => isQuestionUnresolvedWrong(state)).length,
-    saved: states.filter((state) => state.isBookmarked).length,
-    reviewDue: states.filter((state) => isQuestionDueForReview(state)).length,
-    seen: states.filter((state) => state.timesSeen > 0).length,
-    seenNotMastered: states.filter((state) => isSeenNotMasteredState(state)).length,
-    weakSpots: states.filter((state) => isWeakSpotState(state)).length,
+    hardQuestions: 0,
+    wrongAnswers: 0,
+    saved: 0,
+    reviewDue: 0,
+    seen: 0,
+    seenNotMastered: 0,
+    weakSpots: 0,
   };
+
+  for (const question of questionBank) {
+    const state = getQuestionUserState(userStates, question.id);
+
+    // Untouched questions score zero on every counter below.
+    if (state.timesSeen === 0 && !state.isHard && !state.isBookmarked) {
+      continue;
+    }
+
+    const isUnresolvedWrong = isQuestionUnresolvedWrong(state);
+    const isDueForReview = isQuestionDueForReview(state, now);
+
+    if (state.isHard) {
+      stats.hardQuestions += 1;
+    }
+
+    if (isUnresolvedWrong) {
+      stats.wrongAnswers += 1;
+    }
+
+    if (state.isBookmarked) {
+      stats.saved += 1;
+    }
+
+    if (isDueForReview) {
+      stats.reviewDue += 1;
+    }
+
+    if (state.timesSeen > 0) {
+      stats.seen += 1;
+    }
+
+    if (isSeenNotMasteredState(state, now)) {
+      stats.seenNotMastered += 1;
+    }
+
+    if (isUnresolvedWrong || state.isHard || isDueForReview) {
+      stats.weakSpots += 1;
+    }
+  }
+
+  return stats;
 }
 
 /**

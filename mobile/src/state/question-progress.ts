@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppState } from "react-native";
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { persist, type PersistStorage, type StorageValue } from "zustand/middleware";
 
 import {
   buildQuestionSession,
@@ -16,6 +17,76 @@ import type {
   QuestionSessionRequest,
   QuestionUserStateMap,
 } from "../features/questions/types";
+
+type PersistedQuestionProgress = Pick<
+  QuestionProgressState,
+  "activeSession" | "attempts" | "questionUserState"
+>;
+
+const PERSIST_FLUSH_DELAY_MS = 800;
+
+/**
+ * Answering a question rewrites the whole progress blob, and serializing it is
+ * heavy enough to be felt on tap. Writes are batched and the JSON is built at
+ * flush time, off the interaction frame.
+ */
+function createDeferredProgressStorage(): PersistStorage<PersistedQuestionProgress> {
+  const pendingWrites = new Map<string, StorageValue<PersistedQuestionProgress>>();
+  let flushTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  const flush = () => {
+    if (flushTimeout) {
+      clearTimeout(flushTimeout);
+      flushTimeout = null;
+    }
+
+    if (pendingWrites.size === 0) {
+      return;
+    }
+
+    const entries = [...pendingWrites.entries()].map(
+      ([name, value]) => [name, JSON.stringify(value)] as [string, string]
+    );
+    pendingWrites.clear();
+
+    void AsyncStorage.multiSet(entries).catch((error) => {
+      console.warn("Failed to persist question progress.", error);
+    });
+  };
+
+  AppState.addEventListener("change", (nextState) => {
+    if (nextState !== "active") {
+      flush();
+    }
+  });
+
+  return {
+    getItem: async (name) => {
+      const pendingValue = pendingWrites.get(name);
+
+      if (pendingValue) {
+        return pendingValue;
+      }
+
+      const rawValue = await AsyncStorage.getItem(name);
+
+      return rawValue
+        ? (JSON.parse(rawValue) as StorageValue<PersistedQuestionProgress>)
+        : null;
+    },
+    setItem: (name, value) => {
+      pendingWrites.set(name, value);
+
+      if (!flushTimeout) {
+        flushTimeout = setTimeout(flush, PERSIST_FLUSH_DELAY_MS);
+      }
+    },
+    removeItem: async (name) => {
+      pendingWrites.delete(name);
+      await AsyncStorage.removeItem(name);
+    },
+  };
+}
 
 type QuestionProgressState = {
   activeSession: QuestionSession | null;
@@ -282,7 +353,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
     }),
     {
       name: "prawko-question-progress",
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createDeferredProgressStorage(),
       partialize: (state) => ({
         activeSession: state.activeSession,
         attempts: state.attempts,

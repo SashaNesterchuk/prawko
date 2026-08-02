@@ -141,11 +141,24 @@ export function buildWeekActivity(
   });
 }
 
+/**
+ * Attempt objects are reused across store updates, so each one is only ever
+ * converted to a Warsaw date once instead of on every re-render.
+ */
+const attemptDateCache = new WeakMap<QuestionAttempt, string>();
+
 function collectActivityDates(attempts: QuestionAttempt[]) {
   const dates = new Set<string>();
 
   for (const attempt of attempts) {
-    dates.add(getWarsawIsoDate(new Date(attempt.answeredAt)));
+    let isoDate = attemptDateCache.get(attempt);
+
+    if (!isoDate) {
+      isoDate = getWarsawIsoDate(new Date(attempt.answeredAt));
+      attemptDateCache.set(attempt, isoDate);
+    }
+
+    dates.add(isoDate);
   }
 
   return dates;
@@ -205,14 +218,17 @@ function getWarsawDayOfMonth(date: Date) {
   return getWarsawDateParts(date).day;
 }
 
+let warsawDatePartsFormatter: Intl.DateTimeFormat | null = null;
+
 function getWarsawDateParts(date: Date) {
-  const formatter = new Intl.DateTimeFormat("en-CA", {
+  warsawDatePartsFormatter ??= new Intl.DateTimeFormat("en-CA", {
     day: "numeric",
     month: "numeric",
     timeZone: "Europe/Warsaw",
     year: "numeric",
   });
-  const parts = formatter.formatToParts(date);
+
+  const parts = warsawDatePartsFormatter.formatToParts(date);
   const year = Number(parts.find((part) => part.type === "year")?.value ?? 0);
   const month = Number(
     parts.find((part) => part.type === "month")?.value ?? 0

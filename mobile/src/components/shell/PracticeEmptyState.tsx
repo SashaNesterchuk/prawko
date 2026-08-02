@@ -11,7 +11,6 @@ import {
   useResponsiveStyles,
 } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
-import { useHasPlusAccess } from "../../state/entitlements";
 import { ActionTile } from "./ActionTile";
 import { GreenWaveScreen } from "./GreenWaveScreen";
 import { NavigationButton } from "./NavigationButton";
@@ -37,7 +36,6 @@ export function PracticeEmptyState({
   const { bottom: safeBottom } = useSafeAreaInsets();
   const { accents } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
-  const hasPlusAccess = useHasPlusAccess();
   const styles = useStyles({ safeBottom });
   const iconSize = responsiveFont(24);
   const heroIconSize = responsiveFont(40);
@@ -49,18 +47,6 @@ export function PracticeEmptyState({
       pathname: "/question",
       params: buildQuestionRouteParams({ mode }),
     });
-
-  const openPlusOrPaywall = (open: () => void) => {
-    if (hasPlusAccess) {
-      open();
-      return;
-    }
-
-    router.push({
-      pathname: "/paywall",
-      params: { feature: "premium_access" },
-    });
-  };
 
   return (
     <GreenWaveScreen>
@@ -95,7 +81,6 @@ export function PracticeEmptyState({
           <View style={styles.actions}>
             <ActionTile
               accent="amber"
-              premium
               style="faded"
               title={t("learn.tileTrapsTitle", {
                 defaultValue: "Питання-пастки",
@@ -110,13 +95,10 @@ export function PracticeEmptyState({
                   size={iconSize}
                 />
               }
-              onPress={() =>
-                openPlusOrPaywall(() => openQuestionMode("hard_questions"))
-              }
+              onPress={() => openQuestionMode("hard_questions")}
             />
             <ActionTile
               accent="amber"
-              premium
               style="faded"
               title={t("learn.tileSrsTitle", {
                 defaultValue: "Розумні повторення",
@@ -128,9 +110,7 @@ export function PracticeEmptyState({
               icon={
                 <Icon color={accents.amber.fill} name="idea" size={iconSize} />
               }
-              onPress={() =>
-                openPlusOrPaywall(() => openQuestionMode("seen_not_mastered"))
-              }
+              onPress={() => openQuestionMode("seen_not_mastered")}
             />
           </View>
         </ScrollView>

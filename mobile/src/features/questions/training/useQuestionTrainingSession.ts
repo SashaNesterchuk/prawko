@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@prawko/config";
-import { QUESTION_MASTERY_RULES } from "@prawko/config";
+import { AD_POLICY, QUESTION_MASTERY_RULES } from "@prawko/config";
 
 import { isMobileSupabaseConfigured } from "../../../config/env";
 import { recordQuestionAnsweredForAds } from "../../ads/ad-session-policy";
@@ -59,7 +59,8 @@ export function useQuestionTrainingSession() {
     (state) => state.currentStudyPlanRemoteId
   );
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const { maybeShowInterstitial } = useAdInterstitialActions();
+  const { maybeShowInterstitial, showInterstitialForTrigger } =
+    useAdInterstitialActions();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionProgressHydrated = useQuestionProgressHydrated();
   const activeSession = useActiveQuestionSession();
@@ -82,6 +83,7 @@ export function useQuestionTrainingSession() {
   const [showExitDialog, setShowExitDialog] = useState(false);
   const questionStartedAtRef = useRef(Date.now());
   const didShowSessionCompleteAdRef = useRef(false);
+  const shouldAttemptPracticeAdRef = useRef(false);
 
   useEffect(() => {
     setDisplayLocale(preferredLocale);
@@ -220,7 +222,7 @@ export function useQuestionTrainingSession() {
     }
 
     recordQuestionAnsweredForAds();
-    maybeShowInterstitial("after_question_answer");
+    shouldAttemptPracticeAdRef.current = true;
 
     if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
       return;
@@ -281,14 +283,60 @@ export function useQuestionTrainingSession() {
     }
   };
 
+  // No answers yet = miss-click: skip the confirm dialog (caller exits directly).
+  const hasStartedTraining =
+    summary.answered > 0 || Boolean(currentAnswer);
+
   const handleRequestExit = () => {
+    if (!hasStartedTraining) {
+      return;
+    }
+
     setShowExitDialog(true);
   };
 
-  const handleConfirmExit = () => {
+  const handleContinueAfterFeedback = useCallback(() => {
+    const shouldAttemptInterstitial = shouldAttemptPracticeAdRef.current;
+    shouldAttemptPracticeAdRef.current = false;
+    advanceSession();
+
+    if (shouldAttemptInterstitial) {
+      maybeShowInterstitial("after_question_answer");
+    }
+  }, [advanceSession, maybeShowInterstitial]);
+
+  const handleConfirmExit = useCallback(async () => {
     setShowExitDialog(false);
+    const shouldAttemptPracticeInterstitial = shouldAttemptPracticeAdRef.current;
+    shouldAttemptPracticeAdRef.current = false;
+    const answeredCount = summary.answered;
+    const wasCompleted = isCompleted;
+
+    // Clear before any async ad work so a cancelled swipe / remount cannot
+    // reopen into a stale persisted training session.
     clearActiveSession();
-  };
+
+    if (wasCompleted) {
+      return;
+    }
+
+    if (
+      shouldAttemptPracticeInterstitial &&
+      answeredCount >= AD_POLICY.questionsBetweenInterstitials
+    ) {
+      await showInterstitialForTrigger("after_question_answer");
+      return;
+    }
+
+    await showInterstitialForTrigger("after_practice_session_complete", {
+      practiceAnsweredCount: answeredCount,
+    });
+  }, [
+    clearActiveSession,
+    isCompleted,
+    showInterstitialForTrigger,
+    summary.answered,
+  ]);
 
   const handleDismissExitDialog = () => {
     setShowExitDialog(false);
@@ -300,8 +348,11 @@ export function useQuestionTrainingSession() {
     }
 
     didShowSessionCompleteAdRef.current = true;
-    maybeShowInterstitial("after_practice_session_complete");
-  }, [isCompleted, maybeShowInterstitial]);
+    shouldAttemptPracticeAdRef.current = false;
+    void showInterstitialForTrigger("after_practice_session_complete", {
+      practiceAnsweredCount: summary.answered,
+    });
+  }, [isCompleted, showInterstitialForTrigger, summary.answered]);
 
   useEffect(() => {
     didShowSessionCompleteAdRef.current = false;
@@ -324,10 +375,12 @@ export function useQuestionTrainingSession() {
     feedbackAccent,
     feedbackGradientColors,
     handleAnswer,
+    handleContinueAfterFeedback,
     handleConfirmExit,
     handleDismissExitDialog,
     handleRequestExit,
     handleToggleBookmark,
+    hasStartedTraining,
     isCompleted,
     isEmptyState,
     isReady: questionProgressHydrated && Boolean(activeSession),

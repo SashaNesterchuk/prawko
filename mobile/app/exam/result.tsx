@@ -39,18 +39,21 @@ import { ensureInterstitialReady } from "../../src/features/ads/interstitial-con
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import { getQuestionUserState } from "../../src/features/questions/question-engine";
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 
 export default function ExamResultScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const params = useLocalSearchParams<{
     sessionId?: string | string[];
   }>();
-  const { showInterstitialForUnlockGate } = useAdInterstitialActions();
+  const { showInterstitialForTrigger, showInterstitialForUnlockGate } =
+    useAdInterstitialActions();
   const hasPlusAccess = useHasPlusAccess();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
@@ -73,6 +76,7 @@ export default function ExamResultScreen() {
   const [reviewIndex, setReviewIndex] = useState<number | null>(null);
   const modalHideResolverRef = useRef<(() => void) | null>(null);
   const isReviewingRef = useRef(false);
+  const didAttemptResultInterstitialRef = useRef(false);
 
   const canFetchRecent =
     authMode === "supabase" && isMobileSupabaseConfigured;
@@ -89,6 +93,7 @@ export default function ExamResultScreen() {
     }
 
     let cancelled = false;
+    didAttemptResultInterstitialRef.current = false;
     setErrorMessage(null);
     setReviewIndex(null);
 
@@ -170,6 +175,25 @@ export default function ExamResultScreen() {
       cancelled = true;
     };
   }, [canFetchRecent, snapshot]);
+
+  useEffect(() => {
+    if (
+      !snapshot ||
+      snapshot.session.status === "active" ||
+      hasPlusAccess ||
+      didAttemptResultInterstitialRef.current
+    ) {
+      return;
+    }
+
+    didAttemptResultInterstitialRef.current = true;
+
+    void ensureInterstitialReady({ attempts: 3, timeoutMs: 12_000 })
+      .catch(() => false)
+      .finally(() => {
+        void showInterstitialForTrigger("after_exam_complete");
+      });
+  }, [hasPlusAccess, showInterstitialForTrigger, snapshot]);
 
   // Only bounce an *active* session back to the player — never while reviewing
   // answers, and never for finished sessions (completed/abandoned/expired).
@@ -304,6 +328,9 @@ export default function ExamResultScreen() {
       return;
     }
 
+    track("exam_restart_gate_shown", {
+      source: "exam_result",
+    });
     setIsRestartGateVisible(true);
     void ensureInterstitialReady({ attempts: 3, timeoutMs: 12_000 });
   }
@@ -323,9 +350,17 @@ export default function ExamResultScreen() {
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
+      track("exam_restart_via_ad", {
+        ad_shown: shown,
+        source: "exam_result",
+      });
       startNewExam();
     } catch (error) {
       console.warn("Exam restart ad failed.", error);
+      track("exam_restart_via_ad", {
+        ad_shown: false,
+        source: "exam_result",
+      });
       startNewExam();
     } finally {
       setIsWatchingAd(false);
@@ -334,6 +369,9 @@ export default function ExamResultScreen() {
 
   function handlePremium() {
     setIsRestartGateVisible(false);
+    track("exam_restart_via_plus", {
+      source: "exam_result",
+    });
     router.replace({
       pathname: "/paywall",
       params: {

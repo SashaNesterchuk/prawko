@@ -53,7 +53,9 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(onboarding)" />
-        <Stack.Screen name="(tabs)" />
+        {/* Progress-stats screens re-derive the whole question bank whenever
+            progress changes, so they stay frozen while the trainer is on top. */}
+        <Stack.Screen name="(tabs)" options={{ freezeOnBlur: true }} />
         <Stack.Screen
           name="exam"
           options={{
@@ -64,24 +66,28 @@ export default function RootLayout() {
           name="question"
           options={{
             animation: "slide_from_right",
+            gestureEnabled: false,
           }}
         />
         <Stack.Screen
           name="topics/index"
           options={{
             animation: "slide_from_right",
+            freezeOnBlur: true,
           }}
         />
         <Stack.Screen
           name="mistakes/index"
           options={{
             animation: "slide_from_right",
+            freezeOnBlur: true,
           }}
         />
         <Stack.Screen
           name="practice/index"
           options={{
             animation: "slide_from_right",
+            freezeOnBlur: true,
           }}
         />
         <Stack.Screen
@@ -124,18 +130,21 @@ export default function RootLayout() {
           name="statistics/index"
           options={{
             animation: "slide_from_right",
+            freezeOnBlur: true,
           }}
         />
         <Stack.Screen
           name="trainer-modes"
           options={{
             animation: "slide_from_right",
+            freezeOnBlur: true,
           }}
         />
         <Stack.Screen
           name="topic/[topicId]"
           options={{
             animation: "slide_from_right",
+            freezeOnBlur: true,
           }}
         />
         <Stack.Screen

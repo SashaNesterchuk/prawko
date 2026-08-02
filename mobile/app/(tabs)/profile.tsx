@@ -360,15 +360,14 @@ export default function ProfileTabScreen() {
               onSwitchChange={(value) => void handleToggleNotifications(value)}
             />
             <ProfileSettingsRow
-              title={t("profile.offlineTitle")}
+              title={t("profile.plusTitle")}
               icon={
                 <Ionicons
                   color={colors.textSecondary}
-                  name="cloud-download-outline"
+                  name="star-outline"
                   size={iconSize}
                 />
               }
-              trailing="premium"
               isLast
               onPress={() =>
                 hasPlusAccess

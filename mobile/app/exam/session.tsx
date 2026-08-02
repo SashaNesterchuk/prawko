@@ -96,6 +96,15 @@ export default function ExamSessionScreen() {
   const questionTimeoutHandledRef = useRef(false);
   const questionStartedAtRef = useRef(Date.now());
   const resultNavigationHandledRef = useRef(false);
+  // Empty open + close = miss-click: no confirm dialog, no result screen.
+  const hasStartedExamRef = useRef(false);
+  const exitHandlersRef = useRef<{
+    dismissEmptyExam: () => void;
+    requestExitDialog: () => void;
+  }>({
+    dismissEmptyExam: () => undefined,
+    requestExitDialog: () => undefined,
+  });
 
   const rawSessionId = getSingleParam(params.sessionId);
   const sessionId = isExamSessionId(rawSessionId) ? rawSessionId : null;
@@ -223,9 +232,15 @@ export default function ExamSessionScreen() {
         return;
       }
 
-      // Swipe / hardware back must match the close button: show exit dialog.
+      // Swipe is disabled on this screen; this covers hardware / JS back.
       event.preventDefault();
-      setShowExitDialog(true);
+
+      if (!hasStartedExamRef.current) {
+        exitHandlersRef.current.dismissEmptyExam();
+        return;
+      }
+
+      exitHandlersRef.current.requestExitDialog();
     });
 
     return unsubscribe;
@@ -533,8 +548,46 @@ export default function ExamSessionScreen() {
     }
   };
 
+  const hasStartedExam =
+    (snapshot?.answers.length ?? 0) > 0 || selectedAnswerId != null;
+  hasStartedExamRef.current = hasStartedExam;
+
+  const dismissEmptyExamAsMissClick = async () => {
+    if (!sessionId || isEnding) {
+      return;
+    }
+
+    setIsEnding(true);
+    setShowExitDialog(false);
+    setErrorMessage(null);
+
+    try {
+      await setExamSessionStatus({
+        metadata: {
+          source: "mobile_exam_session",
+          reason: "miss_click_empty_exit",
+        },
+        sessionId,
+        status: "abandoned",
+      });
+    } catch (error) {
+      // Still leave — empty exit is a miss-click, not a result flow.
+      console.warn("Failed to discard empty exam session.", error);
+    } finally {
+      allowNavigationRef.current = true;
+      setExamSessionActive(false);
+      router.replace("/(tabs)");
+      setIsEnding(false);
+    }
+  };
+
   const handleExitPress = () => {
     if (isEnding) {
+      return;
+    }
+
+    if (!hasStartedExam) {
+      void dismissEmptyExamAsMissClick();
       return;
     }
 
@@ -550,6 +603,17 @@ export default function ExamSessionScreen() {
     void handleEndSession("abandoned", {
       reason: "user_ended_early",
     });
+  };
+
+  exitHandlersRef.current = {
+    dismissEmptyExam: () => {
+      void dismissEmptyExamAsMissClick();
+    },
+    requestExitDialog: () => {
+      if (!isEnding) {
+        setShowExitDialog(true);
+      }
+    },
   };
 
   if (isLoading) {

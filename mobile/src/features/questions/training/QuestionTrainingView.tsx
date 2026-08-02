@@ -26,7 +26,6 @@ const SUPPORT_EMAIL = "support@prawko.app";
 type QuestionTrainingViewProps = Pick<
   QuestionTrainingSession,
   | "activeSession"
-  | "advanceSession"
   | "currentAnswer"
   | "currentAnswerCorrect"
   | "currentQuestion"
@@ -36,6 +35,7 @@ type QuestionTrainingViewProps = Pick<
   | "feedbackAccent"
   | "feedbackGradientColors"
   | "handleAnswer"
+  | "handleContinueAfterFeedback"
   | "handleConfirmExit"
   | "handleDismissExitDialog"
   | "handleRequestExit"
@@ -58,7 +58,6 @@ type QuestionTrainingViewProps = Pick<
 
 export function QuestionTrainingView({
   activeSession,
-  advanceSession,
   currentAnswer,
   currentAnswerCorrect,
   currentQuestion,
@@ -68,6 +67,7 @@ export function QuestionTrainingView({
   feedbackAccent,
   feedbackGradientColors,
   handleAnswer,
+  handleContinueAfterFeedback,
   handleConfirmExit,
   handleDismissExitDialog,
   handleRequestExit,
@@ -262,7 +262,7 @@ export function QuestionTrainingView({
                   handleToggleBookmark(currentQuestionId)
                 }
                 onExplain={handleExplainPress}
-                onNext={() => advanceSession()}
+                onNext={handleContinueAfterFeedback}
               />
             }
           >

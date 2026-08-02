@@ -611,7 +611,6 @@ export default function StatisticsScreen() {
                   subtitle={t("statistics.smartReviewSubtitle")}
                   count={stats.reviewDue}
                   accent="blue"
-                  premium
                   onPress={openReview}
                 />
                 <View style={styles.divider} />
@@ -794,7 +793,6 @@ function StatisticsQueueRow({
   subtitle,
   count,
   accent,
-  premium = false,
   onPress,
 }: {
   styles: ReturnType<typeof useStyles>;
@@ -802,18 +800,14 @@ function StatisticsQueueRow({
   subtitle: string;
   count: number;
   accent: "blue" | "red";
-  premium?: boolean;
   onPress?: () => void;
 }) {
   const { accents } = useTheme();
-  const { responsiveFont } = useResponsiveFonts();
   const accentColors = accent === "blue" ? accents.blue : accents.red;
-  const { colors } = useTheme();
   const rowStyles = useQueueRowStyles({
     countBackgroundColor: accentColors.soft,
     countTextColor: accentColors.ink,
   });
-  const premiumIconSize = responsiveFont(10);
 
   return (
     <Pressable
@@ -826,14 +820,7 @@ function StatisticsQueueRow({
       ]}
     >
       <View style={styles.queueCopy}>
-        <View style={styles.queueTitleRow}>
-          <Text style={styles.queueTitle}>{title}</Text>
-          {premium ? (
-            <View style={styles.premiumBadge}>
-              <Ionicons color={colors.onAccent} name="star" size={premiumIconSize} />
-            </View>
-          ) : null}
-        </View>
+        <Text style={styles.queueTitle}>{title}</Text>
         <Text style={styles.queueSubtitle}>{subtitle}</Text>
       </View>
       <View style={rowStyles.queueCount}>
@@ -1209,25 +1196,12 @@ function useStyles({
         flex: 1,
         gap: spacing.exact(4),
       },
-      queueTitleRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.exact(8),
-      },
       queueTitle: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontWeight: "600",
         letterSpacing: -0.16,
         color: colors.textPrimary,
-      },
-      premiumBadge: {
-        width: spacing.exact(20),
-        height: spacing.exact(20),
-        borderRadius: radius.pill,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: accents.green.fill,
       },
       queueSubtitle: {
         fontSize: responsiveFont(12),

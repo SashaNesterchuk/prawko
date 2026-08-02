@@ -108,6 +108,8 @@ export function shouldShowInterstitialForTrigger(
   input: {
     hasPlusAccess: boolean;
     adsEnabled: boolean;
+    practiceAnsweredCount?: number | null;
+    routeBlocked?: boolean;
   }
 ): { allowed: boolean; reason: AdSkipReason | null } {
   if (!input.adsEnabled) {
@@ -116,6 +118,10 @@ export function shouldShowInterstitialForTrigger(
 
   if (input.hasPlusAccess) {
     return { allowed: false, reason: "plus_user" };
+  }
+
+  if (input.routeBlocked) {
+    return { allowed: false, reason: "blocked_route" };
   }
 
   touchAdSessionActivity();
@@ -128,7 +134,7 @@ export function shouldShowInterstitialForTrigger(
     return { allowed: false, reason: "cap" };
   }
 
-  if (sessionState.lastAdShownAt) {
+  if (trigger !== "after_exam_complete" && sessionState.lastAdShownAt) {
     const elapsedSeconds = (Date.now() - sessionState.lastAdShownAt) / 1000;
 
     if (elapsedSeconds < AD_POLICY.minSecondsBetweenAds) {
@@ -140,6 +146,17 @@ export function shouldShowInterstitialForTrigger(
     if (
       sessionState.questionsAnsweredSinceLastAd <
       AD_POLICY.questionsBetweenInterstitials
+    ) {
+      return { allowed: false, reason: "trigger_not_ready" };
+    }
+  }
+
+  if (trigger === "after_practice_session_complete") {
+    const answeredCount = input.practiceAnsweredCount ?? 0;
+
+    if (
+      answeredCount < 1 ||
+      answeredCount >= AD_POLICY.questionsBetweenInterstitials
     ) {
       return { allowed: false, reason: "trigger_not_ready" };
     }

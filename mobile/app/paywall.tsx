@@ -90,6 +90,12 @@ export default function PaywallPage() {
   const returnExamMode = getSingleParam(params.mode);
   const returnExamQuestionLimit = getSingleParam(params.questionLimit);
   const returnExamStudyPlanTaskId = getSingleParam(params.studyPlanTaskId);
+  const paywallSource =
+    returnTo === "exam"
+      ? "exam_restart"
+      : highlightedFeature === "ai_question_chat" || returnTo === "ai-chat"
+        ? "ai_chat"
+        : "profile";
 
   const continueAfterUnlock = () => {
     if (returnTo === "ai-chat" && returnQuestionId) {
@@ -145,49 +151,34 @@ export default function PaywallPage() {
   const comparisonRows = useMemo<PaywallComparisonRow[]>(
     () => [
       {
-        key: "trainer",
-        title: t("paywall.rowTrainer"),
+        key: "training-exam",
+        title: t("paywall.rowTrainingExam"),
         free: { kind: "check" },
         premium: { kind: "check" },
       },
       {
-        key: "exam",
-        title: t("paywall.rowExam"),
-        free: { kind: "label", text: t("paywall.freeExamLimit") },
+        key: "review-modes",
+        title: t("paywall.rowReviewModes"),
+        subtitle: t("paywall.rowReviewModesSub"),
+        free: { kind: "check" },
         premium: { kind: "check" },
       },
       {
-        key: "readiness",
-        title: t("paywall.rowReadiness"),
-        subtitle: t("paywall.rowReadinessSub"),
-        free: { kind: "label", text: t("paywall.freeReadinessGeneral") },
-        premium: { kind: "check" },
+        key: "ads",
+        title: t("paywall.rowAds"),
+        free: { kind: "label", text: t("paywall.adsFreeCell") },
+        premium: { kind: "label", text: t("paywall.adsPlusCell") },
       },
       {
-        key: "mistakes",
-        title: t("paywall.rowMistakes"),
-        subtitle: t("paywall.rowMistakesSub"),
-        free: { kind: "cross" },
-        premium: { kind: "check" },
+        key: "exam-retry",
+        title: t("paywall.rowExamRetry"),
+        free: { kind: "label", text: t("paywall.examRetryFreeCell") },
+        premium: { kind: "label", text: t("paywall.examRetryPlusCell") },
       },
       {
-        key: "traps",
-        title: t("paywall.rowTraps"),
-        subtitle: t("paywall.rowTrapsSub"),
-        free: { kind: "cross" },
-        premium: { kind: "check" },
-      },
-      {
-        key: "srs",
-        title: t("paywall.rowSrs"),
-        subtitle: t("paywall.rowSrsSub"),
-        free: { kind: "cross" },
-        premium: { kind: "check" },
-      },
-      {
-        key: "offline",
-        title: t("paywall.rowOffline"),
-        subtitle: t("paywall.rowOfflineSub"),
+        key: "ai",
+        title: t("paywall.rowAiAssistant"),
+        subtitle: t("paywall.rowAiAssistantSub"),
         free: { kind: "cross" },
         premium: { kind: "check" },
       },
@@ -219,12 +210,13 @@ export default function PaywallPage() {
       offers_count: revenueCatOfferings.length,
       plus_purchase_enabled: FEATURE_FLAGS.enablePlusPurchase,
       revenuecat_configured: revenueCatConfigured,
-      source: highlightedFeature === "ai_question_chat" ? "ai_chat" : "profile",
+      source: paywallSource,
     });
   }, [
     authMode,
     hasPlusAccess,
     highlightedFeature,
+    paywallSource,
     purchaseAccess,
     revenueCatConfigured,
     revenueCatOfferings.length,
@@ -264,6 +256,15 @@ export default function PaywallPage() {
     setIsPurchasing(true);
     setPurchaseFeedback(null);
     setRevenueCatStatus("loading");
+    track("plus_purchase_started", {
+      feature: highlightedFeature ?? "premium_access",
+      offering_identifier: selectedPackage.offeringIdentifier,
+      package_identifier: selectedPackage.identifier,
+      package_type: selectedPackage.packageType,
+      price: selectedPackage.price,
+      product_identifier: selectedPackage.productIdentifier,
+      source: paywallSource,
+    });
     track("purchase_started", {
       feature: highlightedFeature ?? "premium_access",
       offering_identifier: selectedPackage.offeringIdentifier,
@@ -271,7 +272,7 @@ export default function PaywallPage() {
       package_type: selectedPackage.packageType,
       price: selectedPackage.price,
       product_identifier: selectedPackage.productIdentifier,
-      source: "paywall",
+      source: paywallSource,
     });
 
     try {
@@ -282,6 +283,15 @@ export default function PaywallPage() {
       });
 
       hydrateRevenueCatSnapshot(snapshot);
+      track("plus_purchase_success", {
+        active_entitlements_count:
+          snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
+        offering_identifier: selectedPackage.offeringIdentifier,
+        package_identifier: selectedPackage.identifier,
+        package_type: selectedPackage.packageType,
+        product_identifier: selectedPackage.productIdentifier,
+        source: paywallSource,
+      });
       track("purchase_succeeded", {
         active_entitlements_count:
           snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
@@ -289,7 +299,7 @@ export default function PaywallPage() {
         package_identifier: selectedPackage.identifier,
         package_type: selectedPackage.packageType,
         product_identifier: selectedPackage.productIdentifier,
-        source: "paywall",
+        source: paywallSource,
       });
       setPurchaseFeedback({
         kind: "success",
@@ -332,13 +342,21 @@ export default function PaywallPage() {
         },
       });
       setRevenueCatStatus("ready");
+      track("plus_purchase_fail", {
+        message,
+        offering_identifier: selectedPackage.offeringIdentifier,
+        package_identifier: selectedPackage.identifier,
+        package_type: selectedPackage.packageType,
+        product_identifier: selectedPackage.productIdentifier,
+        source: paywallSource,
+      });
       track("purchase_failed", {
         message,
         offering_identifier: selectedPackage.offeringIdentifier,
         package_identifier: selectedPackage.identifier,
         package_type: selectedPackage.packageType,
         product_identifier: selectedPackage.productIdentifier,
-        source: "paywall",
+        source: paywallSource,
       });
       setPurchaseFeedback({
         kind: "error",

@@ -257,14 +257,18 @@ export async function skipTodayPlanDayRemotely(
   return data;
 }
 
+/** Building an Intl formatter is slow, and this runs once per stored attempt. */
+let warsawIsoDateFormatter: Intl.DateTimeFormat | null = null;
+
 export function getWarsawIsoDate(date: Date = new Date()) {
-  const formatter = new Intl.DateTimeFormat("en-CA", {
+  warsawIsoDateFormatter ??= new Intl.DateTimeFormat("en-CA", {
     day: "2-digit",
     month: "2-digit",
     timeZone: "Europe/Warsaw",
     year: "numeric",
   });
-  const parts = formatter.formatToParts(date);
+
+  const parts = warsawIsoDateFormatter.formatToParts(date);
   const year = parts.find((part) => part.type === "year")?.value;
   const month = parts.find((part) => part.type === "month")?.value;
   const day = parts.find((part) => part.type === "day")?.value;

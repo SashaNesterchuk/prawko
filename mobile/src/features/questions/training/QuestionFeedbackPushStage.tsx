@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { StyleSheet, type StyleProp, View, type ViewStyle } from "react-native";
 import Animated, {
   Easing,
@@ -14,7 +14,7 @@ import Animated, {
 import { useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 
-const ENTER_MS = 480;
+const ENTER_MS = 320;
 const ENTER_EASING = Easing.inOut(Easing.ease);
 const EXIT_MS = 200;
 const EXIT_EASING = Easing.out(Easing.cubic);
@@ -59,11 +59,27 @@ export function QuestionFeedbackPushStage({
   const contentHeight = useSharedValue(0);
   const panelHeight = useSharedValue(0);
   const [mounted, setMounted] = useState(visible);
-  const [measuredPanel, setMeasuredPanel] = useState(0);
+
+  const runEnterAnimation = useCallback(() => {
+    // Only matters when the question is long enough to scroll: brings its
+    // bottom edge into view so the lift lands it right on top of the panel.
+    scrollRef.current?.scrollToEnd({ animated: true });
+    progress.value = withTiming(1, {
+      duration: ENTER_MS,
+      easing: ENTER_EASING,
+    });
+  }, [progress, scrollRef]);
 
   useEffect(() => {
     if (visible) {
       setMounted(true);
+
+      // Height is already known from an earlier question, so the panel can
+      // start moving without waiting for another layout pass.
+      if (panelHeight.value > 0) {
+        runEnterAnimation();
+      }
+
       return;
     }
 
@@ -76,21 +92,7 @@ export function QuestionFeedbackPushStage({
         }
       }
     );
-  }, [progress, visible]);
-
-  useEffect(() => {
-    if (!visible || measuredPanel <= 0) {
-      return;
-    }
-
-    // Only matters when the question is long enough to scroll: brings its
-    // bottom edge into view so the lift lands it right on top of the panel.
-    scrollRef.current?.scrollToEnd({ animated: true });
-    progress.value = withTiming(1, {
-      duration: ENTER_MS,
-      easing: ENTER_EASING,
-    });
-  }, [measuredPanel, progress, visible]);
+  }, [panelHeight, progress, runEnterAnimation, visible]);
 
   const lift = useDerivedValue(() => {
     const freeSpace = Math.max(0, stageHeight.value - contentHeight.value);
@@ -142,12 +144,18 @@ export function QuestionFeedbackPushStage({
           style={[styles.panelHost, panelStyle]}
           onLayout={(event) => {
             const nextHeight = Math.round(event.nativeEvent.layout.height);
-            if (nextHeight <= 0 || nextHeight === measuredPanel) {
+            if (nextHeight <= 0 || nextHeight === panelHeight.value) {
               return;
             }
 
+            const wasMeasured = panelHeight.value > 0;
             panelHeight.value = nextHeight;
-            setMeasuredPanel(nextHeight);
+
+            // First measurement for this panel: the enter effect could not run
+            // yet, so it is kicked off here instead of after another render.
+            if (visible && !wasMeasured) {
+              runEnterAnimation();
+            }
           }}
         >
           {feedback}

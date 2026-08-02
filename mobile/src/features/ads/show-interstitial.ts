@@ -1,3 +1,4 @@
+import { usePathname } from "expo-router";
 import { FEATURE_FLAGS } from "@prawko/config";
 
 import { useAnalytics } from "../../providers/AnalyticsProvider";
@@ -20,48 +21,111 @@ import {
 
 type ShowInterstitialInput = {
   hasPlusAccess: boolean;
+  pathname?: string | null;
+  practiceAnsweredCount?: number | null;
   track: (event: string, payload?: Record<string, string | number | boolean | null>) => void;
   trigger: AdInterstitialTrigger;
 };
+
+function getAdOpportunityType(trigger: AdInterstitialTrigger) {
+  switch (trigger) {
+    case "after_exam_complete":
+      return "exam_result";
+    case "after_practice_session_complete":
+      return "practice_session_end";
+    case "exam_restart":
+      return "exam_restart_gate";
+    case "after_question_answer":
+      return "practice_streak";
+    case "app_resume":
+      return "app_resume";
+    default:
+      return trigger;
+  }
+}
+
+function trackAdOpportunity(input: ShowInterstitialInput, adsEnabled: boolean) {
+  input.track("ad_opportunity", {
+    ads_enabled: adsEnabled,
+    trigger: input.trigger,
+    type: getAdOpportunityType(input.trigger),
+  });
+  input.track("ad_interstitial_requested", {
+    ads_enabled: adsEnabled,
+    trigger: input.trigger,
+  });
+}
+
+function trackAdSkipped(
+  input: ShowInterstitialInput,
+  reason: AdSkipReason
+) {
+  input.track("ad_skipped", {
+    reason,
+    trigger: input.trigger,
+    type: getAdOpportunityType(input.trigger),
+  });
+  input.track("ad_interstitial_skipped", {
+    reason,
+    trigger: input.trigger,
+  });
+}
+
+function trackAdFailed(input: ShowInterstitialInput, message: string) {
+  input.track("ad_failed", {
+    reason: message,
+    trigger: input.trigger,
+    type: getAdOpportunityType(input.trigger),
+  });
+  input.track("ad_interstitial_failed", {
+    message,
+    trigger: input.trigger,
+  });
+}
+
+function trackAdShown(
+  input: ShowInterstitialInput,
+  extra?: Record<string, string | number | boolean | null>
+) {
+  const payload = {
+    trigger: input.trigger,
+    type: getAdOpportunityType(input.trigger),
+    ...extra,
+  };
+  input.track("ad_shown", payload);
+  input.track("ad_interstitial_shown", payload);
+}
 
 export async function showInterstitialIfAllowed(
   input: ShowInterstitialInput
 ): Promise<boolean> {
   const adsEnabled = isAdMobEnabled();
+  const routeBlocked =
+    typeof input.pathname === "string" ? isAdRouteBlocked(input.pathname) : false;
   const policy = shouldShowInterstitialForTrigger(input.trigger, {
     adsEnabled,
     hasPlusAccess: input.hasPlusAccess,
-  });
-
-  input.track("ad_interstitial_requested", {
-    ads_enabled: adsEnabled,
-    trigger: input.trigger,
+    practiceAnsweredCount: input.practiceAnsweredCount,
+    routeBlocked,
   });
 
   if (!policy.allowed) {
     if (policy.reason && policy.reason !== "trigger_not_ready") {
-      input.track("ad_interstitial_skipped", {
-        reason: policy.reason,
-        trigger: input.trigger,
-      });
+      trackAdSkipped(input, policy.reason);
     }
 
     return false;
   }
 
   if (!FEATURE_FLAGS.enableAds) {
-    input.track("ad_interstitial_skipped", {
-      reason: "disabled",
-      trigger: input.trigger,
-    });
+    trackAdSkipped(input, "disabled");
     return false;
   }
 
+  trackAdOpportunity(input, adsEnabled);
+
   if (!isInterstitialLoaded()) {
-    input.track("ad_interstitial_skipped", {
-      reason: "not_loaded",
-      trigger: input.trigger,
-    });
+    trackAdSkipped(input, "not_loaded");
     return false;
   }
 
@@ -71,16 +135,11 @@ export async function showInterstitialIfAllowed(
   const shown = await showPreloadedInterstitial();
 
   if (!shown) {
-    input.track("ad_interstitial_failed", {
-      message: "show_returned_false",
-      trigger: input.trigger,
-    });
+    trackAdFailed(input, "show_returned_false");
     return false;
   }
 
-  input.track("ad_interstitial_shown", {
-    trigger: input.trigger,
-  });
+  trackAdShown(input);
   recordAdShown();
   clearAppBackgroundMark();
   input.track("ad_interstitial_dismissed", {
@@ -101,35 +160,34 @@ export async function showInterstitialForUnlockGate(
 ): Promise<boolean> {
   const trigger = input.trigger ?? "exam_restart";
   const adsEnabled = isAdMobEnabled();
-
-  input.track("ad_interstitial_requested", {
-    ads_enabled: adsEnabled,
+  const routeBlocked =
+    typeof input.pathname === "string" ? isAdRouteBlocked(input.pathname) : false;
+  const normalizedInput: ShowInterstitialInput = {
+    ...input,
     trigger,
-  });
+  };
 
   if (input.hasPlusAccess) {
-    input.track("ad_interstitial_skipped", {
-      reason: "plus_user",
-      trigger,
-    });
+    trackAdSkipped(normalizedInput, "plus_user");
     return false;
   }
 
   if (!adsEnabled || !FEATURE_FLAGS.enableAds) {
-    input.track("ad_interstitial_skipped", {
-      reason: "disabled",
-      trigger,
-    });
+    trackAdSkipped(normalizedInput, "disabled");
+    return false;
+  }
+
+  if (routeBlocked) {
+    trackAdSkipped(normalizedInput, "blocked_route");
     return false;
   }
 
   if (isExamSessionActive()) {
-    input.track("ad_interstitial_skipped", {
-      reason: "exam_active",
-      trigger,
-    });
+    trackAdSkipped(normalizedInput, "exam_active");
     return false;
   }
+
+  trackAdOpportunity(normalizedInput, adsEnabled);
 
   if (!isInterstitialLoaded()) {
     const ready = await ensureInterstitialReady({
@@ -137,10 +195,7 @@ export async function showInterstitialForUnlockGate(
       timeoutMs: 12_000,
     });
     if (!ready) {
-      input.track("ad_interstitial_skipped", {
-        reason: "not_loaded",
-        trigger,
-      });
+      trackAdSkipped(normalizedInput, "not_loaded");
       return false;
     }
   }
@@ -153,10 +208,7 @@ export async function showInterstitialForUnlockGate(
 
   // One more full retry if show itself failed (common on first attempt).
   if (!shown) {
-    input.track("ad_interstitial_failed", {
-      message: "show_returned_false_retrying",
-      trigger,
-    });
+    trackAdFailed(normalizedInput, "show_returned_false_retrying");
 
     const readyAgain = await ensureInterstitialReady({
       attempts: 2,
@@ -166,8 +218,7 @@ export async function showInterstitialForUnlockGate(
     if (readyAgain) {
       const retried = await showPreloadedInterstitial();
       if (retried) {
-        input.track("ad_interstitial_shown", {
-          trigger,
+        trackAdShown(normalizedInput, {
           retried: true,
         });
         recordAdShown();
@@ -180,16 +231,11 @@ export async function showInterstitialForUnlockGate(
       }
     }
 
-    input.track("ad_interstitial_failed", {
-      message: "show_returned_false",
-      trigger,
-    });
+    trackAdFailed(normalizedInput, "show_returned_false");
     return false;
   }
 
-  input.track("ad_interstitial_shown", {
-    trigger,
-  });
+  trackAdShown(normalizedInput);
   recordAdShown();
   clearAppBackgroundMark();
   input.track("ad_interstitial_dismissed", {
@@ -217,16 +263,34 @@ export function maybeShowInterstitial(
 export function useAdInterstitialActions() {
   const { track } = useAnalytics();
   const hasPlusAccess = useHasPlusAccess();
+  const pathname = usePathname();
 
   return {
-    maybeShowInterstitial: (trigger: AdInterstitialTrigger) =>
+    maybeShowInterstitial: (
+      trigger: AdInterstitialTrigger,
+      options?: Pick<ShowInterstitialInput, "practiceAnsweredCount">
+    ) =>
       maybeShowInterstitial(trigger, {
         hasPlusAccess,
+        pathname,
+        practiceAnsweredCount: options?.practiceAnsweredCount,
         track,
+      }),
+    showInterstitialForTrigger: (
+      trigger: AdInterstitialTrigger,
+      options?: Pick<ShowInterstitialInput, "practiceAnsweredCount">
+    ) =>
+      showInterstitialIfAllowed({
+        hasPlusAccess,
+        pathname,
+        practiceAnsweredCount: options?.practiceAnsweredCount,
+        track,
+        trigger,
       }),
     showInterstitialForUnlockGate: () =>
       showInterstitialForUnlockGate({
         hasPlusAccess,
+        pathname,
         track,
       }),
   };
@@ -235,6 +299,7 @@ export function useAdInterstitialActions() {
 export function isAdRouteBlocked(pathname: string) {
   return (
     pathname.includes("/paywall") ||
+    pathname.includes("/modals/access-center") ||
     pathname.includes("/modals/ai-chat") ||
     pathname.includes("/(onboarding)")
   );

@@ -15,6 +15,8 @@ import {
   useResponsiveStyles,
 } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
+import { recordQuestionAnsweredForAds } from "../ads/ad-session-policy";
+import { useAdInterstitialActions } from "../ads/show-interstitial";
 import { getRoadSignById } from "./catalog";
 import type { SignTestQuestion } from "./category-test";
 import { pickLocalized } from "./content/localized";
@@ -44,11 +46,14 @@ export function SignTestSessionScreen({
   const styles = useStyles();
   const signImageSize = spacing.exact(160);
   const premiumIconSize = responsiveFont(12);
+  const { maybeShowInterstitial, showInterstitialForTrigger } =
+    useAdInterstitialActions();
   const recordAttempt = useSignPracticeProgressStore(
     (state) => state.recordAttempt
   );
   const toggleSignBookmark = useSignBookmarksStore((state) => state.toggleSaved);
   const recordedQuestionIdsRef = useRef<Set<string>>(new Set());
+  const shouldAttemptPracticeAdRef = useRef(false);
 
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
@@ -97,20 +102,53 @@ export function SignTestSessionScreen({
         totalQuestions: 1,
       });
     }
+
+    recordQuestionAnsweredForAds();
+    shouldAttemptPracticeAdRef.current = true;
   };
 
-  const handleContinue = () => {
+  const handleCloseSession = async (input?: {
+    shouldAttemptPracticeInterstitial?: boolean;
+  }) => {
+    const answeredCount = recordedQuestionIdsRef.current.size;
+    const shouldAttemptPracticeInterstitial =
+      input?.shouldAttemptPracticeInterstitial ?? shouldAttemptPracticeAdRef.current;
+    shouldAttemptPracticeAdRef.current = false;
+
+    if (shouldAttemptPracticeInterstitial && answeredCount >= 12) {
+      await showInterstitialForTrigger("after_question_answer");
+    } else {
+      await showInterstitialForTrigger("after_practice_session_complete", {
+        practiceAnsweredCount: answeredCount,
+      });
+    }
+
+    router.back();
+  };
+
+  const handleContinue = async () => {
     if (!hasAnswered) {
       return;
     }
 
+    const shouldAttemptPracticeInterstitial = shouldAttemptPracticeAdRef.current;
+    shouldAttemptPracticeAdRef.current = false;
+
     if (questionIndex >= questions.length - 1) {
-      router.back();
+      if (shouldAttemptPracticeInterstitial) {
+        await handleCloseSession({ shouldAttemptPracticeInterstitial });
+      } else {
+        router.back();
+      }
       return;
     }
 
     setQuestionIndex((value) => value + 1);
     setSelectedOptionId(null);
+
+    if (shouldAttemptPracticeInterstitial) {
+      maybeShowInterstitial("after_question_answer");
+    }
   };
 
   const handleReportProblem = () => {
@@ -167,7 +205,9 @@ export function SignTestSessionScreen({
           <NavigationButton
             accessibilityLabel={t("common.close", { defaultValue: "Close" })}
             inset
-            onPress={() => router.back()}
+            onPress={() => {
+              void handleCloseSession();
+            }}
             type="close"
           />
 
@@ -241,7 +281,9 @@ export function SignTestSessionScreen({
               showExplain={false}
               onReportProblem={handleReportProblem}
               onToggleBookmark={handleToggleBookmark}
-              onNext={handleContinue}
+              onNext={() => {
+                void handleContinue();
+              }}
             />
           }
         >

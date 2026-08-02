@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { AppScreen } from "../src/components/shell/AppScreen";
@@ -14,7 +14,6 @@ import { QuestionSessionResultView } from "../src/features/questions/training/Qu
 import { QuestionTrainingFooter } from "../src/features/questions/training/QuestionTrainingFooter";
 import { QuestionTrainingView } from "../src/features/questions/training/QuestionTrainingView";
 import { useQuestionTrainingSession } from "../src/features/questions/training/useQuestionTrainingSession";
-import { useQuestionCatalogVersion } from "../src/state/question-catalog";
 import { useQuestionProgressStore } from "../src/state/question-progress";
 
 export default function QuestionScreen() {
@@ -22,58 +21,48 @@ export default function QuestionScreen() {
   const navigation = useNavigation();
   const allowNavigationRef = useRef(false);
   const session = useQuestionTrainingSession();
-  const exitHandlersRef = useRef({
+  const exitHandlersRef = useRef<{
+    handleConfirmExit: () => Promise<void>;
+    handleRequestExit: () => void;
+  }>({
     handleConfirmExit: session.handleConfirmExit,
-    handleRequestExit: session.handleRequestExit,
-    isCompleted: session.isCompleted,
-    isEmptyState: session.isEmptyState,
+    handleRequestExit: () => undefined,
   });
-  exitHandlersRef.current = {
-    handleConfirmExit: session.handleConfirmExit,
-    handleRequestExit: session.handleRequestExit,
-    isCompleted: session.isCompleted,
-    isEmptyState: session.isEmptyState,
-  };
 
-  const questionCatalogVersion = useQuestionCatalogVersion();
-  const questionUserState = useQuestionProgressStore(
-    (state) => state.questionUserState
-  );
-  const dueReviews = useMemo(
-    () => getQuestionDisplayStats(questionUserState).reviewDue,
-    [questionCatalogVersion, questionUserState]
-  );
-
-  const exitToTabs = () => {
+  const exitToTabs = async () => {
     allowNavigationRef.current = true;
-    exitHandlersRef.current.handleConfirmExit();
+    await exitHandlersRef.current.handleConfirmExit();
     router.replace("/(tabs)");
   };
 
+  // Empty open + close / completed / empty pool = leave without warning.
+  const requestExit = () => {
+    if (
+      session.isCompleted ||
+      session.isEmptyState ||
+      !session.hasStartedTraining
+    ) {
+      void exitToTabs();
+      return;
+    }
+
+    session.handleRequestExit();
+  };
+
+  exitHandlersRef.current = {
+    handleConfirmExit: session.handleConfirmExit,
+    handleRequestExit: requestExit,
+  };
+
+  // Hardware / JS back only — swipe is disabled via gestureEnabled: false.
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (event) => {
       if (allowNavigationRef.current) {
         return;
       }
 
-      // Swipe / hardware back must match the close control.
       event.preventDefault();
-
-      const {
-        handleConfirmExit,
-        handleRequestExit,
-        isCompleted,
-        isEmptyState,
-      } = exitHandlersRef.current;
-
-      if (isCompleted || isEmptyState) {
-        allowNavigationRef.current = true;
-        handleConfirmExit();
-        router.replace("/(tabs)");
-        return;
-      }
-
-      handleRequestExit();
+      exitHandlersRef.current.handleRequestExit();
     });
 
     return unsubscribe;
@@ -91,13 +80,17 @@ export default function QuestionScreen() {
   }
 
   if (session.isEmptyState && session.activeSession?.emptyReason === "saved_empty") {
+    // Read on demand: deriving it for every answered question would scan the
+    // whole catalog on each tap.
+    const { questionUserState } = useQuestionProgressStore.getState();
+
     return (
       <PracticeEmptyState
         headerTitle={t("practice.savedTitle")}
         title={t("practice.savedEmptyTitle")}
         description={t("practice.savedEmptyDescription")}
         iconName="like"
-        dueReviews={dueReviews}
+        dueReviews={getQuestionDisplayStats(questionUserState).reviewDue}
         onBack={exitToTabs}
       />
     );
@@ -165,7 +158,6 @@ export default function QuestionScreen() {
   return (
     <QuestionTrainingView
       activeSession={session.activeSession}
-      advanceSession={session.advanceSession}
       currentAnswer={session.currentAnswer}
       currentAnswerCorrect={session.currentAnswerCorrect}
       currentQuestion={session.currentQuestion}
@@ -175,9 +167,10 @@ export default function QuestionScreen() {
       feedbackAccent={session.feedbackAccent}
       feedbackGradientColors={session.feedbackGradientColors}
       handleAnswer={session.handleAnswer}
+      handleContinueAfterFeedback={session.handleContinueAfterFeedback}
       handleConfirmExit={exitToTabs}
       handleDismissExitDialog={session.handleDismissExitDialog}
-      handleRequestExit={session.handleRequestExit}
+      handleRequestExit={requestExit}
       handleToggleBookmark={session.handleToggleBookmark}
       masteryProgress={session.masteryProgress}
       premiumIconSize={session.premiumIconSize}

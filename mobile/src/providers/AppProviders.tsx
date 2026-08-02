@@ -4,7 +4,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 import { AdProvider } from "../features/ads/AdProvider";
-import { AppResumeAdListener } from "../features/ads/AppResumeAdListener";
 import "../i18n";
 import { useResponsiveStyles } from "../portable-ui";
 import { AnalyticsProvider } from "./AnalyticsProvider";
@@ -38,7 +37,6 @@ export function AppProviders({ children }: PropsWithChildren) {
                             <UserProvider>
                               <QuestionCatalogProvider>
                                 <AdProvider>
-                                  <AppResumeAdListener />
                                   {children}
                                 </AdProvider>
                               </QuestionCatalogProvider>

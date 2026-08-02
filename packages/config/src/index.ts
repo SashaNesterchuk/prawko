@@ -200,16 +200,19 @@ export const AD_POLICY = {
   minSecondsBetweenAds: 180,
   maxAdsPerSession: 6,
   sessionInactivityResetMinutes: 30,
+  /** Deprecated in Free + Ads / Plus v1; app-resume ads should stay disabled. */
   appResumeBackgroundMinutes: 10,
 } as const;
 
 export const AI_LIMITS = {
+  /** Deprecated: AI chat is Plus-only in Free + Ads / Plus v1. */
   freeQuestionChatPerDay: 8,
   maxHistoryMessages: 12,
   maxPromptChars: 500,
 } as const;
 
 export const FREE_TIER_LIMITS = {
+  /** Deprecated: practice is no longer capped per day in Free + Ads / Plus v1. */
   questionPracticePerDay: 20,
 } as const;
 

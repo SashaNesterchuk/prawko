@@ -6,8 +6,11 @@ import { createJSONStorage, persist } from "zustand/middleware";
 type FreeTierQuestionUsageState = {
   answeredQuestionsByDate: Record<string, number>;
   hasHydrated: boolean;
+  /** Deprecated legacy helper; active product flows no longer rely on daily caps. */
   consumeQuestionAnswer: () => number;
+  /** Deprecated legacy helper; active product flows no longer rely on daily caps. */
   getUsedQuestionAnswersToday: () => number;
+  /** Deprecated legacy helper; active product flows no longer rely on daily caps. */
   getRemainingQuestionAnswers: () => number;
   setHasHydrated: (value: boolean) => void;
 };
@@ -69,11 +72,16 @@ export function useUsedFreeQuestionAnswersToday() {
   );
 }
 
+// Called from store selectors, which re-run on every state change.
+let todayKeyFormatter: Intl.DateTimeFormat | null = null;
+
 function getTodayKey() {
-  return new Intl.DateTimeFormat("en-CA", {
+  todayKeyFormatter ??= new Intl.DateTimeFormat("en-CA", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     timeZone: "Europe/Warsaw",
-  }).format(new Date());
+  });
+
+  return todayKeyFormatter.format(new Date());
 }
