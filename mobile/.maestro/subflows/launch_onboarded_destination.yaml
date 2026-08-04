@@ -1,0 +1,23 @@
+# Reusable steps: launch a clean app, seed completed onboarding, and land on
+# the requested screen through the e2e bootstrap route.
+appId: com.mindjar.prawko
+env:
+  CATEGORY: B
+  DAYS_UNTIL_EXAM: 14
+  DESTINATION: home
+  LOCALE: ua
+  SIGN_CATEGORY_ID: A
+  TOPIC_ID: horizontal_road_markings
+  TARGET_ID: screen-home
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+
+- openLink:
+    link: "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}"
+
+- extendedWaitUntil:
+    visible:
+      id: "${TARGET_ID}"
+    timeout: 20000

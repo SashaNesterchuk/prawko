@@ -262,7 +262,7 @@ export default function LearnTabScreen() {
               })}
             </Text>
             <View style={styles.stack}>
-              {displayTopicIds.map((topic) => {
+              {displayTopicIds.map((topic, index) => {
                 const progress = getTopicProgress(
                   topic,
                   questionUserState,
@@ -278,7 +278,7 @@ export default function LearnTabScreen() {
                     readiness={progress.progress}
                     correct={progress.correct}
                     wrong={progress.wrong}
-                    testID={`topic-card-${topic}`}
+                    testID={`learn-topic-card-index-${index}`}
                     onPress={() =>
                       router.navigate({
                         pathname: "/topic/[topicId]",

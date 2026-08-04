@@ -179,10 +179,11 @@ export function ExamAnswersReviewView({
       </Text>
 
       <View style={isBooleanQuestion ? styles.booleanOptions : styles.options}>
-        {questionChoices.map((choice) => (
+        {questionChoices.map((choice, index) => (
           <QuestionChoiceOption
             key={choice.id}
             choice={choice}
+            choiceIndex={index}
             hasAnswered={hasAnswered}
             isBooleanQuestion={isBooleanQuestion}
             isCorrectChoice={question.correctAnswer === choice.id}

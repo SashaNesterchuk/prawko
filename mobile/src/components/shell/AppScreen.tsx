@@ -11,6 +11,7 @@ type AppScreenProps = PropsWithChildren<{
   subtitle?: string;
   footer?: ReactNode;
   scroll?: boolean;
+  testID?: string;
 }>;
 
 export function AppScreen({
@@ -18,6 +19,7 @@ export function AppScreen({
   footer,
   scroll = true,
   subtitle,
+  testID,
   title,
 }: AppScreenProps) {
   const styles = useStyles();
@@ -38,7 +40,11 @@ export function AppScreen({
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top", "bottom"]}
+        testID={testID}
+      >
         <StatusBar style="dark" />
         {scroll ? (
           <ScrollView

@@ -1,0 +1,20 @@
+# Feature: Signs
+# Scenario: Onboarded user starts full signs training from the Signs tab
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - signs
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: signs
+      TARGET_ID: screen-signs
+
+- tapOn:
+    id: "signs-train-all"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-sign-test

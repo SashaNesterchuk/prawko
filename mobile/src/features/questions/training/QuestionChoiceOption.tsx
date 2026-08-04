@@ -11,6 +11,7 @@ type QuestionChoice = {
 
 export function QuestionChoiceOption({
   choice,
+  choiceIndex,
   hasAnswered,
   isBooleanQuestion,
   isCorrectChoice,
@@ -18,6 +19,7 @@ export function QuestionChoiceOption({
   onPress,
 }: {
   choice: QuestionChoice;
+  choiceIndex: number;
   hasAnswered: boolean;
   isBooleanQuestion: boolean;
   isCorrectChoice: boolean;
@@ -43,7 +45,7 @@ export function QuestionChoiceOption({
       disabled={hasAnswered}
       onPress={onPress}
       style={styles.container}
-      testID={`question-choice-${choice.id}`}
+      testID={`question-choice-index-${choiceIndex}`}
     >
       {!isBooleanQuestion ? (
         revealCorrect || revealWrong ? (

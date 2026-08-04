@@ -1,0 +1,22 @@
+# Feature: Signs
+# Scenario: Onboarded user jumps into a sign category and starts category training
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - signs
+  - category
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: signs-category
+      SIGN_CATEGORY_ID: A
+      TARGET_ID: screen-signs-category-A
+
+- tapOn:
+    id: "signs-train-category"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-sign-test

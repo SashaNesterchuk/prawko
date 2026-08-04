@@ -20,6 +20,10 @@ export const mobileEnv = {
   mediaBaseUrl: process.env.EXPO_PUBLIC_MEDIA_BASE_URL ?? "",
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "",
+  enableE2ETestMode: parseBooleanEnv(
+    process.env.EXPO_PUBLIC_E2E_TEST_MODE,
+    false
+  ),
   posthogKey: process.env.EXPO_PUBLIC_POSTHOG_KEY ?? "",
   posthogHost:
     process.env.EXPO_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",

@@ -1,0 +1,32 @@
+# Feature: Signs
+# Scenario: Onboarded user answers the first sign test question and sees feedback
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - signs
+  - feedback
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: signs
+      TARGET_ID: screen-signs
+
+- tapOn:
+    id: "signs-train-all"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-sign-test
+
+- runFlow:
+    file: subflows/answer_first_available_option.yaml
+    env:
+      OPTION_ID: sign-test-option-index-0
+
+- tapOn:
+    id: "question-feedback-next"
+
+- assertVisible:
+    id: "screen-sign-test"

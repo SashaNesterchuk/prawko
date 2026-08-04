@@ -277,12 +277,13 @@ export default function PracticeScreen() {
 
   return (
     <AppScreen
+      testID="screen-practice"
       title={t("tabs.practiceTitle")}
       subtitle={t("tabs.practiceSubtitle")}
     >
       <View style={styles.cardStack}>
         {isLoadingRecentExamSessions ? (
-          <AppCard>
+          <AppCard testID="practice-card-recent-exams">
             <Text style={styles.cardTitle}>
               {t("practice.recentExamsTitle")}
             </Text>
@@ -291,7 +292,7 @@ export default function PracticeScreen() {
             </Text>
           </AppCard>
         ) : (
-          <AppCard>
+          <AppCard testID="practice-card-recent-exams">
             <Text style={styles.cardTitle}>
               {t("practice.recentExamsTitle")}
             </Text>
@@ -394,7 +395,7 @@ function PracticeCardView({
   const styles = useStyles();
 
   return (
-    <AppCard>
+    <AppCard testID={`practice-card-${card.key}`}>
       <Text style={styles.cardTitle}>
         {t(card.title)}
       </Text>
@@ -406,6 +407,7 @@ function PracticeCardView({
       <AppButton
         variant="secondary"
         label={t(card.cta)}
+        testID={`practice-card-${card.key}-cta`}
         onPress={() =>
           onOpen({
             params: card.params,

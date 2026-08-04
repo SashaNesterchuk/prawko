@@ -1,0 +1,24 @@
+# Feature: Practice
+# Scenario: Onboarded user opens Practice and starts the exam session card
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - practice
+  - exam
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: practice
+      TARGET_ID: screen-practice
+
+- tapOn:
+    id: "practice-card-exam-cta"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-session"
+    timeout: 20000
+
+- assertVisible:
+    id: "screen-exam-session"

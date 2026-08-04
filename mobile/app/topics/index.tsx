@@ -58,7 +58,11 @@ export default function TopicsScreen() {
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        testID="screen-topics"
+      >
         <StatusBar style="dark" />
         <View style={styles.header}>
           <Pressable
@@ -91,7 +95,7 @@ export default function TopicsScreen() {
             wrong={overallStats.wrong}
           />
 
-          {topicIds.map((topic) => {
+          {topicIds.map((topic, index) => {
             const progress = getTopicProgress(
               topic,
               questionUserState,
@@ -107,6 +111,7 @@ export default function TopicsScreen() {
                 readiness={progress.progress}
                 correct={progress.correct}
                 wrong={progress.wrong}
+                testID={`topics-topic-card-index-${index}`}
                 onPress={() =>
                   router.navigate({
                     pathname: "/topic/[topicId]",

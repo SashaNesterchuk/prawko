@@ -1,0 +1,15 @@
+# Reusable steps: answer with the first visible option and wait for feedback.
+appId: com.mindjar.prawko
+env:
+  OPTION_ID: question-choice-index-0
+---
+- tapOn:
+    id: "${OPTION_ID}"
+
+- extendedWaitUntil:
+    visible:
+      id: "question-feedback"
+    timeout: 10000
+
+- assertVisible:
+    id: "question-feedback"

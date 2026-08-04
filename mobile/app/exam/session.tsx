@@ -58,7 +58,11 @@ type ExamSessionShellProps = {
 function ExamSessionShell({ children, styles }: ExamSessionShellProps) {
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top", "bottom"]}
+        testID="screen-exam-session"
+      >
         <StatusBar style="dark" />
         {children}
       </SafeAreaView>

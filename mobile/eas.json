@@ -19,6 +19,9 @@
       "environment": "production"
     },
     "e2e-test": {
+      "env": {
+        "EXPO_PUBLIC_E2E_TEST_MODE": "1"
+      },
       "withoutCredentials": true,
       "ios": {
         "simulator": true

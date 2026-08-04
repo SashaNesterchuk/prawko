@@ -222,7 +222,11 @@ export function SignTestSessionScreen({
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        testID="screen-sign-test"
+      >
         <StatusBar style="dark" />
 
         <View style={styles.header}>
@@ -323,6 +327,7 @@ export function SignTestSessionScreen({
                     !hasAnswered && isSelected ? styles.optionSelected : null,
                     pressed ? styles.pressed : null,
                   ]}
+                  testID={`sign-test-option-index-${index}`}
                 >
                   <View style={styles.optionLetterWrap}>
                     <Text style={styles.optionLetter}>

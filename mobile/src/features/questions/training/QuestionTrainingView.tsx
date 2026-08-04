@@ -197,10 +197,11 @@ export function QuestionTrainingView({
             : trainerStyles.options
         }
       >
-        {questionChoices.map((choice) => (
+        {questionChoices.map((choice, index) => (
           <QuestionChoiceOption
             key={choice.id}
             choice={choice}
+            choiceIndex={index}
             hasAnswered={hasAnswered}
             isBooleanQuestion={isBooleanQuestion}
             isCorrectChoice={currentQuestion.correctAnswer === choice.id}

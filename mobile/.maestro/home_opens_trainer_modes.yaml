@@ -5,7 +5,11 @@ tags:
   - smoke
   - home
 ---
-- runFlow: subflows/complete_onboarding.yaml
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      TARGET_ID: screen-home
 
 - tapOn:
     id: "action-tile-trainer"

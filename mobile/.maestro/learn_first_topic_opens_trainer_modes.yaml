@@ -1,0 +1,24 @@
+# Feature: Learn
+# Scenario: Onboarded user opens the first topic from Learn and reaches trainer modes
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - learn
+  - topic
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: learn
+      TARGET_ID: screen-learn
+
+- tapOn:
+    id: "learn-topic-card-index-0"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-trainer-modes"
+    timeout: 15000
+
+- assertVisible:
+    id: "screen-trainer-modes"

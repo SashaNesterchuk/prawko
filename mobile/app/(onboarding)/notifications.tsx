@@ -5,24 +5,19 @@ import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { STUDY_PLAN_LIMITS } from "@prawko/config";
-
 import { Icon } from "../../src/components/icons";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { finalizeLocalOnboarding } from "../../src/features/onboarding/finalize-local-onboarding";
 import {
   disableStudyNotificationsAsync,
   enableStudyNotificationsAsync,
 } from "../../src/features/notifications/runtime";
-import { generateLocalStudyPlan } from "../../src/features/study-plan/generate-local-study-plan";
 import {
   getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
-import { useAppShellStore } from "../../src/state/app-shell";
-
-const DEFAULT_MINUTES_PER_DAY = 20;
 
 export default function NotificationsScreen() {
   const { t } = useTranslation();
@@ -55,31 +50,7 @@ export default function NotificationsScreen() {
       }
     }
 
-    const store = useAppShellStore.getState();
-    const setup = store.studyPlanSetup;
-    const level = setup.level ?? "first_time";
-    const minutesPerDay = setup.minutesPerDay ?? DEFAULT_MINUTES_PER_DAY;
-    const daysUntilExam =
-      setup.daysUntilExam ?? STUDY_PLAN_LIMITS.recommendedDays;
-
-    if (setup.level == null) {
-      store.setLevel(level);
-    }
-    if (setup.minutesPerDay == null) {
-      store.setMinutesPerDay(minutesPerDay);
-    }
-
-    const plan = generateLocalStudyPlan({
-      category: store.preferredCategory,
-      locale: store.preferredLocale,
-      daysUntilExam,
-      minutesPerDay,
-      level,
-      schoolCode: setup.schoolCode || undefined,
-    });
-
-    store.saveCurrentStudyPlan(plan);
-    store.completeOnboarding();
+    finalizeLocalOnboarding();
     router.replace("/(tabs)");
   };
 

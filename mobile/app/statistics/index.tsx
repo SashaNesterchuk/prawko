@@ -406,7 +406,11 @@ export default function StatisticsScreen() {
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        testID="screen-statistics"
+      >
         <StatusBar style="dark" />
         <View style={styles.header}>
           <Pressable

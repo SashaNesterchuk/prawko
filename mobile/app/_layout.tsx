@@ -53,6 +53,12 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(onboarding)" />
+        <Stack.Screen
+          name="e2e/bootstrap"
+          options={{
+            animation: "none",
+          }}
+        />
         {/* Progress-stats screens re-derive the whole question bank whenever
             progress changes, so they stay frozen while the trainer is on top. */}
         <Stack.Screen name="(tabs)" options={{ freezeOnBlur: true }} />

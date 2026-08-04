@@ -6,7 +6,9 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
+    "android:e2e": "EXPO_PUBLIC_E2E_TEST_MODE=1 expo run:android",
     "ios": "EXPO_UNSTABLE_MCP_SERVER=1 expo run:ios",
+    "ios:e2e": "EXPO_PUBLIC_E2E_TEST_MODE=1 EXPO_UNSTABLE_MCP_SERVER=1 expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "icons:generate": "node scripts/generate-icon-registry.mjs",
