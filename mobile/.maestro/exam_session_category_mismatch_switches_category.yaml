@@ -1,0 +1,25 @@
+# Feature: Exam category mismatch
+# Scenario: Active exam session asks to switch category before continuing
+appId: com.mindjar.prawko
+tags:
+  - exam
+  - category
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: exam-session
+      EXAM_SESSION_CATEGORY: A
+      EXAM_SESSION_STATUS: active
+      TARGET_ID: screen-exam-session-category-mismatch
+
+- tapOn:
+    id: "exam-session-switch-category"
+
+- extendedWaitUntil:
+    visible:
+      id: "question-choice-index-0"
+    timeout: 20000
+
+- assertVisible:
+    id: "screen-exam-session"

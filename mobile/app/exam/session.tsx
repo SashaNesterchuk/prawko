@@ -7,7 +7,9 @@ import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Icon } from "../../src/components/icons";
+import { AppButton } from "../../src/components/shell/AppButton";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { ErrorStateView } from "../../src/components/shell/StateViews";
 import { TrainingExitDialog } from "../../src/components/shell/TrainingExitDialog";
 import { setExamSessionActive } from "../../src/features/ads/ad-session-policy";
 import {
@@ -37,13 +39,19 @@ import {
   getQuestionChoices,
   getQuestionUserState,
 } from "../../src/features/questions/question-engine";
+import { getOfflineGateDescription } from "../../src/features/offline/offline-gate-copy";
+import { useOfflineFeatureGate } from "../../src/features/offline/useOfflineFeatureGate";
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
 import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefetchQuestionMedia";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import { useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
-import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
+import {
+  useQuestionCatalogResolved,
+  useQuestionCatalogStore,
+  useQuestionCatalogVersion,
+} from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 import type { RemoteExamSnapshot } from "../../src/features/exam/types";
 
@@ -78,7 +86,12 @@ export default function ExamSessionScreen() {
     sessionId?: string | string[];
   }>();
   const authMode = useAppShellStore((state) => state.authMode);
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const setPreferredCategory = useAppShellStore(
+    (state) => state.setPreferredCategory
+  );
+  const questionCatalogResolved = useQuestionCatalogResolved();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const applyQuestionAttemptOutcome = useQuestionProgressStore(
     (state) => state.applyQuestionAttemptOutcome
@@ -113,6 +126,8 @@ export default function ExamSessionScreen() {
 
   const rawSessionId = getSingleParam(params.sessionId);
   const sessionId = isExamSessionId(rawSessionId) ? rawSessionId : null;
+  const gateCategory = snapshot?.session.currentCategory ?? preferredCategory;
+  const offlineGate = useOfflineFeatureGate(gateCategory);
   const currentQuestionRef = useMemo(() => {
     if (!snapshot) {
       return null;
@@ -167,6 +182,17 @@ export default function ExamSessionScreen() {
     scope: currentQuestion?.scope ?? null,
   });
   const styles = useStyles();
+
+  const handleSwitchToSessionCategory = () => {
+    const sessionCategory = snapshot?.session.currentCategory;
+
+    if (!sessionCategory || sessionCategory === preferredCategory) {
+      return;
+    }
+
+    useQuestionCatalogStore.getState().setLoading();
+    setPreferredCategory(sessionCategory);
+  };
 
   function navigateToResult(
     nextSessionId: string,
@@ -644,6 +670,20 @@ export default function ExamSessionScreen() {
     },
   };
 
+  if (
+    !questionCatalogResolved ||
+    (offlineGate.status === "checking" && !offlineGate.offlineReady)
+  ) {
+    return (
+      <ExamSessionShell styles={styles}>
+        <CenteredState
+          title={t("states.loadingTitle")}
+          description={t("exam.sessionLoading")}
+        />
+      </ExamSessionShell>
+    );
+  }
+
   if (isLoading) {
     return (
       <ExamSessionShell styles={styles}>
@@ -651,6 +691,52 @@ export default function ExamSessionScreen() {
           title={t("states.loadingTitle")}
           description={t("exam.sessionLoading")}
         />
+      </ExamSessionShell>
+    );
+  }
+
+  if (
+    sessionId &&
+    offlineGate.status === "blocked" &&
+    (!snapshot || snapshot.session.status === "active")
+  ) {
+    return (
+      <ExamSessionShell styles={styles}>
+        <View
+          style={styles.blockedScreen}
+          testID={`screen-exam-session-offline-blocked-${offlineGate.reason}`}
+        >
+          <ErrorStateView
+            title={t("offlineGate.title")}
+            description={getOfflineGateDescription({
+              currentCategory: gateCategory,
+              downloadedCategory: offlineGate.downloadedCategory,
+              reason: offlineGate.reason,
+              t,
+              type: "exam",
+            })}
+          />
+          <View style={styles.footerStack}>
+            <AppButton
+              label={t("common.retry")}
+              testID="exam-session-offline-retry"
+              onPress={() => {
+                void offlineGate.refresh();
+              }}
+            />
+            <AppButton
+              variant="secondary"
+              label={t("offlineGate.openOfflineMode")}
+              testID="exam-session-offline-open-offline-mode"
+              onPress={() => router.push("/modals/offline-mode")}
+            />
+            <AppButton
+              variant="ghost"
+              label={t("common.close")}
+              onPress={() => router.replace("/(tabs)")}
+            />
+          </View>
+        </View>
       </ExamSessionShell>
     );
   }
@@ -664,6 +750,39 @@ export default function ExamSessionScreen() {
           actionLabel={t("exam.backToPracticeCta")}
           onAction={() => router.replace("/(tabs)")}
         />
+      </ExamSessionShell>
+    );
+  }
+
+  if (snapshot.session.currentCategory !== preferredCategory) {
+    return (
+      <ExamSessionShell styles={styles}>
+        <View
+          style={styles.blockedScreen}
+          testID="screen-exam-session-category-mismatch"
+        >
+          <ErrorStateView
+            title={t("exam.categoryMismatchTitle")}
+            description={t("exam.categoryMismatchBody", {
+              currentCategory: preferredCategory,
+              sessionCategory: snapshot.session.currentCategory,
+            })}
+          />
+          <View style={styles.footerStack}>
+            <AppButton
+              label={t("exam.categoryMismatchSwitchCta", {
+                category: snapshot.session.currentCategory,
+              })}
+              testID="exam-session-switch-category"
+              onPress={handleSwitchToSessionCategory}
+            />
+            <AppButton
+              variant="ghost"
+              label={t("common.close")}
+              onPress={() => router.replace("/(tabs)")}
+            />
+          </View>
+        </View>
       </ExamSessionShell>
     );
   }
@@ -1172,6 +1291,9 @@ function useStyles() {
       container: {
         flex: 1,
       },
+      blockedScreen: {
+        flex: 1,
+      },
       devCheatBar: {
         position: "absolute",
         top: spacing.exact(4),
@@ -1378,6 +1500,11 @@ function useStyles() {
         paddingTop: spacing.exact(12),
         paddingBottom: spacing.exact(8),
         gap: spacing.exact(8),
+      },
+      footerStack: {
+        paddingHorizontal: spacing.exact(24),
+        paddingBottom: spacing.exact(24),
+        gap: spacing.exact(10),
       },
       primaryButton: {
         width: "100%",

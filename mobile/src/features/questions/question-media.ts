@@ -1,6 +1,10 @@
 import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
 import { mobileEnv } from "../../config/env";
+import {
+  getOfflineQuestionAssetUrl,
+  getOfflineQuestionPosterUrl,
+} from "../offline/offline-pack";
 import type { QuestionMedia } from "./types";
 
 function encodeStoragePath(storagePath: string) {
@@ -38,6 +42,12 @@ export function getQuestionDeliveryAssetUrl(
     return null;
   }
 
+  const offlineUrl = getOfflineQuestionAssetUrl(asset);
+
+  if (offlineUrl) {
+    return offlineUrl;
+  }
+
   return buildStoragePublicUrl(asset.storageBucket, asset.storagePath);
 }
 
@@ -46,6 +56,12 @@ export function getQuestionDeliveryPosterUrl(
 ): string | null {
   if (!asset?.posterStorageBucket || !asset.posterStoragePath) {
     return null;
+  }
+
+  const offlinePosterUrl = getOfflineQuestionPosterUrl(asset);
+
+  if (offlinePosterUrl) {
+    return offlinePosterUrl;
   }
 
   return buildStoragePublicUrl(

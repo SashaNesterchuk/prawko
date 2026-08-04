@@ -9,12 +9,21 @@ import {
   prepareE2EAppState,
   resolveE2EDestination,
 } from "../../src/testing/e2e/bootstrap";
+import type { E2EOfflinePackStatus } from "../../src/testing/e2e/state";
+import type { RemoteExamSessionStatus } from "../../src/features/exam/types";
 
 type BootstrapParams = {
   category?: string | string[];
   daysUntilExam?: string | string[];
   destination?: string | string[];
+  examSessionCategory?: string | string[];
+  examSessionStatus?: string | string[];
+  examStartOrder?: string | string[];
   locale?: string | string[];
+  offlinePackCategory?: string | string[];
+  offlinePackStatus?: string | string[];
+  plusAccess?: string | string[];
+  reachability?: string | string[];
   signCategoryId?: string | string[];
   topicId?: string | string[];
 };
@@ -25,7 +34,20 @@ export default function E2EBootstrapScreen() {
   const params = useLocalSearchParams<BootstrapParams>();
   const destination = getSingleParam(params.destination);
   const category = getSingleParam(params.category);
+  const plusAccess = parseOptionalBoolean(getSingleParam(params.plusAccess));
+  const reachability = parseOptionalBoolean(getSingleParam(params.reachability));
   const locale = normalizeSupportedLocale(getSingleParam(params.locale));
+  const offlinePackCategory = getSingleParam(params.offlinePackCategory);
+  const offlinePackStatus = parseOfflinePackStatus(
+    getSingleParam(params.offlinePackStatus)
+  );
+  const examSessionCategory = getSingleParam(params.examSessionCategory);
+  const examSessionStatus = parseExamSessionStatus(
+    getSingleParam(params.examSessionStatus)
+  );
+  const reviewStartOrder = parsePositiveInteger(
+    getSingleParam(params.examStartOrder)
+  );
   const signCategoryId = getSingleParam(params.signCategoryId);
   const topicId = getSingleParam(params.topicId);
   const daysUntilExam = parsePositiveInteger(getSingleParam(params.daysUntilExam));
@@ -40,24 +62,42 @@ export default function E2EBootstrapScreen() {
     }
 
     hasBootstrappedRef.current = true;
-    prepareE2EAppState({
-      category,
-      daysUntilExam,
-      locale,
-    });
-    router.replace(
-      resolveE2EDestination({
-        destination,
-        signCategoryId,
-        topicId,
-      }),
-    );
+    void (async () => {
+      const prepared = await prepareE2EAppState({
+        category,
+        daysUntilExam,
+        examSessionCategory,
+        examSessionStatus,
+        locale,
+        offlinePackCategory,
+        offlinePackStatus,
+        plusAccess,
+        reachability,
+      });
+
+      router.replace(
+        resolveE2EDestination({
+          destination,
+          reviewStartOrder,
+          seededExamSessionId: prepared.seededExamSessionId,
+          signCategoryId,
+          topicId,
+        }),
+      );
+    })();
   }, [
     category,
     daysUntilExam,
     destination,
+    examSessionCategory,
+    examSessionStatus,
     hasHydrated,
     locale,
+    offlinePackCategory,
+    offlinePackStatus,
+    plusAccess,
+    reachability,
+    reviewStartOrder,
     signCategoryId,
     topicId,
   ]);
@@ -96,6 +136,56 @@ function parsePositiveInteger(value: string | undefined) {
 
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function parseOptionalBoolean(value: string | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.trim().toLowerCase();
+
+  if (["1", "true", "yes", "on"].includes(normalized)) {
+    return true;
+  }
+
+  if (["0", "false", "no", "off"].includes(normalized)) {
+    return false;
+  }
+
+  return null;
+}
+
+function parseOfflinePackStatus(
+  value: string | undefined
+): E2EOfflinePackStatus | null {
+  switch (value?.trim().toLowerCase()) {
+    case "missing":
+      return "missing";
+    case "ready":
+      return "ready";
+    case "incomplete":
+      return "incomplete";
+    default:
+      return null;
+  }
+}
+
+function parseExamSessionStatus(
+  value: string | undefined
+): RemoteExamSessionStatus | null {
+  switch (value?.trim().toLowerCase()) {
+    case "active":
+      return "active";
+    case "completed":
+      return "completed";
+    case "abandoned":
+      return "abandoned";
+    case "expired":
+      return "expired";
+    default:
+      return null;
+  }
 }
 
 const styles = StyleSheet.create({

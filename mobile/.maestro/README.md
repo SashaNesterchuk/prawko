@@ -33,6 +33,14 @@ pnpm test:e2e:studio
 | `tabs_are_navigable.yaml` | Tab bar: Home / Learn / Signs / Profile |
 | `learn_first_topic_opens_trainer_modes.yaml` | Learn tab → first topic card → trainer modes |
 | `practice_exam_starts_session.yaml` | Practice screen → exam card → exam session |
+| `profile_offline_mode_modal_opens.yaml` | Profile → Offline mode modal |
+| `trainer_offline_missing_pack_is_blocked.yaml` | Trainer → offline gate when no ready pack |
+| `trainer_offline_ready_pack_starts_questions.yaml` | Trainer → offline start with ready pack |
+| `exam_offline_missing_pack_is_blocked.yaml` | Practice exam → offline gate when no ready pack |
+| `exam_offline_ready_pack_starts_session.yaml` | Practice exam → offline start with ready pack |
+| `exam_session_category_mismatch_switches_category.yaml` | Direct active exam session → category mismatch → switch and continue |
+| `exam_result_category_mismatch_switches_category.yaml` | Direct exam result → category mismatch → switch and load result |
+| `exam_answers_category_mismatch_switches_category.yaml` | Direct exam answer review → category mismatch → switch and load review |
 | `trainer_random_mode_starts_questions.yaml` | Trainer modes → count picker → first question |
 | `trainer_first_answer_shows_feedback.yaml` | Trainer question → first answer → feedback sheet |
 | `signs_training_starts_from_tab.yaml` | Signs tab → train all → sign test session |
@@ -46,7 +54,7 @@ Shared steps live in:
 - `subflows/start_default_question_count.yaml` for accepting the default count picker
 - `subflows/answer_first_available_option.yaml` for generic “answer first option” steps
 
-Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `statistics`, `signs`, `signs-category`, `topic`, `topics`, `trainer-modes`.
+Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `statistics`, `signs`, `signs-category`, `topic`, `topics`, `trainer-modes`, `exam-session`, `exam-result`, `exam-answers`.
 
 ## Writing new flows
 
@@ -55,6 +63,7 @@ Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `stati
 3. Use `subflows/launch_onboarded_destination.yaml` for any scenario that does not need to re-test onboarding itself.
 4. Pass `DESTINATION` / `TARGET_ID` through `runFlow.env` so each new flow lands on the screen it cares about.
 5. Override `LOCALE`, `CATEGORY`, `DAYS_UNTIL_EXAM`, `SIGN_CATEGORY_ID`, and `TOPIC_ID` only when the scenario needs them.
-6. Reuse `subflows/start_default_question_count.yaml` anywhere a trainer or signs picker opens before practice starts.
-7. Practice answers can use generic selectors like `question-choice-index-0` and `sign-test-option-index-0`, so flows do not depend on catalog data.
-8. Keep `subflows/complete_onboarding.yaml` only for fresh-install onboarding coverage.
+6. Use `PLUS_ACCESS`, `REACHABILITY`, `OFFLINE_PACK_STATUS`, `OFFLINE_PACK_CATEGORY`, `EXAM_SESSION_STATUS`, `EXAM_SESSION_CATEGORY`, and `EXAM_START_ORDER` for deterministic E2E-only state overrides.
+7. Reuse `subflows/start_default_question_count.yaml` anywhere a trainer or signs picker opens before practice starts.
+8. Practice answers can use generic selectors like `question-choice-index-0` and `sign-test-option-index-0`, so flows do not depend on catalog data.
+9. Keep `subflows/complete_onboarding.yaml` only for fresh-install onboarding coverage.

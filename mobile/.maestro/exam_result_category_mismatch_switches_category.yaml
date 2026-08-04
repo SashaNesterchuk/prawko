@@ -1,0 +1,25 @@
+# Feature: Exam category mismatch
+# Scenario: Exam result asks to switch category before loading result details
+appId: com.mindjar.prawko
+tags:
+  - exam
+  - category
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: exam-result
+      EXAM_SESSION_CATEGORY: A
+      EXAM_SESSION_STATUS: completed
+      TARGET_ID: screen-exam-result-category-mismatch
+
+- tapOn:
+    id: "exam-result-switch-category"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-result"
+    timeout: 20000
+
+- assertVisible:
+    id: "screen-exam-result"

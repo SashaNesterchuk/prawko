@@ -8,10 +8,26 @@ import {
 } from "@prawko/config";
 import type { Href } from "expo-router";
 
+import { getQuestionBank } from "../../features/questions/question-bank";
+import type { QuestionOptionValue } from "../../features/questions/types";
+import { createLocalExamSessionId } from "../../features/exam/exam-session-id";
+import { seedPersistedExamSnapshot } from "../../features/exam/exam-snapshot-cache";
+import { getScaledExamPassPoints } from "../../features/exam/exam-config";
+import type {
+  RemoteExamAnswer,
+  RemoteExamQuestionRef,
+  RemoteExamSessionStatus,
+  RemoteExamSnapshot,
+} from "../../features/exam/types";
 import { finalizeLocalOnboarding } from "../../features/onboarding/finalize-local-onboarding";
 import { isRoadSignCategoryId } from "../../features/road-signs/catalog";
 import { getExamDateFromDays } from "../../features/study-plan/generate-local-study-plan";
 import { useAppShellStore } from "../../state/app-shell";
+import {
+  configureE2ETestOverrides,
+  resetE2ETestOverrides,
+  type E2EOfflinePackStatus,
+} from "./state";
 
 export type E2EDestination =
   | "home"
@@ -23,34 +39,52 @@ export type E2EDestination =
   | "signs-category"
   | "topic"
   | "topics"
-  | "trainer-modes";
+  | "trainer-modes"
+  | "exam-session"
+  | "exam-result"
+  | "exam-answers";
 
 type PrepareE2EAppStateInput = {
   category?: string | null;
   daysUntilExam?: number | null;
+  examSessionCategory?: string | null;
+  examSessionStatus?: RemoteExamSessionStatus | null;
   locale?: SupportedLocale | null;
+  offlinePackCategory?: string | null;
+  offlinePackStatus?: E2EOfflinePackStatus | null;
+  plusAccess?: boolean | null;
+  reachability?: boolean | null;
 };
 
 type ResolveE2EDestinationInput = {
   destination?: string | null;
+  reviewStartOrder?: number | null;
+  seededExamSessionId?: string | null;
   signCategoryId?: string | null;
   topicId?: string | null;
 };
 
-export function prepareE2EAppState(
+export async function prepareE2EAppState(
   input: PrepareE2EAppStateInput = {},
-) {
+): Promise<{ seededExamSessionId: string | null }> {
   const store = useAppShellStore.getState();
   const preferredCategory = resolveCategory(input.category);
   const daysUntilExam = resolveDaysUntilExam(input.daysUntilExam);
+  const preferredLocale = input.locale ?? store.preferredLocale;
+
+  resetE2ETestOverrides();
+  configureE2ETestOverrides({
+    offlinePackCategory: input.offlinePackCategory,
+    offlinePackStatus: input.offlinePackStatus,
+    plusAccess: input.plusAccess,
+    reachability: input.reachability,
+  });
 
   store.setSessionResolved(true);
   store.setPreferredCategory(preferredCategory);
   store.completeCategoryStep();
 
-  if (input.locale) {
-    store.setPreferredLocale(input.locale);
-  }
+  store.setPreferredLocale(preferredLocale);
 
   store.setExamSchedule({
     daysUntilExam,
@@ -58,6 +92,18 @@ export function prepareE2EAppState(
   });
 
   finalizeLocalOnboarding();
+
+  const seededExamSessionId = input.examSessionStatus
+    ? await seedE2EExamSnapshot({
+        category: resolveLooseCategory(input.examSessionCategory) ?? preferredCategory,
+        locale: preferredLocale,
+        status: input.examSessionStatus,
+      })
+    : null;
+
+  return {
+    seededExamSessionId,
+  };
 }
 
 export function resolveE2EDestination(
@@ -92,6 +138,34 @@ export function resolveE2EDestination(
       return "/topics";
     case "trainer-modes":
       return "/trainer-modes";
+    case "exam-session":
+      return input.seededExamSessionId
+        ? {
+            pathname: "/exam/session",
+            params: {
+              sessionId: input.seededExamSessionId,
+            },
+          }
+        : "/(tabs)";
+    case "exam-result":
+      return input.seededExamSessionId
+        ? {
+            pathname: "/exam/result",
+            params: {
+              sessionId: input.seededExamSessionId,
+            },
+          }
+        : "/(tabs)";
+    case "exam-answers":
+      return input.seededExamSessionId
+        ? {
+            pathname: "/exam/answers",
+            params: {
+              sessionId: input.seededExamSessionId,
+              startOrder: Math.max(1, input.reviewStartOrder ?? 1).toString(),
+            },
+          }
+        : "/(tabs)";
     case "home":
     default:
       return "/(tabs)";
@@ -113,6 +187,9 @@ function normalizeDestination(
     case "topic":
     case "topics":
     case "trainer-modes":
+    case "exam-session":
+    case "exam-result":
+    case "exam-answers":
       return normalized;
     case "home":
     default:
@@ -144,4 +221,121 @@ function resolveTopicId(value: string | null | undefined) {
   return value && QUESTION_TOPIC_IDS.includes(value as (typeof QUESTION_TOPIC_IDS)[number])
     ? value
     : QUESTION_TOPIC_IDS[0];
+}
+
+function resolveLooseCategory(value: string | null | undefined) {
+  const normalized = value?.trim().toUpperCase();
+  return normalized ? (normalized as DrivingCategory) : null;
+}
+
+async function seedE2EExamSnapshot(input: {
+  category: DrivingCategory;
+  locale: SupportedLocale;
+  status: RemoteExamSessionStatus;
+}) {
+  const sourceQuestions = getQuestionBank().slice(0, 3);
+  const questions = sourceQuestions.map<RemoteExamQuestionRef>((question, index) => ({
+    order: index + 1,
+    points: question.points,
+    questionId: question.id,
+    questionSourceId: question.id,
+    scope: question.scope,
+  }));
+  const sessionId = createLocalExamSessionId();
+  const startedAt = new Date(Date.now() - 5 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
+  const answers =
+    input.status === "active"
+      ? []
+      : buildSeededAnswers(sourceQuestions, questions);
+  const scorePoints = answers.reduce(
+    (sum, answer) => sum + answer.pointsAwarded,
+    0
+  );
+  const passPoints = getScaledExamPassPoints(
+    questions.reduce((sum, question) => sum + question.points, 0)
+  );
+  const snapshot: RemoteExamSnapshot = {
+    answers,
+    questions,
+    session: {
+      correctAnswersCount: answers.filter((answer) => answer.isCorrect).length,
+      currentCategory: input.category,
+      currentQuestionIndex: questions[0]?.order ?? 1,
+      expiresAt: expiresAt.toISOString(),
+      finishedAt:
+        input.status === "active" ? null : new Date().toISOString(),
+      id: sessionId,
+      metadata: {
+        source: "mobile_e2e_exam_seed",
+      },
+      mode: "exam",
+      passPoints,
+      passed: input.status === "active" ? null : scorePoints >= passPoints,
+      remainingSeconds: input.status === "active" ? 20 * 60 : 0,
+      scorePoints,
+      sessionLocale: input.locale,
+      startedAt: startedAt.toISOString(),
+      status: input.status,
+      studyPlanId: null,
+      totalPointsTarget: questions.reduce(
+        (sum, question) => sum + question.points,
+        0
+      ),
+      totalQuestionsAnswered: answers.length,
+      totalQuestionsTarget: questions.length,
+      wrongAnswersCount: answers.filter((answer) => !answer.isCorrect).length,
+    },
+    wrongQuestionSourceIds: answers
+      .filter((answer) => !answer.isCorrect)
+      .map((answer) => answer.questionSourceId),
+  };
+
+  await seedPersistedExamSnapshot(snapshot);
+  return sessionId;
+}
+
+function buildSeededAnswers(
+  sourceQuestions: ReturnType<typeof getQuestionBank>,
+  questions: RemoteExamQuestionRef[]
+) {
+  return questions.map<RemoteExamAnswer>((questionRef, index) => {
+    const question = sourceQuestions[index];
+
+    if (!question) {
+      throw new Error("E2E exam seed could not resolve the source question.");
+    }
+
+    const isCorrect = index % 2 === 0;
+    const answerGiven = isCorrect
+      ? question.correctAnswer
+      : pickWrongAnswer(question.correctAnswer);
+
+    return {
+      answerGiven,
+      answeredAt: new Date(Date.now() - (questions.length - index) * 30_000).toISOString(),
+      isCorrect,
+      order: questionRef.order,
+      pointsAwarded: isCorrect ? questionRef.points : 0,
+      questionAttemptId: null,
+      questionId: questionRef.questionId,
+      questionSourceId: questionRef.questionSourceId,
+    };
+  });
+}
+
+function pickWrongAnswer(correctAnswer: QuestionOptionValue): QuestionOptionValue {
+  switch (correctAnswer) {
+    case "true":
+      return "false";
+    case "false":
+      return "true";
+    case "A":
+      return "B";
+    case "B":
+      return "C";
+    case "C":
+    default:
+      return "A";
+  }
 }

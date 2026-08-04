@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isMobileSupabaseConfigured } from "../config/env";
 import { disableStudyNotificationsAsync } from "../features/notifications/runtime";
 import { getMobileSupabaseClient } from "../lib/supabase";
+import { clearOfflinePack } from "../features/offline/offline-pack";
 import { useAiChatStore } from "./ai-chat";
 import { useAppShellStore } from "./app-shell";
 import { useEntitlementStore } from "./entitlements";
@@ -46,5 +47,11 @@ export async function resetAppToFreshStart() {
     await AsyncStorage.clear();
   } catch {
     // Ignore storage errors — in-memory state is already reset.
+  }
+
+  try {
+    await clearOfflinePack();
+  } catch {
+    // Ignore file-system cleanup errors during a hard reset.
   }
 }

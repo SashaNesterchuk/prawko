@@ -43,6 +43,7 @@ type ExamResultViewProps = {
   scoreDelta: ExamScoreDelta | null;
   scorePoints: number;
   scopeSections: ExamResultScopeSection[];
+  testID?: string;
   topicStats: ExamResultTopicStat[];
   totalPointsTarget: number;
   totalQuestionsAnswered: number;
@@ -61,6 +62,7 @@ export function ExamResultView({
   scoreDelta,
   scorePoints,
   scopeSections,
+  testID,
   topicStats,
   totalPointsTarget,
   totalQuestionsAnswered,
@@ -108,7 +110,11 @@ export function ExamResultView({
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top", "bottom"]}
+        testID={testID}
+      >
         <StatusBar style="dark" />
         <View style={styles.header}>
           <NavigationButton
@@ -396,20 +402,28 @@ function QuestionResultChip({
 
 export function ExamResultCenteredState({
   actionLabel,
+  actionTestID,
   description,
   onAction,
+  testID,
   title,
 }: {
   actionLabel?: string;
+  actionTestID?: string;
   description: string;
   onAction?: () => void;
+  testID?: string;
   title: string;
 }) {
   const styles = useStyles();
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top", "bottom"]}
+        testID={testID}
+      >
         <StatusBar style="dark" />
         <View style={styles.centeredState}>
           <Text style={styles.centeredTitle}>{title}</Text>
@@ -418,6 +432,7 @@ export function ExamResultCenteredState({
             <Pressable
               accessibilityRole="button"
               onPress={onAction}
+              testID={actionTestID}
               style={({ pressed }) => [
                 styles.primaryButton,
                 styles.centeredAction,

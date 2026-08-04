@@ -1,0 +1,37 @@
+# Feature: Offline mode
+# Scenario: Training is blocked offline when no ready offline pack exists
+appId: com.mindjar.prawko
+tags:
+  - offline
+  - trainer
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: trainer-modes
+      OFFLINE_PACK_STATUS: missing
+      PLUS_ACCESS: "true"
+      REACHABILITY: "false"
+      TARGET_ID: screen-trainer-modes
+
+- tapOn:
+    id: "trainer-mode-random"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-question-offline-blocked-missing_ready_pack
+
+- assertVisible:
+    id: "question-offline-open-offline-mode"
+
+- tapOn:
+    id: "question-offline-open-offline-mode"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-offline-mode"
+    timeout: 15000
+
+- assertVisible:
+    id: "screen-offline-mode"

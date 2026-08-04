@@ -1,0 +1,27 @@
+# Feature: Offline mode
+# Scenario: Training starts offline when a ready offline pack exists
+appId: com.mindjar.prawko
+tags:
+  - offline
+  - trainer
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: trainer-modes
+      OFFLINE_PACK_CATEGORY: B
+      OFFLINE_PACK_STATUS: ready
+      PLUS_ACCESS: "true"
+      REACHABILITY: "false"
+      TARGET_ID: screen-trainer-modes
+
+- tapOn:
+    id: "trainer-mode-random"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-question
+
+- assertVisible:
+    id: "question-choice-index-0"

@@ -6,6 +6,7 @@ import {
   getQuestionTopicFallbackFromTopicBlock,
   getContentLocale,
   isTopicBlockId,
+  type DrivingCategory,
   type LearningTopicId,
   type QuestionSessionMode,
   type QuestionTopicId,
@@ -96,10 +97,11 @@ function isHighPointsQuestion(question: LocalQuestion) {
 }
 
 export function createQuestionSessionKey(input: {
+  currentCategory?: string;
   mode: QuestionSessionMode;
   topic?: LearningTopicId;
 }) {
-  return `${input.mode}-${input.topic ?? "all"}-${Date.now().toString(36)}`;
+  return `${input.currentCategory ?? "category"}-${input.mode}-${input.topic ?? "all"}-${Date.now().toString(36)}`;
 }
 
 export function createEmptyQuestionUserState(questionId: string): QuestionUserState {
@@ -668,13 +670,18 @@ export function getTrainerModeStats(
 
 /** Length of the queue a mode would build, so the count picker can offer "all". */
 export function getQuestionCountForMode(
-  input: { mode: QuestionSessionMode; topic?: LearningTopicId },
+  input: {
+    currentCategory: DrivingCategory;
+    mode: QuestionSessionMode;
+    topic?: LearningTopicId;
+  },
   userStates: QuestionUserStateMap,
   topicProgress: TopicQuestionProgressMap = {},
   now: Date = new Date()
 ) {
   return getQuestionIdsForMode(
     {
+      currentCategory: input.currentCategory,
       mode: input.mode,
       sessionKey: "count-probe",
       topic: input.topic,
@@ -933,6 +940,7 @@ function isSameQuestionSessionRequest(
   right: QuestionSessionRequest
 ) {
   return (
+    left.currentCategory === right.currentCategory &&
     left.mode === right.mode &&
     (left.topic ?? null) === (right.topic ?? null) &&
     (left.questionLimit ?? null) === (right.questionLimit ?? null) &&

@@ -55,6 +55,7 @@ export default function PracticeScreen() {
   const currentStudyPlanRemoteId = useAppShellStore(
     (state) => state.currentStudyPlanRemoteId
   );
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
@@ -176,6 +177,7 @@ export default function PracticeScreen() {
     () => ({
       exam: buildQuestionSession(
         {
+          currentCategory: preferredCategory,
           ...examBinding,
           questionLimit: examQuestionTarget,
           sessionKey: "preview-exam",
@@ -184,6 +186,7 @@ export default function PracticeScreen() {
       ).questionIds.length,
       saved: buildQuestionSession(
         {
+          currentCategory: preferredCategory,
           ...savedBinding,
           sessionKey: "preview-saved",
         },
@@ -191,6 +194,7 @@ export default function PracticeScreen() {
       ).questionIds.length,
       seenNotMastered: buildQuestionSession(
         {
+          currentCategory: preferredCategory,
           ...seenNotMasteredBinding,
           sessionKey: "preview-seen-not-mastered",
         },
@@ -198,6 +202,7 @@ export default function PracticeScreen() {
       ).questionIds.length,
       wrongAnswers: buildQuestionSession(
         {
+          currentCategory: preferredCategory,
           ...wrongAnswersBinding,
           sessionKey: "preview-wrong-answers",
         },
@@ -208,6 +213,7 @@ export default function PracticeScreen() {
       examBinding,
       questionCatalogVersion,
       questionUserState,
+      preferredCategory,
       savedBinding,
       seenNotMasteredBinding,
       wrongAnswersBinding,

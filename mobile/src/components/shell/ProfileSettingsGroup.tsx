@@ -15,6 +15,7 @@ type ProfileSettingsRowProps = {
   value?: string;
   icon: ReactNode;
   iconBackground?: string;
+  testID?: string;
   titleColor?: string;
   trailing?: "value" | "switch" | "premium" | "none";
   switchValue?: boolean;
@@ -29,6 +30,7 @@ export function ProfileSettingsRow({
   value,
   icon,
   iconBackground,
+  testID,
   titleColor,
   trailing = "value",
   switchValue = false,
@@ -76,6 +78,7 @@ export function ProfileSettingsRow({
       <Pressable
         accessibilityRole="button"
         onPress={onPress}
+        testID={testID}
         style={({ pressed }) => [
           styles.row,
           !isLast ? styles.rowBorder : null,
@@ -88,7 +91,12 @@ export function ProfileSettingsRow({
   }
 
   return (
-    <View style={[styles.row, !isLast ? styles.rowBorder : null]}>{content}</View>
+    <View
+      style={[styles.row, !isLast ? styles.rowBorder : null]}
+      testID={testID}
+    >
+      {content}
+    </View>
   );
 }
 

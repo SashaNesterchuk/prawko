@@ -10,6 +10,7 @@ const resourcesBase = {
         continue: "Dalej",
         missing: "Brak",
         done: "Gotowe",
+        retry: "Sprobuj ponownie",
         selected: "Wybrane",
         student: "Uczen",
       },
@@ -387,6 +388,7 @@ const resourcesBase = {
           error: "Blad remote, aktywny fallback",
           loading: "Ladowanie remote",
           mock: "Mock fallback",
+          offline: "Pobrany pakiet offline",
           remote: "Supabase remote",
         },
         currentUser: "Konto",
@@ -446,6 +448,7 @@ const resourcesBase = {
         categoryTitle: "Kategoria",
         languageTitle: "Jezyk",
         notificationsTitle: "Powiadomienia",
+        offlineModeTitle: "Tryb offline",
         notificationsDisableTitle: "Wylacz powiadomienia",
         notificationsDisableMessage:
           "Aby wylaczyc powiadomienia, przejdz do ustawien systemowych aplikacji.",
@@ -478,6 +481,73 @@ const resourcesBase = {
         manageSubscriptionFailedTitle: "Nie udalo sie otworzyc zarzadzania purchase",
         manageSubscriptionFailedBody:
           "Sprobuj ponownie pozniej albo otworz ustawienia subskrypcji bezposrednio w sklepie.",
+      },
+      offlineMode: {
+        title: "Tryb offline",
+        subtitle:
+          "Pobierz pytania i media dla kategorii {{category}} na to urzadzenie.",
+        plusRequiredTitle: "Tryb offline jest dostepny w Prawko Plus.",
+        plusRequiredBody:
+          "Kup Plus, aby zapisac pelny katalog pytan i media na telefon oraz uruchamiac trening i egzamin bez internetu.",
+        statusTitle: "Stan pakietu",
+        statusNotDownloaded: "Pakiet offline nie jest jeszcze pobrany.",
+        statusReady: "Pakiet offline jest gotowy na tym urzadzeniu.",
+        statusOtherCategory:
+          "Na tym telefonie jest pakiet offline dla kategorii {{category}}.",
+        statusUpdateAvailable:
+          "Aktualny katalog zmienil sie i pakiet warto odswiezyc.",
+        statusDownloading: "Pobieranie pakietu offline trwa.",
+        statusInterrupted:
+          "Pobieranie zostalo przerwane. Mozesz wznowic je od miejsca zatrzymania.",
+        statusNeedsRepair:
+          "Zapisane pliki offline sa niepelne albo uszkodzone. Pobierz pakiet ponownie albo usun dane z urzadzenia.",
+        questionsLabel: "Pytania",
+        assetsLabel: "Pliki media",
+        requiredSpaceLabel: "Rozmiar pakietu",
+        freeSpaceLabel: "Wolne miejsce",
+        storageLowWarning:
+          "Na urzadzeniu jest za malo miejsca na bezpieczne pobranie pakietu offline.",
+        storageUnknown:
+          "Nie udalo sie sprawdzic wolnego miejsca na tym urzadzeniu.",
+        catalogUnavailableTitle: "Katalog pytan nie jest gotowy.",
+        catalogUnavailableBody:
+          "Polacz sie z internetem i poczekaj, az aplikacja zaladuje aktualny katalog przed pobraniem offline.",
+        internetRequiredTitle: "Brak internetu",
+        internetRequiredBody:
+          "Do pobrania lub wznowienia pakietu offline potrzebne jest polaczenie z internetem.",
+        replaceCategoryNote:
+          "Pobranie nowej kategorii zastapi obecny pakiet offline zapisany na tym urzadzeniu.",
+        readyBadge: "Pobrano",
+        downloadBadge: "Pobierz",
+        updateBadge: "Odswiez",
+        repairBadge: "Napraw",
+        downloadingBadge: "Pobieranie",
+        interruptedBadge: "Wznow",
+        downloadedProgress: "{{done}} / {{total}} plikow",
+        downloadCta: "Pobierz na telefon",
+        repairCta: "Napraw pakiet",
+        resumeCta: "Wznow pobieranie",
+        updateCta: "Odswiez pakiet",
+        removeCta: "Usun z urzadzenia",
+        openPaywall: "Otworz paywall",
+        lastUpdated: "Ostatnia kompletna wersja: {{date}}",
+        transferError: "Ostatni blad: {{message}}",
+      },
+      offlineGate: {
+        title: "Brak internetu",
+        trainingBody:
+          "Trening dla kategorii {{category}} potrzebuje internetu albo gotowego pakietu offline. Otworz tryb offline w profilu i pobierz pakiet na telefon.",
+        examBody:
+          "Egzamin dla kategorii {{category}} potrzebuje internetu albo gotowego pakietu offline. Otworz tryb offline w profilu i pobierz pakiet na telefon.",
+        otherCategoryBody:
+          "Na tym telefonie jest pakiet offline dla kategorii {{downloadedCategory}}, ale teraz wybrana jest {{currentCategory}}. Pobierz nowy pakiet dla {{currentCategory}}, aby uruchomic {{feature}} bez internetu.",
+        incompleteBody:
+          "Pakiet offline dla kategorii {{category}} nie zostal jeszcze pobrany do konca. Wznow pobieranie, aby uruchomic {{feature}} bez internetu.",
+        openOfflineMode: "Otworz tryb offline",
+        features: {
+          exam: "egzamin",
+          training: "trening",
+        },
       },
       mistakes: {
         screenTitle: "Praca nad bledami",
@@ -714,6 +784,10 @@ const resourcesBase = {
         sessionErrorTitle: "Nie udalo sie otworzyc sesji exam",
         sessionErrorBody:
           "Snapshot sesji jest niedostepny albo katalog pytan jeszcze sie nie zgral.",
+        categoryMismatchTitle: "Przelacz kategorie, aby kontynuowac",
+        categoryMismatchBody:
+          "Ta sesja nalezy do kategorii {{sessionCategory}}, ale w aplikacji wybrana jest teraz {{currentCategory}}. Przelacz kategorie, aby zaladowac wlasciwy katalog pytan dla tej sesji.",
+        categoryMismatchSwitchCta: "Przelacz na {{category}}",
         sessionNotice:
           "Back jest zablokowany. Wynik zobaczysz po czasie albo po ostatniej odpowiedzi.",
         timerLabel: "Timer",
@@ -1156,6 +1230,7 @@ const resourcesBase = {
         continue: "Далі",
         missing: "Відсутнє",
         done: "Готово",
+        retry: "Спробувати ще раз",
         selected: "Вибрано",
         student: "Студент",
       },
@@ -1534,6 +1609,7 @@ const resourcesBase = {
           error: "Помилка remote, активний fallback",
           loading: "Завантаження remote",
           mock: "Mock fallback",
+          offline: "Завантажений офлайн пакет",
           remote: "Supabase remote",
         },
         currentUser: "Акаунт",
@@ -1593,6 +1669,7 @@ const resourcesBase = {
         categoryTitle: "Категорія",
         languageTitle: "Мова",
         notificationsTitle: "Сповіщення",
+        offlineModeTitle: "Офлайн режим",
         notificationsDisableTitle: "Вимкнути сповіщення",
         notificationsDisableMessage:
           "Щоб вимкнути сповіщення, перейди в системні налаштування застосунку.",
@@ -1625,6 +1702,73 @@ const resourcesBase = {
         manageSubscriptionFailedTitle: "Не вдалося відкрити керування purchase",
         manageSubscriptionFailedBody:
           "Спробуй ще раз пізніше або відкрий керування підпискою прямо в store.",
+      },
+      offlineMode: {
+        title: "Офлайн режим",
+        subtitle:
+          "Завантаж питання і media для категорії {{category}} на цей пристрій.",
+        plusRequiredTitle: "Офлайн режим доступний у Prawko Plus.",
+        plusRequiredBody:
+          "Купи Plus, щоб зберегти повний каталог питань і media на телефон та запускати тренування й іспит без інтернету.",
+        statusTitle: "Стан пакета",
+        statusNotDownloaded: "Офлайн пакет ще не завантажено.",
+        statusReady: "Офлайн пакет готовий на цьому пристрої.",
+        statusOtherCategory:
+          "На цьому телефоні вже є офлайн пакет для категорії {{category}}.",
+        statusUpdateAvailable:
+          "Поточний каталог змінився, тому пакет варто оновити.",
+        statusDownloading: "Офлайн пакет зараз завантажується.",
+        statusInterrupted:
+          "Завантаження було перервано. Його можна продовжити з місця зупинки.",
+        statusNeedsRepair:
+          "Збережені офлайн файли неповні або пошкоджені. Завантаж пакет ще раз або видали дані з пристрою.",
+        questionsLabel: "Питання",
+        assetsLabel: "Media файли",
+        requiredSpaceLabel: "Розмір пакета",
+        freeSpaceLabel: "Вільне місце",
+        storageLowWarning:
+          "На пристрої замало вільного місця для безпечного завантаження офлайн пакета.",
+        storageUnknown:
+          "Не вдалося перевірити вільне місце на цьому пристрої.",
+        catalogUnavailableTitle: "Каталог питань ще не готовий.",
+        catalogUnavailableBody:
+          "Під'єднайся до інтернету й дочекайся, поки застосунок завантажить актуальний каталог перед офлайн завантаженням.",
+        internetRequiredTitle: "Немає інтернету",
+        internetRequiredBody:
+          "Для завантаження або відновлення офлайн пакета потрібне підключення до інтернету.",
+        replaceCategoryNote:
+          "Завантаження нової категорії замінить поточний офлайн пакет на цьому пристрої.",
+        readyBadge: "Завантажено",
+        downloadBadge: "Завантажити",
+        updateBadge: "Оновити",
+        repairBadge: "Виправити",
+        downloadingBadge: "Завантаження",
+        interruptedBadge: "Відновити",
+        downloadedProgress: "{{done}} / {{total}} файлів",
+        downloadCta: "Завантажити на телефон",
+        repairCta: "Виправити пакет",
+        resumeCta: "Відновити завантаження",
+        updateCta: "Оновити пакет",
+        removeCta: "Видалити з пристрою",
+        openPaywall: "Відкрити paywall",
+        lastUpdated: "Остання повна версія: {{date}}",
+        transferError: "Остання помилка: {{message}}",
+      },
+      offlineGate: {
+        title: "Немає інтернету",
+        trainingBody:
+          "Тренування для категорії {{category}} потребує інтернету або готового офлайн пакета. Відкрий офлайн режим у профілі та завантаж пакет на телефон.",
+        examBody:
+          "Іспит для категорії {{category}} потребує інтернету або готового офлайн пакета. Відкрий офлайн режим у профілі та завантаж пакет на телефон.",
+        otherCategoryBody:
+          "На цьому телефоні вже є офлайн пакет для категорії {{downloadedCategory}}, але зараз вибрана {{currentCategory}}. Завантаж новий пакет для {{currentCategory}}, щоб запускати {{feature}} без інтернету.",
+        incompleteBody:
+          "Офлайн пакет для категорії {{category}} ще не завантажився повністю. Віднови завантаження, щоб запускати {{feature}} без інтернету.",
+        openOfflineMode: "Відкрити офлайн режим",
+        features: {
+          exam: "іспит",
+          training: "тренування",
+        },
       },
       mistakes: {
         screenTitle: "Робота над помилками",
@@ -2307,6 +2451,7 @@ const resourcesBase = {
         continue: "Continue",
         missing: "Missing",
         done: "Done",
+        retry: "Try again",
         selected: "Selected",
         student: "Student",
       },
@@ -2685,6 +2830,7 @@ const resourcesBase = {
           error: "Remote error, mock fallback active",
           loading: "Loading remote",
           mock: "Mock fallback",
+          offline: "Downloaded offline pack",
           remote: "Supabase remote",
         },
         currentUser: "Account",
@@ -2744,6 +2890,7 @@ const resourcesBase = {
         categoryTitle: "Category",
         languageTitle: "Language",
         notificationsTitle: "Notifications",
+        offlineModeTitle: "Offline mode",
         notificationsDisableTitle: "Turn off notifications",
         notificationsDisableMessage:
           "To turn off notifications, open the app in system settings.",
@@ -2776,6 +2923,73 @@ const resourcesBase = {
         manageSubscriptionFailedTitle: "The subscription management page could not be opened",
         manageSubscriptionFailedBody:
           "Try again later or open the subscription settings directly in the store.",
+      },
+      offlineMode: {
+        title: "Offline mode",
+        subtitle:
+          "Download questions and media for category {{category}} to this device.",
+        plusRequiredTitle: "Offline mode is available in Prawko Plus.",
+        plusRequiredBody:
+          "Get Plus to save the full question catalog and media on the phone and run training and exams without internet.",
+        statusTitle: "Pack status",
+        statusNotDownloaded: "The offline pack has not been downloaded yet.",
+        statusReady: "The offline pack is ready on this device.",
+        statusOtherCategory:
+          "This device already has an offline pack for category {{category}}.",
+        statusUpdateAvailable:
+          "The live catalog changed, so the offline pack should be refreshed.",
+        statusDownloading: "The offline pack is downloading now.",
+        statusInterrupted:
+          "The download was interrupted. You can resume it from where it stopped.",
+        statusNeedsRepair:
+          "The stored offline files are incomplete or damaged. Download the pack again or remove the files from this device.",
+        questionsLabel: "Questions",
+        assetsLabel: "Media files",
+        requiredSpaceLabel: "Pack size",
+        freeSpaceLabel: "Free space",
+        storageLowWarning:
+          "The device does not have enough free space for a safe offline download.",
+        storageUnknown:
+          "The device's free space could not be checked.",
+        catalogUnavailableTitle: "The question catalog is not ready.",
+        catalogUnavailableBody:
+          "Connect to the internet and wait for the app to load the latest catalog before starting the offline download.",
+        internetRequiredTitle: "No internet connection",
+        internetRequiredBody:
+          "An internet connection is required to start or resume the offline pack download.",
+        replaceCategoryNote:
+          "Downloading a new category will replace the current offline pack stored on this device.",
+        readyBadge: "Downloaded",
+        downloadBadge: "Download",
+        updateBadge: "Refresh",
+        repairBadge: "Repair",
+        downloadingBadge: "Downloading",
+        interruptedBadge: "Resume",
+        downloadedProgress: "{{done}} / {{total}} files",
+        downloadCta: "Download to phone",
+        repairCta: "Repair pack",
+        resumeCta: "Resume download",
+        updateCta: "Refresh pack",
+        removeCta: "Remove from device",
+        openPaywall: "Open paywall",
+        lastUpdated: "Last complete version: {{date}}",
+        transferError: "Last error: {{message}}",
+      },
+      offlineGate: {
+        title: "No internet connection",
+        trainingBody:
+          "Training for category {{category}} needs internet or a ready offline pack. Open Offline mode in Profile and download the pack to this phone.",
+        examBody:
+          "The exam for category {{category}} needs internet or a ready offline pack. Open Offline mode in Profile and download the pack to this phone.",
+        otherCategoryBody:
+          "This phone already has an offline pack for category {{downloadedCategory}}, but the current category is {{currentCategory}}. Download a new pack for {{currentCategory}} to run {{feature}} without internet.",
+        incompleteBody:
+          "The offline pack for category {{category}} has not finished downloading yet. Resume the download to run {{feature}} without internet.",
+        openOfflineMode: "Open Offline mode",
+        features: {
+          exam: "the exam",
+          training: "training",
+        },
       },
       mistakes: {
         screenTitle: "Work on mistakes",
@@ -3014,6 +3228,10 @@ const resourcesBase = {
         sessionErrorTitle: "The exam session could not be opened",
         sessionErrorBody:
           "The session snapshot is unavailable or the question catalog has not synced yet.",
+        categoryMismatchTitle: "Switch category to continue",
+        categoryMismatchBody:
+          "This session belongs to category {{sessionCategory}}, but the app is currently set to {{currentCategory}}. Switch categories to load the correct question catalog for this session.",
+        categoryMismatchSwitchCta: "Switch to {{category}}",
         sessionNotice:
           "Back navigation is blocked. The result appears when time ends or the last answer is submitted.",
         timerLabel: "Timer",
@@ -3550,4 +3768,3 @@ export const resources = {
     },
   },
 };
-

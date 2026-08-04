@@ -30,6 +30,13 @@ export function hydrateQuestionBankFromSupabaseRecords(
   activeQuestionBankById = buildQuestionBankById(activeQuestionBank);
 }
 
+export function hydrateQuestionBankFromLocalQuestions(
+  questions: LocalQuestion[]
+) {
+  activeQuestionBank = [...questions];
+  activeQuestionBankById = buildQuestionBankById(activeQuestionBank);
+}
+
 export function resetQuestionBankToMock() {
   activeQuestionBank = [...MOCK_QUESTION_BANK];
   activeQuestionBankById = buildQuestionBankById(activeQuestionBank);

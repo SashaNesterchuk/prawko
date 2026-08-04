@@ -33,6 +33,12 @@ import {
   formatProfileExamDate,
   getCurrentStreakFromAttempts,
 } from "../../src/features/profile/profile-stats";
+import {
+  formatOfflineBytes,
+  type OfflinePackSnapshot,
+  readOfflinePackSnapshot,
+} from "../../src/features/offline/offline-pack";
+import { getQuestionBank } from "../../src/features/questions/question-bank";
 import { getQuestionDisplayStats } from "../../src/features/questions/question-engine";
 import {
   applyExamDateChange,
@@ -61,7 +67,11 @@ import {
   useCurrentStudyPlan,
   useAppShellStore,
 } from "../../src/state/app-shell";
-import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
+import {
+  useQuestionCatalogResolved,
+  useQuestionCatalogStatus,
+  useQuestionCatalogVersion,
+} from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 import { resetAppToFreshStart } from "../../src/state/reset-app";
 
@@ -96,12 +106,16 @@ export default function ProfileTabScreen() {
   );
   const resetProgress = useQuestionProgressStore((state) => state.resetProgress);
   const questionCatalogVersion = useQuestionCatalogVersion();
+  const questionCatalogResolved = useQuestionCatalogResolved();
+  const questionCatalogStatus = useQuestionCatalogStatus();
   const hasPlusAccess = useHasPlusAccess();
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [examDatePickerVisible, setExamDatePickerVisible] = useState(false);
   const [isSavingExamDate, setIsSavingExamDate] = useState(false);
+  const [offlineSnapshot, setOfflineSnapshot] =
+    useState<OfflinePackSnapshot | null>(null);
 
   useEffect(() => {
     if (!isFocused) {
@@ -140,6 +154,44 @@ export default function ProfileTabScreen() {
     };
   }, [authMode, isFocused]);
 
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+
+    let cancelled = false;
+    const questionBank =
+      questionCatalogResolved &&
+      (questionCatalogStatus === "remote" || questionCatalogStatus === "offline")
+        ? getQuestionBank()
+        : null;
+
+    void readOfflinePackSnapshot({
+      currentCategory: preferredCategory,
+      questionBank,
+    })
+      .then((nextSnapshot) => {
+        if (!cancelled) {
+          setOfflineSnapshot(nextSnapshot);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setOfflineSnapshot(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isFocused,
+    preferredCategory,
+    questionCatalogResolved,
+    questionCatalogStatus,
+    questionCatalogVersion,
+  ]);
+
   const questionStats = useMemo(
     () => getQuestionDisplayStats(questionUserState),
     [questionCatalogVersion, questionUserState]
@@ -170,6 +222,14 @@ export default function ProfileTabScreen() {
     examDate != null ? getDaysUntilExamFromDate(examDate) : null;
   const localeLabel = t(`languages.${preferredLocale}.label`);
   const iconSize = responsiveFont(24);
+  const offlineRowValue = hasPlusAccess
+    ? getProfileOfflineBadge(t, offlineSnapshot)
+    : undefined;
+  const offlineRowSubtitle = getProfileOfflineSubtitle({
+    currentCategory: preferredCategory,
+    snapshot: offlineSnapshot,
+    t,
+  });
 
   const handleConfirmExamDate = async (date: Date) => {
     if (isSavingExamDate) {
@@ -364,6 +424,21 @@ export default function ProfileTabScreen() {
               onSwitchChange={(value) => void handleToggleNotifications(value)}
             />
             <ProfileSettingsRow
+              title={t("profile.offlineModeTitle")}
+              subtitle={offlineRowSubtitle}
+              testID="profile-row-offline-mode"
+              value={offlineRowValue}
+              icon={
+                <Ionicons
+                  color={colors.textSecondary}
+                  name="download-outline"
+                  size={iconSize}
+                />
+              }
+              trailing={hasPlusAccess ? "value" : "premium"}
+              onPress={() => router.navigate("/modals/offline-mode")}
+            />
+            <ProfileSettingsRow
               title={t("profile.plusTitle")}
               icon={
                 <Ionicons
@@ -516,4 +591,71 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       },
     })
   );
+}
+
+function getProfileOfflineBadge(
+  t: ReturnType<typeof useTranslation>["t"],
+  snapshot: OfflinePackSnapshot | null
+) {
+  if (snapshot?.transfer?.status === "downloading") {
+    return t("offlineMode.downloadingBadge");
+  }
+
+  if (snapshot?.transfer?.status === "error") {
+    return t("offlineMode.interruptedBadge");
+  }
+
+  if (snapshot?.hasStoredData && !snapshot.readyPack) {
+    return t("offlineMode.repairBadge");
+  }
+
+  if (
+    snapshot?.readyPackMatchesCurrentCategory &&
+    snapshot.readyPackMatchesCurrentCatalog === false
+  ) {
+    return t("offlineMode.updateBadge");
+  }
+
+  if (snapshot?.readyPackMatchesCurrentCategory) {
+    return t("offlineMode.readyBadge");
+  }
+
+  return t("offlineMode.downloadBadge");
+}
+
+function getProfileOfflineSubtitle({
+  currentCategory,
+  snapshot,
+  t,
+}: {
+  currentCategory: string;
+  snapshot: OfflinePackSnapshot | null;
+  t: ReturnType<typeof useTranslation>["t"];
+}) {
+  if (snapshot?.transfer) {
+    return t("offlineMode.downloadedProgress", {
+      done: snapshot.transfer.downloadedAssetCount,
+      total: snapshot.transfer.targetAssetCount,
+    });
+  }
+
+  if (snapshot?.readyPackMatchesCurrentCategory && snapshot.readyPack) {
+    return `${snapshot.readyPack.questionCount} • ${formatOfflineBytes(
+      snapshot.readyPack.totalBytes
+    )}`;
+  }
+
+  if (snapshot?.readyPack?.category) {
+    return t("offlineMode.statusOtherCategory", {
+      category: snapshot.readyPack.category,
+    });
+  }
+
+  if (snapshot?.hasStoredData) {
+    return t("offlineMode.statusNeedsRepair");
+  }
+
+  return t("offlineMode.subtitle", {
+    category: currentCategory,
+  });
 }

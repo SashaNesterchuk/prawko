@@ -37,6 +37,7 @@ type ExamAnswersReviewViewProps = {
   onPrevious: () => void;
   onToggleBookmark: () => void;
   questionRef: RemoteExamQuestionRef;
+  testID?: string;
   totalQuestions: number;
 };
 
@@ -52,6 +53,7 @@ export function ExamAnswersReviewView({
   onPrevious,
   onToggleBookmark,
   questionRef,
+  testID,
   totalQuestions,
 }: ExamAnswersReviewViewProps) {
   const { t } = useTranslation();
@@ -127,7 +129,11 @@ export function ExamAnswersReviewView({
   if (!question) {
     return (
       <GreenWaveScreen>
-        <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <SafeAreaView
+          style={styles.safeArea}
+          edges={["top", "bottom"]}
+          testID={testID}
+        >
           <StatusBar style="dark" />
           <View style={styles.contentPad}>
             <View style={styles.header}>
@@ -197,7 +203,11 @@ export function ExamAnswersReviewView({
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        testID={testID}
+      >
         <StatusBar style="dark" />
         <View style={styles.container}>
           <View style={styles.contentPad}>

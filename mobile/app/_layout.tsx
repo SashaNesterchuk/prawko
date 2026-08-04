@@ -174,6 +174,13 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="modals/offline-mode"
+          options={{
+            presentation: "modal",
+            animation: "slide_from_bottom",
+          }}
+        />
+        <Stack.Screen
           name="modals/plan-adjust"
           options={{
             presentation: "modal",

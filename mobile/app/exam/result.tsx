@@ -42,14 +42,22 @@ import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefet
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
-import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
+import {
+  useQuestionCatalogResolved,
+  useQuestionCatalogStore,
+  useQuestionCatalogVersion,
+} from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 
 export default function ExamResultScreen() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
   const authMode = useAppShellStore((state) => state.authMode);
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const setPreferredCategory = useAppShellStore(
+    (state) => state.setPreferredCategory
+  );
   const params = useLocalSearchParams<{
     sessionId?: string | string[];
   }>();
@@ -59,6 +67,7 @@ export default function ExamResultScreen() {
     showInterstitialForUnlockGate,
   } = useAdInterstitialActions();
   const hasPlusAccess = useHasPlusAccess();
+  const questionCatalogResolved = useQuestionCatalogResolved();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
@@ -263,9 +272,21 @@ export default function ExamResultScreen() {
     );
   }, [snapshot]);
 
+  function switchToSessionCategory() {
+    const sessionCategory = snapshot?.session.currentCategory;
+
+    if (!sessionCategory || sessionCategory === preferredCategory) {
+      return;
+    }
+
+    useQuestionCatalogStore.getState().setLoading();
+    setPreferredCategory(sessionCategory);
+  }
+
   if (isLoading) {
     return (
       <ExamResultCenteredState
+        testID="screen-exam-result-loading"
         title={t("states.loadingTitle")}
         description={t("exam.resultLoading")}
       />
@@ -275,10 +296,39 @@ export default function ExamResultScreen() {
   if (!snapshot) {
     return (
       <ExamResultCenteredState
+        testID="screen-exam-result-missing"
         title={t("exam.resultMissingTitle")}
         description={errorMessage ?? t("exam.resultMissingBody")}
         actionLabel={t("exam.backToPracticeCta")}
         onAction={() => router.replace("/(tabs)")}
+      />
+    );
+  }
+
+  if (snapshot.session.currentCategory !== preferredCategory) {
+    return (
+      <ExamResultCenteredState
+        actionTestID="exam-result-switch-category"
+        title={t("exam.categoryMismatchTitle")}
+        description={t("exam.categoryMismatchBody", {
+          currentCategory: preferredCategory,
+          sessionCategory: snapshot.session.currentCategory,
+        })}
+        actionLabel={t("exam.categoryMismatchSwitchCta", {
+          category: snapshot.session.currentCategory,
+        })}
+        onAction={switchToSessionCategory}
+        testID="screen-exam-result-category-mismatch"
+      />
+    );
+  }
+
+  if (!questionCatalogResolved) {
+    return (
+      <ExamResultCenteredState
+        testID="screen-exam-result-loading"
+        title={t("states.loadingTitle")}
+        description={t("exam.resultLoading")}
       />
     );
   }
@@ -289,6 +339,7 @@ export default function ExamResultScreen() {
   if (snapshot.session.status === "active") {
     return (
       <ExamResultCenteredState
+        testID="screen-exam-result-loading"
         title={t("states.loadingTitle")}
         description={t("exam.sessionLoading")}
       />
@@ -470,6 +521,7 @@ export default function ExamResultScreen() {
             handleToggleBookmark(questionRef.questionSourceId)
           }
           questionRef={questionRef}
+          testID="screen-exam-answers-review"
           totalQuestions={sortedQuestions.length}
         />
       );
@@ -490,6 +542,7 @@ export default function ExamResultScreen() {
         scoreDelta={scoreDelta}
         scorePoints={loadedSnapshot.session.scorePoints}
         scopeSections={scopeSections}
+        testID="screen-exam-result"
         topicStats={topicStats}
         totalPointsTarget={loadedSnapshot.session.totalPointsTarget}
         totalQuestionsAnswered={loadedSnapshot.session.totalQuestionsTarget}

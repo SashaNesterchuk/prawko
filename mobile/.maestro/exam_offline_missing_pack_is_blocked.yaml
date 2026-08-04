@@ -1,0 +1,37 @@
+# Feature: Offline mode
+# Scenario: Exam is blocked offline when no ready offline pack exists
+appId: com.mindjar.prawko
+tags:
+  - offline
+  - exam
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: practice
+      OFFLINE_PACK_STATUS: missing
+      PLUS_ACCESS: "true"
+      REACHABILITY: "false"
+      TARGET_ID: screen-practice
+
+- tapOn:
+    id: "practice-card-exam-cta"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-offline-blocked-missing_ready_pack"
+    timeout: 20000
+
+- assertVisible:
+    id: "exam-offline-open-offline-mode"
+
+- tapOn:
+    id: "exam-offline-open-offline-mode"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-offline-mode"
+    timeout: 15000
+
+- assertVisible:
+    id: "screen-offline-mode"

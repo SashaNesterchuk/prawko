@@ -26,6 +26,10 @@ import {
 } from "../../src/features/questions/question-engine";
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
 import { useAppShellStore } from "../../src/state/app-shell";
+import {
+  useQuestionCatalogResolved,
+  useQuestionCatalogStore,
+} from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 
 /**
@@ -36,11 +40,16 @@ import { useQuestionProgressStore } from "../../src/state/question-progress";
 export default function ExamAnswersReviewScreen() {
   const { t } = useTranslation();
   const authMode = useAppShellStore((state) => state.authMode);
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const setPreferredCategory = useAppShellStore(
+    (state) => state.setPreferredCategory
+  );
   const params = useLocalSearchParams<{
     sessionId?: string | string[];
     startOrder?: string | string[];
   }>();
+  const questionCatalogResolved = useQuestionCatalogResolved();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
@@ -150,6 +159,17 @@ export default function ExamAnswersReviewScreen() {
       )
     : null;
 
+  function switchToSessionCategory() {
+    const sessionCategory = snapshot?.session.currentCategory;
+
+    if (!sessionCategory || sessionCategory === preferredCategory) {
+      return;
+    }
+
+    useQuestionCatalogStore.getState().setLoading();
+    setPreferredCategory(sessionCategory);
+  }
+
   function goBackToResult() {
     if (!sessionId) {
       router.replace("/(tabs)");
@@ -206,15 +226,57 @@ export default function ExamAnswersReviewScreen() {
   if (isLoading) {
     return (
       <ExamResultCenteredState
+        testID="screen-exam-answers-loading"
         title={t("states.loadingTitle")}
         description={t("exam.resultLoading")}
       />
     );
   }
 
-  if (!snapshot || !currentQuestionRef) {
+  if (!snapshot) {
     return (
       <ExamResultCenteredState
+        testID="screen-exam-answers-missing"
+        title={t("exam.resultMissingTitle")}
+        description={errorMessage ?? t("exam.resultMissingBody")}
+        actionLabel={t("exam.backToPracticeCta")}
+        onAction={() => router.replace("/(tabs)")}
+      />
+    );
+  }
+
+  if (snapshot.session.currentCategory !== preferredCategory) {
+    return (
+      <ExamResultCenteredState
+        actionTestID="exam-answers-switch-category"
+        title={t("exam.categoryMismatchTitle")}
+        description={t("exam.categoryMismatchBody", {
+          currentCategory: preferredCategory,
+          sessionCategory: snapshot.session.currentCategory,
+        })}
+        actionLabel={t("exam.categoryMismatchSwitchCta", {
+          category: snapshot.session.currentCategory,
+        })}
+        onAction={switchToSessionCategory}
+        testID="screen-exam-answers-category-mismatch"
+      />
+    );
+  }
+
+  if (!questionCatalogResolved) {
+    return (
+      <ExamResultCenteredState
+        testID="screen-exam-answers-loading"
+        title={t("states.loadingTitle")}
+        description={t("exam.resultLoading")}
+      />
+    );
+  }
+
+  if (!currentQuestionRef) {
+    return (
+      <ExamResultCenteredState
+        testID="screen-exam-answers-missing"
         title={t("exam.resultMissingTitle")}
         description={errorMessage ?? t("exam.resultMissingBody")}
         actionLabel={t("exam.backToPracticeCta")}
@@ -236,6 +298,7 @@ export default function ExamAnswersReviewScreen() {
       onPrevious={handlePrevious}
       onToggleBookmark={handleToggleBookmark}
       questionRef={currentQuestionRef}
+      testID="screen-exam-answers-review"
       totalQuestions={sortedQuestions.length}
     />
   );

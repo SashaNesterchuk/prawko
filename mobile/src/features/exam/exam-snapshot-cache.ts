@@ -95,6 +95,11 @@ export function isFinishedExamStatus(
   );
 }
 
+export async function seedPersistedExamSnapshot(snapshot: RemoteExamSnapshot) {
+  cachedSnapshot = snapshot;
+  await persistExamSnapshot(snapshot);
+}
+
 async function persistExamSnapshot(snapshot: RemoteExamSnapshot) {
   await AsyncStorage.setItem(
     `${LAST_SNAPSHOT_PREFIX}${snapshot.session.id}`,

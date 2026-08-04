@@ -5,7 +5,14 @@ env:
   CATEGORY: B
   DAYS_UNTIL_EXAM: 14
   DESTINATION: home
+  EXAM_SESSION_CATEGORY: ""
+  EXAM_SESSION_STATUS: ""
+  EXAM_START_ORDER: 1
   LOCALE: ua
+  OFFLINE_PACK_CATEGORY: ""
+  OFFLINE_PACK_STATUS: ""
+  PLUS_ACCESS: "false"
+  REACHABILITY: ""
   SIGN_CATEGORY_ID: A
   TOPIC_ID: horizontal_road_markings
   TARGET_ID: screen-home
@@ -15,7 +22,7 @@ env:
     clearKeychain: true
 
 - openLink:
-    link: "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}"
+    link: "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}"
 
 - extendedWaitUntil:
     visible:

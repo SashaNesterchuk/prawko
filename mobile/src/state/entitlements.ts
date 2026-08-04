@@ -1,6 +1,7 @@
 import { APP_FEATURES, FEATURE_FLAGS, type AppFeature } from "@prawko/config";
 import { create } from "zustand";
 
+import { mobileEnv } from "../config/env";
 import { getCurrentUserFromState, useAppShellStore } from "./app-shell";
 
 export type FeatureEntitlementMap = Record<AppFeature, boolean>;
@@ -181,7 +182,7 @@ export function useHasPlusAccess() {
     (state) => state.revenueCatFeatureEntitlements
   );
 
-  if (__DEV__ && debugPlusOverride !== null) {
+  if ((__DEV__ || mobileEnv.enableE2ETestMode) && debugPlusOverride !== null) {
     return debugPlusOverride;
   }
 

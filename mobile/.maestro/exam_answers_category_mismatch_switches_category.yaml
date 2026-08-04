@@ -1,0 +1,25 @@
+# Feature: Exam category mismatch
+# Scenario: Exam answer review asks to switch category before loading questions
+appId: com.mindjar.prawko
+tags:
+  - exam
+  - category
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: exam-answers
+      EXAM_SESSION_CATEGORY: A
+      EXAM_SESSION_STATUS: completed
+      TARGET_ID: screen-exam-answers-category-mismatch
+
+- tapOn:
+    id: "exam-answers-switch-category"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-answers-review"
+    timeout: 20000
+
+- assertVisible:
+    id: "screen-exam-answers-review"

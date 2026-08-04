@@ -1,4 +1,5 @@
 import type {
+  DrivingCategory,
   LearningTopicId,
   QuestionAnswerType,
   QuestionMediaType,
@@ -116,6 +117,7 @@ export type QuestionSessionEmptyReason =
   | "general_empty";
 
 export type QuestionSessionRequest = {
+  currentCategory: DrivingCategory;
   mode: QuestionSessionMode;
   questionLimit?: number | null;
   sessionKey: string;

@@ -51,6 +51,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
@@ -75,11 +76,17 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     }
 
     return getQuestionCountForMode(
-      { mode: pendingTile.mode, topic },
+      { currentCategory: preferredCategory, mode: pendingTile.mode, topic },
       questionUserState,
       topicQuestionProgress
     );
-  }, [pendingTile, questionUserState, topic, topicQuestionProgress]);
+  }, [
+    pendingTile,
+    preferredCategory,
+    questionUserState,
+    topic,
+    topicQuestionProgress,
+  ]);
 
   const screenTitle = topic
     ? getLearningTopicTitle(topic, preferredLocale, t)
@@ -190,7 +197,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
 
   const openCountDialog = (tile: TrainerModeTile) => {
     const availableCount = getQuestionCountForMode(
-      { mode: tile.mode, topic },
+      { currentCategory: preferredCategory, mode: tile.mode, topic },
       questionUserState,
       topicQuestionProgress
     );

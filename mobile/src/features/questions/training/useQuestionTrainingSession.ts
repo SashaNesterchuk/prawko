@@ -53,6 +53,7 @@ export function useQuestionTrainingSession() {
   const currentStudyPlanRemoteId = useAppShellStore(
     (state) => state.currentStudyPlanRemoteId
   );
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const {
     maybeShowInterstitial,
@@ -102,11 +103,15 @@ export function useQuestionTrainingSession() {
     // A resumed session adopts the route key, so this entry is already
     // resolved and later state changes (an answer, the summary) must not
     // rebuild it.
-    if (activeSession?.request.sessionKey === sessionKey) {
+    if (
+      activeSession?.request.sessionKey === sessionKey &&
+      activeSession.request.currentCategory === preferredCategory
+    ) {
       return;
     }
 
     startOrResumeSession({
+      currentCategory: preferredCategory,
       mode,
       questionLimit,
       topic,
@@ -116,6 +121,7 @@ export function useQuestionTrainingSession() {
   }, [
     activeSession,
     mode,
+    preferredCategory,
     questionLimit,
     questionProgressHydrated,
     sessionKey,
@@ -385,7 +391,7 @@ export function useQuestionTrainingSession() {
 
   useEffect(() => {
     didShowSessionCompleteAdRef.current = false;
-  }, [sessionKey]);
+  }, [preferredCategory, sessionKey]);
 
   useEffect(() => {
     questionStartedAtRef.current = Date.now();

@@ -5,12 +5,18 @@ import { Text, View } from "react-native";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { LoadingStateView } from "../../src/components/shell/StateViews";
+import {
+  ErrorStateView,
+  LoadingStateView,
+} from "../../src/components/shell/StateViews";
 import { useResponsiveStyles } from "../../src/portable-ui";
 import {
   isMobileSupabaseConfigured,
 } from "../../src/config/env";
+import { getOfflineGateDescription } from "../../src/features/offline/offline-gate-copy";
+import { useOfflineFeatureGate } from "../../src/features/offline/useOfflineFeatureGate";
 import { getExamQuestionTarget, isExamSimulatorMode } from "../../src/features/exam/exam-config";
+import { cacheExamSnapshot } from "../../src/features/exam/exam-snapshot-cache";
 import {
   fetchLatestActiveExamSession,
   setExamSessionStatus,
@@ -22,6 +28,7 @@ import {
   useCurrentUser,
   useAppShellStore,
 } from "../../src/state/app-shell";
+import { useQuestionCatalogResolved } from "../../src/state/question-catalog";
 
 export default function ExamIntroScreen() {
   const { t } = useTranslation();
@@ -38,6 +45,8 @@ export default function ExamIntroScreen() {
   const currentStudyPlanRemoteId = useCurrentStudyPlanRemoteId();
   const [startError, setStartError] = useState<string | null>(null);
   const didLaunchRef = useRef(false);
+  const questionCatalogResolved = useQuestionCatalogResolved();
+  const offlineGate = useOfflineFeatureGate(preferredCategory);
 
   const rawMode = getSingleParam(params.mode);
   const rawQuestionLimit = getSingleParam(params.questionLimit);
@@ -51,17 +60,22 @@ export default function ExamIntroScreen() {
   const canUseRemoteExam =
     authMode === "supabase" &&
     Boolean(currentUser) &&
-    isMobileSupabaseConfigured;
+    isMobileSupabaseConfigured &&
+    offlineGate.isOnline === true;
 
   useEffect(() => {
-    if (didLaunchRef.current) {
+    if (
+      didLaunchRef.current ||
+      offlineGate.status !== "allowed" ||
+      !questionCatalogResolved
+    ) {
       return;
     }
 
     didLaunchRef.current = true;
 
     void launchExam();
-  }, []);
+  }, [offlineGate.status, questionCatalogResolved]);
 
   const openExamSession = (sessionId: string) =>
     router.replace({
@@ -81,8 +95,10 @@ export default function ExamIntroScreen() {
         // Drop a stale active session if its size no longer matches this launch
         // (e.g. full exam that was wrongly started with a leftover mini-test limit).
         if (
-          activeSnapshot.session.totalQuestionsTarget === totalQuestionsTarget
+          activeSnapshot.session.totalQuestionsTarget === totalQuestionsTarget &&
+          activeSnapshot.session.currentCategory === preferredCategory
         ) {
+          cacheExamSnapshot(activeSnapshot);
           openExamSession(activeSnapshot.session.id);
           return;
         }
@@ -91,10 +107,15 @@ export default function ExamIntroScreen() {
           sessionId: activeSnapshot.session.id,
           status: "abandoned",
           metadata: {
-            reason: "question_target_mismatch",
+            reason:
+              activeSnapshot.session.currentCategory === preferredCategory
+                ? "question_target_mismatch"
+                : "category_mismatch",
             expected_total_questions: totalQuestionsTarget,
             previous_total_questions:
               activeSnapshot.session.totalQuestionsTarget,
+            expected_category: preferredCategory,
+            previous_category: activeSnapshot.session.currentCategory,
           },
         });
       }
@@ -112,6 +133,7 @@ export default function ExamIntroScreen() {
         { useRemote: canUseRemoteExam }
       );
 
+      cacheExamSnapshot(snapshot);
       openExamSession(snapshot.session.id);
     } catch (error: unknown) {
       console.warn("Failed to launch exam session.", error);
@@ -144,6 +166,63 @@ export default function ExamIntroScreen() {
         }
       >
         <Text style={styles.errorText}>{startError}</Text>
+      </AppScreen>
+    );
+  }
+
+  if (offlineGate.status === "checking" || !questionCatalogResolved) {
+    return (
+      <AppScreen scroll={false}>
+        <LoadingStateView
+          title={t("states.loadingTitle")}
+          description={t(`exam.modes.${mode}.subtitle`, {
+            count: totalQuestionsTarget,
+          })}
+        />
+      </AppScreen>
+    );
+  }
+
+  if (offlineGate.status === "blocked") {
+    return (
+      <AppScreen
+        testID={`screen-exam-offline-blocked-${offlineGate.reason}`}
+        title={t("offlineGate.title")}
+        scroll={false}
+        footer={
+          <View style={styles.footerStack}>
+            <AppButton
+              label={t("common.retry")}
+              testID="exam-offline-retry"
+              onPress={() => {
+                didLaunchRef.current = false;
+                void offlineGate.refresh();
+              }}
+            />
+            <AppButton
+              variant="secondary"
+              label={t("offlineGate.openOfflineMode")}
+              testID="exam-offline-open-offline-mode"
+              onPress={() => router.push("/modals/offline-mode")}
+            />
+            <AppButton
+              variant="ghost"
+              label={t("common.close")}
+              onPress={() => router.replace("/(tabs)")}
+            />
+          </View>
+        }
+      >
+        <ErrorStateView
+          title={t("offlineGate.title")}
+          description={getOfflineGateDescription({
+            currentCategory: preferredCategory,
+            downloadedCategory: offlineGate.downloadedCategory,
+            reason: offlineGate.reason,
+            t,
+            type: "exam",
+          })}
+        />
       </AppScreen>
     );
   }

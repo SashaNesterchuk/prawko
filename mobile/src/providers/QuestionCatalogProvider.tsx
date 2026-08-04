@@ -6,6 +6,7 @@ import {
 } from "../config/env";
 import {
   getQuestionBank,
+  hydrateQuestionBankFromLocalQuestions,
   hydrateQuestionBankFromSupabaseRecords,
   resetQuestionBankToMock,
 } from "../features/questions/question-bank";
@@ -25,6 +26,7 @@ import {
   useQuestionProgressHydrated,
   useQuestionProgressStore,
 } from "../state/question-progress";
+import { loadReadyOfflineQuestionCatalog } from "../features/offline/offline-pack";
 import { useErrorLogger } from "./ErrorLoggingProvider";
 
 const QUESTION_CATALOG_SELECT = [
@@ -194,6 +196,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
   const setError = useQuestionCatalogStore((state) => state.setError);
   const setLoading = useQuestionCatalogStore((state) => state.setLoading);
   const setMock = useQuestionCatalogStore((state) => state.setMock);
+  const setOffline = useQuestionCatalogStore((state) => state.setOffline);
   const setRemote = useQuestionCatalogStore((state) => state.setRemote);
 
   useEffect(() => {
@@ -228,21 +231,72 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
       });
     };
 
-    const requiresAuthForCatalog = mobileEnv.requireAuthForQuestionCatalog;
-    const hasCatalogAuthSession =
-      authMode === "supabase" && Boolean(currentUserId);
-    const canFetchRemoteCatalog =
-      isMobileSupabaseConfigured &&
-      (!requiresAuthForCatalog || hasCatalogAuthSession);
+    const applyOfflineCatalog = (questions: Awaited<
+      ReturnType<typeof loadReadyOfflineQuestionCatalog>
+    >) => {
+      if (!questions || questions.length === 0) {
+        return false;
+      }
 
-    if (!canFetchRemoteCatalog) {
-      applyMockCatalog();
-      return;
-    }
+      hydrateQuestionBankFromLocalQuestions(questions);
 
-    setLoading();
+      const questionIds = questions.map((question) => question.id);
+
+      if (cancelled) {
+        return true;
+      }
+
+      reconcileCatalog(questionIds);
+      ensureTopicQuestionProgressSeeded();
+      setOffline({
+        questionCount: questionIds.length,
+      });
+      return true;
+    };
 
     void (async () => {
+      let offlineQuestions: Awaited<
+        ReturnType<typeof loadReadyOfflineQuestionCatalog>
+      > = null;
+
+      try {
+        offlineQuestions = await loadReadyOfflineQuestionCatalog(
+          preferredCategory
+        );
+      } catch (error: unknown) {
+        captureError({
+          area: "question_catalog",
+          error,
+          eventName: "question_catalog_offline_catalog_read_failed",
+          message:
+            "The downloaded offline catalog could not be read, so the app continued with the normal catalog bootstrap flow.",
+          metadata: {
+            category: preferredCategory,
+            reason: "offline_catalog_read_failed",
+          },
+        });
+      }
+
+      const offlineApplied = applyOfflineCatalog(offlineQuestions);
+
+      const requiresAuthForCatalog = mobileEnv.requireAuthForQuestionCatalog;
+      const hasCatalogAuthSession =
+        authMode === "supabase" && Boolean(currentUserId);
+      const canFetchRemoteCatalog =
+        isMobileSupabaseConfigured &&
+        (!requiresAuthForCatalog || hasCatalogAuthSession);
+
+      if (!canFetchRemoteCatalog) {
+        if (!offlineApplied) {
+          applyMockCatalog();
+        }
+        return;
+      }
+
+      if (!offlineApplied) {
+        setLoading();
+      }
+
       try {
         let records: SupabaseQuestionRecord[];
 
@@ -250,6 +304,21 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
           records = await fetchAllActiveQuestionsForCategory(preferredCategory);
         } catch (error: unknown) {
           if (cancelled) {
+            return;
+          }
+
+          if (offlineApplied) {
+            captureFallback({
+              area: "question_catalog",
+              error,
+              eventName: "question_catalog_offline_catalog_used",
+              message:
+                "Remote catalog fetch failed, so the app kept using the downloaded offline catalog.",
+              metadata: {
+                category: preferredCategory,
+                reason: "remote_query_failed_offline_catalog_present",
+              },
+            });
             return;
           }
 
@@ -288,6 +357,20 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
         }
 
         if (records.length === 0) {
+          if (offlineApplied) {
+            captureFallback({
+              area: "question_catalog",
+              eventName: "question_catalog_offline_catalog_used",
+              message:
+                "Remote catalog returned no rows, so the app kept using the downloaded offline catalog.",
+              metadata: {
+                category: preferredCategory,
+                reason: "remote_catalog_empty_offline_catalog_present",
+              },
+            });
+            return;
+          }
+
           if (authMode !== "supabase") {
             captureFallback({
               area: "question_catalog",
@@ -349,6 +432,21 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
           return;
         }
 
+        if (offlineApplied) {
+          captureFallback({
+            area: "question_catalog",
+            error,
+            eventName: "question_catalog_offline_catalog_used",
+            message:
+              "Question catalog hydration failed, so the app kept using the downloaded offline catalog.",
+            metadata: {
+              category: preferredCategory,
+              reason: "remote_query_exception_offline_catalog_present",
+            },
+          });
+          return;
+        }
+
         if (authMode !== "supabase") {
           captureFallback({
             area: "question_catalog",
@@ -396,6 +494,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
     setError,
     setLoading,
     setMock,
+    setOffline,
     setRemote,
   ]);
 

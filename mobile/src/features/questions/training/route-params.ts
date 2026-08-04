@@ -9,6 +9,7 @@ import {
 } from "../question-engine";
 import { isLearningTopicId } from "../../question-topics/catalog";
 import { isUuidString } from "../question-routes";
+import { useAppShellStore } from "../../../state/app-shell";
 
 export function getSingleParam(value: string | string[] | undefined) {
   if (Array.isArray(value)) {
@@ -38,6 +39,7 @@ export type QuestionRouteParams = {
 };
 
 export function useQuestionRouteParams(): QuestionRouteParams {
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const params = useLocalSearchParams<{
     mode?: string | string[];
     questionLimit?: string | string[];
@@ -58,8 +60,15 @@ export function useQuestionRouteParams(): QuestionRouteParams {
     : undefined;
   const topic = rawTopic && isLearningTopicId(rawTopic) ? rawTopic : undefined;
   const sessionKey = useMemo(
-    () => routeSessionKey ?? createQuestionSessionKey({ mode, topic }),
-    [mode, routeSessionKey, topic]
+    () =>
+      routeSessionKey
+        ? `${preferredCategory}:${routeSessionKey}`
+        : createQuestionSessionKey({
+            currentCategory: preferredCategory,
+            mode,
+            topic,
+          }),
+    [mode, preferredCategory, routeSessionKey, topic]
   );
 
   return {
