@@ -162,7 +162,7 @@ export default function AccessCenterModalScreen() {
           <AppButton
             variant="secondary"
             label={t("accessCenter.openPaywall")}
-            onPress={() => router.push("/paywall")}
+            onPress={() => router.navigate("/paywall")}
           />
           <AppButton
             variant="ghost"
@@ -245,7 +245,7 @@ export default function AccessCenterModalScreen() {
             <AppButton
               variant="ghost"
               label={t("accessCenter.openOffers")}
-              onPress={() => router.push("/paywall")}
+              onPress={() => router.navigate("/paywall")}
             />
           </View>
         </AppCard>

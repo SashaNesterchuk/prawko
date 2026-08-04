@@ -10,7 +10,10 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "icons:generate": "node scripts/generate-icon-registry.mjs",
-    "road-signs:generate": "node scripts/generate-road-signs-content.mjs"
+    "road-signs:generate": "node scripts/generate-road-signs-content.mjs",
+    "test:e2e": "PATH=\"$HOME/.maestro/bin:$PATH\" maestro test .maestro",
+    "test:e2e:smoke": "PATH=\"$HOME/.maestro/bin:$PATH\" maestro test .maestro --include-tags smoke",
+    "test:e2e:studio": "PATH=\"$HOME/.maestro/bin:$PATH\" maestro studio"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",

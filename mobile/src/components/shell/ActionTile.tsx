@@ -22,6 +22,7 @@ type ActionTileProps = {
   style?: ActionTileStyle;
   /** Full-width horizontal layout (Figma Action tile at FILL width). */
   fullWidth?: boolean;
+  testID?: string;
 };
 
 export function ActionTile({
@@ -33,6 +34,7 @@ export function ActionTile({
   onPress,
   style = "default",
   fullWidth = false,
+  testID,
 }: ActionTileProps) {
   const isInline = fullWidth || style === "faded";
   const styles = useStyles({ style, isInline });
@@ -68,13 +70,18 @@ export function ActionTile({
           styles.tile,
           pressed && style !== "inactive" ? styles.pressed : null,
         ]}
+        testID={testID}
       >
         {body}
       </Pressable>
     );
   }
 
-  return <View style={styles.tile}>{body}</View>;
+  return (
+    <View style={styles.tile} testID={testID}>
+      {body}
+    </View>
+  );
 }
 
 function PremiumBadge() {

@@ -11,7 +11,7 @@ const CORS_HEADERS = {
 const PREGENERATED_EXPLANATION_MODEL = "pre-generated-explanation-v1";
 
 type SupportedLocale = "pl" | "ua" | "en" | "de" | "es";
-type ContentLocale = "pl" | "ua" | "en";
+type ContentLocale = "pl" | "ua" | "en" | "de";
 type AiProviderId = "mock" | "openai" | "anthropic";
 type AppLogSeverity = "info" | "warning" | "error" | "critical";
 type QuestionChatMessage = {
@@ -315,7 +315,7 @@ function isSupportedLocale(value: unknown): value is SupportedLocale {
 }
 
 function getContentLocale(locale: SupportedLocale): ContentLocale {
-  if (locale === "pl" || locale === "ua" || locale === "en") {
+  if (locale === "pl" || locale === "ua" || locale === "en" || locale === "de") {
     return locale;
   }
 
@@ -678,6 +678,10 @@ function buildSystemPrompt(request: QuestionChatRequest) {
     return "You are a driving-exam study coach for the Polish theory exam. Be concise, practical, and calm. Explain why the correct answer is right, avoid inventing rules, and give one short memory rule when helpful.";
   }
 
+  if (contentLocale === "de") {
+    return "Du bist ein Lerncoach fuer die polnische Theoriepruefung. Antworte knapp, praxisnah und ruhig. Erklaere, warum die richtige Antwort richtig ist, erfinde keine Regeln und gib bei Bedarf eine kurze Merkregel.";
+  }
+
   return "Ти помічник для підготовки до теоретичного іспиту на права в Польщі. Відповідай коротко, чітко і практично. Пояснюй, чому правильна відповідь правильна, не вигадуй нових правил, і якщо студент помилився, спокійно покажи логіку та дай одну коротку підказку для запам'ятовування.";
 }
 
@@ -891,6 +895,10 @@ function getMemoryRule(locale: SupportedLocale) {
     return "Look for the exact rule being tested and choose the option that matches it 1:1, not the one that merely sounds safe.";
   }
 
+  if (contentLocale === "de") {
+    return "Achte auf die genaue Regel in der Frage und waehle die Option, die 1:1 dazu passt, nicht nur die, die sicher klingt.";
+  }
+
   return "Шукай точне правило з питання і обирай варіант, що збігається з ним 1:1, а не просто звучить безпечніше.";
 }
 
@@ -905,6 +913,10 @@ function getMistakeLine(locale: SupportedLocale) {
     return "Guessing from intuition or choosing the option that sounds generally safest.";
   }
 
+  if (contentLocale === "de") {
+    return "Raten nach Intuition oder die Option waehlen, die allgemein am sichersten klingt.";
+  }
+
   return "Вгадування по інтуїції або вибір варіанта, який просто звучить найбезпечніше.";
 }
 
@@ -917,6 +929,10 @@ function getMissingExplanationFallback(locale: SupportedLocale) {
 
   if (contentLocale === "en") {
     return "The official explanation is missing in the dataset, so this answer is based on the correct option and the question logic.";
+  }
+
+  if (contentLocale === "de") {
+    return "In der Datenbank fehlt die offizielle Erklaerung, daher basiert die Antwort auf der richtigen Option und der Logik der Frage.";
   }
 
   return "У базі немає офіційного пояснення, тому відповідь побудована на правильному варіанті та логіці самого питання.";

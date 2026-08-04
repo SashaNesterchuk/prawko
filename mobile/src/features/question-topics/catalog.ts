@@ -31,7 +31,7 @@ export function getQuestionTopicTitle(
     return topic.titlePl;
   }
 
-  if (contentLocale === "en") {
+  if (contentLocale === "en" || contentLocale === "de") {
     return topic.titleEn;
   }
 

@@ -1,3 +1,4 @@
+import { isTopicBlockId } from "@prawko/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppState } from "react-native";
 import { create } from "zustand";
@@ -5,10 +6,15 @@ import { persist, type PersistStorage, type StorageValue } from "zustand/middlew
 
 import {
   buildQuestionSession,
+  canResumeQuestionSession,
   getQuestionById,
   getNextQuestionUserStateAfterAttempt,
+  getNextTopicQuestionProgressAfterAttempt,
   getQuestionUserState,
+  getTopicQuestionProgress,
   normalizeQuestionUserStateMap,
+  resumeQuestionSession,
+  seedTopicQuestionProgressFromUserState,
 } from "../features/questions/question-engine";
 import type {
   QuestionAttempt,
@@ -16,11 +22,16 @@ import type {
   QuestionSession,
   QuestionSessionRequest,
   QuestionUserStateMap,
+  TopicQuestionProgressMap,
 } from "../features/questions/types";
 
 type PersistedQuestionProgress = Pick<
   QuestionProgressState,
-  "activeSession" | "attempts" | "questionUserState"
+  | "activeSession"
+  | "attempts"
+  | "questionUserState"
+  | "topicQuestionProgress"
+  | "topicQuestionProgressSeeded"
 >;
 
 const PERSIST_FLUSH_DELAY_MS = 800;
@@ -93,6 +104,9 @@ type QuestionProgressState = {
   attempts: QuestionAttempt[];
   hasHydrated: boolean;
   questionUserState: QuestionUserStateMap;
+  topicQuestionProgress: TopicQuestionProgressMap;
+  /** False only for pre-scoped saves until the catalog can attribute legacy attempts. */
+  topicQuestionProgressSeeded: boolean;
   applyQuestionAttemptOutcome: (
     questionId: string,
     input: {
@@ -106,13 +120,14 @@ type QuestionProgressState = {
     selectedAnswer: QuestionOptionValue
   ) => QuestionAttempt | null;
   clearActiveSession: () => void;
+  ensureTopicQuestionProgressSeeded: () => void;
   replaceQuestionUserState: (
     questionUserState: QuestionUserStateMap
   ) => void;
   reconcileCatalog: (validQuestionIds: string[]) => void;
   resetProgress: () => void;
   setHasHydrated: (value: boolean) => void;
-  startSession: (request: QuestionSessionRequest) => QuestionSession;
+  startOrResumeSession: (request: QuestionSessionRequest) => QuestionSession;
   toggleBookmark: (questionId: string) => boolean;
   toggleHard: (questionId: string) => boolean;
 };
@@ -124,6 +139,8 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
       attempts: [],
       hasHydrated: false,
       questionUserState: {},
+      topicQuestionProgress: {},
+      topicQuestionProgressSeeded: true,
       applyQuestionAttemptOutcome: (questionId, input) =>
         set((state) => {
           const previousState = getQuestionUserState(
@@ -264,32 +281,76 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           answeredAt,
           isCorrect,
         });
+        const sessionTopic = activeSession.request.topic;
+        const shouldScopeToTopic =
+          typeof sessionTopic === "string" && !isTopicBlockId(sessionTopic);
+        const previousTopicProgress = shouldScopeToTopic
+          ? getTopicQuestionProgress(
+              state.topicQuestionProgress,
+              sessionTopic,
+              questionId
+            )
+          : null;
+        const nextTopicProgress = previousTopicProgress
+          ? getNextTopicQuestionProgressAfterAttempt(previousTopicProgress, {
+              answeredAt,
+              isCorrect,
+            })
+          : null;
 
-        set((currentState) => ({
-          attempts: [...currentState.attempts, attempt],
-          questionUserState: {
-            ...currentState.questionUserState,
-            [questionId]: nextState,
-          },
-          activeSession: currentState.activeSession
-            ? {
-                ...currentState.activeSession,
-                answers: {
-                  ...currentState.activeSession.answers,
-                  [questionId]: {
-                    questionId,
-                    selectedAnswer,
-                    isCorrect,
-                    answeredAt,
+        set((currentState) => {
+          const nextTopicQuestionProgress =
+            shouldScopeToTopic && nextTopicProgress
+              ? {
+                  ...currentState.topicQuestionProgress,
+                  [sessionTopic]: {
+                    ...currentState.topicQuestionProgress[sessionTopic],
+                    [questionId]: nextTopicProgress,
                   },
-                },
-              }
-            : null,
-        }));
+                }
+              : currentState.topicQuestionProgress;
+
+          return {
+            attempts: [...currentState.attempts, attempt],
+            questionUserState: {
+              ...currentState.questionUserState,
+              [questionId]: nextState,
+            },
+            topicQuestionProgress: nextTopicQuestionProgress,
+            activeSession: currentState.activeSession
+              ? {
+                  ...currentState.activeSession,
+                  answers: {
+                    ...currentState.activeSession.answers,
+                    [questionId]: {
+                      questionId,
+                      selectedAnswer,
+                      isCorrect,
+                      answeredAt,
+                    },
+                  },
+                }
+              : null,
+          };
+        });
 
         return attempt;
       },
       clearActiveSession: () => set({ activeSession: null }),
+      ensureTopicQuestionProgressSeeded: () => {
+        const state = get();
+
+        if (state.topicQuestionProgressSeeded) {
+          return;
+        }
+
+        set({
+          topicQuestionProgress: seedTopicQuestionProgressFromUserState(
+            state.questionUserState
+          ),
+          topicQuestionProgressSeeded: true,
+        });
+      },
       replaceQuestionUserState: (questionUserState) =>
         set({
           questionUserState: normalizeQuestionUserStateMap(questionUserState),
@@ -306,10 +367,30 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           activeSession: null,
           attempts: [],
           questionUserState: {},
+          topicQuestionProgress: {},
+          topicQuestionProgressSeeded: true,
         }),
       setHasHydrated: (value) => set({ hasHydrated: value }),
-      startSession: (request) => {
-        const session = buildQuestionSession(request, get().questionUserState);
+      startOrResumeSession: (request) => {
+        const activeSession = get().activeSession;
+
+        if (activeSession && canResumeQuestionSession(activeSession, request)) {
+          const resumedSession = resumeQuestionSession(activeSession, request);
+
+          if (resumedSession !== activeSession) {
+            set({ activeSession: resumedSession });
+          }
+
+          return resumedSession;
+        }
+
+        const state = get();
+        const session = buildQuestionSession(
+          request,
+          state.questionUserState,
+          new Date(),
+          state.topicQuestionProgress
+        );
         set({ activeSession: session });
         return session;
       },
@@ -358,7 +439,39 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         activeSession: state.activeSession,
         attempts: state.attempts,
         questionUserState: state.questionUserState,
+        topicQuestionProgress: state.topicQuestionProgress,
+        topicQuestionProgressSeeded: state.topicQuestionProgressSeeded,
       }),
+      merge: (persistedState, currentState) => {
+        const persisted = (persistedState ?? {}) as Partial<
+          PersistedQuestionProgress
+        > & { topicQuestionProgress?: TopicQuestionProgressMap | null };
+        const questionUserState = normalizeQuestionUserStateMap(
+          persisted.questionUserState ?? currentState.questionUserState
+        );
+        // Pre-scoped saves omit the overlay; seed after the question bank loads.
+        const hasTopicProgressField =
+          Object.prototype.hasOwnProperty.call(
+            persisted,
+            "topicQuestionProgress"
+          ) ||
+          Object.prototype.hasOwnProperty.call(
+            persisted,
+            "topicQuestionProgressSeeded"
+          );
+
+        return {
+          ...currentState,
+          ...persisted,
+          questionUserState,
+          topicQuestionProgress: hasTopicProgressField
+            ? (persisted.topicQuestionProgress ?? {})
+            : {},
+          topicQuestionProgressSeeded: hasTopicProgressField
+            ? (persisted.topicQuestionProgressSeeded ?? true)
+            : false,
+        };
+      },
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.replaceQuestionUserState(

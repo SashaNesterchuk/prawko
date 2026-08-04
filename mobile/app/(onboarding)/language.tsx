@@ -66,6 +66,7 @@ export default function LanguageScreen() {
                   <AppCard
                     key={locale}
                     accent={isActive}
+                    testID={`onboarding-language-${locale}`}
                     onPress={() => handleSelectLocale(locale)}
                   >
                     <Text style={styles.optionTitle}>
@@ -96,9 +97,10 @@ export default function LanguageScreen() {
       footer={
         <AppButton
           label={t("common.continue")}
+          testID="onboarding-language-continue"
           onPress={() => {
             completeLanguageStep();
-            router.push("/(onboarding)/category");
+            router.navigate("/(onboarding)/category");
           }}
         />
       }
@@ -111,6 +113,7 @@ export default function LanguageScreen() {
             <AppCard
               key={locale}
               accent={isActive}
+              testID={`onboarding-language-${locale}`}
               onPress={() => handleSelectLocale(locale)}
             >
               <Text style={styles.optionTitle}>

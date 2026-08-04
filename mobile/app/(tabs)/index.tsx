@@ -177,11 +177,7 @@ export default function HomeTabScreen() {
         defaultValue: "Вільне тестування",
       }),
       icon: <HomeActionIcon accent="green" name="target" />,
-      onPress: () =>
-        router.push({
-          pathname: "/question",
-          params: buildQuestionRouteParams({ mode: "learning" }),
-        }),
+      onPress: () => router.navigate("/trainer-modes"),
     },
     {
       key: "exam",
@@ -196,7 +192,7 @@ export default function HomeTabScreen() {
         }),
       icon: <HomeActionIcon accent="blue" name="exam" />,
       onPress: () =>
-        router.push({
+        router.navigate({
           pathname: "/exam",
           params: buildExamRouteParams({ mode: "exam" }),
         }),
@@ -210,7 +206,7 @@ export default function HomeTabScreen() {
         count: wrongAnswers,
       }),
       icon: <HomeActionIcon accent="red" name="alert" />,
-      onPress: () => router.push("/mistakes"),
+      onPress: () => router.navigate("/mistakes"),
     },
     {
       key: "traps",
@@ -221,16 +217,20 @@ export default function HomeTabScreen() {
       }),
       icon: <HomeActionIcon accent="amber" name="warning" />,
       onPress: () =>
-        router.push({
+        router.navigate({
           pathname: "/question",
-          params: buildQuestionRouteParams({ mode: "hard_questions" }),
+          params: buildQuestionRouteParams({ mode: "high_points" }),
         }),
     },
   ];
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        testID="screen-home"
+      >
         <StatusBar style="dark" />
         <ScrollView
           style={styles.scroll}
@@ -276,14 +276,14 @@ export default function HomeTabScreen() {
             onPress={() => {
               if (isReadinessEmpty) {
                 // Figma empty CTA is «Оціни знання» (assess), not «Почати навчання».
-                router.push({
+                router.navigate({
                   pathname: "/exam",
                   params: buildExamRouteParams({ mode: "mini_test" }),
                 });
                 return;
               }
 
-              router.push("/statistics");
+              router.navigate("/statistics");
             }}
           />
 
@@ -299,9 +299,12 @@ export default function HomeTabScreen() {
               })}
               icon={<HomeActionIcon accent="amber" name="bolt" />}
               onPress={() =>
-                router.push({
+                router.navigate({
                   pathname: "/question",
-                  params: buildQuestionRouteParams({ mode: "weak_spots" }),
+                  params: buildQuestionRouteParams({
+                    mode: "learning",
+                    questionLimit: 10,
+                  }),
                 })
               }
             />
@@ -335,7 +338,7 @@ export default function HomeTabScreen() {
               title={t("dash.statusTitle", {
                 defaultValue: "Як пройшов іспит?",
               })}
-              onPress={() => router.push("/modals/plan-adjust")}
+              onPress={() => router.navigate("/modals/plan-adjust")}
             />
           ) : null}
         </ScrollView>

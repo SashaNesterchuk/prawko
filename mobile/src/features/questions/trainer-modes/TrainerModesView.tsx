@@ -10,7 +10,12 @@ import { Icon, type IconName } from "../../../components/icons";
 import { ActionTile } from "../../../components/shell/ActionTile";
 import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../../components/shell/NavigationButton";
-import { QuestionCountDialog } from "../../../components/shell/QuestionCountDialog";
+import {
+  QuestionCountDialog,
+  resolveQuestionCountDialog,
+  toQuestionLimit,
+  type QuestionCountSelection,
+} from "../../../components/shell/QuestionCountDialog";
 import { getLearningTopicTitle } from "../../question-topics/catalog";
 import {
   getQuestionCountForMode,
@@ -27,8 +32,6 @@ import { type GreenWaveAccent } from "../../../theme/green-wave";
 import { useAppShellStore } from "../../../state/app-shell";
 import { useQuestionCatalogVersion } from "../../../state/question-catalog";
 import { useQuestionProgressStore } from "../../../state/question-progress";
-
-const DEFAULT_COUNT = 20;
 
 type TrainerModeTile = {
   key: string;
@@ -53,15 +56,17 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
-
-  const [pendingTile, setPendingTile] = useState<TrainerModeTile | null>(null);
-  const [selectedCount, setSelectedCount] = useState<number | "all">(
-    DEFAULT_COUNT
+  const topicQuestionProgress = useQuestionProgressStore(
+    (state) => state.topicQuestionProgress
   );
 
+  const [pendingTile, setPendingTile] = useState<TrainerModeTile | null>(null);
+  const [selectedCount, setSelectedCount] =
+    useState<QuestionCountSelection>("all");
+
   const stats = useMemo(
-    () => getTrainerModeStats(questionUserState, topic),
-    [questionCatalogVersion, questionUserState, topic]
+    () => getTrainerModeStats(questionUserState, topic, topicQuestionProgress),
+    [questionCatalogVersion, questionUserState, topic, topicQuestionProgress]
   );
 
   const pendingModeCount = useMemo(() => {
@@ -71,9 +76,10 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
 
     return getQuestionCountForMode(
       { mode: pendingTile.mode, topic },
-      questionUserState
+      questionUserState,
+      topicQuestionProgress
     );
-  }, [pendingTile, questionUserState, topic]);
+  }, [pendingTile, questionUserState, topic, topicQuestionProgress]);
 
   const screenTitle = topic
     ? getLearningTopicTitle(topic, preferredLocale, t)
@@ -176,7 +182,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   ];
 
   const startMode = (mode: QuestionSessionMode, questionLimit: number | null) => {
-    router.push({
+    router.navigate({
       pathname: "/question",
       params: buildQuestionRouteParams({ mode, topic, questionLimit }),
     });
@@ -185,15 +191,18 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   const openCountDialog = (tile: TrainerModeTile) => {
     const availableCount = getQuestionCountForMode(
       { mode: tile.mode, topic },
-      questionUserState
+      questionUserState,
+      topicQuestionProgress
     );
+    const { shouldShowDialog, defaultCount } =
+      resolveQuestionCountDialog(availableCount);
 
-    if (availableCount === 0) {
+    if (!shouldShowDialog) {
       startMode(tile.mode, null);
       return;
     }
 
-    setSelectedCount(availableCount >= DEFAULT_COUNT ? DEFAULT_COUNT : "all");
+    setSelectedCount(defaultCount);
     setPendingTile(tile);
   };
 
@@ -205,7 +214,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     const mode = pendingTile.mode;
     setPendingTile(null);
 
-    startMode(mode, selectedCount === "all" ? null : selectedCount);
+    startMode(mode, toQuestionLimit(selectedCount));
   };
 
   const renderSection = (sectionTitle: string, tiles: TrainerModeTile[]) => (
@@ -221,6 +230,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
             subtitle={tile.subtitle}
             icon={<TrainerModeIcon accent={tile.accent} name={tile.icon} />}
             onPress={() => openCountDialog(tile)}
+            testID={`trainer-mode-${tile.key}`}
           />
         ))}
       </View>
@@ -229,7 +239,11 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        testID="screen-trainer-modes"
+      >
         <StatusBar style="dark" />
         <View style={styles.header}>
           <NavigationButton

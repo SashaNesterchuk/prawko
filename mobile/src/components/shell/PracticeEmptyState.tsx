@@ -95,7 +95,7 @@ export function PracticeEmptyState({
                   size={iconSize}
                 />
               }
-              onPress={() => openQuestionMode("hard_questions")}
+              onPress={() => openQuestionMode("high_points")}
             />
             <ActionTile
               accent="amber"
@@ -110,7 +110,7 @@ export function PracticeEmptyState({
               icon={
                 <Icon color={accents.amber.fill} name="idea" size={iconSize} />
               }
-              onPress={() => openQuestionMode("seen_not_mastered")}
+              onPress={() => openQuestionMode("review_due")}
             />
           </View>
         </ScrollView>

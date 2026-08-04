@@ -27,7 +27,7 @@ export default function MinutesScreen() {
             label={t("common.continue")}
             onPress={() => {
               setMinutesPerDay(selectedMinutes);
-              router.push("/(onboarding)/level");
+              router.navigate("/(onboarding)/level");
             }}
           />
           <AppButton

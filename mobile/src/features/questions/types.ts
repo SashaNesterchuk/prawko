@@ -78,6 +78,24 @@ export type QuestionUserState = {
 
 export type QuestionUserStateMap = Record<string, QuestionUserState>;
 
+/**
+ * Progress for a question inside one learning topic/group.
+ * A multi-topic question can be completed in topic A without counting in topic B.
+ */
+export type TopicQuestionProgress = {
+  timesSeen: number;
+  timesCorrect: number;
+  timesWrong: number;
+  lastCorrectAt: string | null;
+  lastWrongAt: string | null;
+};
+
+/** topicId → questionId → progress within that topic */
+export type TopicQuestionProgressMap = Record<
+  string,
+  Record<string, TopicQuestionProgress>
+>;
+
 export type QuestionSessionAnswer = {
   questionId: string;
   selectedAnswer: QuestionOptionValue;
@@ -91,6 +109,7 @@ export type QuestionSessionEmptyReason =
   | "weak_spots_empty"
   | "hard_questions_empty"
   | "high_points_empty"
+  | "review_due_empty"
   | "seen_not_mastered_empty"
   | "wrong_answers_empty"
   | "topic_empty"

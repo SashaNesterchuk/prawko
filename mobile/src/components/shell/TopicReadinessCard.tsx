@@ -15,6 +15,7 @@ type TopicReadinessCardProps = {
   wrong?: number;
   status?: TopicReadinessStatus;
   onPress?: () => void;
+  testID?: string;
 };
 
 export function resolveTopicReadinessStatus(
@@ -46,6 +47,7 @@ export function TopicReadinessCard({
   wrong,
   status,
   onPress,
+  testID,
 }: TopicReadinessCardProps) {
   const theme = useTheme();
   const normalizedReadiness = Math.max(0, Math.min(readiness ?? 0, 100));
@@ -98,13 +100,18 @@ export function TopicReadinessCard({
         accessibilityRole="button"
         onPress={onPress}
         style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
+        testID={testID}
       >
         {body}
       </Pressable>
     );
   }
 
-  return <View style={styles.card}>{body}</View>;
+  return (
+    <View style={styles.card} testID={testID}>
+      {body}
+    </View>
+  );
 }
 
 function getStatusColors(theme: ReturnType<typeof useTheme>) {

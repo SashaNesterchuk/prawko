@@ -3,15 +3,6 @@ import type { QuestionDeliveryAsset } from "@prawko/schemas";
 import { mobileEnv } from "../../config/env";
 import type { QuestionMedia } from "./types";
 
-export type QuestionMediaViewerParams = {
-  label: string;
-  mediaType: QuestionDeliveryAsset["mediaType"];
-  posterStorageBucket?: string;
-  posterStoragePath?: string;
-  storageBucket: string;
-  storagePath: string;
-};
-
 function encodeStoragePath(storagePath: string) {
   return storagePath
     .split("/")
@@ -63,51 +54,6 @@ export function getQuestionDeliveryPosterUrl(
   );
 }
 
-export function buildQuestionMediaViewerParams(input: {
-  asset: QuestionDeliveryAsset;
-  label: string;
-}): QuestionMediaViewerParams {
-  return {
-    label: input.label,
-    mediaType: input.asset.mediaType,
-    posterStorageBucket: input.asset.posterStorageBucket ?? undefined,
-    posterStoragePath: input.asset.posterStoragePath ?? undefined,
-    storageBucket: input.asset.storageBucket,
-    storagePath: input.asset.storagePath,
-  };
-}
-
-export function getQuestionMediaViewerAssetUrl(
-  params: QuestionMediaViewerParams | null | undefined
-) {
-  if (!params) {
-    return null;
-  }
-
-  return buildStoragePublicUrl(params.storageBucket, params.storagePath);
-}
-
-export function getQuestionMediaViewerPreviewUrl(
-  params: QuestionMediaViewerParams | null | undefined
-) {
-  if (!params) {
-    return null;
-  }
-
-  if (params.mediaType === "image") {
-    return getQuestionMediaViewerAssetUrl(params);
-  }
-
-  if (params.posterStorageBucket && params.posterStoragePath) {
-    return buildStoragePublicUrl(
-      params.posterStorageBucket,
-      params.posterStoragePath
-    );
-  }
-
-  return null;
-}
-
 export function getQuestionMediaPreviewUrl(
   media: QuestionMedia | null | undefined
 ): string | null {
@@ -115,12 +61,79 @@ export function getQuestionMediaPreviewUrl(
     return null;
   }
 
-  return getQuestionMediaViewerPreviewUrl(
-    buildQuestionMediaViewerParams({
-      asset: media.asset,
-      label: media.asset.originalFilename,
-    })
-  );
+  if (media.type === "image") {
+    return getQuestionDeliveryAssetUrl(media.asset);
+  }
+
+  return getQuestionDeliveryPosterUrl(media.asset);
+}
+
+export type QuestionMediaPrefetchUrls = {
+  /** Still images + video posters (safe for Image.prefetch). */
+  imageUrls: string[];
+  /** Video file URLs (warm via expo-video players / cache). */
+  videoUrls: string[];
+};
+
+/**
+ * Collect every media URL worth warming before a question is shown.
+ * Images/posters are cheap; video bytes are separate so callers can
+ * bound concurrent video players.
+ */
+export function collectQuestionMediaPrefetchUrls(
+  media: QuestionMedia | null | undefined
+): QuestionMediaPrefetchUrls {
+  const imageUrls: string[] = [];
+  const videoUrls: string[] = [];
+
+  if (!media) {
+    return { imageUrls, videoUrls };
+  }
+
+  function pushUnique(target: string[], url: string | null | undefined) {
+    if (url && !target.includes(url)) {
+      target.push(url);
+    }
+  }
+
+  function collectAsset(
+    asset: QuestionDeliveryAsset | null | undefined,
+    fallbackAsVideo: boolean
+  ) {
+    if (!asset) {
+      return;
+    }
+
+    pushUnique(imageUrls, getQuestionDeliveryPosterUrl(asset));
+
+    const assetUrl = getQuestionDeliveryAssetUrl(asset);
+    if (!assetUrl) {
+      return;
+    }
+
+    const isVideo =
+      asset.mediaType === "video" ||
+      (asset.mediaType !== "image" && fallbackAsVideo);
+
+    if (isVideo) {
+      pushUnique(videoUrls, assetUrl);
+      return;
+    }
+
+    pushUnique(imageUrls, assetUrl);
+  }
+
+  collectAsset(media.asset, media.type === "video");
+  collectAsset(media.pjm?.questionAsset ?? null, true);
+
+  const answerAssets = media.pjm?.answerAssets;
+  if (answerAssets) {
+    for (const asset of Object.values(answerAssets)) {
+      collectAsset(asset ?? null, true);
+    }
+  }
+
+  return { imageUrls, videoUrls };
 }
 
 export function getQuestionMediaPjmSummary(media: QuestionMedia) {

@@ -20,10 +20,11 @@ export type WeekDayActivity = {
   isStreakDay: boolean;
 };
 
-const WEEKDAY_LABELS: Record<"pl" | "ua" | "en", string[]> = {
+const WEEKDAY_LABELS: Record<"pl" | "ua" | "en" | "de", string[]> = {
   ua: ["П", "В", "С", "Ч", "П", "С", "Н"],
   pl: ["P", "W", "Ś", "C", "P", "S", "N"],
   en: ["M", "T", "W", "T", "F", "S", "S"],
+  de: ["M", "D", "M", "D", "F", "S", "S"],
 };
 
 export function getLearningDaysCount(attempts: QuestionAttempt[]) {

@@ -22,16 +22,18 @@ export default function QuestionScreen() {
   const allowNavigationRef = useRef(false);
   const session = useQuestionTrainingSession();
   const exitHandlersRef = useRef<{
-    handleConfirmExit: () => Promise<void>;
+    handleConfirmExit: () => void;
     handleRequestExit: () => void;
   }>({
     handleConfirmExit: session.handleConfirmExit,
     handleRequestExit: () => undefined,
   });
 
-  const exitToTabs = async () => {
+  const exitToTabs = () => {
     allowNavigationRef.current = true;
-    await exitHandlersRef.current.handleConfirmExit();
+    // Ads are scheduled inside handleConfirmExit after a short delay so
+    // navigation is never blocked on AdMob load/show.
+    exitHandlersRef.current.handleConfirmExit();
     router.replace("/(tabs)");
   };
 

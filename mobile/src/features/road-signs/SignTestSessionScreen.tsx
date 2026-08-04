@@ -9,6 +9,8 @@ import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
 import { QuestionFeedbackBottomSheet } from "../questions/training/QuestionFeedbackBottomSheet";
 import { QuestionFeedbackPushStage } from "../questions/training/QuestionFeedbackPushStage";
+import { QuestionStepPill } from "../questions/training/QuestionStepPill";
+import { getQuestionStepState } from "../questions/training/visible-steps";
 import {
   useResponsiveFonts,
   useResponsiveSpacing,
@@ -23,6 +25,10 @@ import { pickLocalized } from "./content/localized";
 import { SignImage } from "./SignImage";
 import { useSignBookmarksStore } from "../../state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../state/sign-practice-progress";
+
+type SignTestAnswer = {
+  isCorrect: boolean;
+};
 
 const OPTION_LETTERS = ["A", "B", "C", "D"];
 const SUPPORT_EMAIL = "support@prawko.app";
@@ -46,8 +52,11 @@ export function SignTestSessionScreen({
   const styles = useStyles();
   const signImageSize = spacing.exact(160);
   const premiumIconSize = responsiveFont(12);
-  const { maybeShowInterstitial, showInterstitialForTrigger } =
-    useAdInterstitialActions();
+  const {
+    maybeShowInterstitial,
+    preloadInterstitial,
+    showInterstitialForTrigger,
+  } = useAdInterstitialActions();
   const recordAttempt = useSignPracticeProgressStore(
     (state) => state.recordAttempt
   );
@@ -57,6 +66,7 @@ export function SignTestSessionScreen({
 
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<Record<string, SignTestAnswer>>({});
 
   const currentQuestion: SignTestQuestion | undefined = questions[questionIndex];
   const currentSignId = currentQuestion?.signId;
@@ -92,13 +102,19 @@ export function SignTestSessionScreen({
       return;
     }
 
+    const isCorrectAnswer = optionId === currentQuestion.correctOptionId;
+
     setSelectedOptionId(optionId);
+    setAnswers((current) => ({
+      ...current,
+      [currentQuestion.id]: { isCorrect: isCorrectAnswer },
+    }));
 
     if (!recordedQuestionIdsRef.current.has(currentQuestion.id)) {
       recordedQuestionIdsRef.current.add(currentQuestion.id);
       recordAttempt({
         signId: currentQuestion.signId,
-        correctCount: optionId === currentQuestion.correctOptionId ? 1 : 0,
+        correctCount: isCorrectAnswer ? 1 : 0,
         totalQuestions: 1,
       });
     }
@@ -107,26 +123,32 @@ export function SignTestSessionScreen({
     shouldAttemptPracticeAdRef.current = true;
   };
 
-  const handleCloseSession = async (input?: {
+  const handleCloseSession = (input?: {
     shouldAttemptPracticeInterstitial?: boolean;
   }) => {
     const answeredCount = recordedQuestionIdsRef.current.size;
     const shouldAttemptPracticeInterstitial =
-      input?.shouldAttemptPracticeInterstitial ?? shouldAttemptPracticeAdRef.current;
+      input?.shouldAttemptPracticeInterstitial ??
+      shouldAttemptPracticeAdRef.current;
     shouldAttemptPracticeAdRef.current = false;
 
-    if (shouldAttemptPracticeInterstitial && answeredCount >= 12) {
-      await showInterstitialForTrigger("after_question_answer");
-    } else {
-      await showInterstitialForTrigger("after_practice_session_complete", {
+    // Navigate first — never await AdMob on the outgoing screen (same as
+    // question training exit / opposite of the old freeze on TestFlight).
+    router.back();
+
+    setTimeout(() => {
+      if (shouldAttemptPracticeInterstitial && answeredCount >= 12) {
+        void showInterstitialForTrigger("after_question_answer");
+        return;
+      }
+
+      void showInterstitialForTrigger("after_practice_session_complete", {
         practiceAnsweredCount: answeredCount,
       });
-    }
-
-    router.back();
+    }, 400);
   };
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     if (!hasAnswered) {
       return;
     }
@@ -136,7 +158,7 @@ export function SignTestSessionScreen({
 
     if (questionIndex >= questions.length - 1) {
       if (shouldAttemptPracticeInterstitial) {
-        await handleCloseSession({ shouldAttemptPracticeInterstitial });
+        handleCloseSession({ shouldAttemptPracticeInterstitial });
       } else {
         router.back();
       }
@@ -148,6 +170,8 @@ export function SignTestSessionScreen({
 
     if (shouldAttemptPracticeInterstitial) {
       maybeShowInterstitial("after_question_answer");
+    } else if (recordedQuestionIdsRef.current.size >= 10) {
+      void preloadInterstitial();
     }
   };
 
@@ -229,30 +253,17 @@ export function SignTestSessionScreen({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.pillsRow}
         >
-          {questions.map((question, index) => {
-            const isActive = index === questionIndex;
-            const isDone = index < questionIndex;
-
-            return (
-              <View
-                key={question.id}
-                style={[
-                  styles.pill,
-                  isActive ? styles.pillActive : null,
-                  isDone ? styles.pillDone : null,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.pillLabel,
-                    isActive ? styles.pillLabelActive : null,
-                  ]}
-                >
-                  {index + 1}
-                </Text>
-              </View>
-            );
-          })}
+          {questions.map((question, index) => (
+            <QuestionStepPill
+              key={question.id}
+              index={index}
+              stepState={getQuestionStepState(
+                answers[question.id],
+                index,
+                questionIndex
+              )}
+            />
+          ))}
         </ScrollView>
 
         <QuestionFeedbackPushStage
@@ -375,30 +386,6 @@ function useStyles() {
         paddingHorizontal: spacing.exact(24),
         paddingBottom: spacing.exact(12),
         alignItems: "center",
-      },
-      pill: {
-        minWidth: spacing.exact(33),
-        height: spacing.exact(32),
-        paddingHorizontal: spacing.exact(12),
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: radius.pill,
-        backgroundColor: colors.surface,
-      },
-      pillActive: {
-        backgroundColor: colors.ink,
-      },
-      pillDone: {
-        backgroundColor: colors.paper,
-      },
-      pillLabel: {
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(24),
-        fontWeight: "400",
-        color: colors.ink2,
-      },
-      pillLabelActive: {
-        color: colors.white,
       },
       scroll: {
         flex: 1,

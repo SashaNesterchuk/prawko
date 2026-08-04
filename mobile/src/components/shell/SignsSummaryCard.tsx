@@ -60,6 +60,7 @@ export function SignsSummaryCard({
             styles.trainButton,
             pressed ? styles.pressed : null,
           ]}
+          testID="signs-train-all"
         >
           <Text style={styles.trainButtonLabel}>{trainLabel}</Text>
           <Icon color={theme.colors.ink2} name="chevron" size={20} />

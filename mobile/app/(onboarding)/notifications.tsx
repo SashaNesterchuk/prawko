@@ -106,6 +106,7 @@ export default function NotificationsScreen() {
                   styles.skip,
                   pressed ? styles.skipPressed : null,
                 ]}
+                testID="onboarding-notifications-skip"
               >
                 <Text style={styles.skipLabel}>
                   {t("onboarding.notifyLater")}
@@ -113,7 +114,12 @@ export default function NotificationsScreen() {
               </Pressable>
             </View>
 
-            <Text style={styles.title}>{t("onboarding.notifyTitle")}</Text>
+            <Text
+              style={styles.title}
+              testID="screen-onboarding-notifications"
+            >
+              {t("onboarding.notifyTitle")}
+            </Text>
             <Text style={styles.subtitle}>{t("onboarding.notifySubtitle")}</Text>
 
             <View style={styles.points}>
@@ -148,6 +154,7 @@ export default function NotificationsScreen() {
                 isFinishing ? styles.ctaDisabled : null,
                 pressed ? styles.ctaPressed : null,
               ]}
+              testID="onboarding-notifications-allow"
             >
               <Text style={styles.ctaLabel}>{t("onboarding.notifyAllow")}</Text>
             </Pressable>

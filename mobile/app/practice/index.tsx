@@ -262,14 +262,14 @@ export default function PracticeScreen() {
     routeType: "exam" | "question";
   }) {
     if (input.routeType === "exam") {
-      router.push({
+      router.navigate({
         pathname: "/exam",
         params: input.params,
       });
       return;
     }
 
-    router.push({
+    router.navigate({
       pathname: "/question",
       params: input.params,
     });
@@ -340,7 +340,7 @@ export default function PracticeScreen() {
                       variant="ghost"
                       label={t("practice.openExamResult")}
                       onPress={() =>
-                        router.push({
+                        router.navigate({
                           pathname: "/exam/result",
                           params: {
                             sessionId: session.id,

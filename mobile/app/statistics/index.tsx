@@ -17,7 +17,11 @@ import {
   resolveReadinessRingColor,
 } from "../../src/components/shell/ReadinessIndexCard";
 import { SignCategoryProgressCard } from "../../src/components/shell/SignCategoryProgressCard";
-import { QuestionCountDialog } from "../../src/components/shell/QuestionCountDialog";
+import {
+  QuestionCountDialog,
+  resolveQuestionCountDialog,
+  type QuestionCountSelection,
+} from "../../src/components/shell/QuestionCountDialog";
 import { SignsSummaryCard } from "../../src/components/shell/SignsSummaryCard";
 import { StatisticsActivityCard } from "../../src/components/shell/StatisticsActivityCard";
 import { StatisticsTopicProgressRow } from "../../src/components/shell/StatisticsTopicProgressRow";
@@ -148,9 +152,8 @@ export default function StatisticsScreen() {
   const [activeTab, setActiveTab] = useState<StatisticsTab>("exam");
   const [topicsInfoVisible, setTopicsInfoVisible] = useState(false);
   const [signsCountDialogVisible, setSignsCountDialogVisible] = useState(false);
-  const [signsSelectedCount, setSignsSelectedCount] = useState<number | "all">(
-    20
-  );
+  const [signsSelectedCount, setSignsSelectedCount] =
+    useState<QuestionCountSelection>("all");
   const [examDatePickerVisible, setExamDatePickerVisible] = useState(false);
   const [isSavingExamDate, setIsSavingExamDate] = useState(false);
   const [readinessSummary, setReadinessSummary] =
@@ -331,7 +334,7 @@ export default function StatisticsScreen() {
   );
 
   const openTopicTraining = (topicId: LearningTopicId) =>
-    router.push({
+    router.navigate({
       pathname: "/question",
       params: buildQuestionRouteParams({
         mode: "learning",
@@ -339,11 +342,11 @@ export default function StatisticsScreen() {
       }),
     });
 
-  const openMistakes = () => router.push("/mistakes");
+  const openMistakes = () => router.navigate("/mistakes");
   const openReview = () =>
-    router.push({
+    router.navigate({
       pathname: "/question",
-      params: buildQuestionRouteParams({ mode: "seen_not_mastered" }),
+      params: buildQuestionRouteParams({ mode: "review_due" }),
     });
   const openExamDate = () => setExamDatePickerVisible(true);
 
@@ -373,22 +376,32 @@ export default function StatisticsScreen() {
     }
   };
 
+  const startSignsTrainingWithLimit = (limit: QuestionCountSelection) => {
+    router.navigate({
+      pathname: "/signs/test",
+      params: {
+        limit: limit === "all" ? "all" : String(limit),
+      },
+    });
+  };
+
   const openSignsTraining = () => {
-    setSignsSelectedCount(
-      availableSignQuestions.length >= 20 ? 20 : "all"
+    const { shouldShowDialog, defaultCount } = resolveQuestionCountDialog(
+      availableSignQuestions.length
     );
+
+    if (!shouldShowDialog) {
+      startSignsTrainingWithLimit("all");
+      return;
+    }
+
+    setSignsSelectedCount(defaultCount);
     setSignsCountDialogVisible(true);
   };
 
   const startSignsTraining = () => {
     setSignsCountDialogVisible(false);
-    router.push({
-      pathname: "/signs/test",
-      params: {
-        limit:
-          signsSelectedCount === "all" ? "all" : String(signsSelectedCount),
-      },
-    });
+    startSignsTrainingWithLimit(signsSelectedCount);
   };
 
   return (
@@ -736,7 +749,7 @@ export default function StatisticsScreen() {
                       progress={progress}
                       title={t(`signs.categories.${category.id}.title`)}
                       onPress={() =>
-                        router.push({
+                        router.navigate({
                           pathname: "/signs/category/[categoryId]",
                           params: { categoryId: category.id },
                         })

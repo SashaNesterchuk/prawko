@@ -1,0 +1,21 @@
+name: e2e-test-ios
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build_ios_for_e2e:
+    type: build
+    params:
+      platform: ios
+      profile: e2e-test
+
+  maestro_test:
+    needs: [build_ios_for_e2e]
+    type: maestro
+    params:
+      build_id: ${{ needs.build_ios_for_e2e.outputs.build_id }}
+      flow_path:
+        - .maestro/onboarding_completes_and_lands_on_home.yaml
+        - .maestro/tabs_are_navigable.yaml
+        - .maestro/home_opens_trainer_modes.yaml

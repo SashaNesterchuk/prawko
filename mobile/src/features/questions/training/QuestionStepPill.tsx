@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { type LayoutChangeEvent, Text, View } from "react-native";
 
 import { useResponsiveStyles } from "../../../portable-ui";
 
@@ -6,15 +6,17 @@ import type { QuestionStepState } from "./visible-steps";
 
 export function QuestionStepPill({
   index,
+  onLayout,
   stepState,
 }: {
   index: number;
+  onLayout?: (event: LayoutChangeEvent) => void;
   stepState: QuestionStepState;
 }) {
   const styles = useQuestionStepPillStyles({ stepState });
 
   return (
-    <View style={styles.pill}>
+    <View style={styles.pill} onLayout={onLayout}>
       <Text style={styles.label}>{index + 1}</Text>
     </View>
   );

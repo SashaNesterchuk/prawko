@@ -155,8 +155,7 @@ const defaultStudyPlanSetup: StudyPlanSetupDraft = {
 };
 
 export const DEFAULT_NOTIFICATION_HOURS: NotificationHour[] = [
-  { hour: 8, minute: 0 },
-  { hour: 21, minute: 0 },
+  { hour: 19, minute: 0 },
 ];
 
 function createCompletedOnboardingProgress(): OnboardingProgress {

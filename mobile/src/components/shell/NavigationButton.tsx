@@ -17,6 +17,7 @@ type NavigationButtonProps = {
   inset?: boolean;
   /** Light glyph for solid green surfaces such as the paywall. */
   tone?: "default" | "onAccent";
+  testID?: string;
 };
 
 const ICON_BY_TYPE: Record<NavigationButtonType, IconName> = {
@@ -30,6 +31,7 @@ export function NavigationButton({
   onPress,
   tone = "default",
   type = "close",
+  testID,
 }: NavigationButtonProps) {
   const { colors } = useTheme();
   const styles = useStyles();
@@ -46,6 +48,7 @@ export function NavigationButton({
         inset ? styles.inset : null,
         pressed ? styles.pressed : null,
       ]}
+      testID={testID ?? `nav-${type}`}
     >
       <Icon name={ICON_BY_TYPE[type]} size={24} color={iconColor} />
     </Pressable>

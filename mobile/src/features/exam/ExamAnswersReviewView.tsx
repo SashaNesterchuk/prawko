@@ -107,14 +107,14 @@ export function ExamAnswersReviewView({
     };
 
     if (hasAiChatAccess) {
-      router.push({
+      router.navigate({
         pathname: "/modals/ai-chat",
         params: aiChatParams,
       });
       return;
     }
 
-    router.push({
+    router.navigate({
       pathname: "/paywall",
       params: {
         feature: "ai_question_chat",

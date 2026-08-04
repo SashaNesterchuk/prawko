@@ -53,7 +53,7 @@ export default function ExamScheduleScreen() {
       });
     }
 
-    router.push("/(onboarding)/notifications");
+    router.navigate("/(onboarding)/notifications");
   };
 
   return (
@@ -66,7 +66,12 @@ export default function ExamScheduleScreen() {
               <Icon name="calendar" size={badgeIconSize} color={colors.icon} />
             </View>
 
-            <Text style={styles.title}>{t("onboarding.examDateTitle")}</Text>
+            <Text
+              style={styles.title}
+              testID="screen-onboarding-exam-schedule"
+            >
+              {t("onboarding.examDateTitle")}
+            </Text>
 
             <Pressable
               accessibilityRole="button"
@@ -75,6 +80,7 @@ export default function ExamScheduleScreen() {
                 styles.field,
                 pressed ? styles.fieldPressed : null,
               ]}
+              testID="onboarding-exam-date-field"
             >
               <Icon
                 name="calendar"
@@ -110,6 +116,7 @@ export default function ExamScheduleScreen() {
                 styles.cta,
                 pressed ? styles.ctaPressed : null,
               ]}
+              testID="onboarding-exam-schedule-continue"
             >
               <Text style={styles.ctaLabel}>{t("common.continue")}</Text>
             </Pressable>

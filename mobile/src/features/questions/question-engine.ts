@@ -23,6 +23,8 @@ import type {
   QuestionSessionSummary,
   QuestionUserState,
   QuestionUserStateMap,
+  TopicQuestionProgress,
+  TopicQuestionProgressMap,
 } from "./types";
 
 const EXAM_PREVIEW_TOTAL = 12;
@@ -31,17 +33,19 @@ const HIGH_POINTS_THRESHOLD = 3;
 
 const BOOLEAN_CHOICES: Record<
   "true" | "false",
-  Record<"pl" | "ua" | "en", string>
+  Record<"pl" | "ua" | "en" | "de", string>
 > = {
   true: {
     pl: "Tak",
     ua: "Так",
     en: "Yes",
+    de: "Ja",
   },
   false: {
     pl: "Nie",
     ua: "Ні",
     en: "No",
+    de: "Nein",
   },
 };
 
@@ -344,6 +348,126 @@ export function getNextQuestionUserStateAfterAttempt(
   };
 }
 
+export function createEmptyTopicQuestionProgress(): TopicQuestionProgress {
+  return {
+    timesSeen: 0,
+    timesCorrect: 0,
+    timesWrong: 0,
+    lastCorrectAt: null,
+    lastWrongAt: null,
+  };
+}
+
+export function getTopicQuestionProgress(
+  topicProgress: TopicQuestionProgressMap,
+  topic: LearningTopicId,
+  questionId: string
+): TopicQuestionProgress {
+  return (
+    topicProgress[topic]?.[questionId] ?? createEmptyTopicQuestionProgress()
+  );
+}
+
+export function getNextTopicQuestionProgressAfterAttempt(
+  current: TopicQuestionProgress,
+  input: {
+    answeredAt: string;
+    isCorrect: boolean;
+  }
+): TopicQuestionProgress {
+  return {
+    timesSeen: current.timesSeen + 1,
+    timesCorrect: current.timesCorrect + (input.isCorrect ? 1 : 0),
+    timesWrong: current.timesWrong + (input.isCorrect ? 0 : 1),
+    lastCorrectAt: input.isCorrect
+      ? input.answeredAt
+      : current.lastCorrectAt,
+    lastWrongAt: input.isCorrect ? current.lastWrongAt : input.answeredAt,
+  };
+}
+
+/**
+ * Topic cards / topic-scoped queues should only see attempts made inside that
+ * topic. Global flags (bookmark, hard, SRS) stay shared across topics.
+ */
+export function getTopicScopedUserStates(
+  userStates: QuestionUserStateMap,
+  topicProgress: TopicQuestionProgressMap,
+  topic: LearningTopicId
+): QuestionUserStateMap {
+  const questions = getTopicScopedQuestions(topic);
+  const nextStates: QuestionUserStateMap = { ...userStates };
+
+  for (const question of questions) {
+    const globalState = getQuestionUserState(userStates, question.id);
+    const topicState = getTopicQuestionProgress(
+      topicProgress,
+      topic,
+      question.id
+    );
+
+    nextStates[question.id] = {
+      ...globalState,
+      timesSeen: topicState.timesSeen,
+      timesCorrect: topicState.timesCorrect,
+      timesWrong: topicState.timesWrong,
+      lastCorrectAt: topicState.lastCorrectAt,
+      lastWrongAt: topicState.lastWrongAt,
+    };
+  }
+
+  return nextStates;
+}
+
+function getEffectiveUserStatesForTopicRequest(
+  userStates: QuestionUserStateMap,
+  topicProgress: TopicQuestionProgressMap,
+  topic?: LearningTopicId
+) {
+  // Topic blocks have single membership per question; only multi-topic ids need
+  // the overlay. Blocks keep reading the global map.
+  if (!topic || isTopicBlockId(topic)) {
+    return userStates;
+  }
+
+  return getTopicScopedUserStates(userStates, topicProgress, topic);
+}
+
+/**
+ * One-time migration: attribute legacy global attempts to each question's
+ * primary topic so Learn cards are not wiped empty after the scoped upgrade.
+ */
+export function seedTopicQuestionProgressFromUserState(
+  userStates: QuestionUserStateMap
+): TopicQuestionProgressMap {
+  const topicProgress: TopicQuestionProgressMap = {};
+
+  for (const [questionId, state] of Object.entries(userStates)) {
+    if (state.timesSeen <= 0) {
+      continue;
+    }
+
+    const question = getQuestionById(questionId);
+
+    if (!question) {
+      continue;
+    }
+
+    const topic = getQuestionPrimaryTopicId(question);
+    const topicMap = topicProgress[topic] ?? {};
+    topicMap[questionId] = {
+      timesSeen: state.timesSeen,
+      timesCorrect: state.timesCorrect,
+      timesWrong: state.timesWrong,
+      lastCorrectAt: state.lastCorrectAt,
+      lastWrongAt: state.lastWrongAt,
+    };
+    topicProgress[topic] = topicMap;
+  }
+
+  return topicProgress;
+}
+
 export function getQuestionById(questionId: string) {
   return getQuestionBankById()[questionId];
 }
@@ -353,7 +477,13 @@ export function getLocalizedText(
   locale: SupportedLocale
 ) {
   const contentLocale = getContentLocale(locale);
-  return value[contentLocale] ?? value.ua ?? value.en ?? value.pl;
+  return (
+    value[contentLocale] ||
+    value.en ||
+    value.ua ||
+    value.pl ||
+    ""
+  );
 }
 
 export function getQuestionChoices(
@@ -513,11 +643,17 @@ function computeQuestionDisplayStats(
  */
 export function getTrainerModeStats(
   userStates: QuestionUserStateMap,
-  topic?: LearningTopicId
+  topic?: LearningTopicId,
+  topicProgress: TopicQuestionProgressMap = {}
 ) {
   const questions = getTopicScopedQuestions(topic);
+  const effectiveStates = getEffectiveUserStatesForTopicRequest(
+    userStates,
+    topicProgress,
+    topic
+  );
   const states = questions.map((question) =>
-    getQuestionUserState(userStates, question.id)
+    getQuestionUserState(effectiveStates, question.id)
   );
 
   return {
@@ -534,6 +670,7 @@ export function getTrainerModeStats(
 export function getQuestionCountForMode(
   input: { mode: QuestionSessionMode; topic?: LearningTopicId },
   userStates: QuestionUserStateMap,
+  topicProgress: TopicQuestionProgressMap = {},
   now: Date = new Date()
 ) {
   return getQuestionIdsForMode(
@@ -542,7 +679,11 @@ export function getQuestionCountForMode(
       sessionKey: "count-probe",
       topic: input.topic,
     },
-    userStates,
+    getEffectiveUserStatesForTopicRequest(
+      userStates,
+      topicProgress,
+      input.topic
+    ),
     now
   ).length;
 }
@@ -687,13 +828,19 @@ export function getTopicConsolidationProgress(
 
 export function getTopicMistakeProgress(
   topic: LearningTopicId,
-  userStates: QuestionUserStateMap
+  userStates: QuestionUserStateMap,
+  topicProgress: TopicQuestionProgressMap = {}
 ) {
   const questions = getQuestionBank().filter(
     (question) => questionMatchesTopic(question, topic)
   );
+  const effectiveStates = getEffectiveUserStatesForTopicRequest(
+    userStates,
+    topicProgress,
+    topic
+  );
   const states = questions.map((question) =>
-    getQuestionUserState(userStates, question.id)
+    getQuestionUserState(effectiveStates, question.id)
   );
   const wrong = states.filter((state) => isQuestionUnresolvedWrong(state)).length;
   const seen = states.filter((state) => state.timesSeen > 0).length;
@@ -713,13 +860,19 @@ export function getTopicMistakeProgress(
 
 export function getTopicProgress(
   topic: LearningTopicId,
-  userStates: QuestionUserStateMap
+  userStates: QuestionUserStateMap,
+  topicProgress: TopicQuestionProgressMap = {}
 ) {
   const questions = getQuestionBank().filter(
     (question) => questionMatchesTopic(question, topic)
   );
+  const effectiveStates = getEffectiveUserStatesForTopicRequest(
+    userStates,
+    topicProgress,
+    topic
+  );
   const states = questions.map((question) =>
-    getQuestionUserState(userStates, question.id)
+    getQuestionUserState(effectiveStates, question.id)
   );
   const seen = states.filter((state) => state.timesSeen > 0).length;
   const correct = states.filter((state) => state.timesCorrect > 0).length;
@@ -750,9 +903,15 @@ export function getExamQuestionIds(
 export function buildQuestionSession(
   request: QuestionSessionRequest,
   userStates: QuestionUserStateMap,
-  now: Date = new Date()
+  now: Date = new Date(),
+  topicProgress: TopicQuestionProgressMap = {}
 ): QuestionSession {
-  const questionIds = getQuestionIdsForMode(request, userStates, now);
+  const effectiveStates = getEffectiveUserStatesForTopicRequest(
+    userStates,
+    topicProgress,
+    request.topic
+  );
+  const questionIds = getQuestionIdsForMode(request, effectiveStates, now);
   const emptyReason = getEmptyReason(request, questionIds.length);
   const createdAt = now.toISOString();
 
@@ -768,6 +927,64 @@ export function buildQuestionSession(
   };
 }
 
+/** `sessionKey` is regenerated on every entry, so it is not part of identity. */
+function isSameQuestionSessionRequest(
+  left: QuestionSessionRequest,
+  right: QuestionSessionRequest
+) {
+  return (
+    left.mode === right.mode &&
+    (left.topic ?? null) === (right.topic ?? null) &&
+    (left.questionLimit ?? null) === (right.questionLimit ?? null) &&
+    (left.studyPlanTaskId ?? null) === (right.studyPlanTaskId ?? null)
+  );
+}
+
+/**
+ * Only a session with progress is worth resuming: without an answer there is
+ * nothing to continue from, and a fresh draw is the better start.
+ */
+export function canResumeQuestionSession(
+  session: QuestionSession,
+  request: QuestionSessionRequest
+) {
+  return (
+    !session.finishedAt &&
+    !session.emptyReason &&
+    isSameQuestionSessionRequest(session.request, request) &&
+    Object.keys(session.answers).length > 0 &&
+    session.questionIds.some((questionId) => !session.answers[questionId])
+  );
+}
+
+/**
+ * Re-entering training opens at the first question without an answer, so the
+ * feedback panel starts closed and everything above it is already answered.
+ * The session adopts the new key, which keeps repeat calls a no-op.
+ */
+export function resumeQuestionSession(
+  session: QuestionSession,
+  request: QuestionSessionRequest
+): QuestionSession {
+  if (session.request.sessionKey === request.sessionKey) {
+    return session;
+  }
+
+  const firstUnansweredIndex = session.questionIds.findIndex(
+    (questionId) => !session.answers[questionId]
+  );
+
+  return {
+    ...session,
+    currentIndex:
+      firstUnansweredIndex >= 0 ? firstUnansweredIndex : session.currentIndex,
+    request: {
+      ...session.request,
+      sessionKey: request.sessionKey,
+    },
+  };
+}
+
 function getQuestionIdsForMode(
   request: QuestionSessionRequest,
   userStates: QuestionUserStateMap,
@@ -776,11 +993,21 @@ function getQuestionIdsForMode(
   const questionLimit = getNormalizedQuestionLimit(request.questionLimit);
 
   switch (request.mode) {
-    case "learning":
-      return applyQuestionLimit(
-        getLearningQuestionIds(request.topic, userStates, now),
-        questionLimit
+    case "learning": {
+      const learningIds = getLearningQuestionIds(
+        request.topic,
+        userStates,
+        now
       );
+
+      // Topic-less limited sessions are the app's "random" entry points
+      // (Quick session, trainer random). Shuffle so each run differs.
+      if (request.topic == null && questionLimit != null) {
+        return takeRandomQuestionIds(learningIds, questionLimit);
+      }
+
+      return applyQuestionLimit(learningIds, questionLimit);
+    }
     case "new_questions":
       return applyQuestionLimit(
         getNewQuestionIds(userStates, now, request.topic),
@@ -796,6 +1023,11 @@ function getQuestionIdsForMode(
     case "high_points":
       return applyQuestionLimit(
         getHighPointsQuestionIds(userStates, now, request.topic),
+        questionLimit
+      );
+    case "review_due":
+      return applyQuestionLimit(
+        getReviewDueQuestionIds(userStates, now, request.topic),
         questionLimit
       );
     case "seen_not_mastered":
@@ -901,6 +1133,18 @@ function getHighPointsQuestionIds(
 ) {
   return sortQuestionsForLearning(
     getTopicScopedQuestions(topic).filter(isHighPointsQuestion),
+    userStates,
+    now
+  ).map((question) => question.id);
+}
+
+function getReviewDueQuestionIds(
+  userStates: QuestionUserStateMap,
+  now: Date,
+  topic?: LearningTopicId
+) {
+  return getReviewDueQuestions(
+    getTopicScopedQuestions(topic),
     userStates,
     now
   ).map((question) => question.id);
@@ -1324,6 +1568,23 @@ function applyQuestionLimit(questionIds: string[], questionLimit: number | null)
   return questionIds.slice(0, questionLimit);
 }
 
+function takeRandomQuestionIds(questionIds: string[], questionLimit: number) {
+  if (questionIds.length <= questionLimit) {
+    return questionIds;
+  }
+
+  const pool = [...questionIds];
+
+  for (let index = pool.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    const current = pool[index];
+    pool[index] = pool[swapIndex]!;
+    pool[swapIndex] = current!;
+  }
+
+  return pool.slice(0, questionLimit);
+}
+
 function getNormalizedQuestionLimit(questionLimit: number | null | undefined) {
   if (typeof questionLimit !== "number" || !Number.isFinite(questionLimit)) {
     return null;
@@ -1388,6 +1649,10 @@ function getEmptyReason(
 
   if (request.mode === "high_points") {
     return "high_points_empty";
+  }
+
+  if (request.mode === "review_due") {
+    return "review_due_empty";
   }
 
   if (request.mode === "seen_not_mastered") {

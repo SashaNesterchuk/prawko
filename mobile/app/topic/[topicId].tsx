@@ -12,14 +12,27 @@ export default function TopicDetailScreen() {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
+  const topicQuestionProgress = useQuestionProgressStore(
+    (state) => state.topicQuestionProgress
+  );
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
   const allTopicIds = useMemo(() => getQuestionTopicIds(), []);
   const availableTopicIds = useMemo(
     () =>
       allTopicIds.filter(
-        (candidate) => getTopicProgress(candidate, questionUserState).total > 0
+        (candidate) =>
+          getTopicProgress(
+            candidate,
+            questionUserState,
+            topicQuestionProgress
+          ).total > 0
       ),
-    [allTopicIds, questionCatalogVersion, questionUserState]
+    [
+      allTopicIds,
+      questionCatalogVersion,
+      questionUserState,
+      topicQuestionProgress,
+    ]
   );
   const resolvedTopicId =
     topicId && allTopicIds.includes(topicId as (typeof allTopicIds)[number])

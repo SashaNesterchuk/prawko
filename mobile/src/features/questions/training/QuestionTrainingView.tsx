@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useCallback, useEffect, useRef } from "react";
 import { Linking, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -83,6 +84,34 @@ export function QuestionTrainingView({
   const { t } = useTranslation();
   const hasAiChatAccess = useHasAiChatAccess();
   const insets = useSafeAreaInsets();
+  const stepperRef = useRef<ScrollView>(null);
+  const stepperWidthRef = useRef(0);
+  const stepLayoutsRef = useRef<Record<number, { width: number; x: number }>>(
+    {}
+  );
+  const hasCenteredStepRef = useRef(false);
+  const currentIndex = activeSession.currentIndex;
+
+  // Resuming can land far into the session, so the answered steps behind the
+  // current one have to be scrolled into view instead of staying off-screen.
+  const centerCurrentStep = useCallback(() => {
+    const layout = stepLayoutsRef.current[currentIndex];
+
+    if (!layout || stepperWidthRef.current === 0) {
+      return;
+    }
+
+    const offset = layout.x - (stepperWidthRef.current - layout.width) / 2;
+    stepperRef.current?.scrollTo({
+      x: Math.max(0, offset),
+      animated: hasCenteredStepRef.current,
+    });
+    hasCenteredStepRef.current = true;
+  }, [currentIndex]);
+
+  useEffect(() => {
+    centerCurrentStep();
+  }, [centerCurrentStep]);
 
   const hasAnswered = Boolean(currentAnswer);
   const isCorrectAnswer = currentAnswerCorrect;
@@ -126,14 +155,14 @@ export function QuestionTrainingView({
     };
 
     if (hasAiChatAccess) {
-      router.push({
+      router.navigate({
         pathname: "/modals/ai-chat",
         params: aiChatParams,
       });
       return;
     }
 
-    router.push({
+    router.navigate({
       pathname: "/paywall",
       params: {
         feature: "ai_question_chat",
@@ -187,7 +216,11 @@ export function QuestionTrainingView({
     <GreenWaveScreen>
       {/* The panel has to reach the physical bottom edge, so it owns the
           bottom inset instead of the safe area wrapper. */}
-      <SafeAreaView style={trainerStyles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={trainerStyles.safeArea}
+        edges={["top"]}
+        testID="screen-question"
+      >
         <StatusBar style="dark" />
         <View style={trainerStyles.container}>
           <View style={trainerStyles.contentPad}>
@@ -197,6 +230,7 @@ export function QuestionTrainingView({
                 type="close"
                 accessibilityLabel={t("common.close")}
                 onPress={handleRequestExit}
+                testID="question-close"
               />
               <View style={trainerStyles.headerCenter}>
                 <Text style={trainerStyles.headerTitle}>
@@ -210,10 +244,15 @@ export function QuestionTrainingView({
           </View>
 
           <ScrollView
+            ref={stepperRef}
             horizontal
             showsHorizontalScrollIndicator={false}
             style={trainerStyles.stepperScroll}
             contentContainerStyle={trainerStyles.stepper}
+            onLayout={(event) => {
+              stepperWidthRef.current = event.nativeEvent.layout.width;
+              centerCurrentStep();
+            }}
           >
             {visibleSteps.map(({ questionId, index }) => (
               <QuestionStepPill
@@ -222,8 +261,16 @@ export function QuestionTrainingView({
                 stepState={getQuestionStepState(
                   activeSession!.answers[questionId],
                   index,
-                  activeSession!.currentIndex
+                  currentIndex
                 )}
+                onLayout={(event) => {
+                  const { width, x } = event.nativeEvent.layout;
+                  stepLayoutsRef.current[index] = { width, x };
+
+                  if (index === currentIndex) {
+                    centerCurrentStep();
+                  }
+                }}
               />
             ))}
           </ScrollView>

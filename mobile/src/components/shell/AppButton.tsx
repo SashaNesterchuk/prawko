@@ -8,6 +8,7 @@ type AppButtonProps = {
   disabled?: boolean;
   label: string;
   onPress: () => void;
+  testID?: string;
   variant?: AppButtonVariant;
 };
 
@@ -15,6 +16,7 @@ export function AppButton({
   disabled = false,
   label,
   onPress,
+  testID,
   variant = "primary",
 }: AppButtonProps) {
   const styles = useStyles();
@@ -24,6 +26,7 @@ export function AppButton({
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
+      testID={testID}
       style={({ pressed }) => [
         styles.base,
         variant === "primary" ? styles.primary : null,

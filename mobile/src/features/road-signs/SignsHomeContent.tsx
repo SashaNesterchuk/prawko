@@ -5,7 +5,11 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SignCategoryProgressCard } from "../../components/shell/SignCategoryProgressCard";
-import { QuestionCountDialog } from "../../components/shell/QuestionCountDialog";
+import {
+  QuestionCountDialog,
+  resolveQuestionCountDialog,
+  type QuestionCountSelection,
+} from "../../components/shell/QuestionCountDialog";
 import { SignsSummaryCard } from "../../components/shell/SignsSummaryCard";
 import {
   useResponsiveSpacing,
@@ -38,7 +42,8 @@ export function SignsHomeContent({
   );
   const availableQuestions = useMemo(() => buildAllSignTestQuestions(), []);
   const [countDialogVisible, setCountDialogVisible] = useState(false);
-  const [selectedCount, setSelectedCount] = useState<number | "all">(20);
+  const [selectedCount, setSelectedCount] =
+    useState<QuestionCountSelection>("all");
 
   const catalogProgress = useMemo(
     () => getAllSignsProgress(signPracticeRecords),
@@ -61,19 +66,32 @@ export function SignsHomeContent({
     [signPracticeRecords]
   );
 
+  const startSignsTrainingWithLimit = (limit: QuestionCountSelection) => {
+    router.navigate({
+      pathname: "/signs/test",
+      params: {
+        limit: limit === "all" ? "all" : String(limit),
+      },
+    });
+  };
+
   const openSignsTraining = () => {
-    setSelectedCount(availableQuestions.length >= 20 ? 20 : "all");
+    const { shouldShowDialog, defaultCount } = resolveQuestionCountDialog(
+      availableQuestions.length
+    );
+
+    if (!shouldShowDialog) {
+      startSignsTrainingWithLimit("all");
+      return;
+    }
+
+    setSelectedCount(defaultCount);
     setCountDialogVisible(true);
   };
 
   const startSignsTraining = () => {
     setCountDialogVisible(false);
-    router.push({
-      pathname: "/signs/test",
-      params: {
-        limit: selectedCount === "all" ? "all" : String(selectedCount),
-      },
-    });
+    startSignsTrainingWithLimit(selectedCount);
   };
 
   const resolvedBottomPadding = bottomPadding ?? spacing.exact(96) + safeBottom;
@@ -104,7 +122,7 @@ export function SignsHomeContent({
               progress={progress}
               title={t(`signs.categories.${category.id}.title`)}
               onPress={() =>
-                router.push({
+                router.navigate({
                   pathname: "/signs/category/[categoryId]",
                   params: { categoryId: category.id },
                 })

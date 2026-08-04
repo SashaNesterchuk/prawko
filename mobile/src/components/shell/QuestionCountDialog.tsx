@@ -3,8 +3,21 @@ import { Modal, Pressable, Text, View } from "react-native";
 import { Icon } from "../icons";
 import { useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
+import {
+  getQuestionCountOptions,
+  type QuestionCountSelection,
+} from "./question-count-options";
 
-export const QUESTION_COUNT_OPTIONS = [10, 20, 40] as const;
+export {
+  DEFAULT_QUESTION_COUNT,
+  getDefaultQuestionCount,
+  getQuestionCountOptions,
+  QUESTION_COUNT_PRESETS as QUESTION_COUNT_OPTIONS,
+  resolveQuestionCountDialog,
+  shouldShowQuestionCountDialog,
+  toQuestionLimit,
+  type QuestionCountSelection,
+} from "./question-count-options";
 
 type QuestionCountDialogProps = {
   title: string;
@@ -12,10 +25,10 @@ type QuestionCountDialogProps = {
   startLabel: string;
   allLabel: string;
   totalCount: number;
-  selectedCount: number | "all";
+  selectedCount: QuestionCountSelection;
   visible: boolean;
   onClose: () => void;
-  onSelectCount: (count: number | "all") => void;
+  onSelectCount: (count: QuestionCountSelection) => void;
   onStart: () => void;
 };
 
@@ -33,7 +46,7 @@ export function QuestionCountDialog({
 }: QuestionCountDialogProps) {
   const theme = useTheme();
   const styles = useStyles();
-  const options: Array<number | "all"> = [...QUESTION_COUNT_OPTIONS, "all"];
+  const options = getQuestionCountOptions(totalCount);
 
   return (
     <Modal
@@ -42,7 +55,7 @@ export function QuestionCountDialog({
       transparent
       visible={visible}
     >
-      <View style={styles.overlay}>
+      <View style={styles.overlay} testID="question-count-dialog">
         <View style={styles.card}>
           <Pressable
             accessibilityRole="button"
@@ -51,6 +64,7 @@ export function QuestionCountDialog({
               styles.closeButton,
               pressed ? styles.pressed : null,
             ]}
+            testID="question-count-close"
           >
             <Icon color={theme.colors.ink2} name="close" size={24} />
           </Pressable>
@@ -78,6 +92,7 @@ export function QuestionCountDialog({
                     isSelected ? styles.optionSelected : null,
                     pressed ? styles.pressed : null,
                   ]}
+                  testID={`question-count-option-${option}`}
                 >
                   <Text
                     style={[
@@ -99,6 +114,7 @@ export function QuestionCountDialog({
               styles.startButton,
               pressed ? styles.pressed : null,
             ]}
+            testID="question-count-start"
           >
             <Text style={styles.startLabel}>{startLabel}</Text>
           </Pressable>

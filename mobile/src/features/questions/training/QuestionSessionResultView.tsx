@@ -4,8 +4,8 @@ import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
+import { Icon } from "../../../components/icons";
 import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
-import { IconPlaceholder } from "../../../components/shell/IconPlaceholder";
 import { NavigationButton } from "../../../components/shell/NavigationButton";
 import { useTheme } from "../../../providers/ThemeProvider";
 import { buildQuestionRouteParams } from "../question-routes";
@@ -37,6 +37,14 @@ export function QuestionSessionResultView({
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const hasNoMistakes = summary.wrong === 0 && summary.total > 0;
+  const tipIconName = hasNoMistakes ? "cup" : "alert";
+  const tipTitle = hasNoMistakes
+    ? t("question.resultNoMistakesTitle")
+    : t("question.resultReviewMistakesTitle");
+  const tipSubtitle = hasNoMistakes
+    ? t("question.resultNoMistakesSubtitle")
+    : t("question.resultReviewMistakesSubtitle", { count: summary.wrong });
 
   return (
     <GreenWaveScreen>
@@ -53,17 +61,25 @@ export function QuestionSessionResultView({
           </View>
 
           <View style={trainerStyles.resultBodyArea}>
-            <View style={trainerStyles.successBadge}>
-              <IconPlaceholder
-                color={sessionResultAccent.ink}
+            <View
+              style={[
+                trainerStyles.successBadge,
+                { backgroundColor: sessionResultAccent.fill },
+              ]}
+            >
+              <Icon
+                name={sessionPassed ? "check" : "warning"}
+                color={colors.white}
                 size={resultIconSize}
               />
             </View>
 
             <Text style={trainerStyles.resultTitle}>
-              {sessionPassed
-                ? t("question.resultGoodTitle")
-                : t("question.resultNeedsWorkTitle")}
+              {hasNoMistakes
+                ? t("question.resultPerfectTitle")
+                : sessionPassed
+                  ? t("question.resultGoodTitle")
+                  : t("question.resultNeedsWorkTitle")}
             </Text>
 
             <Text style={trainerStyles.resultPercent}>
@@ -78,22 +94,20 @@ export function QuestionSessionResultView({
             </Text>
 
             <Text style={trainerStyles.resultBody}>
-              {sessionPassed
-                ? t("question.resultGoodBody")
-                : t("question.resultNeedsWorkBody")}
+              {hasNoMistakes
+                ? t("question.resultPerfectBody")
+                : sessionPassed
+                  ? t("question.resultGoodBody")
+                  : t("question.resultNeedsWorkBody")}
             </Text>
 
             <View style={trainerStyles.nextCard}>
               <View style={trainerStyles.nextIconBox}>
-                <IconPlaceholder color={colors.textPrimary} />
+                <Icon name={tipIconName} color={colors.textPrimary} size={24} />
               </View>
               <View style={trainerStyles.nextCardText}>
-                <Text style={trainerStyles.nextTitle}>
-                  {t("question.nextCategoryTitle")}
-                </Text>
-                <Text style={trainerStyles.nextSubtitle}>
-                  {t("question.nextCategorySubtitle")}
-                </Text>
+                <Text style={trainerStyles.nextTitle}>{tipTitle}</Text>
+                <Text style={trainerStyles.nextSubtitle}>{tipSubtitle}</Text>
               </View>
             </View>
           </View>

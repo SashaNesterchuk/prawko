@@ -35,6 +35,7 @@ export function SignCatalogCard({
       accessibilityLabel={displayName}
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
+      testID={`sign-card-${sign.id}`}
     >
       <View style={styles.topRow}>
         <View style={styles.sideColumn}>

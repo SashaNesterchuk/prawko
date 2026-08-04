@@ -168,13 +168,6 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="modals/media-viewer"
-          options={{
-            presentation: "fullScreenModal",
-            animation: "fade",
-          }}
-        />
-        <Stack.Screen
           name="modals/plan-adjust"
           options={{
             presentation: "modal",

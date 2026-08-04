@@ -1,0 +1,28 @@
+# Feature: Main shell
+# Scenario: After onboarding, tab bar opens Home / Learn / Signs / Profile
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - navigation
+---
+- runFlow: subflows/complete_onboarding.yaml
+
+- tapOn:
+    id: "tab-learn"
+- assertVisible:
+    id: "screen-learn"
+
+- tapOn:
+    id: "tab-signs"
+- assertVisible:
+    id: "screen-signs"
+
+- tapOn:
+    id: "tab-profile"
+- assertVisible:
+    id: "screen-profile"
+
+- tapOn:
+    id: "tab-index"
+- assertVisible:
+    id: "screen-home"

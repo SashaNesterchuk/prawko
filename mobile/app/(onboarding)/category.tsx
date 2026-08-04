@@ -104,6 +104,7 @@ export default function CategoryScreen() {
                   !isActive ? styles.chipLocked : null,
                   pressed && isActive ? styles.chipPressed : null,
                 ]}
+                testID={`onboarding-category-${option.id}`}
               >
                 <Text
                   style={[
@@ -162,7 +163,12 @@ export default function CategoryScreen() {
               <Icon name="book" size={badgeIconSize} color={colors.icon} />
             </View>
 
-            <Text style={styles.title}>{t("onboarding.categoryPickTitle")}</Text>
+            <Text
+              style={styles.title}
+              testID="screen-onboarding-category"
+            >
+              {t("onboarding.categoryPickTitle")}
+            </Text>
 
             {categoryGrid}
           </View>
@@ -178,12 +184,13 @@ export default function CategoryScreen() {
               accessibilityRole="button"
               onPress={() => {
                 completeCategoryStep();
-                router.push("/(onboarding)/exam-schedule");
+                router.navigate("/(onboarding)/exam-schedule");
               }}
               style={({ pressed }) => [
                 styles.cta,
                 pressed ? styles.ctaPressed : null,
               ]}
+              testID="onboarding-category-continue"
             >
               <Text style={styles.ctaLabel}>{t("common.continue")}</Text>
             </Pressable>

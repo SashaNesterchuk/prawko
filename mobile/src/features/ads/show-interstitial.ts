@@ -1,4 +1,5 @@
 import { usePathname } from "expo-router";
+import { useCallback } from "react";
 import { FEATURE_FLAGS } from "@prawko/config";
 
 import { useAnalytics } from "../../providers/AnalyticsProvider";
@@ -19,12 +20,27 @@ import {
   ensureInterstitialReady,
 } from "./interstitial-controller";
 
+/** Same warm-up budget used on exam result — shared by every intentional show. */
+export const INTERSTITIAL_ENSURE_OPTIONS = {
+  attempts: 3,
+  timeoutMs: 12_000,
+} as const;
+
 type ShowInterstitialInput = {
   hasPlusAccess: boolean;
   pathname?: string | null;
   practiceAnsweredCount?: number | null;
-  track: (event: string, payload?: Record<string, string | number | boolean | null>) => void;
+  track: (
+    event: string,
+    payload?: Record<string, string | number | boolean | null>
+  ) => void;
   trigger: AdInterstitialTrigger;
+  /**
+   * When true (session end / exam / unlock): wait and retry for a creative.
+   * When false (mid-session streak / app resume): only show if already loaded
+   * so AdMob load never freezes the current screen.
+   */
+  waitForLoad?: boolean;
 };
 
 function getAdOpportunityType(trigger: AdInterstitialTrigger) {
@@ -96,6 +112,31 @@ function trackAdShown(
   input.track("ad_interstitial_shown", payload);
 }
 
+async function presentInterstitial(input: ShowInterstitialInput): Promise<boolean> {
+  suppressAppResumeAds();
+  clearAppBackgroundMark();
+
+  const shown = await showPreloadedInterstitial();
+
+  if (!shown) {
+    trackAdFailed(input, "show_returned_false");
+    return false;
+  }
+
+  trackAdShown(input);
+  recordAdShown();
+  clearAppBackgroundMark();
+  input.track("ad_interstitial_dismissed", {
+    trigger: input.trigger,
+  });
+  return true;
+}
+
+/**
+ * Shared show path for every interstitial trigger.
+ * Intentional moments pass `waitForLoad: true` (exam-style ensure → show).
+ * Opportunistic moments pass `waitForLoad: false` and never stall UX.
+ */
 export async function showInterstitialIfAllowed(
   input: ShowInterstitialInput
 ): Promise<boolean> {
@@ -125,27 +166,19 @@ export async function showInterstitialIfAllowed(
   trackAdOpportunity(input, adsEnabled);
 
   if (!isInterstitialLoaded()) {
-    trackAdSkipped(input, "not_loaded");
-    return false;
+    if (!input.waitForLoad) {
+      trackAdSkipped(input, "not_loaded");
+      return false;
+    }
+
+    const ready = await ensureInterstitialReady(INTERSTITIAL_ENSURE_OPTIONS);
+    if (!ready) {
+      trackAdSkipped(input, "not_loaded");
+      return false;
+    }
   }
 
-  suppressAppResumeAds();
-  clearAppBackgroundMark();
-
-  const shown = await showPreloadedInterstitial();
-
-  if (!shown) {
-    trackAdFailed(input, "show_returned_false");
-    return false;
-  }
-
-  trackAdShown(input);
-  recordAdShown();
-  clearAppBackgroundMark();
-  input.track("ad_interstitial_dismissed", {
-    trigger: input.trigger,
-  });
-  return true;
+  return presentInterstitial(input);
 }
 
 /**
@@ -154,7 +187,7 @@ export async function showInterstitialIfAllowed(
  * Fail-open: returns false when the ad cannot be shown.
  */
 export async function showInterstitialForUnlockGate(
-  input: Omit<ShowInterstitialInput, "trigger"> & {
+  input: Omit<ShowInterstitialInput, "trigger" | "waitForLoad"> & {
     trigger?: AdInterstitialTrigger;
   }
 ): Promise<boolean> {
@@ -165,6 +198,7 @@ export async function showInterstitialForUnlockGate(
   const normalizedInput: ShowInterstitialInput = {
     ...input,
     trigger,
+    waitForLoad: true,
   };
 
   if (input.hasPlusAccess) {
@@ -190,10 +224,7 @@ export async function showInterstitialForUnlockGate(
   trackAdOpportunity(normalizedInput, adsEnabled);
 
   if (!isInterstitialLoaded()) {
-    const ready = await ensureInterstitialReady({
-      attempts: 3,
-      timeoutMs: 12_000,
-    });
+    const ready = await ensureInterstitialReady(INTERSTITIAL_ENSURE_OPTIONS);
     if (!ready) {
       trackAdSkipped(normalizedInput, "not_loaded");
       return false;
@@ -246,11 +277,12 @@ export async function showInterstitialForUnlockGate(
 
 export function maybeShowInterstitial(
   trigger: AdInterstitialTrigger,
-  input: Omit<ShowInterstitialInput, "trigger">
+  input: Omit<ShowInterstitialInput, "trigger" | "waitForLoad">
 ) {
   void showInterstitialIfAllowed({
     ...input,
     trigger,
+    waitForLoad: false,
   }).catch((error) => {
     console.warn("Failed to show interstitial ad.", error);
     input.track("ad_interstitial_failed", {
@@ -260,12 +292,47 @@ export function maybeShowInterstitial(
   });
 }
 
+/**
+ * Shared ad actions. Prefer this over calling the interstitial controller
+ * from screens — same ensure → show path as exam result.
+ */
 export function useAdInterstitialActions() {
   const { track } = useAnalytics();
   const hasPlusAccess = useHasPlusAccess();
   const pathname = usePathname();
 
+  const preloadInterstitial = useCallback(() => {
+    if (hasPlusAccess || !isAdMobEnabled()) {
+      return Promise.resolve(false);
+    }
+
+    return ensureInterstitialReady(INTERSTITIAL_ENSURE_OPTIONS).catch(() => false);
+  }, [hasPlusAccess]);
+
+  const showInterstitialForTrigger = useCallback(
+    (
+      trigger: AdInterstitialTrigger,
+      options?: Pick<ShowInterstitialInput, "practiceAnsweredCount"> & {
+        waitForLoad?: boolean;
+      }
+    ) =>
+      showInterstitialIfAllowed({
+        hasPlusAccess,
+        pathname,
+        practiceAnsweredCount: options?.practiceAnsweredCount,
+        track,
+        trigger,
+        waitForLoad: options?.waitForLoad ?? true,
+      }),
+    [hasPlusAccess, pathname, track]
+  );
+
   return {
+    /**
+     * Warm the next interstitial without showing it (exam restart gate,
+     * approaching a practice streak, etc.).
+     */
+    preloadInterstitial,
     maybeShowInterstitial: (
       trigger: AdInterstitialTrigger,
       options?: Pick<ShowInterstitialInput, "practiceAnsweredCount">
@@ -276,17 +343,7 @@ export function useAdInterstitialActions() {
         practiceAnsweredCount: options?.practiceAnsweredCount,
         track,
       }),
-    showInterstitialForTrigger: (
-      trigger: AdInterstitialTrigger,
-      options?: Pick<ShowInterstitialInput, "practiceAnsweredCount">
-    ) =>
-      showInterstitialIfAllowed({
-        hasPlusAccess,
-        pathname,
-        practiceAnsweredCount: options?.practiceAnsweredCount,
-        track,
-        trigger,
-      }),
+    showInterstitialForTrigger,
     showInterstitialForUnlockGate: () =>
       showInterstitialForUnlockGate({
         hasPlusAccess,

@@ -43,6 +43,7 @@ export function QuestionChoiceOption({
       disabled={hasAnswered}
       onPress={onPress}
       style={styles.container}
+      testID={`question-choice-${choice.id}`}
     >
       {!isBooleanQuestion ? (
         revealCorrect || revealWrong ? (

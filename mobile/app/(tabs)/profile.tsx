@@ -260,7 +260,11 @@ export default function ProfileTabScreen() {
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        testID="screen-profile"
+      >
         <StatusBar style="dark" />
         <ScrollView
           style={styles.scroll}
@@ -274,7 +278,7 @@ export default function ProfileTabScreen() {
               priceBadge={t("profile.premiumPriceBadge", {
                 price: t("paywall.ctaFallbackPrice"),
               })}
-              onPress={() => router.push("/paywall")}
+              onPress={() => router.navigate("/paywall")}
             />
           ) : null}
 
@@ -287,7 +291,7 @@ export default function ProfileTabScreen() {
               coverage: t("profile.statCoverage"),
               streak: t("profile.statStreak"),
             }}
-            onPressDetails={() => router.push("/statistics")}
+            onPressDetails={() => router.navigate("/statistics")}
           />
 
           <ProfileSettingsGroup>
@@ -323,7 +327,7 @@ export default function ProfileTabScreen() {
                 />
               }
               onPress={() =>
-                router.push({
+                router.navigate({
                   pathname: "/(onboarding)/category",
                   params: { mode: "settings" },
                 })
@@ -340,7 +344,7 @@ export default function ProfileTabScreen() {
                 />
               }
               onPress={() =>
-                router.push({
+                router.navigate({
                   pathname: "/(onboarding)/language",
                   params: { mode: "settings" },
                 })
@@ -371,8 +375,8 @@ export default function ProfileTabScreen() {
               isLast
               onPress={() =>
                 hasPlusAccess
-                  ? router.push("/modals/access-center")
-                  : router.push("/paywall")
+                  ? router.navigate("/modals/access-center")
+                  : router.navigate("/paywall")
               }
             />
           </ProfileSettingsGroup>

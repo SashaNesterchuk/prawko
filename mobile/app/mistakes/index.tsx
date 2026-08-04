@@ -44,6 +44,9 @@ export default function MistakesScreen() {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
+  const topicQuestionProgress = useQuestionProgressStore(
+    (state) => state.topicQuestionProgress
+  );
   const iconSize = responsiveFont(24);
 
   const overallStats = useMemo(
@@ -64,9 +67,14 @@ export default function MistakesScreen() {
   const topicsWithMistakes = useMemo(
     () =>
       getQuestionTopicIds().filter(
-        (topic) => getTopicMistakeProgress(topic, questionUserState).wrong > 0
+        (topic) =>
+          getTopicMistakeProgress(
+            topic,
+            questionUserState,
+            topicQuestionProgress
+          ).wrong > 0
       ),
-    [questionCatalogVersion, questionUserState]
+    [questionCatalogVersion, questionUserState, topicQuestionProgress]
   );
 
   const topicsWithConsolidation = useMemo(
@@ -87,7 +95,7 @@ export default function MistakesScreen() {
     mode: Parameters<typeof buildQuestionRouteParams>[0]["mode"],
     topic?: Parameters<typeof buildQuestionRouteParams>[0]["topic"]
   ) =>
-    router.push({
+    router.navigate({
       pathname: "/question",
       params: buildQuestionRouteParams({ mode, topic }),
     });
@@ -146,7 +154,8 @@ export default function MistakesScreen() {
               {topicsWithMistakes.map((topic) => {
                 const progress = getTopicMistakeProgress(
                   topic,
-                  questionUserState
+                  questionUserState,
+                  topicQuestionProgress
                 );
 
                 return (

@@ -10,7 +10,11 @@ export default function SignsTabScreen() {
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        testID="screen-signs"
+      >
         <StatusBar style="dark" />
         <SignsHomeContent />
       </SafeAreaView>

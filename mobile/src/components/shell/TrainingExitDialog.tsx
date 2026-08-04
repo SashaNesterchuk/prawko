@@ -37,6 +37,7 @@ export function TrainingExitDialog({
         styles.finishButton,
         pressed ? styles.pressed : null,
       ]}
+      testID="training-exit-finish"
     >
       <Text style={styles.finishLabel}>{finishLabel}</Text>
     </Pressable>
@@ -52,6 +53,7 @@ export function TrainingExitDialog({
         styles.continueButton,
         pressed ? styles.pressed : null,
       ]}
+      testID="training-exit-continue"
     >
       <Text
         style={[
@@ -72,7 +74,7 @@ export function TrainingExitDialog({
       transparent
       visible={visible}
     >
-      <View style={styles.overlay}>
+      <View style={styles.overlay} testID="training-exit-dialog">
         <View style={styles.card}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.body}>{body}</Text>

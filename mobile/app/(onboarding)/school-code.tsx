@@ -19,7 +19,7 @@ export default function SchoolCodeScreen() {
 
   const continueToAccess = (schoolCode: string) => {
     setSchoolCode(schoolCode.trim().toUpperCase());
-    router.push("/(onboarding)/access");
+    router.navigate("/(onboarding)/access");
   };
 
   return (

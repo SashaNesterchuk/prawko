@@ -37,6 +37,9 @@ export default function TopicsScreen() {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
+  const topicQuestionProgress = useQuestionProgressStore(
+    (state) => state.topicQuestionProgress
+  );
   const backIconSize = responsiveFont(22);
 
   const overallStats = useMemo(
@@ -46,9 +49,11 @@ export default function TopicsScreen() {
   const topicIds = useMemo(
     () =>
       getQuestionTopicIds().filter(
-        (topicId) => getTopicProgress(topicId, questionUserState).total > 0
+        (topicId) =>
+          getTopicProgress(topicId, questionUserState, topicQuestionProgress)
+            .total > 0
       ),
-    [questionCatalogVersion, questionUserState]
+    [questionCatalogVersion, questionUserState, topicQuestionProgress]
   );
 
   return (
@@ -87,7 +92,11 @@ export default function TopicsScreen() {
           />
 
           {topicIds.map((topic) => {
-            const progress = getTopicProgress(topic, questionUserState);
+            const progress = getTopicProgress(
+              topic,
+              questionUserState,
+              topicQuestionProgress
+            );
 
             return (
               <TopicReadinessCard
@@ -99,7 +108,7 @@ export default function TopicsScreen() {
                 correct={progress.correct}
                 wrong={progress.wrong}
                 onPress={() =>
-                  router.push({
+                  router.navigate({
                     pathname: "/topic/[topicId]",
                     params: { topicId: topic },
                   })

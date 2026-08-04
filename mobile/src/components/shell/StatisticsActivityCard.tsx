@@ -66,7 +66,7 @@ export function StatisticsActivityCard({
                 style={[
                   styles.dayNumber,
                   day.isToday ? styles.dayTextToday : null,
-                  !day.isToday && !day.hasActivity && !day.isStreakDay
+                  !day.isToday && !day.hasActivity
                     ? styles.dayNumberMuted
                     : null,
                 ]}
@@ -74,7 +74,7 @@ export function StatisticsActivityCard({
                 {day.dayOfMonth}
               </Text>
               <View style={styles.dayIconSlot}>
-                {day.isStreakDay ? (
+                {day.hasActivity ? (
                   <Ionicons
                     color={
                       day.isToday

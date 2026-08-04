@@ -27,7 +27,7 @@ type StudyPlanBlueprint = {
   topicBlock?: TopicBlockId;
 };
 
-const topicLabels: Record<"pl" | "ua" | "en", Record<TopicBlockId, string>> = {
+const topicLabels: Record<"pl" | "ua" | "en" | "de", Record<TopicBlockId, string>> = {
   pl: {
     signs: "Znaki",
     intersections: "Skrzyzowania",
@@ -57,6 +57,16 @@ const topicLabels: Record<"pl" | "ua" | "en", Record<TopicBlockId, string>> = {
     priority: "Priority",
     safety: "Safety",
     technical: "Technical",
+  },
+  de: {
+    signs: "Schilder",
+    intersections: "Kreuzungen",
+    overtaking: "Ueberholen",
+    pedestrians: "Fussgaenger",
+    first_aid: "Erste Hilfe",
+    priority: "Vorfahrt",
+    safety: "Sicherheit",
+    technical: "Technik",
   },
 };
 
@@ -487,11 +497,13 @@ function getTaskCopy(
           pl: `Nauka: ${topic}`,
           ua: `Вчити: ${topic}`,
           en: `Learn: ${topic}`,
+          de: `Lernen: ${topic}`,
         }[contentLocale],
         description: {
           pl: "Przejdz nowy blok pytan i utrwal zasady.",
           ua: "Пройди новий тематичний блок і закріпи правила.",
           en: "Work through a new topic block and lock in the rules.",
+          de: "Arbeite einen neuen Themenblock durch und festige die Regeln.",
         }[contentLocale],
       };
     case "review_weak_spots":
@@ -500,11 +512,13 @@ function getTaskCopy(
           pl: "Slabe miejsca",
           ua: "Слабкі місця",
           en: "Weak spots",
+          de: "Schwachstellen",
         }[contentLocale],
         description: {
           pl: "Powtorz pytania, na ktorych najlatwiej tracisz punkty.",
           ua: "Повтори питання, на яких ти найчастіше втрачаєш бали.",
           en: "Replay the questions most likely to cost you points.",
+          de: "Wiederhole die Fragen, bei denen du am leichtesten Punkte verlierst.",
         }[contentLocale],
       };
     case "mini_test":
@@ -513,11 +527,13 @@ function getTaskCopy(
           pl: "Mini test",
           ua: "Міні тест",
           en: "Mini test",
+          de: "Minittest",
         }[contentLocale],
         description: {
           pl: "Krotki egzamin kontrolny, zeby sprawdzic tempo i uwage.",
           ua: "Короткий контрольний тест, щоб перевірити темп і уважність.",
           en: "A short controlled exam block to test pace and focus.",
+          de: "Ein kurzer Kontrolltest fuer Tempo und Konzentration.",
         }[contentLocale],
       };
     case "full_exam":
@@ -526,11 +542,13 @@ function getTaskCopy(
           pl: "Pelny egzamin",
           ua: "Повний іспит",
           en: "Full exam",
+          de: "Volle Pruefung",
         }[contentLocale],
         description: {
           pl: "Symulacja calego egzaminu przed finalnym sprintem.",
           ua: "Симуляція повного іспиту перед фінальним спринтом.",
           en: "A full exam simulation before the final sprint.",
+          de: "Eine volle Pruefungssimulation vor dem finalen Sprint.",
         }[contentLocale],
       };
     case "review_wrong_answers":
@@ -539,11 +557,13 @@ function getTaskCopy(
           pl: "Powtorka bledow",
           ua: "Повтор помилок",
           en: "Wrong answer review",
+          de: "Fehlerwiederholung",
         }[contentLocale],
         description: {
           pl: "Wroc do pytan, ktore juz raz zabraly Ci punkty.",
           ua: "Повернись до питань, які вже забрали в тебе бали.",
           en: "Return to the questions that already cost you points.",
+          de: "Kehre zu Fragen zurueck, die dir schon Punkte gekostet haben.",
         }[contentLocale],
       };
     case "review_saved":
@@ -552,11 +572,13 @@ function getTaskCopy(
           pl: "Saved questions",
           ua: "Збережені питання",
           en: "Saved questions",
+          de: "Gespeicherte Fragen",
         }[contentLocale],
         description: {
           pl: "Osobista kolejka pytan zapisanych na pozniej.",
           ua: "Персональна черга питань, які ти відклав на потім.",
           en: "A personal queue of questions you saved for later.",
+          de: "Eine persoenliche Warteschlange gespeicherter Fragen.",
         }[contentLocale],
       };
   }
@@ -572,6 +594,7 @@ function getPlanTitle(locale: SupportedLocale, daysPlanned: number) {
     pl: `Plan nauki na ${daysPlanned} dni`,
     ua: `План підготовки на ${daysPlanned} днів`,
     en: `${daysPlanned}-day exam plan`,
+    de: `${daysPlanned}-Tage-Pruefungsplan`,
   }[getContentLocale(locale)];
 }
 

@@ -67,7 +67,7 @@ const resourcesBase = {
         },
         de: {
           label: "Deutsch",
-          description: "Interfejs po niemiecku. Pytania egzaminacyjne po angielsku.",
+          description: "Interfejs i pytania egzaminacyjne po niemiecku.",
         },
         es: {
           label: "Espanol",
@@ -198,10 +198,8 @@ const resourcesBase = {
         previewMoreDays: "Plan zawiera jeszcze {{days}} kolejnych dni.",
       },
       notification: {
-        morningTitle: "Czeka na Ciebie poranna chwila refleksji.",
-        morningBody: "Rozpocznij swoj dzien od sprawdzenia, jak sie czujesz.",
-        eveningTitle: "Zakonczmy Twoj dzien, sprawdzajac, jak sie czujesz.",
-        eveningBody: "Poswiec 3 minuty na refleksje nad swoim dniem.",
+        title: "Czas na naukę prawa jazdy",
+        body: "Kilka minut wieczorem — i jesteś bliżej egzaminu.",
       },
       tabs: {
         homeTitle: "Plan na dzis",
@@ -602,18 +600,26 @@ const resourcesBase = {
         reportProblemSubject: "Problem z pytaniem {{questionId}}",
         exitConfirmTitle: "Zakonczyc trening?",
         exitConfirmBody:
-          "Na pewno chcesz zakonczyc trening? Twoj postep nie zostanie zapisany!",
+          "Postep zostanie zapisany - nastepnym razem wrocisz do tego samego pytania.",
         exitConfirmContinue: "Kontynuuj",
         exitConfirmFinish: "Zakoncz",
         finish: "Zakoncz",
         resultGoodTitle: "Dobry wynik",
+        resultPerfectTitle: "Bez bledow",
         resultNeedsWorkTitle: "Jeszcze troche praktyki",
         correctOfTotal: "{{correct}} z {{total}} poprawnie",
-        resultGoodBody: "Zdales egzamin — glowny cel osiagniety, mozemy kontynuowac.",
+        resultGoodBody:
+          "Dobra robota — tak trzymaj. Mozemy kontynuowac trening.",
+        resultPerfectBody:
+          "Czysta sesja — wszystkie odpowiedzi poprawne. Swietny moment, zeby utrwalic wynik.",
         resultNeedsWorkBody:
           "Prawie sie udalo! Powtorz trudne pytania i sprobuj ponownie.",
-        nextCategoryTitle: "Nastepna kategoria?",
-        nextCategorySubtitle: "Przygotuj sie do A, C lub D",
+        resultNoMistakesTitle: "Bez bledow",
+        resultNoMistakesSubtitle:
+          "Utrwal wynik jeszcze jednym krotkim treningiem",
+        resultReviewMistakesTitle: "Pytania do powtorzenia",
+        resultReviewMistakesSubtitle:
+          "{{count}} blednych odpowiedzi — warto przejsc jeszcze raz",
         continueTraining: "Kontynuuj trening",
         later: "Pozniej",
         openSummary: "Otworz podsumowanie",
@@ -626,6 +632,7 @@ const resourcesBase = {
           weak_spots_empty: "Na razie nie ma weak spots ani review due.",
           hard_questions_empty: "Nie masz jeszcze pytan oznaczonych jako hard.",
           high_points_empty: "Nie ma tutaj pytan za 3 punkty.",
+          review_due_empty: "Nie masz teraz pytan gotowych do powtorki.",
           seen_not_mastered_empty: "Brak widzianych pytan, ktore nadal wymagaja utrwalenia.",
           wrong_answers_empty: "Nie masz jeszcze pytan z blednych odpowiedzi.",
           topic_empty: "W tym bloku nie znaleziono pytan.",
@@ -1100,6 +1107,7 @@ const resourcesBase = {
         weak_spots: "weak spots",
         hard_questions: "hard questions",
         high_points: "pytania za 3 punkty",
+        review_due: "inteligentne powtorki",
         seen_not_mastered: "seen, not mastered",
         wrong_answers: "bledne odpowiedzi",
         saved: "saved",
@@ -1205,7 +1213,7 @@ const resourcesBase = {
         },
         de: {
           label: "Deutsch",
-          description: "Інтерфейс німецькою. Питання іспиту англійською.",
+          description: "Інтерфейс і питання іспиту німецькою.",
         },
         es: {
           label: "Español",
@@ -1336,10 +1344,8 @@ const resourcesBase = {
         previewMoreDays: "У плані ще {{days}} наступних днів.",
       },
       notification: {
-        morningTitle: "На тебе чекає ранкова хвилина рефлексії.",
-        morningBody: "Розпочни свій день з короткої перевірки себе.",
-        eveningTitle: "Завершимо день, перевіривши себе.",
-        eveningBody: "Присвяти 3 хвилини, щоб обдумати свій день.",
+        title: "Час потренувати теорію",
+        body: "Кілька хвилин увечері — і ти ближче до іспиту.",
       },
       tabs: {
         homeTitle: "План на сьогодні",
@@ -1741,19 +1747,26 @@ const resourcesBase = {
         reportProblemSubject: "Проблема з питанням {{questionId}}",
         exitConfirmTitle: "Завершити тренування",
         exitConfirmBody:
-          "Ти точно хочеш завершити тренування? Твій прогрес не буде збережено!",
+          "Прогрес збережеться — наступного разу продовжиш із цього ж питання.",
         exitConfirmContinue: "Продовжити",
         exitConfirmFinish: "Завершити",
         finish: "Закінчити",
         resultGoodTitle: "Гарний результат",
+        resultPerfectTitle: "Без помилок",
         resultNeedsWorkTitle: "Ще трохи практики",
         correctOfTotal: "{{correct}} з {{total}} правильно",
         resultGoodBody:
-          "Ти склав іспит — головна мета досягнута, можемо продовжити.",
+          "Гарна робота — так тримати. Можемо продовжити тренування.",
+        resultPerfectBody:
+          "Чиста сесія — усі відповіді правильні. Саме час закріпити результат.",
         resultNeedsWorkBody:
           "Майже вийшло! Повтори складні питання і спробуй ще раз.",
-        nextCategoryTitle: "Наступна категорія?",
-        nextCategorySubtitle: "Готуйся до A, C чи D",
+        resultNoMistakesTitle: "Без помилок",
+        resultNoMistakesSubtitle:
+          "Закріпи результат ще одним коротким тренуванням",
+        resultReviewMistakesTitle: "Питання для повторення",
+        resultReviewMistakesSubtitle:
+          "{{count}} неправильних відповідей — варто пройти ще раз",
         continueTraining: "Продовжити тренування",
         later: "Пізніше",
         openSummary: "Відкрити підсумок",
@@ -1766,6 +1779,7 @@ const resourcesBase = {
           weak_spots_empty: "Поки немає weak spots або review due.",
           hard_questions_empty: "Поки немає питань, позначених як hard.",
           high_points_empty: "Тут немає питань з вагою 3 бали.",
+          review_due_empty: "Зараз немає питань, готових до повторення.",
           seen_not_mastered_empty: "Немає бачених питань, які ще не доведені до mastery.",
           wrong_answers_empty: "Поки немає питань із неправильних відповідей.",
           topic_empty: "У цьому блоці не знайдено питань.",
@@ -2244,6 +2258,7 @@ const resourcesBase = {
         weak_spots: "слабкі місця",
         hard_questions: "hard questions",
         high_points: "питання на 3 бали",
+        review_due: "розумні повторення",
         seen_not_mastered: "seen, not mastered",
         wrong_answers: "неправильні відповіді",
         saved: "saved",
@@ -2349,7 +2364,7 @@ const resourcesBase = {
         },
         de: {
           label: "Deutsch",
-          description: "German interface. Exam questions are in English.",
+          description: "German interface and official exam questions in German.",
         },
         es: {
           label: "Español",
@@ -2479,10 +2494,8 @@ const resourcesBase = {
         previewMoreDays: "The plan includes {{days}} more upcoming days.",
       },
       notification: {
-        morningTitle: "Your morning check-in is waiting.",
-        morningBody: "Start your day with a check-in.",
-        eveningTitle: "Let's end your day with a check-in.",
-        eveningBody: "Take 3 minutes to reflect on your day.",
+        title: "Time to study for your license",
+        body: "A few minutes this evening — and you're closer to the exam.",
       },
       tabs: {
         homeTitle: "Today plan",
@@ -2884,19 +2897,26 @@ const resourcesBase = {
         reportProblemSubject: "Problem with question {{questionId}}",
         exitConfirmTitle: "Finish training?",
         exitConfirmBody:
-          "Are you sure you want to finish training? Your progress will not be saved!",
+          "Your progress is saved — next time you continue from the same question.",
         exitConfirmContinue: "Continue",
         exitConfirmFinish: "Finish",
         finish: "Finish",
         resultGoodTitle: "Great result",
+        resultPerfectTitle: "No mistakes",
         resultNeedsWorkTitle: "A bit more practice",
         correctOfTotal: "{{correct}} of {{total}} correct",
         resultGoodBody:
-          "You passed the exam — the main goal is reached, we can continue.",
+          "Nice work — keep that pace. We can continue training.",
+        resultPerfectBody:
+          "Clean session — every answer was correct. Great moment to lock it in.",
         resultNeedsWorkBody:
           "Almost there! Review the hard questions and try again.",
-        nextCategoryTitle: "Next category?",
-        nextCategorySubtitle: "Get ready for A, C or D",
+        resultNoMistakesTitle: "No mistakes",
+        resultNoMistakesSubtitle:
+          "Lock in the result with one more short session",
+        resultReviewMistakesTitle: "Questions to review",
+        resultReviewMistakesSubtitle:
+          "{{count}} wrong answers — worth another pass",
         continueTraining: "Continue training",
         later: "Later",
         openSummary: "Open summary",
@@ -2909,6 +2929,7 @@ const resourcesBase = {
           weak_spots_empty: "There are no weak spots or due reviews yet.",
           hard_questions_empty: "There are no questions marked as hard yet.",
           high_points_empty: "There are no 3-point questions here.",
+          review_due_empty: "There are no questions ready for review right now.",
           seen_not_mastered_empty:
             "There are no seen-but-unmastered questions waiting right now.",
           wrong_answers_empty: "There are no wrong-answer questions to revisit yet.",
@@ -3391,6 +3412,7 @@ const resourcesBase = {
         weak_spots: "weak spots",
         hard_questions: "hard questions",
         high_points: "3-point questions",
+        review_due: "smart review",
         seen_not_mastered: "seen, not mastered",
         wrong_answers: "wrong answers",
         saved: "saved",
@@ -3447,7 +3469,7 @@ const sharedLanguageOptions = {
   },
   de: {
     label: "Deutsch",
-    description: "German interface. Exam questions are in English.",
+    description: "German interface and official exam questions in German.",
   },
   es: {
     label: "Español",
@@ -3465,7 +3487,7 @@ export const resources = {
         de: {
           label: "Deutsch",
           description:
-            "Deutsche Oberflaeche. Pruefungsfragen auf Englisch.",
+            "Deutsche Oberflaeche und offizielle Pruefungsfragen auf Deutsch.",
         },
         es: {
           label: "Espanol",
@@ -3500,7 +3522,7 @@ export const resources = {
         de: {
           label: "Deutsch",
           description:
-            "Interfaz en aleman. Las preguntas del examen estan en ingles.",
+            "Interfaz en aleman y preguntas oficiales del examen en aleman.",
         },
         es: {
           label: "Espanol",

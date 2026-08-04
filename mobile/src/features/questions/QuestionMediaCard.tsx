@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEvent, useEventListener } from "expo";
-import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
@@ -23,7 +22,6 @@ import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
 import { useTheme } from "../../providers/ThemeProvider";
 import { useAppShellStore } from "../../state/app-shell";
 import {
-  buildQuestionMediaViewerParams,
   getQuestionDeliveryAssetUrl,
   getQuestionDeliveryPosterUrl,
   getQuestionMediaPreviewUrl,
@@ -71,14 +69,9 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
   const didLogPreviewFailureRef = useRef(false);
   const refreshIconSize = responsiveFont(18);
   const playIconSize = responsiveFont(28);
-  const zoomIconSize = responsiveFont(22);
 
   const previewUrl = getQuestionMediaPreviewUrl(media);
   const assetUrl = getQuestionDeliveryAssetUrl(media.asset);
-  const primaryLabel =
-    media.type === "image"
-      ? t("question.media.primaryImageLabel")
-      : t("question.media.primaryVideoLabel");
   const pjmActions = useMemo(
     () => (enablePjmTracks ? buildPjmActions(media, t) : []),
     [enablePjmTracks, media, t]
@@ -92,16 +85,6 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
     ? getQuestionDeliveryPosterUrl(activeVideoAsset) ??
       (activeVideoAsset.mediaKey === media.asset.mediaKey ? previewUrl : null)
     : null;
-
-  const openImageViewer = () => {
-    router.push({
-      pathname: "/modals/media-viewer",
-      params: buildQuestionMediaViewerParams({
-        asset: media.asset,
-        label: primaryLabel,
-      }),
-    });
-  };
 
   const playVideoAsset = (asset: QuestionDeliveryAsset) => {
     setActiveVideoAsset(asset);
@@ -218,18 +201,7 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
 
   return (
     <View style={styles.root}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t("question.media.openPreviewAccessibility", {
-          type: t(`question.mediaTypes.${media.type}`),
-        })}
-        disabled={!assetUrl}
-        onPress={openImageViewer}
-        style={({ pressed }) => [
-          styles.frame,
-          pressed ? styles.mediaPressed : null,
-        ]}
-      >
+      <View style={styles.frame}>
         {!isLoaded ? <View style={styles.skeleton} pointerEvents="none" /> : null}
 
         <Image
@@ -272,27 +244,6 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
         />
 
         {pjmOverlay}
-      </Pressable>
-
-      <View style={styles.zoomRow}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t("question.media.openPreviewAccessibility", {
-            type: t(`question.mediaTypes.${media.type}`),
-          })}
-          disabled={!assetUrl}
-          onPress={openImageViewer}
-          style={({ pressed }) => [
-            styles.zoomButton,
-            pressed ? styles.pressed : null,
-          ]}
-        >
-          <MaterialCommunityIcons
-            name="magnify-plus-outline"
-            size={zoomIconSize}
-            color={colors.textPrimary}
-          />
-        </Pressable>
       </View>
     </View>
   );
@@ -324,10 +275,13 @@ function InlineQuestionVideo({
   url: string;
 }) {
   const { colors } = useTheme();
-  const player = useVideoPlayer(url, (instance) => {
-    instance.loop = false;
-    instance.timeUpdateEventInterval = 0.1;
-  });
+  const player = useVideoPlayer(
+    { uri: url, useCaching: true },
+    (instance) => {
+      instance.loop = false;
+      instance.timeUpdateEventInterval = 0.1;
+    }
+  );
   const { isPlaying } = useEvent(player, "playingChange", {
     isPlaying: player.playing,
   });
@@ -452,6 +406,7 @@ function InlineQuestionVideo({
       >
         <VideoView
           allowsFullscreen={false}
+          allowsVideoFrameAnalysis={false}
           contentFit="cover"
           fullscreenOptions={{ enable: false }}
           nativeControls={false}
@@ -587,21 +542,6 @@ function useStyles() {
       left: 0,
       width: "100%",
       height: "100%",
-    },
-    zoomRow: {
-      width: "100%",
-      flexDirection: "row",
-      justifyContent: "flex-end",
-      paddingTop: spacing.exact(8),
-      paddingHorizontal: spacing.exact(4),
-    },
-    zoomButton: {
-      width: spacing.exact(40),
-      height: spacing.exact(40),
-      borderRadius: radius.pill,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.cardMuted,
     },
     playBadge: {
       position: "absolute",

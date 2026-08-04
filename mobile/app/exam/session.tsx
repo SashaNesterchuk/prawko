@@ -38,6 +38,7 @@ import {
   getQuestionUserState,
 } from "../../src/features/questions/question-engine";
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
+import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefetchQuestionMedia";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import { useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
@@ -124,6 +125,29 @@ export default function ExamSessionScreen() {
       currentQuestionRef ? getQuestionById(currentQuestionRef.questionSourceId) : null,
     [currentQuestionRef, questionCatalogVersion]
   );
+  const orderedExamQuestionIds = useMemo(() => {
+    if (!snapshot) {
+      return null;
+    }
+
+    return [...snapshot.questions]
+      .sort((left, right) => left.order - right.order)
+      .map((question) => question.questionSourceId);
+  }, [snapshot]);
+  const orderedExamQuestionIndex = useMemo(() => {
+    if (!orderedExamQuestionIds || !currentQuestionRef) {
+      return -1;
+    }
+
+    return orderedExamQuestionIds.indexOf(currentQuestionRef.questionSourceId);
+  }, [currentQuestionRef, orderedExamQuestionIds]);
+
+  usePrefetchQuestionMedia({
+    catalogVersion: questionCatalogVersion,
+    currentIndex: orderedExamQuestionIndex,
+    questionIds: orderedExamQuestionIds,
+  });
+
   // Follow live preferred locale (same as training) so mid-exam language
   // changes update question text immediately, not only after a reload.
   const displayLocale = preferredLocale;

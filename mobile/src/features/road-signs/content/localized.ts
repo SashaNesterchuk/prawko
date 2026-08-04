@@ -8,7 +8,8 @@ export function pickLocalized(
     return value[locale];
   }
 
-  return value.pl;
+  // de/es: no dedicated road-sign copy yet; prefer English over Polish.
+  return value.en;
 }
 
 export function buildSearchText(

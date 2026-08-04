@@ -67,6 +67,9 @@ export default function LearnTabScreen() {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
+  const topicQuestionProgress = useQuestionProgressStore(
+    (state) => state.topicQuestionProgress
+  );
   const isFocused = useIsFocused();
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
@@ -109,9 +112,11 @@ export default function LearnTabScreen() {
   const topicIds = useMemo(
     () =>
       getQuestionTopicIds().filter(
-        (topicId) => getTopicProgress(topicId, questionUserState).total > 0
+        (topicId) =>
+          getTopicProgress(topicId, questionUserState, topicQuestionProgress)
+            .total > 0
       ),
-    [questionCatalogVersion, questionUserState]
+    [questionCatalogVersion, questionUserState, topicQuestionProgress]
   );
   const displayTopicIds =
     topicIds.length > 0 ? topicIds : getQuestionTopicIds();
@@ -122,7 +127,7 @@ export default function LearnTabScreen() {
   const openQuestionMode = (
     mode: Parameters<typeof buildQuestionRouteParams>[0]["mode"]
   ) =>
-    router.push({
+    router.navigate({
       pathname: "/question",
       params: buildQuestionRouteParams({ mode }),
     });
@@ -136,7 +141,7 @@ export default function LearnTabScreen() {
         defaultValue: "Вільне тестування",
       }),
       icon: <LearnActionIcon accent="green" name="target" />,
-      onPress: () => router.push("/trainer-modes"),
+      onPress: () => router.navigate("/trainer-modes"),
     },
     {
       key: "exam",
@@ -151,7 +156,7 @@ export default function LearnTabScreen() {
           }),
       icon: <LearnActionIcon accent="green" name="exam" />,
       onPress: () =>
-        router.push({
+        router.navigate({
           pathname: "/exam",
           params: buildExamRouteParams({ mode: "exam" }),
         }),
@@ -171,7 +176,7 @@ export default function LearnTabScreen() {
         count: stats.wrongAnswers,
       }),
       icon: <LearnActionIcon accent="red" name="alert" />,
-      onPress: () => router.push("/mistakes"),
+      onPress: () => router.navigate("/mistakes"),
     },
     {
       key: "srs",
@@ -183,7 +188,7 @@ export default function LearnTabScreen() {
         count: dueReviews,
       }),
       icon: <LearnActionIcon accent="amber" name="idea" />,
-      onPress: () => openQuestionMode("seen_not_mastered"),
+      onPress: () => openQuestionMode("review_due"),
     },
     {
       key: "traps",
@@ -194,13 +199,17 @@ export default function LearnTabScreen() {
         defaultValue: "Найчастіше плутають",
       }),
       icon: <LearnActionIcon accent="amber" name="warning" />,
-      onPress: () => openQuestionMode("hard_questions"),
+      onPress: () => openQuestionMode("high_points"),
     },
   ];
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        testID="screen-learn"
+      >
         <StatusBar style="dark" />
         <ScrollView
           style={styles.scroll}
@@ -254,7 +263,11 @@ export default function LearnTabScreen() {
             </Text>
             <View style={styles.stack}>
               {displayTopicIds.map((topic) => {
-                const progress = getTopicProgress(topic, questionUserState);
+                const progress = getTopicProgress(
+                  topic,
+                  questionUserState,
+                  topicQuestionProgress
+                );
 
                 return (
                   <TopicReadinessCard
@@ -265,8 +278,9 @@ export default function LearnTabScreen() {
                     readiness={progress.progress}
                     correct={progress.correct}
                     wrong={progress.wrong}
+                    testID={`topic-card-${topic}`}
                     onPress={() =>
-                      router.push({
+                      router.navigate({
                         pathname: "/topic/[topicId]",
                         params: { topicId: topic },
                       })

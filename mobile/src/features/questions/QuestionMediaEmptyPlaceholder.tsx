@@ -18,10 +18,6 @@ export function QuestionMediaEmptyPlaceholder() {
       <View style={styles.frame}>
         <Text style={styles.label}>{t("question.media.noIllustration")}</Text>
       </View>
-      {/* Keep the same height as QuestionMediaCard zoom row so prompt text does not jump. */}
-      <View pointerEvents="none" style={styles.zoomRow}>
-        <View style={styles.zoomButtonSpacer} />
-      </View>
     </View>
   );
 }
@@ -45,18 +41,6 @@ function useStyles() {
       lineHeight: responsiveFont(20),
       textAlign: "center",
       color: colors.paper,
-    },
-    zoomRow: {
-      width: "100%",
-      flexDirection: "row",
-      justifyContent: "flex-end",
-      paddingTop: spacing.exact(8),
-      paddingHorizontal: spacing.exact(4),
-    },
-    zoomButtonSpacer: {
-      width: spacing.exact(40),
-      height: spacing.exact(40),
-      opacity: 0,
     },
   }));
 }

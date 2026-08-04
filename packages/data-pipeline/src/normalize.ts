@@ -28,13 +28,23 @@ function lookupField(row: SourceRow, fieldName: keyof typeof FIELD_ALIASES): str
     }
   }
 
+  // Prefer the shortest matching header so "odpowiedz a" does not steal
+  // "odpowiedz a ua" / "odpowiedz a en" / "odpowiedz a d".
+  let bestHeader: string | null = null;
+  let bestValue: unknown = null;
+
   for (const [header, value] of Object.entries(row.normalizedCells)) {
-    if (fuzzyAliases.some((alias) => header.includes(alias))) {
-      return toNullableString(value);
+    if (!fuzzyAliases.some((alias) => header === alias || header.startsWith(`${alias} `))) {
+      continue;
+    }
+
+    if (bestHeader === null || header.length < bestHeader.length) {
+      bestHeader = header;
+      bestValue = value;
     }
   }
 
-  return null;
+  return bestHeader === null ? null : toNullableString(bestValue);
 }
 
 function normalizeScope(
@@ -219,9 +229,19 @@ export function normalizeRows(
     const questionPl = lookupField(row, "questionPl");
     const questionEn = lookupField(row, "questionEn");
     const questionUa = lookupField(row, "questionUa");
+    const questionDe = lookupField(row, "questionDe");
     const optionA = lookupField(row, "optionA");
     const optionB = lookupField(row, "optionB");
     const optionC = lookupField(row, "optionC");
+    const optionAUa = lookupField(row, "optionAUa");
+    const optionBUa = lookupField(row, "optionBUa");
+    const optionCUa = lookupField(row, "optionCUa");
+    const optionAEn = lookupField(row, "optionAEn");
+    const optionBEn = lookupField(row, "optionBEn");
+    const optionCEn = lookupField(row, "optionCEn");
+    const optionADe = lookupField(row, "optionADe");
+    const optionBDe = lookupField(row, "optionBDe");
+    const optionCDe = lookupField(row, "optionCDe");
     const correctAnswerRaw = lookupField(row, "correctAnswer");
     const pointsRaw = lookupField(row, "points");
     const scopeRaw = lookupField(row, "scope");
@@ -322,6 +342,7 @@ export function normalizeRows(
       questionPl,
       questionUa,
       questionEn,
+      questionDe,
       explanationPl: null,
       explanationUa: null,
       explanationEn: null,
@@ -330,6 +351,15 @@ export function normalizeRows(
       optionA,
       optionB,
       optionC,
+      optionAUa,
+      optionBUa,
+      optionCUa,
+      optionAEn,
+      optionBEn,
+      optionCEn,
+      optionADe,
+      optionBDe,
+      optionCDe,
       mediaFilename,
       pjmQuestionMediaFilename,
       pjmAnswerAMediaFilename,

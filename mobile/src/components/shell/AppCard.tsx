@@ -6,9 +6,15 @@ import { useResponsiveStyles } from "../../portable-ui";
 type AppCardProps = PropsWithChildren<{
   accent?: boolean;
   onPress?: () => void;
+  testID?: string;
 }>;
 
-export function AppCard({ accent = false, children, onPress }: AppCardProps) {
+export function AppCard({
+  accent = false,
+  children,
+  onPress,
+  testID,
+}: AppCardProps) {
   const styles = useStyles();
 
   if (onPress) {
@@ -16,6 +22,7 @@ export function AppCard({ accent = false, children, onPress }: AppCardProps) {
       <Pressable
         accessibilityRole="button"
         onPress={onPress}
+        testID={testID}
         style={({ pressed }) => [
           styles.base,
           accent ? styles.accent : null,
@@ -27,7 +34,11 @@ export function AppCard({ accent = false, children, onPress }: AppCardProps) {
     );
   }
 
-  return <View style={[styles.base, accent ? styles.accent : null]}>{children}</View>;
+  return (
+    <View style={[styles.base, accent ? styles.accent : null]} testID={testID}>
+      {children}
+    </View>
+  );
 }
 
 function useStyles() {

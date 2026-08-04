@@ -8,7 +8,7 @@ import { RAW_TRANSLATIONS_DIR } from "./constants";
 import type { OverlayCollection, ValidationIssue } from "./types";
 import { pathExists, readJsonFile } from "./utils";
 
-const overlayLocales: SupportedLocale[] = ["pl", "ua", "en"];
+const overlayLocales: SupportedLocale[] = ["pl", "ua", "en", "de"];
 
 async function loadOverlayFile(
   filePath: string

@@ -80,6 +80,7 @@ export function FloatingTabBar({
               onPress={onPress}
               onLongPress={onLongPress}
               style={[styles.tab, isFocused ? styles.tabActive : null]}
+              testID={`tab-${route.name}`}
             >
               <Icon color={color} name={iconName} size={responsiveFont(24)} />
               <Text

@@ -48,6 +48,7 @@ export function SignCategoryProgressCard({
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
+      testID={`sign-category-${category.id}`}
     >
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>

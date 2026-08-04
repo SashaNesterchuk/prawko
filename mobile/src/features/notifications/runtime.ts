@@ -28,17 +28,12 @@ function getProjectId() {
   );
 }
 
-function getReminderCopy(hour: number) {
-  const isMorningReminder = hour < 12;
+function getReminderCopy() {
   const preferredLocale = useAppShellStore.getState().preferredLocale;
 
   return {
-    title: isMorningReminder
-      ? i18n.t("notification.morningTitle", { lng: preferredLocale })
-      : i18n.t("notification.eveningTitle", { lng: preferredLocale }),
-    body: isMorningReminder
-      ? i18n.t("notification.morningBody", { lng: preferredLocale })
-      : i18n.t("notification.eveningBody", { lng: preferredLocale }),
+    title: i18n.t("notification.title", { lng: preferredLocale }),
+    body: i18n.t("notification.body", { lng: preferredLocale }),
   };
 }
 
@@ -76,9 +71,7 @@ async function maybeStorePushTokenAsync() {
 }
 
 function getActiveNotificationHours() {
-  const hours = useAppShellStore.getState().notificationHours;
-
-  return hours.length > 0 ? hours : DEFAULT_NOTIFICATION_HOURS;
+  return DEFAULT_NOTIFICATION_HOURS;
 }
 
 async function cancelAllStudyNotificationsAsync() {
@@ -99,9 +92,9 @@ async function cancelAllStudyNotificationsAsync() {
 
 async function scheduleStudyNotificationsAsync(hours: NotificationHour[]) {
   const scheduledNotificationIds: string[] = [];
+  const copy = getReminderCopy();
 
   for (const hour of hours) {
-    const copy = getReminderCopy(hour.hour);
     const identifier = await Notifications.scheduleNotificationAsync({
       content: {
         title: copy.title,
@@ -174,31 +167,23 @@ export async function syncNotificationStateAsync() {
   const store = useAppShellStore.getState();
   const scheduledNotifications =
     await Notifications.getAllScheduledNotificationsAsync();
+  const shouldKeepEnabled =
+    store.isScheduleNotificationEnabled || scheduledNotifications.length > 0;
 
-  if (
-    !store.isScheduleNotificationEnabled &&
-    scheduledNotifications.length > 0
-  ) {
-    store.setScheduledNotificationIds(
-      scheduledNotifications.map((item) => item.identifier),
-    );
-    store.setScheduleNotificationEnabled(true);
-    return true;
+  if (!shouldKeepEnabled) {
+    return false;
   }
 
-  if (
-    store.isScheduleNotificationEnabled &&
-    (store.scheduledNotificationIds.length === 0 ||
-      scheduledNotifications.length === 0)
-  ) {
-    const scheduledNotificationIds = await scheduleStudyNotificationsAsync(
-      getActiveNotificationHours(),
-    );
+  // Refresh daily so locale/copy and the single 19:00 slot stay in sync.
+  await cancelAllStudyNotificationsAsync();
 
-    store.setScheduledNotificationIds(scheduledNotificationIds);
-    store.setScheduleNotificationEnabled(scheduledNotificationIds.length > 0);
-    return scheduledNotificationIds.length > 0;
-  }
+  const scheduledNotificationIds = await scheduleStudyNotificationsAsync(
+    getActiveNotificationHours(),
+  );
+  const nextStore = useAppShellStore.getState();
 
-  return store.isScheduleNotificationEnabled;
+  nextStore.setScheduledNotificationIds(scheduledNotificationIds);
+  nextStore.setScheduleNotificationEnabled(scheduledNotificationIds.length > 0);
+
+  return scheduledNotificationIds.length > 0;
 }

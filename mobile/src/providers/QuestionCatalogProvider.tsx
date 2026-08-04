@@ -33,6 +33,7 @@ const QUESTION_CATALOG_SELECT = [
   "question_pl",
   "question_ua",
   "question_en",
+  "question_de",
   "explanation_pl",
   "explanation_ua",
   "explanation_en",
@@ -41,6 +42,15 @@ const QUESTION_CATALOG_SELECT = [
   "option_a",
   "option_b",
   "option_c",
+  "option_a_ua",
+  "option_b_ua",
+  "option_c_ua",
+  "option_a_en",
+  "option_b_en",
+  "option_c_en",
+  "option_a_de",
+  "option_b_de",
+  "option_c_de",
   "points",
   "scope",
   "topic_block",
@@ -178,6 +188,9 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
   const reconcileCatalog = useQuestionProgressStore(
     (state) => state.reconcileCatalog
   );
+  const ensureTopicQuestionProgressSeeded = useQuestionProgressStore(
+    (state) => state.ensureTopicQuestionProgressSeeded
+  );
   const setError = useQuestionCatalogStore((state) => state.setError);
   const setLoading = useQuestionCatalogStore((state) => state.setLoading);
   const setMock = useQuestionCatalogStore((state) => state.setMock);
@@ -200,6 +213,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
       }
 
       reconcileCatalog(questionIds);
+      ensureTopicQuestionProgressSeeded();
 
       if (error) {
         setError({
@@ -326,6 +340,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
         reconcileCatalog(
           hydratedRecords.map((record) => record.question_source_id)
         );
+        ensureTopicQuestionProgressSeeded();
         setRemote({
           questionCount: hydratedRecords.length,
         });
@@ -373,6 +388,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
     captureError,
     captureFallback,
     currentUserId,
+    ensureTopicQuestionProgressSeeded,
     preferredCategory,
     questionProgressHydrated,
     reconcileCatalog,

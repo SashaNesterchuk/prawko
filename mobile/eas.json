@@ -17,6 +17,15 @@
       "autoIncrement": true,
       "credentialsSource": "local",
       "environment": "production"
+    },
+    "e2e-test": {
+      "withoutCredentials": true,
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {

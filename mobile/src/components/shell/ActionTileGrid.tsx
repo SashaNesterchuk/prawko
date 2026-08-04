@@ -39,6 +39,7 @@ export function ActionTileGrid({ items, columns = 2 }: ActionTileGridProps) {
               style={item.style}
               icon={item.icon}
               onPress={item.onPress}
+              testID={`action-tile-${item.key}`}
             />
           ))}
           {row.length < columns

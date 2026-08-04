@@ -1,0 +1,4 @@
+# Shared Maestro workspace config for Prawko mobile E2E.
+# Docs: https://docs.maestro.dev/
+# Expo guide: https://docs.expo.dev/eas/workflows/examples/e2e-tests/
+appId: com.mindjar.prawko

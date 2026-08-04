@@ -1,0 +1,21 @@
+# Feature: Home
+# Scenario: User opens Trainer modes from the Home tile
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+---
+- runFlow: subflows/complete_onboarding.yaml
+
+- tapOn:
+    id: "action-tile-trainer"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-trainer-modes"
+    timeout: 15000
+
+- assertVisible:
+    id: "trainer-mode-random"
+- assertVisible:
+    id: "trainer-mode-new"

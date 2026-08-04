@@ -35,13 +35,14 @@ import type {
   RemoteExamSnapshot,
 } from "../../src/features/exam/types";
 import { useAdInterstitialActions } from "../../src/features/ads/show-interstitial";
-import { ensureInterstitialReady } from "../../src/features/ads/interstitial-controller";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import { getQuestionUserState } from "../../src/features/questions/question-engine";
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
+import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefetchQuestionMedia";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
+import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 
 export default function ExamResultScreen() {
@@ -52,9 +53,13 @@ export default function ExamResultScreen() {
   const params = useLocalSearchParams<{
     sessionId?: string | string[];
   }>();
-  const { showInterstitialForTrigger, showInterstitialForUnlockGate } =
-    useAdInterstitialActions();
+  const {
+    preloadInterstitial,
+    showInterstitialForTrigger,
+    showInterstitialForUnlockGate,
+  } = useAdInterstitialActions();
   const hasPlusAccess = useHasPlusAccess();
+  const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
@@ -188,11 +193,8 @@ export default function ExamResultScreen() {
 
     didAttemptResultInterstitialRef.current = true;
 
-    void ensureInterstitialReady({ attempts: 3, timeoutMs: 12_000 })
-      .catch(() => false)
-      .finally(() => {
-        void showInterstitialForTrigger("after_exam_complete");
-      });
+    // Shared hook: ensure → show (same path as practice session end).
+    void showInterstitialForTrigger("after_exam_complete");
   }, [hasPlusAccess, showInterstitialForTrigger, snapshot]);
 
   // Only bounce an *active* session back to the player — never while reviewing
@@ -240,6 +242,17 @@ export default function ExamResultScreen() {
     () => (snapshot ? sortExamQuestionsByOrder(snapshot.questions) : []),
     [snapshot]
   );
+  const reviewQuestionIds = useMemo(
+    () => sortedQuestions.map((question) => question.questionSourceId),
+    [sortedQuestions]
+  );
+
+  usePrefetchQuestionMedia({
+    catalogVersion: questionCatalogVersion,
+    currentIndex: reviewIndex ?? -1,
+    questionIds: reviewIndex === null ? null : reviewQuestionIds,
+  });
+
   const answerByOrder = useMemo(() => {
     if (!snapshot) {
       return new Map<number, RemoteExamSnapshot["answers"][number]>();
@@ -332,7 +345,7 @@ export default function ExamResultScreen() {
       source: "exam_result",
     });
     setIsRestartGateVisible(true);
-    void ensureInterstitialReady({ attempts: 3, timeoutMs: 12_000 });
+    void preloadInterstitial();
   }
 
   async function handleWatchAd() {

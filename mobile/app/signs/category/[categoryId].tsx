@@ -7,7 +7,11 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
 import { SignCatalogCard } from "../../../src/components/shell/SignCatalogCard";
-import { QuestionCountDialog } from "../../../src/components/shell/QuestionCountDialog";
+import {
+  QuestionCountDialog,
+  resolveQuestionCountDialog,
+  type QuestionCountSelection,
+} from "../../../src/components/shell/QuestionCountDialog";
 import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
 import {
   useResponsiveStyles,
@@ -50,29 +54,45 @@ export default function SignsCategoryScreen() {
   );
   const hasCategoryTestQuestions = availableQuestions.length > 0;
   const [countDialogVisible, setCountDialogVisible] = useState(false);
-  const [selectedCount, setSelectedCount] = useState<number | "all">(20);
+  const [selectedCount, setSelectedCount] =
+    useState<QuestionCountSelection>("all");
+
+  const startCategoryTestWithLimit = (limit: QuestionCountSelection) => {
+    router.navigate({
+      pathname: "/signs/category/[categoryId]/test",
+      params: {
+        categoryId: resolvedCategoryId,
+        limit: limit === "all" ? "all" : String(limit),
+      },
+    });
+  };
 
   const openCategoryTest = () => {
-    setSelectedCount(
-      availableQuestions.length >= 20 ? 20 : "all"
+    const { shouldShowDialog, defaultCount } = resolveQuestionCountDialog(
+      availableQuestions.length
     );
+
+    if (!shouldShowDialog) {
+      startCategoryTestWithLimit("all");
+      return;
+    }
+
+    setSelectedCount(defaultCount);
     setCountDialogVisible(true);
   };
 
   const startCategoryTest = () => {
     setCountDialogVisible(false);
-    router.push({
-      pathname: "/signs/category/[categoryId]/test",
-      params: {
-        categoryId: resolvedCategoryId,
-        limit: selectedCount === "all" ? "all" : String(selectedCount),
-      },
-    });
+    startCategoryTestWithLimit(selectedCount);
   };
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        testID={`screen-signs-category-${resolvedCategoryId}`}
+      >
         <StatusBar style="dark" />
         <SignsScreenHeader
           title={
@@ -100,7 +120,7 @@ export default function SignsCategoryScreen() {
                 }
                 onToggleBookmark={() => toggleSaved(sign.id)}
                 onPress={() =>
-                  router.push({
+                  router.navigate({
                     pathname: "/signs/[signId]",
                     params: { signId: sign.id },
                   })
@@ -120,6 +140,7 @@ export default function SignsCategoryScreen() {
               !hasCategoryTestQuestions ? styles.trainButtonDisabled : null,
               pressed ? styles.pressed : null,
             ]}
+            testID="signs-train-category"
           >
             <Text style={styles.trainButtonLabel}>{t("signs.trainCategory")}</Text>
           </Pressable>

@@ -22,6 +22,7 @@ export type SupabaseQuestionRecord = {
   question_pl: string;
   question_ua: string | null;
   question_en: string | null;
+  question_de: string | null;
   explanation_pl: string | null;
   explanation_ua: string | null;
   explanation_en: string | null;
@@ -31,6 +32,15 @@ export type SupabaseQuestionRecord = {
   option_a: string | null;
   option_b: string | null;
   option_c: string | null;
+  option_a_ua: string | null;
+  option_b_ua: string | null;
+  option_c_ua: string | null;
+  option_a_en: string | null;
+  option_b_en: string | null;
+  option_c_en: string | null;
+  option_a_de: string | null;
+  option_b_de: string | null;
+  option_c_de: string | null;
   points: number;
   scope: QuestionScope;
   topic_block: TopicBlockId;
@@ -47,18 +57,23 @@ export type SupabaseQuestionRecord = {
 function localizedText(
   pl: string | null | undefined,
   ua: string | null | undefined,
-  en: string | null | undefined
+  en: string | null | undefined,
+  de?: string | null | undefined
 ): LocalizedQuestionText {
+  const plText = pl ?? "";
+  const enText = en ?? plText;
+
   return {
-    pl: pl ?? "",
-    ua: ua ?? pl ?? "",
-    en: en ?? pl ?? "",
+    pl: plText,
+    ua: ua ?? plText,
+    en: enText,
+    de: de ?? enText,
   };
 }
 
 function readAiExplanation(
   explanations: QuestionAiExplanationMap | null | undefined,
-  locale: "pl" | "ua" | "en"
+  locale: "pl" | "ua" | "en" | "de"
 ) {
   const value = explanations?.[locale];
 
@@ -81,23 +96,31 @@ function localizedExplanation(record: SupabaseQuestionRecord): LocalizedQuestion
     readAiExplanation(record.ai_explanations, "en") ??
     record.explanation_en ??
     explanationPl;
+  const explanationDe =
+    readAiExplanation(record.ai_explanations, "de") ?? explanationEn;
 
-  return localizedText(explanationPl, explanationUa, explanationEn);
+  return localizedText(
+    explanationPl,
+    explanationUa,
+    explanationEn,
+    explanationDe
+  );
 }
 
 function createChoice(
   id: QuestionChoice["id"],
   pl: string | null,
   ua: string | null,
-  en: string | null
+  en: string | null,
+  de: string | null
 ): QuestionChoice | null {
-  if (!pl && !ua && !en) {
+  if (!pl && !ua && !en && !de) {
     return null;
   }
 
   return {
     id,
-    text: localizedText(pl, ua, en),
+    text: localizedText(pl, ua, en, de),
   };
 }
 
@@ -115,9 +138,27 @@ export function mapSupabaseQuestionRecordToLocalQuestion(
       : topicIds[0] ?? fallbackTopics.primaryTopicId;
 
   const choices = [
-    createChoice("A", record.option_a, record.option_a, record.option_a),
-    createChoice("B", record.option_b, record.option_b, record.option_b),
-    createChoice("C", record.option_c, record.option_c, record.option_c),
+    createChoice(
+      "A",
+      record.option_a,
+      record.option_a_ua,
+      record.option_a_en,
+      record.option_a_de
+    ),
+    createChoice(
+      "B",
+      record.option_b,
+      record.option_b_ua,
+      record.option_b_en,
+      record.option_b_de
+    ),
+    createChoice(
+      "C",
+      record.option_c,
+      record.option_c_ua,
+      record.option_c_en,
+      record.option_c_de
+    ),
   ].filter(Boolean) as QuestionChoice[];
 
   return {
@@ -126,7 +167,8 @@ export function mapSupabaseQuestionRecordToLocalQuestion(
     prompt: localizedText(
       record.question_pl,
       record.question_ua,
-      record.question_en
+      record.question_en,
+      record.question_de
     ),
     explanation: localizedExplanation(record),
     answerType: record.answer_type,

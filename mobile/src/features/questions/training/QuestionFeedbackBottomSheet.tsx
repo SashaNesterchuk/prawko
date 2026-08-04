@@ -81,6 +81,7 @@ export function QuestionFeedbackBottomSheet({
       end={{ x: 0.5, y: 1 }}
       start={{ x: 0.5, y: 0 }}
       style={[styles.sheet, { paddingBottom: bottomPad }]}
+      testID="question-feedback"
     >
       <View style={styles.header}>
         <View style={styles.titleRow}>
@@ -216,13 +217,18 @@ export function QuestionFeedbackBottomSheet({
               !canGoNext ? styles.navButtonDisabled : null,
               pressed && canGoNext ? styles.navButtonPressed : null,
             ]}
+            testID="question-feedback-next"
           >
             <Text style={styles.navButtonText}>{nextLabel}</Text>
             <Icon name="chevron" size={20} color={colors.ink2} />
           </Pressable>
         </View>
       ) : (
-        <AppButton label={nextLabel} onPress={onNext} />
+        <AppButton
+          label={nextLabel}
+          onPress={onNext}
+          testID="question-feedback-next"
+        />
       )}
     </LinearGradient>
   );

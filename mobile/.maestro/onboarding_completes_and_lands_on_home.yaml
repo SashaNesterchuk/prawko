@@ -1,0 +1,15 @@
+# Feature: Onboarding
+# Scenario: New user completes onboarding and lands on Home
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - onboarding
+---
+- runFlow: subflows/complete_onboarding.yaml
+
+- assertVisible:
+    id: "screen-home"
+- assertVisible:
+    id: "tab-index"
+- assertVisible:
+    id: "action-tile-trainer"

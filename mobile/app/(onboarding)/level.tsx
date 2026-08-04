@@ -27,7 +27,7 @@ export default function LevelScreen() {
             label={t("common.continue")}
             onPress={() => {
               setLevel(selectedLevel);
-              router.push("/(onboarding)/school-code");
+              router.navigate("/(onboarding)/school-code");
             }}
           />
           <AppButton

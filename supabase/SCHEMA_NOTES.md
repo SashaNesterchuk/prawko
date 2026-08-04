@@ -32,10 +32,12 @@ The current migration set covers the v1 backend backbone:
 ### `questions`
 
 1. Denormalized on purpose for v1.
-2. Question and explanation fields live on the row in `pl`, `ua`, and `en`.
-3. Delivery media metadata also lives on the row through `media_asset` and optional `pjm_*_asset` JSON columns.
-4. Authenticated clients can read active questions only.
-5. Imports stay service-role only.
+2. Question fields live on the row in `pl`, `ua`, `en`, and official `question_de`; explanations remain `pl`/`ua`/`en`.
+3. ABC options keep Polish `option_a/b/c` as canonical, with localized `option_*_ua/en/de` from the official katalog.
+4. App content locales are `pl`/`ua`/`en`/`de`; Spanish UI (`es`) falls back to English exam content.
+5. Delivery media metadata also lives on the row through `media_asset` and optional `pjm_*_asset` JSON columns.
+6. Authenticated clients can read active questions only.
+7. Imports stay service-role only.
 
 ### `question_attempts` and `question_user_state`
 

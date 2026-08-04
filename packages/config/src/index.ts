@@ -1,12 +1,12 @@
-export const CONTENT_LOCALES = ["pl", "ua", "en"] as const;
+export const CONTENT_LOCALES = ["pl", "ua", "en", "de"] as const;
 export type ContentLocale = (typeof CONTENT_LOCALES)[number];
 
 export const SUPPORTED_LOCALES = ["pl", "ua", "en", "de", "es"] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
-/** Question / exam content language for a UI locale (es/de fall back to English). */
+/** Question / exam content language for a UI locale (es falls back to English). */
 export function getContentLocale(locale: SupportedLocale): ContentLocale {
-  if (locale === "pl" || locale === "ua" || locale === "en") {
+  if (locale === "pl" || locale === "ua" || locale === "en" || locale === "de") {
     return locale;
   }
 
@@ -101,6 +101,7 @@ export const QUESTION_SESSION_MODES = [
   "weak_spots",
   "hard_questions",
   "high_points",
+  "review_due",
   "seen_not_mastered",
   "wrong_answers",
   "saved",

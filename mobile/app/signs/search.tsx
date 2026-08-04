@@ -90,7 +90,7 @@ export default function SignsSearchScreen() {
                     sign={sign}
                     categoryLabel={categoryLabels[sign.categoryId]}
                     onPress={() =>
-                      router.push({
+                      router.navigate({
                         pathname: "/signs/[signId]",
                         params: { signId: sign.id },
                       })

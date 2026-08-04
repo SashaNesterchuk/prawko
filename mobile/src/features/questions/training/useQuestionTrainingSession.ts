@@ -36,6 +36,7 @@ import type {
 import { recordQuestionAttemptBySourceId } from "../supabase-question-attempts";
 import { syncQuestionBookmarkState } from "../supabase-question-state";
 
+import { usePrefetchQuestionMedia } from "../usePrefetchQuestionMedia";
 import { useQuestionRouteParams } from "./route-params";
 import { useTrainerStyles } from "./useTrainerStyles";
 import { getVisibleQuestionSteps } from "./visible-steps";
@@ -45,26 +46,25 @@ export function useQuestionTrainingSession() {
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const routeParams = useQuestionRouteParams();
-  const {
-    mode,
-    questionLimit,
-    routeSessionKey,
-    sessionKey,
-    studyPlanTaskId,
-    topic,
-  } = routeParams;
+  const { mode, questionLimit, sessionKey, studyPlanTaskId, topic } =
+    routeParams;
 
   const authMode = useAppShellStore((state) => state.authMode);
   const currentStudyPlanRemoteId = useAppShellStore(
     (state) => state.currentStudyPlanRemoteId
   );
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const { maybeShowInterstitial, showInterstitialForTrigger } =
-    useAdInterstitialActions();
+  const {
+    maybeShowInterstitial,
+    preloadInterstitial,
+    showInterstitialForTrigger,
+  } = useAdInterstitialActions();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionProgressHydrated = useQuestionProgressHydrated();
   const activeSession = useActiveQuestionSession();
-  const startSession = useQuestionProgressStore((state) => state.startSession);
+  const startOrResumeSession = useQuestionProgressStore(
+    (state) => state.startOrResumeSession
+  );
   const answerCurrentQuestion = useQuestionProgressStore(
     (state) => state.answerCurrentQuestion
   );
@@ -80,6 +80,7 @@ export function useQuestionTrainingSession() {
 
   const [displayLocale, setDisplayLocale] =
     useState<SupportedLocale>(preferredLocale);
+  const [hasAnsweredThisEntry, setHasAnsweredThisEntry] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const questionStartedAtRef = useRef(Date.now());
   const didShowSessionCompleteAdRef = useRef(false);
@@ -90,47 +91,35 @@ export function useQuestionTrainingSession() {
   }, [preferredLocale, sessionKey]);
 
   useEffect(() => {
+    setHasAnsweredThisEntry(false);
+  }, [sessionKey]);
+
+  useEffect(() => {
     if (!questionProgressHydrated) {
       return;
     }
 
-    const shouldReuseExistingSession =
-      !routeSessionKey &&
-      activeSession &&
-      activeSession.request.mode === mode &&
-      activeSession.request.questionLimit === questionLimit &&
-      activeSession.request.studyPlanTaskId === studyPlanTaskId &&
-      activeSession.request.topic === topic;
-
-    if (shouldReuseExistingSession) {
+    // A resumed session adopts the route key, so this entry is already
+    // resolved and later state changes (an answer, the summary) must not
+    // rebuild it.
+    if (activeSession?.request.sessionKey === sessionKey) {
       return;
     }
 
-    const shouldStartSession =
-      !activeSession ||
-      activeSession.request.sessionKey !== sessionKey ||
-      activeSession.request.mode !== mode ||
-      activeSession.request.questionLimit !== questionLimit ||
-      activeSession.request.studyPlanTaskId !== studyPlanTaskId ||
-      activeSession.request.topic !== topic;
-
-    if (shouldStartSession) {
-      startSession({
-        mode,
-        questionLimit,
-        topic,
-        sessionKey,
-        studyPlanTaskId,
-      });
-    }
+    startOrResumeSession({
+      mode,
+      questionLimit,
+      topic,
+      sessionKey,
+      studyPlanTaskId,
+    });
   }, [
     activeSession,
     mode,
     questionLimit,
     questionProgressHydrated,
-    routeSessionKey,
     sessionKey,
-    startSession,
+    startOrResumeSession,
     studyPlanTaskId,
     topic,
   ]);
@@ -145,6 +134,12 @@ export function useQuestionTrainingSession() {
     () => (currentQuestionId ? getQuestionById(currentQuestionId) : null),
     [currentQuestionId, questionCatalogVersion]
   );
+
+  usePrefetchQuestionMedia({
+    catalogVersion: questionCatalogVersion,
+    currentIndex: activeSession?.currentIndex ?? -1,
+    questionIds: activeSession?.questionIds,
+  });
   const currentAnswer = currentQuestionId
     ? activeSession?.answers[currentQuestionId] ?? null
     : null;
@@ -217,7 +212,13 @@ export function useQuestionTrainingSession() {
     const isFirstAnswer = !currentAnswer;
     const answeredAttempt = answerCurrentQuestion(choiceId);
 
-    if (!answeredAttempt || !isFirstAnswer) {
+    if (!answeredAttempt) {
+      return;
+    }
+
+    setHasAnsweredThisEntry(true);
+
+    if (!isFirstAnswer) {
       return;
     }
 
@@ -283,9 +284,10 @@ export function useQuestionTrainingSession() {
     }
   };
 
-  // No answers yet = miss-click: skip the confirm dialog (caller exits directly).
-  const hasStartedTraining =
-    summary.answered > 0 || Boolean(currentAnswer);
+  // Nothing answered in this sitting = miss-click: skip the confirm dialog
+  // (caller exits directly). Answers carried over by a resumed session do not
+  // count, because leaving right away changes nothing for them.
+  const hasStartedTraining = hasAnsweredThisEntry || Boolean(currentAnswer);
 
   const handleRequestExit = () => {
     if (!hasStartedTraining) {
@@ -301,39 +303,51 @@ export function useQuestionTrainingSession() {
     advanceSession();
 
     if (shouldAttemptInterstitial) {
+      // Opportunistic only — never wait for AdMob mid-session.
       maybeShowInterstitial("after_question_answer");
     }
   }, [advanceSession, maybeShowInterstitial]);
 
-  const handleConfirmExit = useCallback(async () => {
+  const handleConfirmExit = useCallback(() => {
     setShowExitDialog(false);
     const shouldAttemptPracticeInterstitial = shouldAttemptPracticeAdRef.current;
     shouldAttemptPracticeAdRef.current = false;
     const answeredCount = summary.answered;
     const wasCompleted = isCompleted;
 
-    // Clear before any async ad work so a cancelled swipe / remount cannot
-    // reopen into a stale persisted training session.
-    clearActiveSession();
+    // An unfinished session is kept so the next entry into the same mode
+    // resumes at the first unanswered question; a finished one has nothing
+    // left to resume and would only linger in storage.
+    if (wasCompleted || isEmptyState) {
+      clearActiveSession();
+    }
 
     if (wasCompleted) {
       return;
     }
 
-    if (
-      shouldAttemptPracticeInterstitial &&
-      answeredCount >= AD_POLICY.questionsBetweenInterstitials
-    ) {
-      await showInterstitialForTrigger("after_question_answer");
-      return;
-    }
+    // Caller navigates immediately after this returns. Schedule the ad after
+    // the transition — awaiting AdMob load/show here freezes/glitches the stack
+    // (exam result stays on a stable screen; exit must not).
+    const showExitAd = () => {
+      if (
+        shouldAttemptPracticeInterstitial &&
+        answeredCount >= AD_POLICY.questionsBetweenInterstitials
+      ) {
+        void showInterstitialForTrigger("after_question_answer");
+        return;
+      }
 
-    await showInterstitialForTrigger("after_practice_session_complete", {
-      practiceAnsweredCount: answeredCount,
-    });
+      void showInterstitialForTrigger("after_practice_session_complete", {
+        practiceAnsweredCount: answeredCount,
+      });
+    };
+
+    setTimeout(showExitAd, 400);
   }, [
     clearActiveSession,
     isCompleted,
+    isEmptyState,
     showInterstitialForTrigger,
     summary.answered,
   ]);
@@ -342,6 +356,15 @@ export function useQuestionTrainingSession() {
     setShowExitDialog(false);
   };
 
+  // Warm the creative before the streak / session-end show, same as exam gate.
+  useEffect(() => {
+    if (summary.answered < AD_POLICY.questionsBetweenInterstitials - 2) {
+      return;
+    }
+
+    void preloadInterstitial();
+  }, [preloadInterstitial, summary.answered]);
+
   useEffect(() => {
     if (!isCompleted || didShowSessionCompleteAdRef.current) {
       return;
@@ -349,9 +372,15 @@ export function useQuestionTrainingSession() {
 
     didShowSessionCompleteAdRef.current = true;
     shouldAttemptPracticeAdRef.current = false;
-    void showInterstitialForTrigger("after_practice_session_complete", {
-      practiceAnsweredCount: summary.answered,
-    });
+
+    // Let the result view mount first (exam-result pattern).
+    const timer = setTimeout(() => {
+      void showInterstitialForTrigger("after_practice_session_complete", {
+        practiceAnsweredCount: summary.answered,
+      });
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [isCompleted, showInterstitialForTrigger, summary.answered]);
 
   useEffect(() => {

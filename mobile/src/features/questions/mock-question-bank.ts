@@ -10,21 +10,24 @@ import type {
 const txt = (
   pl: string,
   ua: string,
-  en: string
+  en: string,
+  de: string = en
 ): LocalizedQuestionText => ({
   pl,
   ua,
   en,
+  de,
 });
 
 const choice = (
   id: QuestionChoice["id"],
   pl: string,
   ua: string,
-  en: string
+  en: string,
+  de: string = en
 ): QuestionChoice => ({
   id,
-  text: txt(pl, ua, en),
+  text: txt(pl, ua, en, de),
 });
 
 const deliveryAsset = ({
