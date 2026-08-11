@@ -19,7 +19,7 @@ import {
 } from "../../src/features/questions/question-engine";
 import { listCatalogTopicsWithMistakes } from "../../src/features/questions/mistakes-topics";
 import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
-import { CText, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
@@ -158,7 +158,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       flex: 1,
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600" as const,
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.textPrimary,
     },

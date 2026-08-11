@@ -1,7 +1,12 @@
 import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import { CText, useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
+import {
+  CText,
+  getFontFamily,
+  useResponsiveFonts,
+  useResponsiveStyles,
+} from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { ProgressRing } from "./ProgressRing";
 
@@ -102,16 +107,16 @@ export function ReadinessIndexCard({
             size={responsiveFont(40)}
           />
         ) : (
-          <CText style={styles.ringValue}>
-            <CText style={styles.ringValueNumber}>{Math.round(clamped)}</CText>
-            <CText style={styles.ringValuePercent}>%</CText>
+          <CText style={styles.ringValue} bold>
+            <CText style={styles.ringValueNumber} bold>{Math.round(clamped)}</CText>
+            <CText style={styles.ringValuePercent} bold>%</CText>
           </CText>
         )}
       </ProgressRing>
 
       {empty ? (
         <View style={styles.emptyCopy}>
-          <CText style={styles.emptyTitle}>{title}</CText>
+          <CText style={styles.emptyTitle} semiBold>{title}</CText>
           {subtitle ? <CText style={styles.emptySubtitle}>{subtitle}</CText> : null}
           {detailsLabel ? (
             <View style={styles.detailsRow}>
@@ -129,7 +134,7 @@ export function ReadinessIndexCard({
           <View style={styles.topBlock}>
             <View style={styles.levelBlock}>
               {levelLabel ? (
-                <CText style={styles.levelTitle}>{levelLabel}</CText>
+                <CText style={styles.levelTitle} semiBold>{levelLabel}</CText>
               ) : null}
               <CText style={styles.levelSubtitle}>{title}</CText>
             </View>
@@ -175,9 +180,9 @@ export function ReadinessIndexCard({
 
           {coveredCountLabel ? (
             <View style={styles.coveredBlock}>
-              <CText style={styles.coveredCount}>{coveredCountLabel}</CText>
+              <CText style={styles.coveredCount} medium>{coveredCountLabel}</CText>
               {coveredCaption ? (
-                <CText style={styles.coveredCaption}>{coveredCaption}</CText>
+                <CText style={styles.coveredCaption} regular>{coveredCaption}</CText>
               ) : null}
             </View>
           ) : null}
@@ -214,14 +219,12 @@ function useStyles({ ringColor }: { ringColor: string }) {
     ringValueNumber: {
       fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
-      fontWeight: "700",
       letterSpacing: -0.64,
       color: ringColor,
     },
     ringValuePercent: {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
-      fontWeight: "700",
       letterSpacing: -0.48,
       color: ringColor,
     },
@@ -233,14 +236,13 @@ function useStyles({ ringColor }: { ringColor: string }) {
     emptyTitle: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
       letterSpacing: -0.16,
       color: colors.ink,
     },
     emptySubtitle: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.inkSecondary,
       marginBottom: spacing.sm,
     },
@@ -253,7 +255,7 @@ function useStyles({ ringColor }: { ringColor: string }) {
     detailsLabel: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: theme.accents.blue.ink,
     },
     copy: {
@@ -273,14 +275,13 @@ function useStyles({ ringColor }: { ringColor: string }) {
     levelTitle: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
       letterSpacing: -0.2,
       color: colors.ink,
     },
     levelSubtitle: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.inkSecondary,
     },
     weekBadge: {
@@ -304,7 +305,7 @@ function useStyles({ ringColor }: { ringColor: string }) {
     weekBadgeLabel: {
       fontSize: responsiveFont(11),
       lineHeight: responsiveFont(12),
-      fontWeight: "500",
+      fontFamily: getFontFamily("medium"),
     },
     weekBadgeLabelUp: {
       color: theme.accents.green.ink,
@@ -324,13 +325,11 @@ function useStyles({ ringColor }: { ringColor: string }) {
     coveredCount: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "500",
       color: colors.ink,
     },
     coveredCaption: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
       color: colors.inkSecondary,
     },
   }));

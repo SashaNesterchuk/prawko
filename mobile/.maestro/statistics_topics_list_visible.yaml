@@ -1,0 +1,24 @@
+# Feature: Statistics
+# Scenario: Onboarded user opens Statistics and sees readiness-by-topic rows
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - statistics
+  - topics
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: statistics
+      TARGET_ID: screen-statistics
+
+- extendedWaitUntil:
+    visible:
+      id: "statistics-topics-card"
+    timeout: 15000
+
+- assertVisible:
+    id: "statistics-topics-list"
+
+- assertVisible:
+    id: "statistics-topic-row-index-0"

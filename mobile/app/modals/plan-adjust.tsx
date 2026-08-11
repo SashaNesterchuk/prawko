@@ -9,7 +9,7 @@ import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { AppTextInput } from "../../src/components/shell/AppTextInput";
-import { CText, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   formatPlanDate,
@@ -517,7 +517,7 @@ function useStyles() {
     presetLabel: {
       color: colors.textPrimary,
       fontSize: responsiveFont(14),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
     },
     presetLabelActive: {
       color: colors.textPrimary,
@@ -530,7 +530,7 @@ function useStyles() {
     sectionTitle: {
       color: colors.textSecondary,
       fontSize: responsiveFont(13),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(8),
       textTransform: "uppercase",
     },

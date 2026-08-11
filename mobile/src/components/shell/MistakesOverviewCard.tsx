@@ -3,6 +3,7 @@ import { Pressable, View } from "react-native";
 import { Icon } from "../icons";
 import {
   CText,
+  getFontFamily,
   useResponsiveStyles,
   type PercentageString,
 } from "../../portable-ui";
@@ -101,14 +102,14 @@ function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
         flex: 1,
         fontSize: responsiveFont(24),
         lineHeight: responsiveFont(32),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
         letterSpacing: -0.48,
         color: colors.ink,
       },
       rateValue: {
         fontSize: responsiveFont(24),
         lineHeight: responsiveFont(32),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.24,
         color: theme.accents.red.fill,
       },
@@ -150,7 +151,7 @@ function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
       statsValue: {
         fontSize: responsiveFont(12),
         lineHeight: responsiveFont(16),
-        fontWeight: "400",
+        fontFamily: getFontFamily("regular"),
         color: colors.ink,
       },
       trainButton: {
@@ -166,7 +167,7 @@ function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
       trainButtonLabel: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "400",
+        fontFamily: getFontFamily("regular"),
         color: colors.ink2,
       },
       pressed: {

@@ -34,6 +34,7 @@ pnpm test:e2e:studio
 | `home_readiness_assessment_starts_training.yaml` | Empty readiness CTA → untimed mini_test training (not exam) |
 | `tabs_are_navigable.yaml` | Tab bar: Home / Learn / Signs / Profile |
 | `learn_first_topic_opens_trainer_modes.yaml` | Learn tab → first topic card → trainer modes |
+| `statistics_topics_list_visible.yaml` | Statistics → readiness-by-topic card with topic rows |
 | `learn_mistakes_opens_session.yaml` | Learn → Fix mistakes → mistakes monitor empty state (hero + traps/SRS tiles) |
 | `learn_srs_opens_session.yaml` | Learn → Smart reviews → session (count dialog when eligible) |
 | `learn_topic_mistakes_mode_available.yaml` | Learn → topic → category-scoped Fix mistakes mode tile |

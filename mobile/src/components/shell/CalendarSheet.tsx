@@ -5,7 +5,7 @@ import {
   View,
 } from "react-native";
 
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type CalendarSheetProps = {
@@ -329,7 +329,7 @@ function useStyles() {
     },
     monthLabel: {
       fontSize: responsiveFont(18),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       letterSpacing: -0.2,
       color: colors.ink,
     },
@@ -341,7 +341,7 @@ function useStyles() {
       flex: 1,
       textAlign: "center",
       fontSize: responsiveFont(12),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.inkMuted,
     },
     grid: {
@@ -370,7 +370,7 @@ function useStyles() {
     },
     dayText: {
       fontSize: responsiveFont(16),
-      fontWeight: "500",
+      fontFamily: getFontFamily("medium"),
       color: colors.ink,
     },
     dayTextPast: {
@@ -379,7 +379,7 @@ function useStyles() {
     },
     dayTextSelected: {
       color: colors.onAccent,
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
     },
     footer: {
       flexDirection: "row",
@@ -397,7 +397,7 @@ function useStyles() {
     },
     clearLabel: {
       fontSize: responsiveFont(16),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.inkSecondary,
     },
     confirmButton: {
@@ -413,7 +413,7 @@ function useStyles() {
     },
     confirmLabel: {
       fontSize: responsiveFont(16),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       color: colors.onAccent,
     },
     pressed: {

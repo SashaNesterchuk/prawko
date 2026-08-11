@@ -1,7 +1,7 @@
 import { View } from "react-native";
 
 import { Icon, type IconName } from "../icons";
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 export type SignLearningStatus = "new" | "mastered" | "wrong";
@@ -56,7 +56,7 @@ function useStyles() {
     label: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
     },
   }));
 }

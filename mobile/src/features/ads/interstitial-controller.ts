@@ -19,8 +19,12 @@ let autoRetryTimer: ReturnType<typeof setTimeout> | null = null;
 
 /** If the ad never opens, bail quickly so the result screen stays tappable. */
 const SHOW_OPEN_TIMEOUT_MS = 4_000;
-/** If it opened but never closed (ghost overlay), force-release the UI. */
-const SHOW_CLOSE_TIMEOUT_MS = 5_000;
+/**
+ * Safety net only: real interstitials often run 15–60s+. Resolving earlier
+ * (e.g. 5s) lets callers navigate under a still-visible ad — exam timers then
+ * advance in the background. Keep this longer than any normal creative.
+ */
+const SHOW_CLOSE_TIMEOUT_MS = 90_000;
 /** Max time spent waiting for a creative before skipping. */
 const ENSURE_ATTEMPTS = 2;
 const ENSURE_PER_ATTEMPT_MS = 2_500;
@@ -282,10 +286,12 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     isShowing = true;
     let didOpen = false;
+    let sawBackgroundDuringShow = false;
     let settled = false;
     let appStateSub: NativeEventSubscription | null = null;
     let openTimeout: ReturnType<typeof setTimeout> | null = null;
     let closeTimeout: ReturnType<typeof setTimeout> | null = null;
+    let appStateReleaseTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const cleanupTimers = () => {
       if (openTimeout) {
@@ -295,6 +301,10 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
       if (closeTimeout) {
         clearTimeout(closeTimeout);
         closeTimeout = null;
+      }
+      if (appStateReleaseTimeout) {
+        clearTimeout(appStateReleaseTimeout);
+        appStateReleaseTimeout = null;
       }
       appStateSub?.remove();
       appStateSub = null;
@@ -358,10 +368,25 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
       }
     );
 
-    // Ad flashed and vanished without CLOSED — or never properly opened.
-    // Returning to active must release the UI instead of waiting for timeouts.
+    // Ghost dismiss without CLOSED: only treat "active" as done after the app
+    // actually left the foreground during this show. A spurious active (or
+    // open flicker) must not unlock navigation under a still-visible ad.
     appStateSub = AppState.addEventListener("change", (nextState) => {
-      if (nextState !== "active" || !isShowing || settled) {
+      if (settled || !isShowing) {
+        return;
+      }
+
+      if (nextState === "inactive" || nextState === "background") {
+        sawBackgroundDuringShow = true;
+        return;
+      }
+
+      if (nextState !== "active") {
+        return;
+      }
+
+      if (didOpen && !sawBackgroundDuringShow) {
+        logAd("Ignoring AppState active — never left foreground after OPENED");
         return;
       }
 
@@ -371,7 +396,11 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
       const delayMs = didOpen ? 250 : 400;
 
       logAd(`App became active during show — ${reason}`);
-      setTimeout(() => {
+      if (appStateReleaseTimeout) {
+        clearTimeout(appStateReleaseTimeout);
+      }
+      appStateReleaseTimeout = setTimeout(() => {
+        appStateReleaseTimeout = null;
         if (!settled) {
           finish(Boolean(didOpen), reason);
         }

@@ -1,7 +1,7 @@
 import { Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { getSignDisplayName } from "../../features/road-signs/content/registry";
 import { SignImage } from "../../features/road-signs/SignImage";
 import type { RoadSign } from "../../features/road-signs/types";
@@ -64,7 +64,7 @@ function useStyles() {
       width: "100%",
       fontSize: responsiveFont(11),
       lineHeight: responsiveFont(14),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.ink,
       textAlign: "center",
     },

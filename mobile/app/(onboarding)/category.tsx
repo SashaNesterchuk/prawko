@@ -112,6 +112,7 @@ export default function CategoryScreen() {
                     styles.chipLabel,
                     isSelected ? styles.chipLabelSelected : null,
                   ]}
+                  semiBold
                 >
                   {option.id}
                 </CText>
@@ -167,6 +168,7 @@ export default function CategoryScreen() {
             <CText
               style={styles.title}
               testID="screen-onboarding-category"
+              bold
             >
               {t("onboarding.categoryPickTitle")}
             </CText>
@@ -250,7 +252,7 @@ function useStyles() {
         marginTop: spacing.exact(32),
         fontSize: responsiveFont(32),
         lineHeight: responsiveFont(32),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
         letterSpacing: -0.64,
         color: colors.textPrimary,
       },
@@ -287,7 +289,7 @@ function useStyles() {
       chipLabel: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.16,
         color: colors.textPrimary,
       },
@@ -333,7 +335,7 @@ function useStyles() {
       ctaLabel: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: colors.onAccent,
       },

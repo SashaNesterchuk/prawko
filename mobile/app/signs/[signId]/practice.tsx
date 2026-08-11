@@ -10,6 +10,7 @@ import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
 import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
 import {
   CText,
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveSpacing,
   useResponsiveStyles,
@@ -314,7 +315,7 @@ function useStyles({
       progressLabel: {
         fontSize: responsiveFont(12),
         lineHeight: responsiveFont(16),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: colors.textMuted,
         textTransform: "uppercase",
         letterSpacing: 0.4,
@@ -322,7 +323,7 @@ function useStyles({
       progressName: {
         fontSize: responsiveFont(18),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: colors.textPrimary,
       },
       heroCard: {
@@ -346,7 +347,7 @@ function useStyles({
       prompt: {
         fontSize: responsiveFont(18),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: colors.textPrimary,
       },
       options: {
@@ -379,11 +380,11 @@ function useStyles({
       },
       optionLabelCorrect: {
         color: accents.green.ink,
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
       },
       optionLabelWrong: {
         color: accents.red.ink,
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
       },
       feedbackCard: {
         gap: spacing.exact(4),
@@ -394,7 +395,7 @@ function useStyles({
       feedbackTitle: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: colors.textPrimary,
       },
       feedbackBody: {
@@ -416,7 +417,7 @@ function useStyles({
       primaryButtonLabel: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: accentInk,
       },
       resultWrap: {
@@ -443,14 +444,14 @@ function useStyles({
       resultTitle: {
         fontSize: responsiveFont(24),
         lineHeight: responsiveFont(32),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
         color: colors.textPrimary,
         textAlign: "center",
       },
       resultScore: {
         fontSize: responsiveFont(18),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: colors.textPrimary,
         textAlign: "center",
       },
@@ -469,7 +470,7 @@ function useStyles({
       missingTitle: {
         fontSize: responsiveFont(18),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: colors.textPrimary,
         textAlign: "center",
       },

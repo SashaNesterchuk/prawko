@@ -19,6 +19,7 @@ import {
 } from "../../src/features/questions/question-engine";
 import {
   CText,
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../src/portable-ui";
@@ -149,7 +150,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       flex: 1,
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       letterSpacing: -0.48,
       color: colors.textPrimary,
     },

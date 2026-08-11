@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { Icon } from "../icons";
 
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { getSignDisplayName } from "../../features/road-signs/content/registry";
 import { SignImage } from "../../features/road-signs/SignImage";
@@ -125,7 +125,7 @@ function useStyles() {
     code: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.ink2,
     },
     topActions: {
@@ -145,7 +145,7 @@ function useStyles() {
     name: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.ink,
       textAlign: "center",
     },

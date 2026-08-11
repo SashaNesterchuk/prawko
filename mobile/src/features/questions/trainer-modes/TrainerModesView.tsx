@@ -24,6 +24,7 @@ import {
 import { buildQuestionRouteParams } from "../question-routes";
 import {
   CText,
+  getFontFamily,
   getTypographyStyle,
   useResponsiveFonts,
   useResponsiveStyles,
@@ -333,7 +334,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       flex: 1,
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600" as const,
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.textPrimary,
     },

@@ -1,7 +1,7 @@
 import { Modal, Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import {
   getQuestionCountOptions,
@@ -151,7 +151,7 @@ function useStyles() {
       marginTop: spacing.exact(-4),
       fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       letterSpacing: -0.64,
       textAlign: "center",
       color: colors.ink,
@@ -190,7 +190,7 @@ function useStyles() {
     optionLabel: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.16,
       color: colors.ink,
     },
@@ -209,7 +209,7 @@ function useStyles() {
     startLabel: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.white,
     },

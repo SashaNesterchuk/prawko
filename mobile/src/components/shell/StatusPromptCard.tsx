@@ -3,6 +3,7 @@ import { Pressable, View } from "react-native";
 import { Icon } from "../icons";
 import {
   CText,
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -79,13 +80,13 @@ function useStyles() {
     eyebrow: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.inkMuted,
     },
     title: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.16,
       color: colors.ink,
     },

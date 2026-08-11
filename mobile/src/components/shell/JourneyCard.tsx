@@ -1,6 +1,6 @@
 import { Pressable, View } from "react-native";
 
-import { CText, useResponsiveStyles, type PercentageString } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles, type PercentageString } from "../../portable-ui";
 
 type JourneyCardProps = {
   eyebrow: string;
@@ -132,14 +132,14 @@ function useStyles({
     eyebrow: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.16,
       color: colors.white,
     },
     title: {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       letterSpacing: -0.48,
       color: colors.white,
     },
@@ -151,7 +151,7 @@ function useStyles({
     metaText: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.white,
       opacity: 0.9,
     },
@@ -183,13 +183,13 @@ function useStyles({
     nextLabel: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.inkMuted,
     },
     nextValue: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.ink,
     },
     button: {
@@ -208,7 +208,7 @@ function useStyles({
     buttonLabel: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: theme.accents.blue.ink,
     },
     chevron: {

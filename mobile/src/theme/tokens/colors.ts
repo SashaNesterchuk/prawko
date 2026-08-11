@@ -57,7 +57,7 @@ export const darkSemanticColors: SemanticColors = {
   surface2: "rgba(255,255,255,0.10)",
   inset: "rgba(255,255,255,0.05)",
   line: "rgba(255,255,255,0.10)",
-  ink: "#E9F0ED",
+  ink: "#15241E",
   ink2: "#9FB0A9",
   ink3: "#6B7B75",
   icon: "#6B7B75",

@@ -5,7 +5,7 @@ import { View } from "react-native";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { CText, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 
 const MINUTE_OPTIONS = [15, 25, 45, 60] as const;
@@ -74,7 +74,7 @@ function useStyles() {
     },
     optionTitle: {
       fontSize: responsiveFont(18),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       color: colors.textPrimary,
       marginBottom: spacing.exact(4),
     },

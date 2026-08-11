@@ -3,6 +3,7 @@ import { Pressable, View } from "react-native";
 
 import {
   CText,
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -110,7 +111,7 @@ function useStyles() {
       flex: 1,
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.16,
       color: colors.ink,
     },
@@ -125,7 +126,7 @@ function useStyles() {
     detailsLabel: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: theme.accents.blue.ink,
     },
     metricsRow: {
@@ -141,14 +142,14 @@ function useStyles() {
     metricValue: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.ink,
     },
     metricLabel: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       textAlign: "center",
       color: colors.inkMuted,
     },

@@ -63,6 +63,7 @@ import {
 import { getDaysUntilExamFromDate } from "../../src/features/study-plan/generate-local-study-plan";
 import {
   CText,
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveSpacing,
   useResponsiveStyles,
@@ -151,6 +152,9 @@ export default function StatisticsScreen() {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
+  const topicQuestionProgress = useQuestionProgressStore(
+    (state) => state.topicQuestionProgress
+  );
   const readinessAssessment = useQuestionProgressStore(
     (state) => state.readinessAssessment
   );
@@ -227,7 +231,11 @@ export default function StatisticsScreen() {
     () =>
       getQuestionTopicIds()
         .map((topicId) => {
-          const progress = getTopicProgress(topicId, questionUserState);
+          const progress = getTopicProgress(
+            topicId,
+            questionUserState,
+            topicQuestionProgress
+          );
 
           return {
             topicId,
@@ -238,7 +246,12 @@ export default function StatisticsScreen() {
           };
         })
         .filter((topic) => topic.total > 0),
-    [preferredLocale, questionUserState, questionCatalogVersion]
+    [
+      preferredLocale,
+      questionCatalogVersion,
+      questionUserState,
+      topicQuestionProgress,
+    ]
   );
 
   const signsCatalogProgress = useMemo(
@@ -594,7 +607,7 @@ export default function StatisticsScreen() {
                 }}
               />
 
-              <View style={styles.card}>
+              <View style={styles.card} testID="statistics-topics-card">
                 <View style={styles.cardHeader}>
                   <CText style={styles.cardTitle}>
                     {t("statistics.topicsTitle")}
@@ -616,8 +629,8 @@ export default function StatisticsScreen() {
                   </Pressable>
                 </View>
 
-                <View style={styles.topicList}>
-                  {topicRows.map((topic) => (
+                <View style={styles.topicList} testID="statistics-topics-list">
+                  {topicRows.map((topic, index) => (
                     <Pressable
                       key={topic.topicId}
                       accessibilityRole="button"
@@ -626,6 +639,7 @@ export default function StatisticsScreen() {
                         styles.topicPressable,
                         pressed ? styles.pressed : null,
                       ]}
+                      testID={`statistics-topic-row-index-${index}`}
                     >
                       <StatisticsTopicProgressRow
                         title={topic.title}
@@ -757,9 +771,10 @@ export default function StatisticsScreen() {
                 wrong={signsCatalogProgress.wrong}
                 seen={signsCatalogProgress.seen}
                 total={signsCatalogProgress.total}
-                correctAnswersLabel={t("statistics.correctAnswers")}
+                answersLabel={t("statistics.correctAnswers")}
                 trainAllLabel={t("signs.trainAll")}
                 onTrainAll={openSignsTraining}
+                variant="split"
               />
 
               <View style={styles.card}>
@@ -771,6 +786,7 @@ export default function StatisticsScreen() {
                       embedded
                       progress={progress}
                       title={t(`signs.categories.${category.id}.title`)}
+                      variant="split"
                       onPress={() =>
                         router.navigate({
                           pathname: "/signs/category/[categoryId]",
@@ -889,7 +905,7 @@ function useQueueRowStyles({
       queueCountText: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.16,
         color: countTextColor,
       },
@@ -984,7 +1000,7 @@ function useTopicsInfoStyles() {
     title: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.ink,
     },
@@ -1003,7 +1019,7 @@ function useTopicsInfoStyles() {
     closeLabel: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.ink,
     },
     pressed: {
@@ -1044,7 +1060,7 @@ function useStyles({
         flex: 1,
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: colors.textPrimary,
       },
@@ -1077,7 +1093,7 @@ function useStyles({
       segmentLabel: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "500",
+        fontFamily: getFontFamily("medium"),
         color: colors.textPrimary,
       },
       segmentLabelActive: {
@@ -1095,14 +1111,14 @@ function useStyles({
       ringValueNumber: {
         fontSize: responsiveFont(52),
         lineHeight: responsiveFont(52),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
         letterSpacing: -1.04,
         color: ringColor,
       },
       ringValuePercent: {
         fontSize: responsiveFont(40),
         lineHeight: responsiveFont(52),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
         letterSpacing: -0.8,
         color: ringColor,
       },
@@ -1116,7 +1132,7 @@ function useStyles({
       levelTitle: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: colors.textPrimary,
       },
@@ -1146,7 +1162,7 @@ function useStyles({
       weekBadgeLabel: {
         fontSize: responsiveFont(11),
         lineHeight: responsiveFont(12),
-        fontWeight: "500",
+        fontFamily: getFontFamily("medium"),
       },
       weekBadgeLabelFlat: {
         color: colors.textSecondary,
@@ -1163,7 +1179,7 @@ function useStyles({
       daysValue: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: colors.textPrimary,
       },
@@ -1182,7 +1198,7 @@ function useStyles({
       examDateCtaLabel: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "500",
+        fontFamily: getFontFamily("medium"),
         color: colors.textPrimary,
       },
       card: {
@@ -1206,7 +1222,7 @@ function useStyles({
         flex: 1,
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: colors.textPrimary,
       },
@@ -1248,7 +1264,7 @@ function useStyles({
       queueTitle: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.16,
         color: colors.textPrimary,
       },
@@ -1265,7 +1281,7 @@ function useStyles({
       weakTitle: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.16,
         color: colors.textPrimary,
       },
@@ -1328,7 +1344,7 @@ function useStyles({
       summaryValue: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "500",
+        fontFamily: getFontFamily("medium"),
         color: colors.textPrimary,
       },
       pressed: {

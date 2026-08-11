@@ -7,7 +7,7 @@ import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { AppTextInput } from "../../src/components/shell/AppTextInput";
-import { CText, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import {
   isMobileSupabaseConfigured,
   isMockAuthEnabled,
@@ -504,13 +504,13 @@ function useStyles() {
     cardTitle: {
       color: colors.textPrimary,
       fontSize: responsiveFont(18),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(4),
     },
     eyebrow: {
       color: colors.textSecondary,
       fontSize: responsiveFont(13),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(6),
       textTransform: "uppercase",
     },
@@ -545,7 +545,7 @@ function useStyles() {
     modeChipLabel: {
       color: colors.textPrimary,
       fontSize: responsiveFont(14),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
     },
     modeChipLabelActive: {
       color: colors.onAccent,
@@ -583,7 +583,7 @@ function useStyles() {
     },
     statusText: {
       fontSize: responsiveFont(14),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       lineHeight: responsiveFont(22),
     },
   }));

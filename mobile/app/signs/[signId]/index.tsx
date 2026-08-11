@@ -12,6 +12,7 @@ import { SignDetailToolbar } from "../../../src/components/shell/SignDetailToolb
 import { SignStatusBadge } from "../../../src/components/shell/SignStatusBadge";
 import {
   CText,
+  getFontFamily,
   useResponsiveSpacing,
   useResponsiveStyles,
 } from "../../../src/portable-ui";
@@ -196,7 +197,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       marginTop: spacing.sm,
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.ink,
     },
@@ -214,7 +215,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
     missingTitle: {
       fontSize: responsiveFont(18),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.ink,
       textAlign: "center",
     },

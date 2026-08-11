@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AppState, type AppStateStatus } from "react-native";
 
 import { EXAM_RULES, type QuestionScope } from "@prawko/config";
 
@@ -27,6 +28,9 @@ const DISPLAY_TICK_MS = 100;
  *   - When the video ends, countdown resumes with remaining + bonus (+5s).
  *   - If the countdown hits 0 without watching, the question times out.
  * Specialist: single 50s window (unchanged).
+ *
+ * Wall-clock also pauses while the app is inactive/background (e.g. interstitial
+ * overlay) so questions cannot auto-advance under a full-screen ad.
  */
 export function useExamQuestionTimer({
   enabled,
@@ -45,6 +49,9 @@ export function useExamQuestionTimer({
   const [phaseEpoch, setPhaseEpoch] = useState(0);
   const [hasPlayedVideo, setHasPlayedVideo] = useState(false);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const [isAppInactive, setIsAppInactive] = useState(
+    () => AppState.currentState !== "active"
+  );
 
   const phaseRef = useRef<ExamQuestionTimerPhase>("answer");
   const phaseStartedAtRef = useRef(0);
@@ -54,6 +61,9 @@ export function useExamQuestionTimer({
   const hasVideoRef = useRef(hasVideo);
   const hasPlayedVideoRef = useRef(false);
   const isTimerPausedRef = useRef(false);
+  const appInactiveSinceRef = useRef<number | null>(
+    AppState.currentState === "active" ? null : Date.now()
+  );
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -71,11 +81,42 @@ export function useExamQuestionTimer({
     isTimerPausedRef.current = isTimerPaused;
   }, [isTimerPaused]);
 
+  useEffect(() => {
+    const applyAppState = (nextState: AppStateStatus) => {
+      const nextInactive = nextState !== "active";
+
+      if (nextInactive) {
+        if (appInactiveSinceRef.current == null) {
+          appInactiveSinceRef.current = Date.now();
+        }
+        setIsAppInactive(true);
+        return;
+      }
+
+      // Shift the phase clock so inactive time does not count against the
+      // learner (interstitial / phone call / app switcher).
+      if (appInactiveSinceRef.current != null) {
+        phaseStartedAtRef.current += Date.now() - appInactiveSinceRef.current;
+        appInactiveSinceRef.current = null;
+      }
+      setIsAppInactive(false);
+    };
+
+    applyAppState(AppState.currentState);
+    const subscription = AppState.addEventListener("change", applyAppState);
+    return () => subscription.remove();
+  }, []);
+
   const beginPhase = useCallback(
     (nextPhase: ExamQuestionTimerPhase, durationSeconds: number) => {
+      const now = Date.now();
       const durationMs = Math.max(0, durationSeconds) * 1000;
       phaseEndedRef.current = false;
-      phaseStartedAtRef.current = Date.now();
+      phaseStartedAtRef.current = now;
+      // If we are already inactive, only credit inactivity from this phase start.
+      if (appInactiveSinceRef.current != null) {
+        appInactiveSinceRef.current = now;
+      }
       phaseDurationMsRef.current = durationMs;
       isTimerPausedRef.current = false;
       setIsTimerPaused(false);
@@ -153,9 +194,15 @@ export function useExamQuestionTimer({
     enterAnswerPhase(Math.min(resumedSeconds, maxSeconds));
   }, [enterAnswerPhase, timing?.readSeconds]);
 
-  // Tick while the countdown is running (not during paused video).
+  // Tick while the countdown is running (not during paused video / inactive app).
   useEffect(() => {
-    if (!enabled || !timing || phase === "media" || isTimerPaused) {
+    if (
+      !enabled ||
+      !timing ||
+      phase === "media" ||
+      isTimerPaused ||
+      isAppInactive
+    ) {
       return;
     }
 
@@ -194,6 +241,7 @@ export function useExamQuestionTimer({
   }, [
     enabled,
     enterAnswerPhase,
+    isAppInactive,
     isTimerPaused,
     phase,
     phaseEpoch,
@@ -204,6 +252,7 @@ export function useExamQuestionTimer({
   const isTimedOut =
     enabled &&
     !isTimerPaused &&
+    !isAppInactive &&
     phase !== "media" &&
     remainingSeconds <= 0 &&
     phaseTotalSeconds > 0 &&

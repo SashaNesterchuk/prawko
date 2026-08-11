@@ -10,7 +10,7 @@ import { STUDY_PLAN_LIMITS } from "@prawko/config";
 import { Icon } from "../../src/components/icons";
 import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
-import { CText, useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import {
   parseNullableIsoDate,
@@ -169,7 +169,7 @@ function useStyles() {
         marginTop: spacing.exact(32),
         fontSize: responsiveFont(32),
         lineHeight: responsiveFont(32),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
         letterSpacing: -0.64,
         color: colors.textPrimary,
       },
@@ -197,12 +197,12 @@ function useStyles() {
         flex: 1,
         fontSize: responsiveFont(18),
         lineHeight: responsiveFont(28),
-        fontWeight: "400",
+        fontFamily: getFontFamily("regular"),
         color: colors.textMuted,
       },
       fieldTextFilled: {
         color: colors.textPrimary,
-        fontWeight: "500",
+        fontFamily: getFontFamily("medium"),
       },
       footer: {
         gap: spacing.exact(20),
@@ -243,7 +243,7 @@ function useStyles() {
       ctaLabel: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: colors.onAccent,
       },

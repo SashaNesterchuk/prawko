@@ -15,6 +15,7 @@ import {
 import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
 import {
   CText,
+  getFontFamily,
   useResponsiveStyles,
 } from "../../../src/portable-ui";
 import {
@@ -206,7 +207,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
     trainButtonLabel: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.onAccent,
     },
     pressed: {

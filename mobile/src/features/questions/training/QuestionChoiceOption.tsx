@@ -1,7 +1,7 @@
 import { Pressable, View } from "react-native";
 
 import { Icon } from "../../../components/icons";
-import { CText, useResponsiveStyles } from "../../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 
 type QuestionChoice = {
@@ -58,7 +58,9 @@ export function QuestionChoiceOption({
           />
         ) : (
           <View style={styles.badge}>
-            <CText style={styles.badgeText}>{choice.id.toUpperCase()}</CText>
+            <CText style={styles.badgeText}>
+              {String.fromCharCode(65 + choiceIndex)}
+            </CText>
           </View>
         )
       ) : null}
@@ -124,7 +126,7 @@ function useQuestionChoiceStyles({
         badgeText: {
           fontSize: responsiveFont(12),
           lineHeight: responsiveFont(16),
-          fontWeight: "600",
+          fontFamily: getFontFamily("semiBold"),
           color: colors.textMuted,
         },
         label: {
@@ -140,7 +142,7 @@ function useQuestionChoiceStyles({
                 lineHeight: responsiveFont(20),
               }),
           color: labelColor,
-          fontWeight: filled || revealCorrect ? "600" : "400",
+          fontFamily: getFontFamily(filled || revealCorrect ? "semiBold" : "regular"),
         },
       };
     }

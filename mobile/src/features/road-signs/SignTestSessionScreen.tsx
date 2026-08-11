@@ -14,6 +14,7 @@ import { QuestionStepPill } from "../questions/training/QuestionStepPill";
 import { getQuestionStepState } from "../questions/training/visible-steps";
 import {
   CText,
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveSpacing,
   useResponsiveStyles,
@@ -354,7 +355,7 @@ function useStyles() {
       headerTitle: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "400",
+        fontFamily: getFontFamily("regular"),
         color: colors.ink,
       },
       headerSubtitle: {
@@ -406,7 +407,7 @@ function useStyles() {
       emptyTitle: {
         fontSize: responsiveFont(18),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: colors.textPrimary,
         textAlign: "center",
       },
@@ -419,7 +420,7 @@ function useStyles() {
       emptyButtonLabel: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: colors.textPrimary,
       },
       pressed: {

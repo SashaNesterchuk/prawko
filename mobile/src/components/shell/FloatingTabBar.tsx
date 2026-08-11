@@ -1,6 +1,7 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { Tabs } from "expo-router";
 import type { ComponentProps } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon, type IconName } from "../icons";
@@ -38,14 +39,19 @@ export function FloatingTabBar({
   const activePalette = theme.accents.green;
   const inactiveInk = theme.colors.ink3;
   const styles = useStyles({
-    bottomPadding: bottom > 0 ? bottom : spacing.md,
+    bottomPadding: Math.max(bottom, spacing.xxl),
   });
 
   return (
-    <View
-      pointerEvents="box-none"
-      style={styles.wrap}
-    >
+    <View pointerEvents="box-none" style={styles.wrap}>
+      <LinearGradient
+        colors={[`${theme.colors.paper}00`, theme.colors.paper]}
+        end={{ x: 0.5, y: 1 }}
+        locations={[0, 0.5]}
+        pointerEvents="none"
+        start={{ x: 0.5, y: 0 }}
+        style={styles.fade}
+      />
       <View style={styles.menu}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -109,44 +115,48 @@ function useStyles({
 }) {
   return useResponsiveStyles(
     ({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
-    wrap: {
-      position: "absolute",
-      left: 0,
-      right: 0,
-      bottom: 0,
-      paddingHorizontal: spacing.xxl,
-      paddingTop: spacing.sm,
-      paddingBottom: bottomPadding,
-      backgroundColor: colors.transparent,
-    },
-    menu: {
-      flexDirection: "row",
-      padding: spacing.xs,
-      borderRadius: radius.xxxxl,
-      backgroundColor: colors.surface,
-      ...elevation.raised,
-    },
-    tab: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      gap: spacing.xs,
-      paddingVertical: spacing.sm,
-      borderRadius: radius.xxxl,
-      overflow: "hidden",
-    },
-    tabActive: {
-      backgroundColor: theme.accents.green.soft,
-    },
-    label: {
-      ...withResponsiveFont(getTypographyStyle("labelXS"), responsiveFont),
-    },
-    labelActive: {
-      color: theme.accents.green.ink,
-    },
-    labelInactive: {
-      color: colors.ink3,
-    },
-  })
+      wrap: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        paddingHorizontal: spacing.xxl,
+        paddingTop: spacing.xxl,
+        paddingBottom: bottomPadding,
+        backgroundColor: colors.transparent,
+        overflow: "visible",
+      },
+      fade: {
+        ...StyleSheet.absoluteFillObject,
+      },
+      menu: {
+        flexDirection: "row",
+        padding: spacing.xs,
+        borderRadius: radius.xxxxl,
+        backgroundColor: colors.white,
+        ...elevation.raised,
+      },
+      tab: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.xs,
+        paddingVertical: spacing.sm,
+        borderRadius: radius.xxxl,
+        overflow: "hidden",
+      },
+      tabActive: {
+        backgroundColor: theme.accents.green.soft,
+      },
+      label: {
+        ...withResponsiveFont(getTypographyStyle("labelXS"), responsiveFont),
+      },
+      labelActive: {
+        color: theme.accents.green.ink,
+      },
+      labelInactive: {
+        color: colors.ink3,
+      },
+    })
   );
 }

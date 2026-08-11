@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { Icon } from "../../../components/icons";
 import { AppButton } from "../../../components/shell/AppButton";
-import { CText, useResponsiveStyles } from "../../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 
 type QuestionFeedbackBottomSheetProps = {
@@ -261,7 +261,7 @@ function useStyles({ feedbackTitleColor }: { feedbackTitleColor: string }) {
         flex: 1,
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: feedbackTitleColor,
       },
@@ -311,7 +311,7 @@ function useStyles({ feedbackTitleColor }: { feedbackTitleColor: string }) {
       masteryProgress: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: accents.green.ink,
       },
       explainRow: {

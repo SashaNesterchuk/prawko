@@ -1,4 +1,4 @@
-import { useResponsiveStyles } from "../../../portable-ui";
+import { getFontFamily, useResponsiveStyles } from "../../../portable-ui";
 
 export function useTrainerStyles({
   feedbackTitleColor,
@@ -74,7 +74,7 @@ export function useTrainerStyles({
       prompt: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "500",
+        fontFamily: getFontFamily("medium"),
         letterSpacing: -0.16,
         color: colors.textPrimary,
         marginBottom: spacing.exact(12),
@@ -118,7 +118,7 @@ export function useTrainerStyles({
         flex: 1,
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: feedbackTitleColor,
       },
@@ -168,7 +168,7 @@ export function useTrainerStyles({
       masteryProgress: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         color: accents.green.ink,
       },
       explainRow: {
@@ -203,7 +203,7 @@ export function useTrainerStyles({
       primaryButtonText: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: colors.onAccent,
       },
@@ -247,7 +247,7 @@ export function useTrainerStyles({
       resultTitle: {
         fontSize: responsiveFont(32),
         lineHeight: responsiveFont(36),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
         letterSpacing: -0.64,
         textAlign: "center",
         color: colors.textPrimary,
@@ -256,7 +256,7 @@ export function useTrainerStyles({
       resultPercent: {
         fontSize: responsiveFont(40),
         lineHeight: responsiveFont(40),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
         letterSpacing: -0.8,
         textAlign: "center",
         marginBottom: spacing.exact(12),
@@ -296,7 +296,7 @@ export function useTrainerStyles({
       nextTitle: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.16,
         color: colors.textPrimary,
       },

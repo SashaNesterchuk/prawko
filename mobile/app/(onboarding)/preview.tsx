@@ -6,7 +6,7 @@ import { View } from "react-native";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { CText, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   formatPlanDate,
@@ -245,7 +245,7 @@ function useStyles() {
     },
     summaryTitle: {
       fontSize: responsiveFont(24),
-      fontWeight: "800",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(8),
     },
     summaryLine: {
@@ -258,16 +258,16 @@ function useStyles() {
     },
     metricLabel: {
       fontSize: responsiveFont(13),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(8),
     },
     metricValue: {
       fontSize: responsiveFont(28),
-      fontWeight: "800",
+      fontFamily: getFontFamily("bold"),
     },
     sectionTitle: {
       fontSize: responsiveFont(16),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(8),
     },
     sectionBody: {
@@ -276,7 +276,7 @@ function useStyles() {
     },
     dayTitle: {
       fontSize: responsiveFont(17),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(4),
     },
     dayFocus: {

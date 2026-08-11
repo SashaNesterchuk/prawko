@@ -4,7 +4,12 @@ const shadowInk = "#142D21";
 
 type ElevationPreset = Pick<
   ViewStyle,
-  "shadowColor" | "shadowOffset" | "shadowOpacity" | "shadowRadius" | "elevation"
+  | "shadowColor"
+  | "shadowOffset"
+  | "shadowOpacity"
+  | "shadowRadius"
+  | "elevation"
+  | "boxShadow"
 >;
 
 export const elevation = {
@@ -14,6 +19,7 @@ export const elevation = {
     shadowOpacity: 0.05,
     shadowRadius: 12,
     elevation: 2,
+    boxShadow: "0px 2px 12px rgba(20, 45, 33, 0.05)",
   },
   raised: {
     shadowColor: shadowInk,
@@ -21,6 +27,7 @@ export const elevation = {
     shadowOpacity: 0.1,
     shadowRadius: 36,
     elevation: 8,
+    boxShadow: "0px 14px 36px rgba(20, 45, 33, 0.1)",
   },
   modal: {
     shadowColor: shadowInk,
@@ -28,6 +35,7 @@ export const elevation = {
     shadowOpacity: 0.22,
     shadowRadius: 64,
     elevation: 16,
+    boxShadow: "0px 26px 64px rgba(20, 45, 33, 0.22)",
   },
   sharp: {
     shadowColor: "#000000",
@@ -35,6 +43,7 @@ export const elevation = {
     shadowOpacity: 0.04,
     shadowRadius: 2,
     elevation: 2,
+    boxShadow: "0px 2px 2px rgba(0, 0, 0, 0.04)",
   },
 } as const satisfies Record<string, ElevationPreset>;
 

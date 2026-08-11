@@ -7,6 +7,7 @@ import type { TopicBlockId } from "@prawko/config";
 import { getTopicSections } from "../../features/learn/topic-sections";
 import {
   CText,
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -85,7 +86,7 @@ function useStyles({
     sectionTitle: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.ink,
       marginBottom: spacing.xs,
@@ -114,7 +115,7 @@ function useStyles({
     sectionIndexLabel: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: indexColor,
     },
     sectionCopy: {
@@ -124,7 +125,7 @@ function useStyles({
     sectionName: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.16,
       color: colors.ink,
     },

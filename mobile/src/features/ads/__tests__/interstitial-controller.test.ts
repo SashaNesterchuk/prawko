@@ -202,19 +202,29 @@ describe("interstitial-controller", () => {
     const showPromise = showPreloadedInterstitial();
     ad.emit(AdEventType.OPENED);
 
-    await jest.advanceTimersByTimeAsync(5_000);
+    // Still showing after a normal creative length — must not unlock early.
+    await jest.advanceTimersByTimeAsync(30_000);
+    expect(isInterstitialShowing()).toBe(true);
+
+    await jest.advanceTimersByTimeAsync(60_000);
     await expect(showPromise).resolves.toBe(true);
     expect(isInterstitialShowing()).toBe(false);
   });
 
-  it("releases on AppState active after OPENED (ghost dismiss)", async () => {
+  it("releases on AppState active after OPENED only if app left foreground", async () => {
     startInterstitialPreload();
     const ad = loadCurrentAd();
 
     const showPromise = showPreloadedInterstitial();
     ad.emit(AdEventType.OPENED);
-    mockAppState.__emit("active");
 
+    // Spurious active without inactive/background must not finish the show.
+    mockAppState.__emit("active");
+    await jest.advanceTimersByTimeAsync(250);
+    expect(isInterstitialShowing()).toBe(true);
+
+    mockAppState.__emit("inactive");
+    mockAppState.__emit("active");
     await jest.advanceTimersByTimeAsync(250);
     await expect(showPromise).resolves.toBe(true);
     expect(isInterstitialShowing()).toBe(false);

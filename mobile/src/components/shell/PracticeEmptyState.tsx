@@ -8,6 +8,7 @@ import { Icon, type IconName } from "../icons";
 import { buildQuestionRouteParams } from "../../features/questions/question-routes";
 import {
   CText,
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -143,7 +144,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       flex: 1,
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600" as const,
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.textPrimary,
     },
@@ -167,7 +168,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       marginTop: spacing.exact(32),
       fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
-      fontWeight: "700" as const,
+      fontFamily: getFontFamily("bold"),
       letterSpacing: -0.64,
       color: colors.textPrimary,
       textAlign: "center" as const,

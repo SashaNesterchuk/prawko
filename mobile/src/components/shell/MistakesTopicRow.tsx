@@ -1,7 +1,7 @@
 import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import {
   resolveMistakeRate,
@@ -86,7 +86,7 @@ function useStyles({ rateColor }: { rateColor: string }) {
     title: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.16,
       color: colors.ink,
     },
@@ -101,13 +101,13 @@ function useStyles({ rateColor }: { rateColor: string }) {
     fraction: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.ink2,
     },
     rateValue: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.16,
       color: rateColor,
     },

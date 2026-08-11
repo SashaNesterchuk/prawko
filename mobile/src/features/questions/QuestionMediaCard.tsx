@@ -14,6 +14,7 @@ import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
 import {
   CText,
+  getFontFamily,
   type PercentageString,
   useResponsiveFonts,
   useResponsiveStyles,
@@ -566,7 +567,7 @@ function useStyles() {
     errorTitle: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.textPrimary,
       textAlign: "center",
     },
@@ -596,7 +597,7 @@ function useStyles() {
     },
     retryLabel: {
       fontSize: responsiveFont(14),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.textSecondary,
     },
     pressed: {
@@ -621,7 +622,7 @@ function useStyles() {
     pjmIconGlyph: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "800",
+      fontFamily: getFontFamily("bold"),
       color: colors.onAccent,
       letterSpacing: 0.4,
     },

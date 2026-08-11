@@ -111,9 +111,10 @@ export function SignsHomeContent({
           wrong={catalogProgress.wrong}
           seen={catalogProgress.seen}
           total={catalogProgress.total}
-          correctAnswersLabel={t("signs.correctAnswers")}
+          answersLabel={t("signs.totalAnswers")}
           trainAllLabel={t("signs.trainAll")}
           onTrainAll={openSignsTraining}
+          variant="learned"
         />
 
         <View style={styles.categoryList}>
@@ -123,6 +124,7 @@ export function SignsHomeContent({
               category={category}
               progress={progress}
               title={t(`signs.categories.${category.id}.title`)}
+              variant="learned"
               onPress={() =>
                 router.navigate({
                   pathname: "/signs/category/[categoryId]",

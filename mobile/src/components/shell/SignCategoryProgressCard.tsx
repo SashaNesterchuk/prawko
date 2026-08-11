@@ -1,11 +1,12 @@
 import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { SignCategoryIcon } from "../../features/road-signs/SignCategoryIcon";
 import type { RoadSignCategory } from "../../features/road-signs/types";
 import { DualColorProgressBar } from "./DualColorProgressBar";
+import { MonoProgressBar } from "./MonoProgressBar";
 
 export type SignCategoryProgress = {
   correct: number;
@@ -14,6 +15,8 @@ export type SignCategoryProgress = {
   total: number;
 };
 
+export type SignCategoryProgressVariant = "learned" | "split";
+
 type SignCategoryProgressCardProps = {
   category: RoadSignCategory;
   title: string;
@@ -21,6 +24,11 @@ type SignCategoryProgressCardProps = {
   onPress?: () => void;
   /** Flat row inside a parent card (Statistics Signs tab). */
   embedded?: boolean;
+  /**
+   * `learned` — gray coverage bar (Signs home).
+   * `split` — red/green accuracy bar (Statistics).
+   */
+  variant?: SignCategoryProgressVariant;
 };
 
 export function SignCategoryProgressCard({
@@ -29,9 +37,12 @@ export function SignCategoryProgressCard({
   progress,
   onPress,
   embedded = false,
+  variant = "split",
 }: SignCategoryProgressCardProps) {
   const theme = useTheme();
   const seen = progress.correct + progress.wrong;
+  const learnedPercent =
+    progress.total > 0 ? Math.round((seen / progress.total) * 100) : 0;
   const styles = useStyles({ embedded });
 
   return (
@@ -46,12 +57,16 @@ export function SignCategoryProgressCard({
           {title}
         </CText>
 
-        <DualColorProgressBar
-          correct={progress.correct}
-          wrong={progress.wrong}
-          total={progress.total}
-          height={4}
-        />
+        {variant === "learned" ? (
+          <MonoProgressBar progress={learnedPercent} height={4} />
+        ) : (
+          <DualColorProgressBar
+            correct={progress.correct}
+            wrong={progress.wrong}
+            total={progress.total}
+            height={4}
+          />
+        )}
 
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
@@ -103,7 +118,7 @@ function useStyles({ embedded }: { embedded: boolean }) {
     title: {
       fontSize: responsiveFont(embedded ? 14 : 16),
       lineHeight: responsiveFont(embedded ? 20 : 24),
-      fontWeight: embedded ? "500" : "600",
+      fontFamily: getFontFamily(embedded ? "medium" : "semiBold"),
       letterSpacing: embedded ? 0 : -0.16,
       color: colors.ink,
     },
@@ -122,7 +137,7 @@ function useStyles({ embedded }: { embedded: boolean }) {
     statValue: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.ink2,
     },
     fraction: {
@@ -130,7 +145,7 @@ function useStyles({ embedded }: { embedded: boolean }) {
       textAlign: "right",
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.ink2,
     },
     previewWrap: {

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
-import { CText, useResponsiveStyles, type PercentageString } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles, type PercentageString } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { resolveTopicReadinessStatus } from "./TopicReadinessCard";
 
@@ -110,14 +110,14 @@ function useStyles({
     title: {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       letterSpacing: -0.48,
       color: colors.ink,
     },
     readinessValue: {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.24,
       color: readinessTextColor,
     },
@@ -172,7 +172,7 @@ function useStyles({
     statIconLabel: {
       fontSize: responsiveFont(10),
       lineHeight: responsiveFont(12),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       color: colors.ink,
     },
     statValue: {

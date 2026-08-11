@@ -1,6 +1,6 @@
 import { View } from "react-native";
 
-import { CText, useResponsiveStyles, type PercentageString } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles, type PercentageString } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { resolveTopicReadinessStatus } from "./TopicReadinessCard";
 
@@ -73,7 +73,7 @@ function useStyles({
     title: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "500",
+      fontFamily: getFontFamily("medium"),
       color: colors.ink,
     },
     meta: {

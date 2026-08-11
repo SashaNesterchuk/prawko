@@ -1,7 +1,7 @@
 import { Modal, Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type ExamRestartGateDialogProps = {
@@ -124,7 +124,7 @@ function useStyles() {
       marginTop: spacing.exact(-4),
       fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       letterSpacing: -0.64,
       textAlign: "center",
       color: colors.ink,
@@ -161,14 +161,14 @@ function useStyles() {
     watchLabel: {
       fontSize: responsiveFont(18),
       lineHeight: responsiveFont(26),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.white,
     },
     premiumLabel: {
       fontSize: responsiveFont(18),
       lineHeight: responsiveFont(26),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: theme.accents.green.fill,
     },

@@ -7,7 +7,7 @@ import { View } from "react-native";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { CText, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   buildExamRouteParams,
@@ -432,7 +432,7 @@ function useStyles() {
     },
     cardTitle: {
       fontSize: responsiveFont(18),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(4),
     },
     cardBody: {
@@ -452,7 +452,7 @@ function useStyles() {
     },
     historyTitle: {
       fontSize: responsiveFont(16),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(4),
     },
     historyMeta: {

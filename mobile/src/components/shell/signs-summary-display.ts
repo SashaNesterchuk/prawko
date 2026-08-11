@@ -11,7 +11,11 @@ export type SignsSummaryDisplay = {
   correctAnswersLabel: string;
 };
 
-/** Display values for the Signs summary card on Statistics / Signs home. */
+/**
+ * Display values for the Signs summary card.
+ * - Signs home (`learned`): gray bar + coverage in the footer.
+ * - Statistics (`split`): dual-color bar + correct/seen in the footer.
+ */
 export function resolveSignsSummaryDisplay({
   correct,
   wrong,

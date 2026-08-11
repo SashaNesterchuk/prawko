@@ -17,7 +17,7 @@ import {
   normalizeCapturedError,
   persistMobileErrorLog,
 } from "../features/errors/error-logging";
-import { CText, useResponsiveStyles } from "../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../portable-ui";
 import { useCurrentUser, useAppShellStore } from "../state/app-shell";
 import { type AnalyticsTrackPayload, useAnalytics } from "./AnalyticsProvider";
 
@@ -266,14 +266,14 @@ function useCrashStyles() {
       crashEyebrow: {
         color: accents.red.ink,
         fontSize: responsiveFont(12),
-        fontWeight: "800",
+        fontFamily: getFontFamily("bold"),
         letterSpacing: 1.4,
         textTransform: "uppercase",
       },
       crashTitle: {
         color: colors.textPrimary,
         fontSize: responsiveFont(28),
-        fontWeight: "800",
+        fontFamily: getFontFamily("bold"),
         lineHeight: responsiveFont(30),
       },
       crashBody: {
@@ -292,7 +292,7 @@ function useCrashStyles() {
       crashButtonLabel: {
         color: colors.onAccent,
         fontSize: responsiveFont(15),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
       },
       pressed: {
         opacity: 0.9,

@@ -1,6 +1,6 @@
 import { Modal, Pressable, View } from "react-native";
 
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 
 type TrainingExitDialogProps = {
   body: string;
@@ -127,7 +127,7 @@ function useStyles() {
     title: {
       fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       letterSpacing: -0.64,
       textAlign: "center",
       color: colors.ink,
@@ -163,14 +163,14 @@ function useStyles() {
     finishLabel: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.white,
     },
     continueLabel: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.ink,
     },

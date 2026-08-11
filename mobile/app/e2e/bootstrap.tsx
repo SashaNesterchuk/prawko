@@ -12,7 +12,7 @@ import {
 import type { E2EOfflinePackStatus } from "../../src/testing/e2e/state";
 import type { RemoteExamSessionStatus } from "../../src/features/exam/types";
 
-import { CText } from "../../src/portable-ui";
+import { CText, getFontFamily } from "../../src/portable-ui";
 type BootstrapParams = {
   category?: string | string[];
   daysUntilExam?: string | string[];
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "600",
+    fontFamily: getFontFamily("semiBold"),
     color: "#102A26",
     textAlign: "center",
   },

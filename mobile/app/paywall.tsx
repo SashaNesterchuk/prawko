@@ -520,7 +520,7 @@ export default function PaywallPage() {
                   name="crown-outline"
                   size={crownIconSize}
                 />
-                <CText style={styles.heroTitle}>
+                <CText semiBold style={styles.heroTitle}>
                   {t(
                     hasPlusAccess
                       ? "paywall.activeTitle"
@@ -529,7 +529,7 @@ export default function PaywallPage() {
                 </CText>
               </View>
               {!hasPlusAccess ? (
-                <CText style={styles.heroPrice}>
+                <CText bold style={styles.heroPrice}>
                   {t("paywall.priceHeadline", { price: displayPrice })}
                 </CText>
               ) : null}
@@ -537,7 +537,7 @@ export default function PaywallPage() {
 
             {hasPlusAccess ? (
               <View style={styles.activeCard}>
-                <CText style={styles.activeCardTitle}>
+                <CText semiBold style={styles.activeCardTitle}>
                   {t("paywall.purchaseAccessActive")}
                 </CText>
                 <CText style={styles.activeCardBody}>
@@ -608,7 +608,7 @@ export default function PaywallPage() {
                   {isPurchasing ? (
                     <ActivityIndicator color={colors.onAccent} />
                   ) : (
-                    <CText style={styles.ctaLabel}>
+                    <CText semiBold style={styles.ctaLabel}>
                       {t("paywall.activateCta")}
                     </CText>
                   )}
@@ -641,7 +641,9 @@ export default function PaywallPage() {
                   pressed ? styles.pressed : null,
                 ]}
               >
-                <CText style={styles.ctaLabel}>{t("paywall.primaryCta")}</CText>
+                <CText semiBold style={styles.ctaLabel}>
+                  {t("paywall.primaryCta")}
+                </CText>
               </Pressable>
             )}
           </View>
@@ -720,7 +722,6 @@ function useStyles() {
     heroTitle: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
       letterSpacing: -0.2,
       textAlign: "center",
       color: colors.onAccent,
@@ -728,7 +729,6 @@ function useStyles() {
     heroPrice: {
       fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
-      fontWeight: "700",
       letterSpacing: -0.64,
       textAlign: "center",
       color: colors.onAccent,
@@ -743,7 +743,6 @@ function useStyles() {
     activeCardTitle: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
       color: colors.onAccent,
     },
     activeCardBody: {
@@ -761,7 +760,6 @@ function useStyles() {
     noAdsBadgeText: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "400",
       textAlign: "center",
       color: colors.onAccent,
     },
@@ -795,7 +793,6 @@ function useStyles() {
     lifetimeText: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "400",
       color: colors.onAccent,
     },
     lifetimeDot: {
@@ -824,7 +821,6 @@ function useStyles() {
     ctaLabel: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
       letterSpacing: -0.2,
       textAlign: "center",
       color: colors.onAccent,
@@ -837,7 +833,6 @@ function useStyles() {
     restoreLabel: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "400",
       color: colors.onAccentMuted,
     },
   }));

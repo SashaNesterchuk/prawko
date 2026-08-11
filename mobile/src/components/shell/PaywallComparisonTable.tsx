@@ -39,7 +39,9 @@ export function PaywallComparisonTable({
       <View style={[styles.row, styles.headerRow]}>
         <View style={styles.featureColumn} />
         <CText style={styles.headerFree}>{freeLabel}</CText>
-        <CText style={styles.headerPremium}>{premiumLabel}</CText>
+        <CText semiBold style={styles.headerPremium}>
+          {premiumLabel}
+        </CText>
       </View>
 
       {rows.map((row, index) => (
@@ -48,7 +50,9 @@ export function PaywallComparisonTable({
           style={[styles.row, index < rows.length - 1 ? styles.rowBorder : null]}
         >
           <View style={styles.featureColumn}>
-            <CText style={styles.featureTitle}>{row.title}</CText>
+            <CText medium style={styles.featureTitle}>
+              {row.title}
+            </CText>
             {row.subtitle ? (
               <CText style={styles.featureSubtitle}>{row.subtitle}</CText>
             ) : null}
@@ -84,6 +88,7 @@ function ComparisonCell({ cell }: { cell: PaywallComparisonCell }) {
       ) : null}
       {cell.kind === "label" ? (
         <CText
+          semiBold={cell.tone === "emphasis" || cell.tone === "danger"}
           style={[
             styles.cellLabel,
             cell.tone === "emphasis" ? styles.cellLabelEmphasis : null,
@@ -134,7 +139,6 @@ function useStyles() {
       width: spacing.exact(72),
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
       textAlign: "center",
       color: colors.inkSecondary,
     },
@@ -142,20 +146,17 @@ function useStyles() {
       width: spacing.exact(72),
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "600",
       textAlign: "center",
       color: theme.accents.amber.ink,
     },
     featureTitle: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "500",
       color: colors.ink,
     },
     featureSubtitle: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
       color: colors.inkMuted,
     },
     cell: {
@@ -167,16 +168,13 @@ function useStyles() {
     cellLabel: {
       fontSize: responsiveFont(11),
       lineHeight: responsiveFont(14),
-      fontWeight: "400",
       textAlign: "center",
       color: colors.inkMuted,
     },
     cellLabelEmphasis: {
-      fontWeight: "600",
       color: theme.accents.green.fill,
     },
     cellLabelDanger: {
-      fontWeight: "600",
       color: theme.accents.red.fill,
     },
   }));

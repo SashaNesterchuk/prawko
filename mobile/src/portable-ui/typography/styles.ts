@@ -77,7 +77,6 @@ export function getTypographyStyle(key: TypographyStyleKey): TextStyle {
     fontSize: preset.fontSize,
     lineHeight: preset.lineHeight,
     letterSpacing: preset.letterSpacing,
-    fontWeight: preset.fontWeight,
     ...createFontFamilyStyle(fontWeightKey),
   };
 }

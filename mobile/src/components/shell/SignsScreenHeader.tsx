@@ -4,6 +4,7 @@ import { Pressable, View } from "react-native";
 import { Icon } from "../icons";
 import {
   CText,
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -76,7 +77,7 @@ function useStyles() {
       flex: 1,
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: colors.ink,
     },

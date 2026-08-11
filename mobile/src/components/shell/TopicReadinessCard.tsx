@@ -1,7 +1,8 @@
 import { Pressable, View } from "react-native";
 
-import { CText, useResponsiveStyles, type PercentageString } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles, type PercentageString } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
+import { Icon } from "../icons/Icon";
 
 export type TopicReadinessStatus = "not_started" | "bad" | "normal" | "good";
 
@@ -81,11 +82,21 @@ export function TopicReadinessCard({
       <View style={styles.footerRow}>
         <View style={styles.statsGroup}>
           <View style={styles.statItem}>
-            <CText style={[styles.statIcon, styles.statGood]}>✓</CText>
+            <Icon
+              name="check"
+              size={16}
+              color={theme.accents.green.fill}
+              style={styles.statIcon}
+            />
             <CText style={styles.footerLabel}>{resolvedCorrect}</CText>
           </View>
           <View style={styles.statItem}>
-            <CText style={[styles.statIcon, styles.statBad]}>✕</CText>
+            <Icon
+              name="close"
+              size={16}
+              color={theme.accents.red.fill}
+              style={styles.statIcon}
+            />
             <CText style={styles.footerLabel}>{resolvedWrong}</CText>
           </View>
         </View>
@@ -134,7 +145,7 @@ function useStyles({
   readinessTextColor: string;
   readinessWidth: PercentageString;
 }) {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     card: {
       width: "100%",
       flexDirection: "row",
@@ -163,14 +174,14 @@ function useStyles({
       minWidth: 0,
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.16,
       color: colors.ink,
     },
     readinessValue: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: readinessTextColor,
     },
     track: {
@@ -204,20 +215,12 @@ function useStyles({
       gap: spacing.exact(4),
     },
     statIcon: {
-      fontSize: responsiveFont(12),
-      lineHeight: responsiveFont(16),
-      fontWeight: "700",
-    },
-    statGood: {
-      color: theme.accents.green.ink,
-    },
-    statBad: {
-      color: theme.accents.red.ink,
+      opacity: 0.6,
     },
     footerLabel: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.inkMuted,
     },
   }));

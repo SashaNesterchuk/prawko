@@ -11,6 +11,7 @@ import { SignSearchField } from "../../src/components/shell/SignSearchField";
 import { SignsScreenHeader } from "../../src/components/shell/SignsScreenHeader";
 import {
   CText,
+  getFontFamily,
   useResponsiveSpacing,
   useResponsiveStyles,
 } from "../../src/portable-ui";
@@ -141,7 +142,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
     sectionTitle: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.16,
       color: colors.ink,
     },
@@ -156,7 +157,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
     emptyTitle: {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       letterSpacing: -0.48,
       color: colors.ink,
       textAlign: "center",
@@ -174,7 +175,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
     hintTitle: {
       fontSize: responsiveFont(18),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.ink,
     },
     hintDescription: {

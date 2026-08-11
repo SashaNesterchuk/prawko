@@ -3,7 +3,7 @@ import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
 import { NavigationButton } from "./NavigationButton";
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type SignDetailToolbarProps = {
@@ -101,7 +101,7 @@ function useStyles() {
     code: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.ink,
     },
     category: {

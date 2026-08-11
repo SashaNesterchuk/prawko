@@ -1,6 +1,6 @@
 import { View } from "react-native";
 
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 export function IconPlaceholder({
@@ -40,7 +40,7 @@ function useStyles({
     glyph: {
       color: glyphColor,
       fontSize: Math.round(size * 0.72),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       lineHeight: undefined,
     },
   }));

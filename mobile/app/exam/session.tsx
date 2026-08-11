@@ -46,7 +46,7 @@ import { syncQuestionBookmarkState } from "../../src/features/questions/supabase
 import type { LocalQuestion } from "../../src/features/questions/types";
 import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefetchQuestionMedia";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
-import { CText, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
@@ -1323,7 +1323,7 @@ function useStyles() {
       devCheatLabel: {
         fontSize: responsiveFont(10),
         lineHeight: responsiveFont(12),
-        fontWeight: "700",
+        fontFamily: getFontFamily("bold"),
         color: colors.white,
       },
       contentPad: {
@@ -1368,7 +1368,7 @@ function useStyles() {
       timerPillText: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.14,
         fontVariant: ["tabular-nums"],
         color: colors.textPrimary,
@@ -1412,14 +1412,14 @@ function useStyles() {
       timerValue: {
         fontSize: responsiveFont(12),
         lineHeight: responsiveFont(16),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         fontVariant: ["tabular-nums"],
         color: colors.textSecondary,
       },
       promptText: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "500",
+        fontFamily: getFontFamily("medium"),
         letterSpacing: -0.16,
         color: colors.textPrimary,
         paddingHorizontal: spacing.exact(24),
@@ -1464,7 +1464,7 @@ function useStyles() {
       },
       optionLabelSelected: {
         color: colors.onAccent,
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
       },
       letterCircle: {
         width: spacing.exact(24),
@@ -1482,7 +1482,7 @@ function useStyles() {
       letterText: {
         fontSize: responsiveFont(12),
         lineHeight: responsiveFont(16),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         textAlign: "center",
         color: colors.textMuted,
       },
@@ -1545,7 +1545,7 @@ function useStyles() {
       primaryButtonLabel: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: colors.onAccent,
       },
@@ -1567,7 +1567,7 @@ function useStyles() {
       centeredTitle: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: colors.textPrimary,
         textAlign: "center",

@@ -1,6 +1,6 @@
 import { ActivityIndicator, View } from "react-native";
 
-import { CText, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type StateViewProps = {
@@ -53,7 +53,7 @@ function useStyles() {
     title: {
       fontSize: responsiveFont(22),
       lineHeight: responsiveFont(28),
-      fontWeight: "800",
+      fontFamily: getFontFamily("bold"),
       color: colors.textPrimary,
       textAlign: "center",
     },

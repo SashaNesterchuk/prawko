@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
-import { CText, useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { useHasAiChatAccess } from "../../state/entitlements";
 import {
@@ -336,7 +336,7 @@ function useStyles() {
       prompt: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontWeight: "500",
+        fontFamily: getFontFamily("medium"),
         letterSpacing: -0.16,
         color: colors.textPrimary,
         marginBottom: spacing.exact(12),
@@ -361,7 +361,7 @@ function useStyles() {
       missingTitle: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontWeight: "600",
+        fontFamily: getFontFamily("semiBold"),
         textAlign: "center",
         color: colors.textPrimary,
       },

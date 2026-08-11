@@ -7,7 +7,7 @@ import { PLAN_LEVELS } from "@prawko/config";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { CText, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 
 export default function LevelScreen() {
@@ -68,7 +68,7 @@ function useStyles() {
     },
     optionTitle: {
       fontSize: responsiveFont(18),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       color: colors.textPrimary,
       marginBottom: spacing.exact(4),
     },

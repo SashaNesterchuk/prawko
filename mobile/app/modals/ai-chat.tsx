@@ -13,7 +13,7 @@ import {
   EmptyStateView,
   LoadingStateView,
 } from "../../src/components/shell/StateViews";
-import { CText, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import {
   getAnswerTextFromContext,
 } from "../../src/features/ai/question-chat-context";
@@ -292,7 +292,7 @@ function useStyles() {
     eyebrow: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(18),
-      fontWeight: "800",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(8),
       color: colors.textSecondary,
       textTransform: "uppercase",
@@ -306,7 +306,7 @@ function useStyles() {
     messageRole: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(18),
-      fontWeight: "800",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(8),
       color: colors.textSecondary,
       textTransform: "uppercase",
@@ -326,7 +326,7 @@ function useStyles() {
     metaPillLabel: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(18),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.textSecondary,
     },
     metaPillLabelAccent: {
@@ -341,12 +341,12 @@ function useStyles() {
     prompt: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       color: colors.textPrimary,
     },
     sectionTitle: {
       fontSize: responsiveFont(16),
-      fontWeight: "700",
+      fontFamily: getFontFamily("bold"),
       marginBottom: spacing.exact(8),
       color: colors.textPrimary,
     },

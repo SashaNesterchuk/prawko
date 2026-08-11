@@ -3,6 +3,7 @@ import { Pressable, View } from "react-native";
 
 import {
   CText,
+  getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -95,7 +96,7 @@ function useStyles() {
     priceBadgeText: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: theme.accents.green.ink,
     },
     copy: {
@@ -104,14 +105,14 @@ function useStyles() {
     title: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "600",
+      fontFamily: getFontFamily("semiBold"),
       letterSpacing: -0.2,
       color: theme.colors.white,
     },
     description: {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
-      fontWeight: "400",
+      fontFamily: getFontFamily("regular"),
       color: colors.onAccentSoft,
     },
   }));
