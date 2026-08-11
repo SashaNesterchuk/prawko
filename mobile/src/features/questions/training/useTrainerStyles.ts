@@ -33,8 +33,8 @@ export function useTrainerStyles({
         justifyContent: "space-between",
       },
       headerTitle: {
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(24),
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
         color: colors.textPrimary,
       },
       headerCounter: {
@@ -254,10 +254,10 @@ export function useTrainerStyles({
         marginBottom: spacing.exact(16),
       },
       resultPercent: {
-        fontSize: responsiveFont(52),
-        lineHeight: responsiveFont(54),
+        fontSize: responsiveFont(40),
+        lineHeight: responsiveFont(40),
         fontWeight: "700",
-        letterSpacing: -0.52,
+        letterSpacing: -0.8,
         textAlign: "center",
         marginBottom: spacing.exact(12),
         color: resultPercentColor,

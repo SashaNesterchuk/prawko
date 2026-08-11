@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
@@ -14,6 +14,7 @@ import {
 } from "../../../src/components/shell/QuestionCountDialog";
 import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
 import {
+  CText,
   useResponsiveStyles,
 } from "../../../src/portable-ui";
 import {
@@ -142,7 +143,7 @@ export default function SignsCategoryScreen() {
             ]}
             testID="signs-train-category"
           >
-            <Text style={styles.trainButtonLabel}>{t("signs.trainCategory")}</Text>
+            <CText style={styles.trainButtonLabel}>{t("signs.trainCategory")}</CText>
           </Pressable>
         </View>
 

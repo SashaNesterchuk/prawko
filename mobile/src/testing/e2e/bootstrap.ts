@@ -9,7 +9,10 @@ import {
 import type { Href } from "expo-router";
 
 import { getQuestionBank } from "../../features/questions/question-bank";
-import type { QuestionOptionValue } from "../../features/questions/types";
+import type {
+  QuestionOptionValue,
+  QuestionSession,
+} from "../../features/questions/types";
 import { createLocalExamSessionId } from "../../features/exam/exam-session-id";
 import { seedPersistedExamSnapshot } from "../../features/exam/exam-snapshot-cache";
 import { getScaledExamPassPoints } from "../../features/exam/exam-config";
@@ -23,6 +26,7 @@ import { finalizeLocalOnboarding } from "../../features/onboarding/finalize-loca
 import { isRoadSignCategoryId } from "../../features/road-signs/catalog";
 import { getExamDateFromDays } from "../../features/study-plan/generate-local-study-plan";
 import { useAppShellStore } from "../../state/app-shell";
+import { useQuestionProgressStore } from "../../state/question-progress";
 import {
   configureE2ETestOverrides,
   resetE2ETestOverrides,
@@ -42,7 +46,8 @@ export type E2EDestination =
   | "trainer-modes"
   | "exam-session"
   | "exam-result"
-  | "exam-answers";
+  | "exam-answers"
+  | "question-result";
 
 type PrepareE2EAppStateInput = {
   category?: string | null;
@@ -54,19 +59,24 @@ type PrepareE2EAppStateInput = {
   offlinePackStatus?: E2EOfflinePackStatus | null;
   plusAccess?: boolean | null;
   reachability?: boolean | null;
+  seedQuestionResult?: boolean | null;
 };
 
 type ResolveE2EDestinationInput = {
   destination?: string | null;
   reviewStartOrder?: number | null;
   seededExamSessionId?: string | null;
+  seededQuestionSessionKey?: string | null;
   signCategoryId?: string | null;
   topicId?: string | null;
 };
 
 export async function prepareE2EAppState(
   input: PrepareE2EAppStateInput = {},
-): Promise<{ seededExamSessionId: string | null }> {
+): Promise<{
+  seededExamSessionId: string | null;
+  seededQuestionSessionKey: string | null;
+}> {
   const store = useAppShellStore.getState();
   const preferredCategory = resolveCategory(input.category);
   const daysUntilExam = resolveDaysUntilExam(input.daysUntilExam);
@@ -93,6 +103,8 @@ export async function prepareE2EAppState(
 
   finalizeLocalOnboarding();
 
+  await waitForQuestionProgressHydrated();
+
   const seededExamSessionId = input.examSessionStatus
     ? await seedE2EExamSnapshot({
         category: resolveLooseCategory(input.examSessionCategory) ?? preferredCategory,
@@ -101,8 +113,15 @@ export async function prepareE2EAppState(
       })
     : null;
 
+  const seededQuestionSessionKey = input.seedQuestionResult
+    ? seedE2EFinishedQuestionSession({
+        category: preferredCategory,
+      })
+    : null;
+
   return {
     seededExamSessionId,
+    seededQuestionSessionKey,
   };
 }
 
@@ -166,6 +185,17 @@ export function resolveE2EDestination(
             },
           }
         : "/(tabs)";
+    case "question-result":
+      return input.seededQuestionSessionKey
+        ? {
+            pathname: "/question",
+            params: {
+              mode: "learning",
+              questionLimit: "5",
+              session: input.seededQuestionSessionKey,
+            },
+          }
+        : "/(tabs)";
     case "home":
     default:
       return "/(tabs)";
@@ -190,6 +220,7 @@ function normalizeDestination(
     case "exam-session":
     case "exam-result":
     case "exam-answers":
+    case "question-result":
       return normalized;
     case "home":
     default:
@@ -226,6 +257,29 @@ function resolveTopicId(value: string | null | undefined) {
 function resolveLooseCategory(value: string | null | undefined) {
   const normalized = value?.trim().toUpperCase();
   return normalized ? (normalized as DrivingCategory) : null;
+}
+
+function waitForQuestionProgressHydrated(timeoutMs = 5000) {
+  if (useQuestionProgressStore.getState().hasHydrated) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      unsubscribe();
+      reject(new Error("Timed out waiting for question progress hydration."));
+    }, timeoutMs);
+
+    const unsubscribe = useQuestionProgressStore.subscribe((state) => {
+      if (!state.hasHydrated) {
+        return;
+      }
+
+      clearTimeout(timeoutId);
+      unsubscribe();
+      resolve();
+    });
+  });
 }
 
 async function seedE2EExamSnapshot(input: {
@@ -338,4 +392,63 @@ function pickWrongAnswer(correctAnswer: QuestionOptionValue): QuestionOptionValu
     default:
       return "A";
   }
+}
+
+/** Finished 5-question learning session so `/question` opens the result screen. */
+function seedE2EFinishedQuestionSession(input: {
+  category: DrivingCategory;
+}) {
+  const sessionKey = `e2e-question-result-${Date.now().toString(36)}`;
+  const sourceQuestions = getQuestionBank().slice(0, 5);
+
+  if (sourceQuestions.length === 0) {
+    throw new Error("E2E training result seed needs a local question bank.");
+  }
+
+  const questionIds = sourceQuestions.map((question) => question.id);
+  const answers = Object.fromEntries(
+    sourceQuestions.map((question, index) => {
+      const isCorrect = index !== 2;
+      const selectedAnswer = isCorrect
+        ? question.correctAnswer
+        : pickWrongAnswer(question.correctAnswer);
+
+      return [
+        question.id,
+        {
+          questionId: question.id,
+          selectedAnswer,
+          isCorrect,
+          answeredAt: new Date(
+            Date.now() - (sourceQuestions.length - index) * 20_000
+          ).toISOString(),
+        },
+      ];
+    })
+  );
+
+  const session: QuestionSession = {
+    id: `session-${sessionKey}`,
+    request: {
+      currentCategory: input.category,
+      mode: "learning",
+      questionLimit: questionIds.length,
+      sessionKey,
+    },
+    questionIds,
+    currentIndex: questionIds.length - 1,
+    answers,
+    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    finishedAt: new Date().toISOString(),
+    emptyReason: null,
+  };
+
+  useQuestionProgressStore.setState({
+    activeSession: session,
+    lastTrainingSessionPercents: {
+      "learning:all": 100,
+    },
+  });
+
+  return sessionKey;
 }

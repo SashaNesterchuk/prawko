@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ACTIVE_CATEGORIES, type DrivingCategory } from "@prawko/config";
@@ -10,6 +10,7 @@ import { Icon, type IconName } from "../../src/components/icons";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../src/components/shell/NavigationButton";
 import {
+  CText,
   getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
@@ -106,14 +107,14 @@ export default function CategoryScreen() {
                 ]}
                 testID={`onboarding-category-${option.id}`}
               >
-                <Text
+                <CText
                   style={[
                     styles.chipLabel,
                     isSelected ? styles.chipLabelSelected : null,
                   ]}
                 >
                   {option.id}
-                </Text>
+                </CText>
                 <Icon
                   name={option.icon}
                   size={chipIconSize}
@@ -139,7 +140,7 @@ export default function CategoryScreen() {
               type="back"
               inset
             />
-            <Text style={styles.topBarTitle}>{t("profile.categoryTitle")}</Text>
+            <CText style={styles.topBarTitle}>{t("profile.categoryTitle")}</CText>
           </View>
 
           <ScrollView
@@ -163,12 +164,12 @@ export default function CategoryScreen() {
               <Icon name="book" size={badgeIconSize} color={colors.icon} />
             </View>
 
-            <Text
+            <CText
               style={styles.title}
               testID="screen-onboarding-category"
             >
               {t("onboarding.categoryPickTitle")}
-            </Text>
+            </CText>
 
             {categoryGrid}
           </View>
@@ -192,7 +193,7 @@ export default function CategoryScreen() {
               ]}
               testID="onboarding-category-continue"
             >
-              <Text style={styles.ctaLabel}>{t("common.continue")}</Text>
+              <CText style={styles.ctaLabel}>{t("common.continue")}</CText>
             </Pressable>
           </View>
         </View>

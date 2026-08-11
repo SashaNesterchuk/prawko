@@ -1,7 +1,8 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -30,12 +31,12 @@ export function StatusPromptCard({
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
     >
       <View style={styles.copy}>
-        <Text style={styles.eyebrow} numberOfLines={1}>
+        <CText style={styles.eyebrow} numberOfLines={1}>
           {eyebrow}
-        </Text>
-        <Text style={styles.title} numberOfLines={1}>
+        </CText>
+        <CText style={styles.title} numberOfLines={1}>
           {title}
-        </Text>
+        </CText>
       </View>
 
       <View style={styles.trailing}>

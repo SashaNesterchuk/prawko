@@ -1,12 +1,12 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Linking, Text, View } from "react-native";
+import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   getRevenueCatErrorMessage,
@@ -175,12 +175,12 @@ export default function AccessCenterModalScreen() {
       <View style={styles.contentStack}>
         {!hasRealAuth ? (
           <AppCard accent>
-            <Text style={styles.sectionLabel}>
+            <CText style={styles.sectionLabel}>
               {t("accessCenter.authRequiredTitle")}
-            </Text>
-            <Text style={styles.bodyText}>
+            </CText>
+            <CText style={styles.bodyText}>
               {t("accessCenter.authRequiredBody")}
-            </Text>
+            </CText>
             <View style={styles.inlineAction}>
               <AppButton
                 label={t("accessCenter.openSignIn")}
@@ -191,22 +191,22 @@ export default function AccessCenterModalScreen() {
         ) : null}
 
         <AppCard accent>
-          <Text style={styles.sectionLabel}>{t("accessCenter.statusTitle")}</Text>
-          <Text style={styles.bodyText}>{t("accessCenter.statusSubtitle")}</Text>
+          <CText style={styles.sectionLabel}>{t("accessCenter.statusTitle")}</CText>
+          <CText style={styles.bodyText}>{t("accessCenter.statusSubtitle")}</CText>
           <View style={styles.statusList}>
-            <Text style={styles.statusLine}>
+            <CText style={styles.statusLine}>
               {hasPlusAccess
                 ? t("profile.plusAccessActive")
                 : t("profile.plusAccessMissing")}
-            </Text>
-            <Text style={styles.statusLine}>
+            </CText>
+            <CText style={styles.statusLine}>
               {purchaseAccess
                 ? t("profile.purchaseAccessValue", {
                     date:
                       purchaseAccessEndsAt ?? t("profile.accessNoExpiry"),
                   })
                 : t("profile.purchaseAccessMissing")}
-            </Text>
+            </CText>
           </View>
           {purchaseAccess?.managementUrl ? (
             <View style={styles.inlineAction}>
@@ -220,10 +220,10 @@ export default function AccessCenterModalScreen() {
         </AppCard>
 
         <AppCard>
-          <Text style={styles.sectionLabel}>{t("paywall.purchaseAccessTitle")}</Text>
-          <Text style={styles.bodyText}>{t("accessCenter.restoreBody")}</Text>
+          <CText style={styles.sectionLabel}>{t("paywall.purchaseAccessTitle")}</CText>
+          <CText style={styles.bodyText}>{t("accessCenter.restoreBody")}</CText>
           {!revenueCatConfigured ? (
-            <Text style={styles.helperText}>{t("paywall.directMissingConfig")}</Text>
+            <CText style={styles.helperText}>{t("paywall.directMissingConfig")}</CText>
           ) : null}
           {restoreFeedback ? (
             <StatusCard
@@ -270,14 +270,14 @@ function StatusCard({
         kind === "error" ? styles.statusError : styles.statusSuccess,
       ]}
     >
-      <Text
+      <CText
         style={[
           styles.statusText,
           kind === "error" ? styles.statusErrorText : styles.statusSuccessText,
         ]}
       >
         {message}
-      </Text>
+      </CText>
     </View>
   );
 }

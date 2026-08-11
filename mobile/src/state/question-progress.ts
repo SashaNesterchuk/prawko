@@ -16,6 +16,10 @@ import {
   resumeQuestionSession,
   seedTopicQuestionProgressFromUserState,
 } from "../features/questions/question-engine";
+import {
+  buildReadinessAssessmentResult,
+  type ReadinessAssessmentResult,
+} from "../features/questions/readiness-assessment";
 import type {
   QuestionAttempt,
   QuestionOptionValue,
@@ -29,7 +33,9 @@ type PersistedQuestionProgress = Pick<
   QuestionProgressState,
   | "activeSession"
   | "attempts"
+  | "lastTrainingSessionPercents"
   | "questionUserState"
+  | "readinessAssessment"
   | "topicQuestionProgress"
   | "topicQuestionProgressSeeded"
 >;
@@ -44,6 +50,7 @@ const PERSIST_FLUSH_DELAY_MS = 800;
 function createDeferredProgressStorage(): PersistStorage<PersistedQuestionProgress> {
   const pendingWrites = new Map<string, StorageValue<PersistedQuestionProgress>>();
   let flushTimeout: ReturnType<typeof setTimeout> | null = null;
+  let isFlushQueued = false;
 
   const flush = () => {
     if (flushTimeout) {
@@ -51,18 +58,30 @@ function createDeferredProgressStorage(): PersistStorage<PersistedQuestionProgre
       flushTimeout = null;
     }
 
-    if (pendingWrites.size === 0) {
+    if (pendingWrites.size === 0 || isFlushQueued) {
       return;
     }
 
-    const entries = [...pendingWrites.entries()].map(
-      ([name, value]) => [name, JSON.stringify(value)] as [string, string]
-    );
+    // Snapshot now, stringify on a later turn so tab presses / navigation are
+    // not blocked by JSON.stringify of a multi‑MB progress blob.
+    const pendingEntries = [...pendingWrites.entries()];
     pendingWrites.clear();
+    isFlushQueued = true;
 
-    void AsyncStorage.multiSet(entries).catch((error) => {
-      console.warn("Failed to persist question progress.", error);
-    });
+    setTimeout(() => {
+      isFlushQueued = false;
+
+      try {
+        const entries = pendingEntries.map(
+          ([name, value]) => [name, JSON.stringify(value)] as [string, string]
+        );
+        void AsyncStorage.multiSet(entries).catch((error) => {
+          console.warn("Failed to persist question progress.", error);
+        });
+      } catch (error) {
+        console.warn("Failed to serialize question progress.", error);
+      }
+    }, 0);
   };
 
   AppState.addEventListener("change", (nextState) => {
@@ -103,7 +122,11 @@ type QuestionProgressState = {
   activeSession: QuestionSession | null;
   attempts: QuestionAttempt[];
   hasHydrated: boolean;
+  /** Last finished training percent by mode:topic — used for session delta badges. */
+  lastTrainingSessionPercents: Record<string, number>;
   questionUserState: QuestionUserStateMap;
+  /** Latest completed mini_test score — separate from coverage / remote readiness. */
+  readinessAssessment: ReadinessAssessmentResult | null;
   topicQuestionProgress: TopicQuestionProgressMap;
   /** False only for pre-scoped saves until the catalog can attribute legacy attempts. */
   topicQuestionProgressSeeded: boolean;
@@ -121,6 +144,10 @@ type QuestionProgressState = {
   ) => QuestionAttempt | null;
   clearActiveSession: () => void;
   ensureTopicQuestionProgressSeeded: () => void;
+  recordTrainingSessionPercent: (input: {
+    key: string;
+    percent: number;
+  }) => void;
   replaceQuestionUserState: (
     questionUserState: QuestionUserStateMap
   ) => void;
@@ -138,7 +165,9 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
       activeSession: null,
       attempts: [],
       hasHydrated: false,
+      lastTrainingSessionPercents: {},
       questionUserState: {},
+      readinessAssessment: null,
       topicQuestionProgress: {},
       topicQuestionProgressSeeded: true,
       applyQuestionAttemptOutcome: (questionId, input) =>
@@ -171,11 +200,17 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             state.activeSession.questionIds.length - 1;
 
           if (isLastQuestion || answeredCount >= state.activeSession.questionIds.length) {
+            const finishedSession: QuestionSession = {
+              ...state.activeSession,
+              finishedAt: new Date().toISOString(),
+            };
+            const readinessAssessment =
+              buildReadinessAssessmentResult(finishedSession) ??
+              state.readinessAssessment;
+
             return {
-              activeSession: {
-                ...state.activeSession,
-                finishedAt: new Date().toISOString(),
-              },
+              activeSession: finishedSession,
+              readinessAssessment,
             };
           }
 
@@ -362,11 +397,20 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             validQuestionIds
           ),
         })),
+      recordTrainingSessionPercent: ({ key, percent }) =>
+        set((state) => ({
+          lastTrainingSessionPercents: {
+            ...state.lastTrainingSessionPercents,
+            [key]: percent,
+          },
+        })),
       resetProgress: () =>
         set({
           activeSession: null,
           attempts: [],
+          lastTrainingSessionPercents: {},
           questionUserState: {},
+          readinessAssessment: null,
           topicQuestionProgress: {},
           topicQuestionProgressSeeded: true,
         }),
@@ -438,7 +482,9 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
       partialize: (state) => ({
         activeSession: state.activeSession,
         attempts: state.attempts,
+        lastTrainingSessionPercents: state.lastTrainingSessionPercents,
         questionUserState: state.questionUserState,
+        readinessAssessment: state.readinessAssessment,
         topicQuestionProgress: state.topicQuestionProgress,
         topicQuestionProgressSeeded: state.topicQuestionProgressSeeded,
       }),
@@ -449,6 +495,11 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         const questionUserState = normalizeQuestionUserStateMap(
           persisted.questionUserState ?? currentState.questionUserState
         );
+        const lastTrainingSessionPercents =
+          persisted.lastTrainingSessionPercents &&
+          typeof persisted.lastTrainingSessionPercents === "object"
+            ? persisted.lastTrainingSessionPercents
+            : currentState.lastTrainingSessionPercents;
         // Pre-scoped saves omit the overlay; seed after the question bank loads.
         const hasTopicProgressField =
           Object.prototype.hasOwnProperty.call(
@@ -463,6 +514,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         return {
           ...currentState,
           ...persisted,
+          lastTrainingSessionPercents,
           questionUserState,
           topicQuestionProgress: hasTopicProgressField
             ? (persisted.topicQuestionProgress ?? {})

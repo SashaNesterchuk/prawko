@@ -1,8 +1,9 @@
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 
 import { Icon, type IconName } from "../icons";
 
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -53,16 +54,16 @@ export function SignCategoryCard({
       </View>
 
       <View style={styles.copy}>
-        <Text style={styles.title} numberOfLines={2}>
+        <CText style={styles.title} numberOfLines={2}>
           {title ?? category.titlePl}
-        </Text>
-        <Text style={styles.subtitle} numberOfLines={2}>
+        </CText>
+        <CText style={styles.subtitle} numberOfLines={2}>
           {subtitle ?? category.subtitlePl}
-        </Text>
+        </CText>
       </View>
 
       <View style={styles.meta}>
-        <Text style={styles.count}>{category.count}</Text>
+        <CText style={styles.count}>{category.count}</CText>
         <Icon color={theme.colors.inkMuted} name="chevron" size={responsiveFont(18)} />
       </View>
     </Pressable>

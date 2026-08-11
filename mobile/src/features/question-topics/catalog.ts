@@ -38,6 +38,17 @@ export function getQuestionTopicTitle(
   return topic.titleUa;
 }
 
+export function getQuestionTopicTitleSafe(
+  topicId: string | null | undefined,
+  locale: SupportedLocale
+) {
+  if (!topicId || !isQuestionTopicId(topicId)) {
+    return null;
+  }
+
+  return getQuestionTopicTitle(topicId, locale);
+}
+
 export function getLearningTopicTitle(
   topicId: LearningTopicId,
   locale: SupportedLocale,

@@ -1,13 +1,13 @@
 import { Redirect, router } from "expo-router";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { AppTextInput } from "../../src/components/shell/AppTextInput";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import {
   isMobileSupabaseConfigured,
   isMockAuthEnabled,
@@ -275,30 +275,30 @@ export default function AccessScreen() {
     >
       <View style={styles.cardStack}>
         <AppCard accent={isMobileSupabaseConfigured}>
-          <Text style={styles.eyebrow}>{t("profile.environment")}</Text>
-          <Text style={styles.cardTitle}>{t("profile.supabaseStatus")}</Text>
-          <Text style={styles.cardBody}>
+          <CText style={styles.eyebrow}>{t("profile.environment")}</CText>
+          <CText style={styles.cardTitle}>{t("profile.supabaseStatus")}</CText>
+          <CText style={styles.cardBody}>
             {isMobileSupabaseConfigured
               ? t("common.configured")
               : t("common.missing")}
-          </Text>
-          <Text style={styles.helperText}>
+          </CText>
+          <CText style={styles.helperText}>
             {isMobileSupabaseConfigured
               ? t("onboarding.auth.envReady")
               : t("onboarding.auth.envMissing")}
-          </Text>
+          </CText>
         </AppCard>
 
         <AppCard accent={isMobileSupabaseConfigured}>
-          <Text style={styles.eyebrow}>{t("onboarding.auth.eyebrow")}</Text>
-          <Text style={styles.cardTitle}>{t("onboarding.auth.title")}</Text>
-          <Text style={styles.cardBody}>{t("onboarding.auth.subtitle")}</Text>
+          <CText style={styles.eyebrow}>{t("onboarding.auth.eyebrow")}</CText>
+          <CText style={styles.cardTitle}>{t("onboarding.auth.title")}</CText>
+          <CText style={styles.cardBody}>{t("onboarding.auth.subtitle")}</CText>
           {studyPlanSetup.schoolCode ? (
-            <Text style={styles.helperText}>
+            <CText style={styles.helperText}>
               {t("onboarding.previewSchoolCode", {
                 code: studyPlanSetup.schoolCode,
               })}
-            </Text>
+            </CText>
           ) : null}
 
           <View style={styles.modeRow}>
@@ -353,11 +353,11 @@ export default function AccessScreen() {
             />
           </View>
 
-          <Text style={styles.helperText}>
+          <CText style={styles.helperText}>
             {isSignUp
               ? t("onboarding.auth.signUpHint")
               : t("onboarding.auth.signInHint")}
-          </Text>
+          </CText>
 
           {authFeedback ? (
             <View
@@ -368,7 +368,7 @@ export default function AccessScreen() {
                   : styles.statusSuccess,
               ]}
             >
-              <Text
+              <CText
                 style={[
                   styles.statusText,
                   authFeedback.kind === "error"
@@ -377,7 +377,7 @@ export default function AccessScreen() {
                 ]}
               >
                 {authFeedback.message}
-              </Text>
+              </CText>
             </View>
           ) : null}
 
@@ -412,10 +412,10 @@ export default function AccessScreen() {
 
         {isMockAuthEnabled ? (
           <AppCard>
-            <Text style={styles.cardTitle}>{t("onboarding.mockAccessTitle")}</Text>
-            <Text style={styles.cardBody}>
+            <CText style={styles.cardTitle}>{t("onboarding.mockAccessTitle")}</CText>
+            <CText style={styles.cardBody}>
               {t("onboarding.mockAccessSubtitle")}
-            </Text>
+            </CText>
             <View style={styles.mockAction}>
               <AppButton
                 disabled={isSubmitting}
@@ -428,24 +428,24 @@ export default function AccessScreen() {
         ) : null}
 
         <AppCard accent>
-          <Text style={styles.eyebrow}>{t("onboarding.planSummaryLabel")}</Text>
-          <Text style={styles.planLine}>
+          <CText style={styles.eyebrow}>{t("onboarding.planSummaryLabel")}</CText>
+          <CText style={styles.planLine}>
             {t("onboarding.planSummaryDays", {
               days: studyPlanSetup.daysUntilExam ?? 0,
             })}
-          </Text>
-          <Text style={styles.planLine}>
+          </CText>
+          <CText style={styles.planLine}>
             {t("onboarding.planSummaryMinutes", {
               minutes: studyPlanSetup.minutesPerDay ?? 0,
             })}
-          </Text>
-          <Text style={styles.planLine}>
+          </CText>
+          <CText style={styles.planLine}>
             {t("onboarding.planSummaryLevel", {
               level: studyPlanSetup.level
                 ? t(`levels.${studyPlanSetup.level}.label`)
                 : t("common.missing"),
             })}
-          </Text>
+          </CText>
         </AppCard>
       </View>
     </AppScreen>
@@ -472,14 +472,14 @@ function ModeChip({
         active ? styles.modeChipActive : null,
       ]}
     >
-      <Text
+      <CText
         style={[
           styles.modeChipLabel,
           active ? styles.modeChipLabelActive : null,
         ]}
       >
         {label}
-      </Text>
+      </CText>
     </Pressable>
   );
 }

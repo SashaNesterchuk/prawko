@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -40,9 +41,9 @@ export function SignsScreenHeader({
         <View style={styles.backSpacer} />
       )}
 
-      <Text style={styles.headerTitle} numberOfLines={1}>
+      <CText style={styles.headerTitle} numberOfLines={1}>
         {title}
-      </Text>
+      </CText>
 
       {rightSlot ?? <View style={styles.backSpacer} />}
     </View>
@@ -73,10 +74,10 @@ function useStyles() {
     },
     headerTitle: {
       flex: 1,
-      fontSize: responsiveFont(24),
-      lineHeight: responsiveFont(32),
-      fontWeight: "700",
-      letterSpacing: -0.48,
+      fontSize: responsiveFont(20),
+      lineHeight: responsiveFont(28),
+      fontWeight: "600",
+      letterSpacing: -0.2,
       color: colors.ink,
     },
     pressed: {

@@ -9,7 +9,6 @@ import {
 } from "react";
 import {
   Pressable,
-  Text,
   View,
 } from "react-native";
 
@@ -18,7 +17,7 @@ import {
   normalizeCapturedError,
   persistMobileErrorLog,
 } from "../features/errors/error-logging";
-import { useResponsiveStyles } from "../portable-ui";
+import { CText, useResponsiveStyles } from "../portable-ui";
 import { useCurrentUser, useAppShellStore } from "../state/app-shell";
 import { type AnalyticsTrackPayload, useAnalytics } from "./AnalyticsProvider";
 
@@ -224,12 +223,12 @@ function CrashFallback({ onRetry }: { onRetry: () => void }) {
   return (
     <View style={styles.crashContainer}>
       <View style={styles.crashCard}>
-        <Text style={styles.crashEyebrow}>Prawko</Text>
-        <Text style={styles.crashTitle}>The app hit an unexpected error.</Text>
-        <Text style={styles.crashBody}>
+        <CText style={styles.crashEyebrow}>Prawko</CText>
+        <CText style={styles.crashTitle}>The app hit an unexpected error.</CText>
+        <CText style={styles.crashBody}>
           The issue was recorded for review. Try reopening the screen or restarting
           the app.
-        </Text>
+        </CText>
         <Pressable
           onPress={onRetry}
           style={({ pressed }) => [
@@ -237,7 +236,7 @@ function CrashFallback({ onRetry }: { onRetry: () => void }) {
             pressed ? styles.pressed : null,
           ]}
         >
-          <Text style={styles.crashButtonLabel}>Try again</Text>
+          <CText style={styles.crashButtonLabel}>Try again</CText>
         </Pressable>
       </View>
     </View>

@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Pressable,
   ScrollView,
-  Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -28,6 +27,7 @@ import {
 } from "../src/features/entitlements/revenuecat";
 import { formatPlanDate } from "../src/features/study-plan/generate-local-study-plan";
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../src/portable-ui";
@@ -149,40 +149,61 @@ export default function PaywallPage() {
     recommendedPackage;
 
   const comparisonRows = useMemo<PaywallComparisonRow[]>(
-    () => [
-      {
-        key: "training-exam",
-        title: t("paywall.rowTrainingExam"),
-        free: { kind: "check" },
-        premium: { kind: "check" },
-      },
-      {
-        key: "review-modes",
-        title: t("paywall.rowReviewModes"),
-        subtitle: t("paywall.rowReviewModesSub"),
-        free: { kind: "check" },
-        premium: { kind: "check" },
-      },
-      {
-        key: "ads",
-        title: t("paywall.rowAds"),
-        free: { kind: "label", text: t("paywall.adsFreeCell") },
-        premium: { kind: "label", text: t("paywall.adsPlusCell") },
-      },
-      {
-        key: "exam-retry",
-        title: t("paywall.rowExamRetry"),
-        free: { kind: "label", text: t("paywall.examRetryFreeCell") },
-        premium: { kind: "label", text: t("paywall.examRetryPlusCell") },
-      },
-      {
-        key: "ai",
-        title: t("paywall.rowAiAssistant"),
-        subtitle: t("paywall.rowAiAssistantSub"),
-        free: { kind: "cross" },
-        premium: { kind: "check" },
-      },
-    ],
+    () => {
+      const withAds = {
+        kind: "label" as const,
+        text: t("paywall.adsCell"),
+        tone: "danger" as const,
+      };
+      const noAds = {
+        kind: "label" as const,
+        text: t("paywall.noAdsCell"),
+        tone: "emphasis" as const,
+      };
+
+      return [
+        {
+          key: "trainer",
+          title: t("paywall.rowTrainer"),
+          free: withAds,
+          premium: noAds,
+        },
+        {
+          key: "exam",
+          title: t("paywall.rowExam"),
+          free: withAds,
+          premium: noAds,
+        },
+        {
+          key: "mistakes",
+          title: t("paywall.rowMistakes"),
+          subtitle: t("paywall.rowMistakesSub"),
+          free: withAds,
+          premium: noAds,
+        },
+        {
+          key: "traps",
+          title: t("paywall.rowTraps"),
+          subtitle: t("paywall.rowTrapsSub"),
+          free: withAds,
+          premium: noAds,
+        },
+        {
+          key: "srs",
+          title: t("paywall.rowSrs"),
+          subtitle: t("paywall.rowSrsSub"),
+          free: withAds,
+          premium: noAds,
+        },
+        {
+          key: "offline",
+          title: t("paywall.rowOffline"),
+          subtitle: t("paywall.rowOfflineSub"),
+          free: { kind: "cross" },
+          premium: { kind: "check" },
+        },
+      ];
+    },
     [t]
   );
 
@@ -453,23 +474,28 @@ export default function PaywallPage() {
         !FEATURE_FLAGS.enablePlusPurchase ||
         !revenueCatConfigured));
   const helperMessage =
-    !hasPlusAccess && !canUseDirectPurchase
-      ? !currentUser || authMode !== "supabase"
-        ? t("paywall.directRequiresAuth")
-        : !FEATURE_FLAGS.enablePlusPurchase
-          ? t("paywall.purchaseUnavailable")
-          : !revenueCatConfigured
-            ? t("paywall.directMissingConfig")
-            : revenueCatStatus === "loading" && revenueCatOfferings.length === 0
-              ? t("paywall.directLoading")
-              : revenueCatOfferings.length === 0
-                ? t("paywall.directNoOffers")
-                : null
+    !hasPlusAccess &&
+    !canUseDirectPurchase &&
+    currentUser &&
+    authMode === "supabase"
+      ? !FEATURE_FLAGS.enablePlusPurchase
+        ? t("paywall.purchaseUnavailable")
+        : !revenueCatConfigured
+          ? t("paywall.directMissingConfig")
+          : revenueCatStatus === "loading" && revenueCatOfferings.length === 0
+            ? t("paywall.directLoading")
+            : revenueCatOfferings.length === 0
+              ? t("paywall.directNoOffers")
+              : null
       : null;
 
   return (
     <PaywallScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top", "bottom"]}
+        testID="screen-paywall"
+      >
         <StatusBar style="light" />
 
         <View style={styles.header}>
@@ -481,135 +507,145 @@ export default function PaywallPage() {
           />
         </View>
 
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.hero}>
-            <View style={styles.heroTitleRow}>
-              <MaterialCommunityIcons
-                color={colors.onAccent}
-                name="crown-outline"
-                size={crownIconSize}
-              />
-              <Text style={styles.heroTitle}>
-                {t(hasPlusAccess ? "paywall.activeTitle" : "paywall.comparisonTitle")}
-              </Text>
-            </View>
-            {!hasPlusAccess ? (
-              <Text style={styles.heroPrice}>
-                {t("paywall.priceHeadline", { price: displayPrice })}
-              </Text>
-            ) : null}
-          </View>
-
-          {hasPlusAccess ? (
-            <View style={styles.activeCard}>
-              <Text style={styles.activeCardTitle}>
-                {t("paywall.purchaseAccessActive")}
-              </Text>
-              <Text style={styles.activeCardBody}>
-                {purchaseEndsAt
-                  ? t("paywall.purchaseEndsAt", { date: purchaseEndsAt })
-                  : t("paywall.purchaseNoExpiry")}
-              </Text>
-            </View>
-          ) : null}
-
-          <PaywallComparisonTable
-            freeLabel={t("paywall.columnFree")}
-            premiumLabel={t("paywall.columnPremium")}
-            rows={comparisonRows}
-          />
-
-          {!hasPlusAccess ? (
-            <View style={styles.noAdsBadge}>
-              <Text style={styles.noAdsBadgeText}>{t("paywall.noAdsBadge")}</Text>
-            </View>
-          ) : null}
-
-          {!hasPlusAccess ? (
-            <>
-              {purchaseFeedback ? (
-                <Text
-                  style={[
-                    styles.feedbackText,
-                    purchaseFeedback.kind === "error"
-                      ? styles.feedbackError
-                      : styles.feedbackSuccess,
-                  ]}
-                >
-                  {purchaseFeedback.message}
-                </Text>
-              ) : null}
-
-              {helperMessage ? (
-                <Text style={styles.helperText}>{helperMessage}</Text>
-              ) : null}
-
-              <View style={styles.lifetimeRow}>
-                <Text style={styles.lifetimeText}>
-                  {t("paywall.lifetimeNote")}
-                </Text>
-                <View style={styles.lifetimeDot} />
-                <Text style={styles.lifetimeText}>
-                  {t("paywall.lifetimeAccess")}
-                </Text>
+        <View style={styles.body}>
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.hero}>
+              <View style={styles.heroTitleRow}>
+                <MaterialCommunityIcons
+                  color={colors.onAccent}
+                  name="crown-outline"
+                  size={crownIconSize}
+                />
+                <CText style={styles.heroTitle}>
+                  {t(
+                    hasPlusAccess
+                      ? "paywall.activeTitle"
+                      : "paywall.comparisonTitle"
+                  )}
+                </CText>
               </View>
+              {!hasPlusAccess ? (
+                <CText style={styles.heroPrice}>
+                  {t("paywall.priceHeadline", { price: displayPrice })}
+                </CText>
+              ) : null}
+            </View>
 
-              <Pressable
-                accessibilityRole="button"
-                disabled={purchaseDisabled}
-                onPress={() => void handlePurchase()}
-                style={({ pressed }) => [
-                  styles.cta,
-                  purchaseDisabled ? styles.ctaDisabled : null,
-                  pressed && !purchaseDisabled ? styles.pressed : null,
+            {hasPlusAccess ? (
+              <View style={styles.activeCard}>
+                <CText style={styles.activeCardTitle}>
+                  {t("paywall.purchaseAccessActive")}
+                </CText>
+                <CText style={styles.activeCardBody}>
+                  {purchaseEndsAt
+                    ? t("paywall.purchaseEndsAt", { date: purchaseEndsAt })
+                    : t("paywall.purchaseNoExpiry")}
+                </CText>
+              </View>
+            ) : null}
+
+            <PaywallComparisonTable
+              freeLabel={t("paywall.columnFree")}
+              premiumLabel={t("paywall.columnPremium")}
+              rows={comparisonRows}
+            />
+
+            {!hasPlusAccess ? (
+              <View style={styles.noAdsBadge}>
+                <CText style={styles.noAdsBadgeText}>
+                  {t("paywall.noAdsBadge")}
+                </CText>
+              </View>
+            ) : null}
+          </ScrollView>
+
+          <View style={styles.footer}>
+            {purchaseFeedback ? (
+              <CText
+                style={[
+                  styles.feedbackText,
+                  purchaseFeedback.kind === "error"
+                    ? styles.feedbackError
+                    : styles.feedbackSuccess,
                 ]}
               >
-                {isPurchasing ? (
-                  <ActivityIndicator color={colors.onAccent} />
-                ) : (
-                  <Text style={styles.ctaLabel}>
-                    {!currentUser || authMode !== "supabase"
-                      ? t("paywall.openSignIn")
-                      : t("paywall.activateCta")}
-                  </Text>
-                )}
-              </Pressable>
+                {purchaseFeedback.message}
+              </CText>
+            ) : null}
 
+            {helperMessage ? (
+              <CText style={styles.helperText}>{helperMessage}</CText>
+            ) : null}
+
+            {!hasPlusAccess ? (
+              <>
+                <View style={styles.lifetimeRow}>
+                  <CText style={styles.lifetimeText}>
+                    {t("paywall.lifetimeNote")}
+                  </CText>
+                  <View style={styles.lifetimeDot} />
+                  <CText style={styles.lifetimeText}>
+                    {t("paywall.lifetimeAccess")}
+                  </CText>
+                </View>
+
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={purchaseDisabled && canUseDirectPurchase}
+                  onPress={() => void handlePurchase()}
+                  style={({ pressed }) => [
+                    styles.cta,
+                    purchaseDisabled && canUseDirectPurchase
+                      ? styles.ctaDisabled
+                      : null,
+                    pressed ? styles.pressed : null,
+                  ]}
+                >
+                  {isPurchasing ? (
+                    <ActivityIndicator color={colors.onAccent} />
+                  ) : (
+                    <CText style={styles.ctaLabel}>
+                      {t("paywall.activateCta")}
+                    </CText>
+                  )}
+                </Pressable>
+
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={isPurchasing || isRestoring || !revenueCatConfigured}
+                  onPress={() => void handleRestore()}
+                  style={({ pressed }) => [
+                    styles.restoreButton,
+                    pressed ? styles.pressed : null,
+                  ]}
+                >
+                  <CText style={styles.restoreLabel}>
+                    {t(
+                      isRestoring
+                        ? "paywall.restoreCtaLoading"
+                        : "paywall.restoreCta"
+                    )}
+                  </CText>
+                </Pressable>
+              </>
+            ) : (
               <Pressable
                 accessibilityRole="button"
-                disabled={isPurchasing || isRestoring || !revenueCatConfigured}
-                onPress={() => void handleRestore()}
+                onPress={continueAfterUnlock}
                 style={({ pressed }) => [
-                  styles.restoreButton,
+                  styles.cta,
                   pressed ? styles.pressed : null,
                 ]}
               >
-                <Text style={styles.restoreLabel}>
-                  {t(
-                    isRestoring
-                      ? "paywall.restoreCtaLoading"
-                      : "paywall.restoreCta"
-                  )}
-                </Text>
+                <CText style={styles.ctaLabel}>{t("paywall.primaryCta")}</CText>
               </Pressable>
-            </>
-          ) : (
-            <Pressable
-              accessibilityRole="button"
-              onPress={continueAfterUnlock}
-              style={({ pressed }) => [
-                styles.cta,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <Text style={styles.ctaLabel}>{t("paywall.primaryCta")}</Text>
-            </Pressable>
-          )}
-        </ScrollView>
+            )}
+          </View>
+        </View>
       </SafeAreaView>
     </PaywallScreen>
   );
@@ -657,18 +693,23 @@ function useStyles() {
     pressed: {
       opacity: 0.85,
     },
+    body: {
+      flex: 1,
+      paddingHorizontal: spacing.exact(24),
+      paddingBottom: spacing.exact(24),
+    },
     scroll: {
       flex: 1,
     },
     content: {
-      paddingHorizontal: spacing.exact(24),
-      paddingBottom: spacing.exact(24),
+      paddingTop: spacing.exact(24),
+      paddingBottom: spacing.exact(16),
       gap: spacing.exact(16),
+      alignItems: "center",
     },
     hero: {
       alignItems: "center",
       gap: spacing.exact(4),
-      paddingBottom: spacing.exact(4),
     },
     heroTitleRow: {
       flexDirection: "row",
@@ -693,6 +734,7 @@ function useStyles() {
       color: colors.onAccent,
     },
     activeCard: {
+      width: "100%",
       padding: spacing.exact(16),
       borderRadius: radius.xl,
       backgroundColor: colors.glassThin,
@@ -711,17 +753,21 @@ function useStyles() {
     },
     noAdsBadge: {
       alignSelf: "center",
-      paddingHorizontal: spacing.exact(16),
-      paddingVertical: spacing.exact(8),
+      paddingHorizontal: spacing.exact(12),
+      paddingVertical: spacing.exact(4),
       borderRadius: radius.pill,
       backgroundColor: accents.green.ink,
     },
     noAdsBadgeText: {
-      fontSize: responsiveFont(14),
-      lineHeight: responsiveFont(20),
-      fontWeight: "600",
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      fontWeight: "400",
       textAlign: "center",
       color: colors.onAccent,
+    },
+    footer: {
+      gap: spacing.exact(8),
+      paddingTop: spacing.exact(8),
     },
     feedbackText: {
       fontSize: responsiveFont(13),
@@ -753,10 +799,10 @@ function useStyles() {
       color: colors.onAccent,
     },
     lifetimeDot: {
-      width: spacing.exact(4),
-      height: spacing.exact(4),
-      borderRadius: spacing.exact(2),
-      backgroundColor: colors.glassStrong,
+      width: spacing.exact(6),
+      height: spacing.exact(6),
+      borderRadius: spacing.exact(3),
+      backgroundColor: colors.onAccent,
     },
     cta: {
       alignItems: "center",
@@ -767,9 +813,9 @@ function useStyles() {
       borderRadius: radius.pill,
       backgroundColor: accents.amber.fill,
       shadowColor: colors.shadowDeep,
-      shadowOpacity: 0.15,
-      shadowRadius: spacing.exact(12),
-      shadowOffset: { width: 0, height: spacing.exact(6) },
+      shadowOpacity: 0.1,
+      shadowRadius: spacing.exact(36),
+      shadowOffset: { width: 0, height: spacing.exact(14) },
       elevation: 4,
     },
     ctaDisabled: {
@@ -778,7 +824,7 @@ function useStyles() {
     ctaLabel: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontWeight: "700",
+      fontWeight: "600",
       letterSpacing: -0.2,
       textAlign: "center",
       color: colors.onAccent,
@@ -786,7 +832,7 @@ function useStyles() {
     restoreButton: {
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: spacing.exact(8),
+      paddingVertical: spacing.exact(4),
     },
     restoreLabel: {
       fontSize: responsiveFont(14),

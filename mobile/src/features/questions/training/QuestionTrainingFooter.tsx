@@ -84,9 +84,12 @@ export function QuestionTrainingFooter({
           label={
             summary.answered >= summary.total
               ? t("question.openSummary")
-              : t("question.nextQuestion")
+              : currentAnswer.isCorrect
+                ? t("question.nextQuestion")
+                : t("question.gotIt")
           }
           onPress={() => advanceSession()}
+          variant={currentAnswer.isCorrect ? "primary" : "danger"}
         />
       ) : null}
 

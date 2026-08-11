@@ -1,0 +1,24 @@
+# Feature: Topic trainer modes
+# Scenario: Category-scoped Fix mistakes remains available inside a topic
+appId: com.mindjar.prawko
+tags:
+  - learn
+  - topic
+  - mistakes
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: learn
+      TARGET_ID: screen-learn
+
+- tapOn:
+    id: "learn-topic-card-index-0"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-trainer-modes"
+    timeout: 15000
+
+- assertVisible:
+    id: "trainer-mode-mistakes"

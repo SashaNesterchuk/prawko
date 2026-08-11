@@ -3,7 +3,11 @@ import type { DrivingCategory } from "@prawko/config";
 import { mobileEnv } from "../../config/env";
 import { useEntitlementStore } from "../../state/entitlements";
 
-export type E2EOfflinePackStatus = "incomplete" | "missing" | "ready";
+export type E2EOfflinePackStatus =
+  | "downloading"
+  | "incomplete"
+  | "missing"
+  | "ready";
 
 type E2ETestOverrides = {
   offlinePackCategory: DrivingCategory | null;
@@ -67,6 +71,24 @@ export function getE2EOfflinePackOverride() {
   return {
     category: overrides.offlinePackCategory,
     status: overrides.offlinePackStatus,
+  };
+}
+
+export function setE2EOfflinePackOverride(input: {
+  category?: string | null;
+  status: E2EOfflinePackStatus;
+}) {
+  if (!mobileEnv.enableE2ETestMode) {
+    return;
+  }
+
+  overrides = {
+    ...overrides,
+    offlinePackCategory:
+      input.category === undefined
+        ? overrides.offlinePackCategory
+        : resolveLooseCategory(input.category),
+    offlinePackStatus: input.status,
   };
 }
 

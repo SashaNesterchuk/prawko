@@ -2,7 +2,7 @@
 # screen to appear.
 appId: com.mindjar.prawko
 env:
-  TARGET_ID: screen-question
+  TARGET_ID: ${TARGET_ID || "screen-question"}
 ---
 - extendedWaitUntil:
     visible:

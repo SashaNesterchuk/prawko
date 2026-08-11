@@ -47,7 +47,7 @@ type ApplyExamDateChangeInput = {
   preferredLocale: GeneratedStudyPlan["locale"];
   patchExamDate: (payload: {
     daysUntilExam: number;
-    examDate: string;
+    examDate: string | null;
   }) => void;
   schoolCode: string;
 };

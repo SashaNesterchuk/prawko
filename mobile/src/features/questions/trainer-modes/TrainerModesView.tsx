@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon, type IconName } from "../../../components/icons";
@@ -23,9 +23,11 @@ import {
 } from "../question-engine";
 import { buildQuestionRouteParams } from "../question-routes";
 import {
+  CText,
   getTypographyStyle,
   useResponsiveFonts,
   useResponsiveStyles,
+  withResponsiveFont,
 } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 import { type GreenWaveAccent } from "../../../theme/green-wave";
@@ -226,7 +228,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
 
   const renderSection = (sectionTitle: string, tiles: TrainerModeTile[]) => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{sectionTitle}</Text>
+      <CText style={styles.sectionTitle}>{sectionTitle}</CText>
       <View style={styles.stack}>
         {tiles.map((tile) => (
           <ActionTile
@@ -259,9 +261,9 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
             accessibilityLabel={t("common.back", { defaultValue: "Назад" })}
             onPress={() => router.back()}
           />
-          <Text style={styles.headerTitle} numberOfLines={2}>
+          <CText style={styles.headerTitle} numberOfLines={2}>
             {screenTitle}
-          </Text>
+          </CText>
         </View>
 
         <ScrollView
@@ -347,7 +349,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       gap: spacing.exact(8),
     },
     sectionTitle: {
-      ...getTypographyStyle("bodyM"),
+      ...withResponsiveFont(getTypographyStyle("bodyM"), responsiveFont),
       color: colors.ink3,
     },
     stack: {

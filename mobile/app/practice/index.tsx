@@ -2,12 +2,12 @@ import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   buildExamRouteParams,
@@ -290,19 +290,19 @@ export default function PracticeScreen() {
       <View style={styles.cardStack}>
         {isLoadingRecentExamSessions ? (
           <AppCard testID="practice-card-recent-exams">
-            <Text style={styles.cardTitle}>
+            <CText style={styles.cardTitle}>
               {t("practice.recentExamsTitle")}
-            </Text>
-            <Text style={styles.cardBody}>
+            </CText>
+            <CText style={styles.cardBody}>
               {t("practice.recentExamsLoading")}
-            </Text>
+            </CText>
           </AppCard>
         ) : (
           <AppCard testID="practice-card-recent-exams">
-            <Text style={styles.cardTitle}>
+            <CText style={styles.cardTitle}>
               {t("practice.recentExamsTitle")}
-            </Text>
-            <Text
+            </CText>
+            <CText
               style={[
                 styles.cardBody,
                 recentExamSessions.length > 0 ? styles.cardBodyWithMargin : null,
@@ -311,38 +311,38 @@ export default function PracticeScreen() {
               {recentExamSessions.length > 0
                 ? t("practice.recentExamsSubtitle")
                 : t("practice.recentExamsEmptyBody")}
-            </Text>
+            </CText>
             {recentExamSessions.length > 0 ? (
               <View style={styles.historyStack}>
                 {recentExamSessions.map((session) => (
                   <View key={session.id}>
-                    <Text style={styles.historyTitle}>
+                    <CText style={styles.historyTitle}>
                       {t("practice.latestExamSummary", {
                         outcome: t(
                           `practice.historyOutcomes.${getRecentExamOutcomeKey(session)}`
                         ),
                       })}
-                    </Text>
-                    <Text style={styles.historyMeta}>
+                    </CText>
+                    <CText style={styles.historyMeta}>
                       {t("practice.historyDate", {
                         date: formatPlanDate(
                           (session.finishedAt ?? session.startedAt).slice(0, 10)
                         ),
                       })}
-                    </Text>
-                    <Text style={styles.historyMeta}>
+                    </CText>
+                    <CText style={styles.historyMeta}>
                       {t("practice.historyScore", {
                         score: session.scorePoints,
                         total: session.totalPointsTarget,
                       })}
-                    </Text>
-                    <Text style={styles.historyMetaWithMargin}>
+                    </CText>
+                    <CText style={styles.historyMetaWithMargin}>
                       {t("practice.historyQuestions", {
                         answered: session.totalQuestionsAnswered,
                         total: session.totalQuestionsTarget,
                         wrong: session.wrongAnswersCount,
                       })}
-                    </Text>
+                    </CText>
                     <AppButton
                       variant="ghost"
                       label={t("practice.openExamResult")}
@@ -402,14 +402,14 @@ function PracticeCardView({
 
   return (
     <AppCard testID={`practice-card-${card.key}`}>
-      <Text style={styles.cardTitle}>
+      <CText style={styles.cardTitle}>
         {t(card.title)}
-      </Text>
-      <Text style={styles.cardBodyWithSmallMargin}>
+      </CText>
+      <CText style={styles.cardBodyWithSmallMargin}>
         {t(card.description, {
           count: card.count,
         })}
-      </Text>
+      </CText>
       <AppButton
         variant="secondary"
         label={t(card.cta)}

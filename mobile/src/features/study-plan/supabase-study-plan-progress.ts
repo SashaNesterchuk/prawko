@@ -1,4 +1,5 @@
-import type { StudyPlanTaskType, TopicBlockId } from "@prawko/config";
+import type { QuestionTopicId, StudyPlanTaskType } from "@prawko/config";
+import { isQuestionTopicId } from "@prawko/config";
 import type {
   GeneratedStudyPlan,
   GeneratedStudyPlanDay,
@@ -26,7 +27,7 @@ type RemoteTodayPlanRow = {
   task_status: StudyPlanTaskStatus;
   task_type: StudyPlanTaskType;
   title: string;
-  topic_block: TopicBlockId | null;
+  topic_block: string | null;
 };
 
 type RemoteReadinessSummaryRow = {
@@ -83,7 +84,7 @@ export type RemoteTodayPlanTask = {
   sortOrder: number;
   status: StudyPlanTaskStatus;
   title: string;
-  topicBlock: TopicBlockId | null;
+  topicBlock: QuestionTopicId | null;
   taskType: StudyPlanTaskType;
 };
 
@@ -374,7 +375,10 @@ function mapTodayPlanRows(rows: RemoteTodayPlanRow[]) {
         sortOrder: toNumber(row.sort_order),
         status: row.task_status,
         title: row.title,
-        topicBlock: row.topic_block,
+        topicBlock:
+          row.topic_block && isQuestionTopicId(row.topic_block)
+            ? row.topic_block
+            : null,
         taskType: row.task_type,
       }))
       .sort((left, right) => left.sortOrder - right.sortOrder),

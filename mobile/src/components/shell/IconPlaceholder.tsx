@@ -1,6 +1,6 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 export function IconPlaceholder({
@@ -18,7 +18,7 @@ export function IconPlaceholder({
 
   return (
     <View style={styles.root}>
-      <Text style={styles.glyph}>*</Text>
+      <CText style={styles.glyph}>*</CText>
     </View>
   );
 }

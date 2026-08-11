@@ -1,6 +1,6 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
-import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
+import { CText, useResponsiveStyles, type PercentageString } from "../../portable-ui";
 
 type JourneyCardProps = {
   eyebrow: string;
@@ -32,18 +32,18 @@ export function JourneyCard({
         <View pointerEvents="none" style={styles.headerGradient} />
         <View style={styles.eyebrowRow}>
           <BookIcon />
-          <Text style={styles.eyebrow} numberOfLines={1}>
+          <CText style={styles.eyebrow} numberOfLines={1}>
             {eyebrow}
-          </Text>
+          </CText>
         </View>
 
-        <Text style={styles.title} numberOfLines={2}>
+        <CText style={styles.title} numberOfLines={2}>
           {title}
-        </Text>
+        </CText>
 
         <View style={styles.metaRow}>
-          <Text style={styles.metaText}>{sectionLabel}</Text>
-          <Text style={styles.metaText}>{`${Math.round(clamped)}%`}</Text>
+          <CText style={styles.metaText}>{sectionLabel}</CText>
+          <CText style={styles.metaText}>{`${Math.round(clamped)}%`}</CText>
         </View>
 
         <View style={styles.track}>
@@ -53,12 +53,12 @@ export function JourneyCard({
 
       <View style={styles.footer}>
         <View style={styles.nextCopy}>
-          <Text style={styles.nextLabel} numberOfLines={1}>
+          <CText style={styles.nextLabel} numberOfLines={1}>
             {nextLabel}
-          </Text>
-          <Text style={styles.nextValue} numberOfLines={1}>
+          </CText>
+          <CText style={styles.nextValue} numberOfLines={1}>
             {nextValue}
-          </Text>
+          </CText>
         </View>
 
         <Pressable
@@ -70,7 +70,7 @@ export function JourneyCard({
             pressed ? styles.pressed : null,
           ]}
         >
-          <Text style={styles.buttonLabel}>{buttonLabel}</Text>
+          <CText style={styles.buttonLabel}>{buttonLabel}</CText>
           <View style={styles.chevron} />
         </Pressable>
       </View>

@@ -1,0 +1,23 @@
+# Feature: Learn personalized training
+# Scenario: Smart reviews opens count picker or session from Learn (no manual topic pick)
+appId: com.mindjar.prawko
+tags:
+  - learn
+  - srs
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: learn
+      TARGET_ID: screen-learn
+
+- tapOn:
+    id: "learn-tile-srs"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-empty"
+    timeout: 15000
+
+- assertNotVisible: "Work on mistakes"
+- assertNotVisible: "Робота над помилками"

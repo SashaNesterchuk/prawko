@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@prawko/config";
@@ -13,11 +13,12 @@ import {
   EmptyStateView,
   LoadingStateView,
 } from "../../src/components/shell/StateViews";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import {
   getAnswerTextFromContext,
 } from "../../src/features/ai/question-chat-context";
 import { useQuestionAiChat } from "../../src/features/ai/use-question-ai-chat";
+import { getQuestionTopicTitleSafe } from "../../src/features/question-topics/catalog";
 import { useHasAiChatAccess } from "../../src/state/entitlements";
 import { useAppShellStore } from "../../src/state/app-shell";
 
@@ -189,8 +190,11 @@ export default function AiChatModalScreen() {
     >
       <View style={styles.contentStack}>
         <AppCard accent>
-          <Text style={styles.eyebrow}>{t(`topics.${questionContext.topicBlock}`)}</Text>
-          <Text style={styles.prompt}>{questionContext.prompt}</Text>
+          <CText style={styles.eyebrow}>
+            {getQuestionTopicTitleSafe(questionContext.topicId, locale) ??
+              questionContext.topicId}
+          </CText>
+          <CText style={styles.prompt}>{questionContext.prompt}</CText>
           <View style={styles.metaRow}>
             <MetaPill
               label={t("modals.aiCorrectAnswer", {
@@ -209,7 +213,7 @@ export default function AiChatModalScreen() {
         </AppCard>
 
         <AppCard>
-          <Text style={styles.sectionTitle}>{t("modals.aiSuggestionsTitle")}</Text>
+          <CText style={styles.sectionTitle}>{t("modals.aiSuggestionsTitle")}</CText>
           <View style={styles.suggestionWrap}>
             {suggestionPrompts.map((prompt) => (
               <Pressable
@@ -221,7 +225,7 @@ export default function AiChatModalScreen() {
                   pressed ? styles.suggestionChipPressed : null,
                 ]}
               >
-                <Text style={styles.suggestionLabel}>{prompt}</Text>
+                <CText style={styles.suggestionLabel}>{prompt}</CText>
               </Pressable>
             ))}
           </View>
@@ -229,21 +233,21 @@ export default function AiChatModalScreen() {
 
         {messages.map((message) => (
           <AppCard key={message.id} accent={message.role === "assistant"}>
-            <Text style={styles.messageRole}>
+            <CText style={styles.messageRole}>
               {message.role === "assistant"
                 ? t("modals.aiAssistantRole")
                 : t("modals.aiUserRole")}
-            </Text>
-            <Text style={styles.messageBody}>{message.content}</Text>
+            </CText>
+            <CText style={styles.messageBody}>{message.content}</CText>
           </AppCard>
         ))}
 
         {errorCode ? (
           <AppCard>
-            <Text style={styles.sectionTitle}>{t("modals.aiErrorTitle")}</Text>
-            <Text style={styles.messageBody}>
+            <CText style={styles.sectionTitle}>{t("modals.aiErrorTitle")}</CText>
+            <CText style={styles.messageBody}>
               {t(`modals.aiErrors.${errorCode}`)}
-            </Text>
+            </CText>
           </AppCard>
         ) : null}
       </View>
@@ -262,9 +266,9 @@ function MetaPill({
 
   return (
     <View style={[styles.metaPill, accent ? styles.metaPillAccent : null]}>
-      <Text style={[styles.metaPillLabel, accent ? styles.metaPillLabelAccent : null]}>
+      <CText style={[styles.metaPillLabel, accent ? styles.metaPillLabelAccent : null]}>
         {label}
-      </Text>
+      </CText>
     </View>
   );
 }

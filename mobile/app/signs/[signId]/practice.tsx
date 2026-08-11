@@ -3,12 +3,13 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
 import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveSpacing,
   useResponsiveStyles,
@@ -122,7 +123,7 @@ export default function SignPracticeScreen() {
             onBack={() => router.back()}
           />
           <View style={styles.missingState}>
-            <Text style={styles.missingTitle}>{t("signs.notFoundTitle")}</Text>
+            <CText style={styles.missingTitle}>{t("signs.notFoundTitle")}</CText>
           </View>
         </SafeAreaView>
       </GreenWaveScreen>
@@ -149,14 +150,14 @@ export default function SignPracticeScreen() {
                   size={resultIconSize}
                 />
               </View>
-              <Text style={styles.resultTitle}>{t("signs.practiceComplete")}</Text>
-              <Text style={styles.resultScore}>
+              <CText style={styles.resultTitle}>{t("signs.practiceComplete")}</CText>
+              <CText style={styles.resultScore}>
                 {t("signs.practiceScore", {
                   correct: correctCount,
                   total: practices.length,
                 })}
-              </Text>
-              <Text style={styles.resultSubtitle}>{displayName}</Text>
+              </CText>
+              <CText style={styles.resultSubtitle}>{displayName}</CText>
             </View>
 
             <Pressable
@@ -167,7 +168,7 @@ export default function SignPracticeScreen() {
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Text style={styles.primaryButtonLabel}>{t("common.back")}</Text>
+              <CText style={styles.primaryButtonLabel}>{t("common.back")}</CText>
             </Pressable>
           </View>
         </SafeAreaView>
@@ -191,15 +192,15 @@ export default function SignPracticeScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.progressRow}>
-            <Text style={styles.progressLabel}>
+            <CText style={styles.progressLabel}>
               {t("signs.practiceProgress", {
                 current: questionIndex + 1,
                 total: practices.length,
               })}
-            </Text>
-            <Text style={styles.progressName} numberOfLines={1}>
+            </CText>
+            <CText style={styles.progressName} numberOfLines={1}>
               {displayName}
-            </Text>
+            </CText>
           </View>
 
           <View style={styles.heroCard}>
@@ -208,9 +209,9 @@ export default function SignPracticeScreen() {
             </View>
           </View>
 
-          <Text style={styles.prompt}>
+          <CText style={styles.prompt}>
             {pickLocalized(currentQuestion.prompt, i18n.language)}
-          </Text>
+          </CText>
 
           <View style={styles.options}>
             {currentQuestion.options.map((option) => {
@@ -234,7 +235,7 @@ export default function SignPracticeScreen() {
                     !hasAnswered && pressed ? styles.pressed : null,
                   ]}
                 >
-                  <Text
+                  <CText
                     style={[
                       styles.optionLabel,
                       hasAnswered && isCorrectOption
@@ -246,7 +247,7 @@ export default function SignPracticeScreen() {
                     ]}
                   >
                     {pickLocalized(option.label, i18n.language)}
-                  </Text>
+                  </CText>
                 </Pressable>
               );
             })}
@@ -254,14 +255,14 @@ export default function SignPracticeScreen() {
 
           {hasAnswered && currentQuestion.explanation ? (
             <View style={styles.feedbackCard}>
-              <Text style={styles.feedbackTitle}>
+              <CText style={styles.feedbackTitle}>
                 {isCorrect
                   ? t("signs.practiceCorrect")
                   : t("signs.practiceIncorrect")}
-              </Text>
-              <Text style={styles.feedbackBody}>
+              </CText>
+              <CText style={styles.feedbackBody}>
                 {pickLocalized(currentQuestion.explanation, i18n.language)}
-              </Text>
+              </CText>
             </View>
           ) : null}
 
@@ -275,9 +276,9 @@ export default function SignPracticeScreen() {
               hasAnswered && pressed ? styles.pressed : null,
             ]}
           >
-            <Text style={styles.primaryButtonLabel}>
+            <CText style={styles.primaryButtonLabel}>
               {isLastQuestion ? t("signs.practiceFinish") : t("signs.practiceNext")}
-            </Text>
+            </CText>
           </Pressable>
         </ScrollView>
       </SafeAreaView>

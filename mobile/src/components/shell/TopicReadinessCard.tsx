@@ -1,6 +1,6 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
-import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
+import { CText, useResponsiveStyles, type PercentageString } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 export type TopicReadinessStatus = "not_started" | "bad" | "normal" | "good";
@@ -68,10 +68,10 @@ export function TopicReadinessCard({
   const body = (
     <View style={styles.inner}>
       <View style={styles.headerRow}>
-        <Text style={styles.title} numberOfLines={2}>
+        <CText style={styles.title} numberOfLines={2}>
           {title}
-        </Text>
-        <Text style={styles.readinessValue}>{normalizedReadiness}%</Text>
+        </CText>
+        <CText style={styles.readinessValue}>{normalizedReadiness}%</CText>
       </View>
 
       <View style={styles.track}>
@@ -81,15 +81,15 @@ export function TopicReadinessCard({
       <View style={styles.footerRow}>
         <View style={styles.statsGroup}>
           <View style={styles.statItem}>
-            <Text style={[styles.statIcon, styles.statGood]}>✓</Text>
-            <Text style={styles.footerLabel}>{resolvedCorrect}</Text>
+            <CText style={[styles.statIcon, styles.statGood]}>✓</CText>
+            <CText style={styles.footerLabel}>{resolvedCorrect}</CText>
           </View>
           <View style={styles.statItem}>
-            <Text style={[styles.statIcon, styles.statBad]}>✕</Text>
-            <Text style={styles.footerLabel}>{resolvedWrong}</Text>
+            <CText style={[styles.statIcon, styles.statBad]}>✕</CText>
+            <CText style={styles.footerLabel}>{resolvedWrong}</CText>
           </View>
         </View>
-        <Text style={styles.footerLabel}>{`${seen} / ${total}`}</Text>
+        <CText style={styles.footerLabel}>{`${seen} / ${total}`}</CText>
       </View>
     </View>
   );

@@ -1,0 +1,45 @@
+# Feature: Offline mode
+# Scenario: Missing offline pack can be downloaded (e2e simulated)
+appId: com.mindjar.prawko
+tags:
+  - offline
+  - profile
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      OFFLINE_PACK_STATUS: missing
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-profile
+
+- tapOn:
+    id: "profile-row-offline-mode"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-offline-mode"
+    timeout: 15000
+
+- extendedWaitUntil:
+    visible:
+      id: "offline-mode-pack-state-missing"
+    timeout: 15000
+
+- assertVisible:
+    id: "offline-mode-primary-action"
+- assertNotVisible:
+    id: "offline-mode-remove-action"
+
+- tapOn:
+    id: "offline-mode-primary-action"
+
+- extendedWaitUntil:
+    visible:
+      id: "offline-mode-pack-state-ready"
+    timeout: 20000
+
+- assertVisible:
+    id: "offline-mode-pack-state-ready"
+- assertVisible:
+    id: "offline-mode-remove-action"

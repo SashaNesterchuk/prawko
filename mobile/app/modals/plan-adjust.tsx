@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { STUDY_PLAN_LIMITS } from "@prawko/config";
 
@@ -9,7 +9,7 @@ import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { AppTextInput } from "../../src/components/shell/AppTextInput";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   formatPlanDate,
@@ -179,51 +179,51 @@ export default function PlanAdjustModalScreen() {
       <View style={styles.contentStack}>
         {!currentStudyPlan || !currentLevel ? (
           <AppCard>
-            <Text style={styles.sectionTitle}>
+            <CText style={styles.sectionTitle}>
               {t("modals.planAdjust.missingPlanTitle")}
-            </Text>
-            <Text style={styles.bodyText}>
+            </CText>
+            <CText style={styles.bodyText}>
               {t("modals.planAdjust.missingPlanBody")}
-            </Text>
+            </CText>
           </AppCard>
         ) : (
           <>
             {missedDays > 0 ? (
               <AppCard accent>
-                <Text style={styles.sectionTitle}>
+                <CText style={styles.sectionTitle}>
                   {t("modals.planAdjust.missedDaysTitle")}
-                </Text>
-                <Text style={styles.bodyText}>
+                </CText>
+                <CText style={styles.bodyText}>
                   {t("modals.planAdjust.missedDaysBody", {
                     days: missedDays,
                   })}
-                </Text>
+                </CText>
               </AppCard>
             ) : null}
 
             <AppCard>
-              <Text style={styles.sectionTitle}>
+              <CText style={styles.sectionTitle}>
                 {t("modals.planAdjust.currentPlanTitle")}
-              </Text>
-              <Text style={styles.bodyText}>
+              </CText>
+              <CText style={styles.bodyText}>
                 {t("modals.planAdjust.currentPlanDate", {
                   date: formatPlanDate(currentStudyPlan.examDate),
                 })}
-              </Text>
-              <Text style={styles.bodyText}>
+              </CText>
+              <CText style={styles.bodyText}>
                 {t("modals.planAdjust.currentPlanMinutes", {
                   minutes: currentStudyPlan.minutesPerDay,
                 })}
-              </Text>
+              </CText>
             </AppCard>
 
             <AppCard>
-              <Text style={styles.sectionTitle}>
+              <CText style={styles.sectionTitle}>
                 {t("modals.planAdjust.presetsTitle")}
-              </Text>
-              <Text style={styles.bodyText}>
+              </CText>
+              <CText style={styles.bodyText}>
                 {t("modals.planAdjust.presetsSubtitle")}
-              </Text>
+              </CText>
               <View style={styles.presetGrid}>
                 {DAY_PRESETS.map((days) => {
                   const presetDate = getExamDateFromDays(days);
@@ -243,17 +243,17 @@ export default function PlanAdjustModalScreen() {
                         pressed ? styles.presetButtonPressed : null,
                       ]}
                     >
-                      <Text
+                      <CText
                         style={[
                           styles.presetLabel,
                           isActive ? styles.presetLabelActive : null,
                         ]}
                       >
                         {t("modals.planAdjust.presetDays", { days })}
-                      </Text>
-                      <Text style={styles.presetMeta}>
+                      </CText>
+                      <CText style={styles.presetMeta}>
                         {formatPlanDate(presetDate)}
-                      </Text>
+                      </CText>
                     </Pressable>
                   );
                 })}
@@ -261,9 +261,9 @@ export default function PlanAdjustModalScreen() {
             </AppCard>
 
             <AppCard>
-              <Text style={styles.sectionTitle}>
+              <CText style={styles.sectionTitle}>
                 {t("modals.planAdjust.inputsTitle")}
-              </Text>
+              </CText>
               <AppTextInput
                 autoCapitalize="none"
                 editable={!isSubmitting}
@@ -275,7 +275,7 @@ export default function PlanAdjustModalScreen() {
                 placeholder="2026-06-15"
                 value={examDateInput}
               />
-              {dateError ? <Text style={styles.errorText}>{dateError}</Text> : null}
+              {dateError ? <CText style={styles.errorText}>{dateError}</CText> : null}
               <AppTextInput
                 editable={!isSubmitting}
                 keyboardType="number-pad"
@@ -288,44 +288,44 @@ export default function PlanAdjustModalScreen() {
                 value={minutesInput}
               />
               {minutesError ? (
-                <Text style={styles.errorText}>{minutesError}</Text>
+                <CText style={styles.errorText}>{minutesError}</CText>
               ) : null}
             </AppCard>
 
             {previewPlan ? (
               <AppCard accent>
-                <Text style={styles.sectionTitle}>
+                <CText style={styles.sectionTitle}>
                   {t("modals.planAdjust.previewTitle")}
-                </Text>
-                <Text style={styles.bodyText}>
+                </CText>
+                <CText style={styles.bodyText}>
                   {t("modals.planAdjust.previewDate", {
                     date: formatPlanDate(previewPlan.examDate),
                   })}
-                </Text>
-                <Text style={styles.bodyText}>
+                </CText>
+                <CText style={styles.bodyText}>
                   {t("modals.planAdjust.previewPace", {
                     days: previewPlan.daysPlanned,
                     minutes: previewPlan.minutesPerDay,
                   })}
-                </Text>
-                <Text style={styles.bodyText}>
+                </CText>
+                <CText style={styles.bodyText}>
                   {t("modals.planAdjust.previewMix", {
                     full: previewPlan.summary.fullExamDays,
                     mini: previewPlan.summary.miniTestDays,
                     weak: previewPlan.summary.weakSpotDays,
                   })}
-                </Text>
+                </CText>
                 {previewPlan.summary.minimumModeDays > 0 ? (
-                  <Text style={styles.bodyText}>
+                  <CText style={styles.bodyText}>
                     {t("modals.planAdjust.previewMinimum", {
                       days: previewPlan.summary.minimumModeDays,
                     })}
-                  </Text>
+                  </CText>
                 ) : null}
               </AppCard>
             ) : null}
 
-            {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
+            {formError ? <CText style={styles.errorText}>{formError}</CText> : null}
           </>
         )}
       </View>

@@ -1,8 +1,8 @@
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "../icons";
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { getRoadSignById } from "../../features/road-signs/catalog";
 import {
@@ -43,7 +43,7 @@ export function SignPlatePopup({
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable style={styles.card} onPress={(event) => event.stopPropagation()}>
           <View style={styles.header}>
-            <Text style={styles.code}>{sign.code}</Text>
+            <CText style={styles.code}>{sign.code}</CText>
             <View style={styles.imageWrap}>
               <SignImage sign={sign} size={80} />
             </View>
@@ -59,9 +59,9 @@ export function SignPlatePopup({
             </Pressable>
           </View>
 
-          <Text style={styles.name}>
+          <CText style={styles.name}>
             {`${sign.code}. ${displayName}`}
-          </Text>
+          </CText>
         </Pressable>
       </Pressable>
     </Modal>

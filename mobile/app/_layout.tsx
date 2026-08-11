@@ -8,6 +8,7 @@ import * as SplashScreen from "expo-splash-screen";
 
 import { configureFonts } from "../src/portable-ui";
 import { AppProviders } from "../src/providers/AppProviders";
+import "../src/testing/e2e/setup";
 
 const appFonts = {
   "Roboto-Regular": require("../assets/fonts/Roboto/Roboto-Regular.ttf"),
@@ -160,6 +161,12 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="offline-mode"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
           name="modals/ai-chat"
           options={{
             presentation: "modal",
@@ -168,13 +175,6 @@ export default function RootLayout() {
         />
         <Stack.Screen
           name="modals/access-center"
-          options={{
-            presentation: "modal",
-            animation: "slide_from_bottom",
-          }}
-        />
-        <Stack.Screen
-          name="modals/offline-mode"
           options={{
             presentation: "modal",
             animation: "slide_from_bottom",

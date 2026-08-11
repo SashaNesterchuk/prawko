@@ -1,11 +1,15 @@
 import {
-  Text,
   TextInput,
   View,
   type TextInputProps,
 } from "react-native";
 
-import { getTypographyStyle, useResponsiveStyles } from "../../portable-ui";
+import {
+  CText,
+  getTypographyStyle,
+  useResponsiveStyles,
+  withResponsiveFont,
+} from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type AppTextInputProps = {
@@ -44,7 +48,7 @@ export function AppTextInput({
 
   return (
     <View style={styles.wrapper}>
-      <Text style={styles.label}>{label}</Text>
+      <CText style={styles.label}>{label}</CText>
       <TextInput
         autoCapitalize={autoCapitalize}
         autoComplete={autoComplete}
@@ -66,12 +70,12 @@ export function AppTextInput({
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ colors, radius, spacing }) => ({
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     wrapper: {
       gap: spacing.sm,
     },
     label: {
-      ...getTypographyStyle("labelS"),
+      ...withResponsiveFont(getTypographyStyle("labelS"), responsiveFont),
       color: colors.ink2,
       textTransform: "uppercase",
     },
@@ -82,7 +86,7 @@ function useStyles() {
       borderColor: colors.line,
       backgroundColor: colors.inset,
       paddingHorizontal: spacing.lg,
-      ...getTypographyStyle("bodyM"),
+      ...withResponsiveFont(getTypographyStyle("bodyM"), responsiveFont),
       color: colors.ink,
     },
     multilineInput: {

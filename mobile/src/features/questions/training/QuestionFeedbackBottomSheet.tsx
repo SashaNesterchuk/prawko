@@ -1,11 +1,11 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "../../../components/icons";
 import { AppButton } from "../../../components/shell/AppButton";
-import { useResponsiveStyles } from "../../../portable-ui";
+import { CText, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 
 type QuestionFeedbackBottomSheetProps = {
@@ -90,11 +90,11 @@ export function QuestionFeedbackBottomSheet({
             size={24}
             color={feedbackAccentFill}
           />
-          <Text style={styles.title}>
+          <CText style={styles.title}>
             {isCorrectAnswer
               ? t("question.resultCorrect")
               : t("question.resultWrong")}
-          </Text>
+          </CText>
         </View>
         <View style={styles.headerActions}>
           <Pressable
@@ -129,7 +129,7 @@ export function QuestionFeedbackBottomSheet({
       <View style={styles.gapMd} />
 
       {explanationText ? (
-        <Text style={styles.body}>{explanationText}</Text>
+        <CText style={styles.body}>{explanationText}</CText>
       ) : null}
 
       {correctChoiceBullets.length > 0 ? (
@@ -145,7 +145,7 @@ export function QuestionFeedbackBottomSheet({
                     color={feedbackAccentInk}
                   />
                 </View>
-                <Text style={styles.bulletText}>{bullet}</Text>
+                <CText style={styles.bulletText}>{bullet}</CText>
               </View>
             ))}
           </View>
@@ -155,13 +155,13 @@ export function QuestionFeedbackBottomSheet({
       {showMasteryProgress ? (
         <>
           <View style={styles.gapXs} />
-          <Text style={styles.masteryProgress}>
+          <CText style={styles.masteryProgress}>
             {t("question.masteryProgress", {
               current: masteryCurrent,
               target: masteryTarget,
               defaultValue: "Закріплення: {{current}}/{{target}}",
             })}
-          </Text>
+          </CText>
         </>
       ) : null}
 
@@ -173,11 +173,11 @@ export function QuestionFeedbackBottomSheet({
             style={styles.explainRow}
             onPress={onExplain}
           >
-            <Text style={styles.explainText}>
+            <CText style={styles.explainText}>
               {isCorrectAnswer
                 ? t("question.explainOthers")
                 : t("question.explainMistake")}
-            </Text>
+            </CText>
             <View style={styles.premiumBadge}>
               <Icon
                 name="premiumSmall"
@@ -205,7 +205,7 @@ export function QuestionFeedbackBottomSheet({
             ]}
           >
             <Icon name="back" size={20} color={colors.ink2} />
-            <Text style={styles.navButtonText}>{resolvedPreviousLabel}</Text>
+            <CText style={styles.navButtonText}>{resolvedPreviousLabel}</CText>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -219,7 +219,7 @@ export function QuestionFeedbackBottomSheet({
             ]}
             testID="question-feedback-next"
           >
-            <Text style={styles.navButtonText}>{nextLabel}</Text>
+            <CText style={styles.navButtonText}>{nextLabel}</CText>
             <Icon name="chevron" size={20} color={colors.ink2} />
           </Pressable>
         </View>
@@ -228,6 +228,7 @@ export function QuestionFeedbackBottomSheet({
           label={nextLabel}
           onPress={onNext}
           testID="question-feedback-next"
+          variant={isCorrectAnswer ? "primary" : "danger"}
         />
       )}
     </LinearGradient>

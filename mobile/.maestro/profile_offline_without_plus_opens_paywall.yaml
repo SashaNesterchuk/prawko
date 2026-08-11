@@ -1,0 +1,28 @@
+# Feature: Offline mode
+# Scenario: Free user tapping Offline mode from Profile opens paywall directly
+appId: com.mindjar.prawko
+tags:
+  - offline
+  - profile
+  - paywall
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-profile
+
+- tapOn:
+    id: "profile-row-offline-mode"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+
+- assertVisible:
+    id: "screen-paywall"
+
+- assertNotVisible:
+    id: "screen-offline-mode"

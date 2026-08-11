@@ -1,0 +1,27 @@
+# Feature: Offline mode
+# Scenario: Onboarded Plus user opens Offline mode screen from Profile settings
+appId: com.mindjar.prawko
+tags:
+  - offline
+  - profile
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-profile
+
+- tapOn:
+    id: "profile-row-offline-mode"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-offline-mode"
+    timeout: 15000
+
+- assertVisible:
+    id: "screen-offline-mode"
+
+- assertVisible:
+    id: "offline-mode-close"

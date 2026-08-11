@@ -1,9 +1,9 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "../icons";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { getSignDisplayName } from "../../features/road-signs/content/registry";
 import { SignImage } from "../../features/road-signs/SignImage";
@@ -39,7 +39,7 @@ export function SignCatalogCard({
     >
       <View style={styles.topRow}>
         <View style={styles.sideColumn}>
-          <Text style={styles.code}>{sign.code}</Text>
+          <CText style={styles.code}>{sign.code}</CText>
         </View>
 
         <View style={styles.imageWrap}>
@@ -88,9 +88,9 @@ export function SignCatalogCard({
         </View>
       </View>
 
-      <Text style={styles.name} numberOfLines={3}>
+      <CText style={styles.name} numberOfLines={3}>
         {displayName}
-      </Text>
+      </CText>
     </Pressable>
   );
 }

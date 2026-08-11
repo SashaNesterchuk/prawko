@@ -1,12 +1,13 @@
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
 import { Icon, type IconName } from "../icons";
 import { buildQuestionRouteParams } from "../../features/questions/question-routes";
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -21,6 +22,7 @@ type PracticeEmptyStateProps = {
   headerTitle: string;
   iconName?: IconName;
   onBack?: () => void;
+  testID?: string;
   title: string;
 };
 
@@ -30,6 +32,7 @@ export function PracticeEmptyState({
   headerTitle,
   iconName = "like",
   onBack,
+  testID = "screen-practice-empty",
   title,
 }: PracticeEmptyStateProps) {
   const { t } = useTranslation();
@@ -50,7 +53,7 @@ export function PracticeEmptyState({
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView style={styles.safeArea} edges={["top"]} testID={testID}>
         <StatusBar style="dark" />
         <View style={styles.header}>
           <NavigationButton
@@ -59,7 +62,7 @@ export function PracticeEmptyState({
             accessibilityLabel={t("common.back")}
             onPress={onBack ?? (() => router.back())}
           />
-          <Text style={styles.headerTitle}>{headerTitle}</Text>
+          <CText style={styles.headerTitle}>{headerTitle}</CText>
         </View>
 
         <ScrollView
@@ -75,13 +78,15 @@ export function PracticeEmptyState({
             />
           </View>
 
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.description}>{description}</Text>
+          <CText style={styles.title}>{title}</CText>
+          <CText style={styles.description}>{description}</CText>
 
           <View style={styles.actions}>
             <ActionTile
               accent="amber"
               style="faded"
+              premium
+              testID="practice-empty-tile-traps"
               title={t("learn.tileTrapsTitle", {
                 defaultValue: "Питання-пастки",
               })}
@@ -100,6 +105,8 @@ export function PracticeEmptyState({
             <ActionTile
               accent="amber"
               style="faded"
+              premium
+              testID="practice-empty-tile-srs"
               title={t("learn.tileSrsTitle", {
                 defaultValue: "Розумні повторення",
               })}

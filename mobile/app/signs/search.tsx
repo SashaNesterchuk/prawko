@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
@@ -10,6 +10,7 @@ import { SignListItem } from "../../src/components/shell/SignListItem";
 import { SignSearchField } from "../../src/components/shell/SignSearchField";
 import { SignsScreenHeader } from "../../src/components/shell/SignsScreenHeader";
 import {
+  CText,
   useResponsiveSpacing,
   useResponsiveStyles,
 } from "../../src/portable-ui";
@@ -67,22 +68,22 @@ export default function SignsSearchScreen() {
         >
           {showEmptyState ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>
+              <CText style={styles.emptyTitle}>
                 {t("signs.searchEmptyTitle")}
-              </Text>
-              <Text style={styles.emptyDescription}>
+              </CText>
+              <CText style={styles.emptyDescription}>
                 {t("signs.searchEmptyDescription")}
-              </Text>
+              </CText>
             </View>
           ) : null}
 
           {hasQuery && results.length > 0 ? (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>
+              <CText style={styles.sectionTitle}>
                 {t("signs.searchResultsTitle", {
                   count: results.length,
                 })}
-              </Text>
+              </CText>
               <View style={styles.resultList}>
                 {results.map((sign) => (
                   <SignListItem
@@ -103,12 +104,12 @@ export default function SignsSearchScreen() {
 
           {!hasQuery ? (
             <View style={styles.hintState}>
-              <Text style={styles.hintTitle}>
+              <CText style={styles.hintTitle}>
                 {t("signs.searchHintTitle")}
-              </Text>
-              <Text style={styles.hintDescription}>
+              </CText>
+              <CText style={styles.hintDescription}>
                 {t("signs.searchHintDescription")}
-              </Text>
+              </CText>
             </View>
           ) : null}
         </ScrollView>

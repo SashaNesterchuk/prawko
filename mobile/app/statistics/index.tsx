@@ -1,11 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { TOPIC_BLOCK_IDS, type LearningTopicId } from "@prawko/config";
+import { type LearningTopicId } from "@prawko/config";
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon } from "../../src/components/icons";
@@ -42,14 +42,19 @@ import {
   getAllSignsProgress,
   getCategorySignProgress,
 } from "../../src/features/road-signs/sign-progress";
-import { getLearningTopicTitle } from "../../src/features/question-topics/catalog";
+import {
+  getQuestionTopicIds,
+  getQuestionTopicTitle,
+} from "../../src/features/question-topics/catalog";
 import {
   getMistakesFixedStats,
   getQuestionDisplayStats,
   getSeenQuestionIds,
   getTopicProgress,
 } from "../../src/features/questions/question-engine";
+import { resolveLocalReadinessPercent } from "../../src/features/questions/readiness-assessment";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
 import {
   applyExamDateChange,
   parseNullableIsoDate,
@@ -57,6 +62,7 @@ import {
 } from "../../src/features/study-plan/exam-date";
 import { getDaysUntilExamFromDate } from "../../src/features/study-plan/generate-local-study-plan";
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveSpacing,
   useResponsiveStyles,
@@ -145,6 +151,9 @@ export default function StatisticsScreen() {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
+  const readinessAssessment = useQuestionProgressStore(
+    (state) => state.readinessAssessment
+  );
   const signPracticeRecords = useSignPracticeProgressStore(
     (state) => state.records
   );
@@ -159,6 +168,8 @@ export default function StatisticsScreen() {
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
   const [examSessions, setExamSessions] = useState<RemoteExamSession[]>([]);
+  const { openMode, dialog: questionModeCountDialog } =
+    useQuestionModeCountDialog();
 
   const availableSignQuestions = useMemo(
     () => buildAllSignTestQuestions(),
@@ -214,18 +225,20 @@ export default function StatisticsScreen() {
 
   const topicRows = useMemo(
     () =>
-      TOPIC_BLOCK_IDS.map((topicId) => {
-        const progress = getTopicProgress(topicId, questionUserState);
+      getQuestionTopicIds()
+        .map((topicId) => {
+          const progress = getTopicProgress(topicId, questionUserState);
 
-        return {
-          topicId,
-          title: getLearningTopicTitle(topicId, preferredLocale, t),
-          seen: progress.seen,
-          total: progress.total,
-          progress: progress.progress,
-        };
-      }).filter((topic) => topic.total > 0),
-    [preferredLocale, questionUserState, questionCatalogVersion, t]
+          return {
+            topicId,
+            title: getQuestionTopicTitle(topicId, preferredLocale),
+            seen: progress.seen,
+            total: progress.total,
+            progress: progress.progress,
+          };
+        })
+        .filter((topic) => topic.total > 0),
+    [preferredLocale, questionUserState, questionCatalogVersion]
   );
 
   const signsCatalogProgress = useMemo(
@@ -242,8 +255,13 @@ export default function StatisticsScreen() {
     [signPracticeRecords]
   );
 
-  const localReadiness =
+  const coveragePercent =
     stats.total > 0 ? Math.round((stats.seen / stats.total) * 100) : 0;
+  const localReadiness = resolveLocalReadinessPercent({
+    assessmentScorePercent: readinessAssessment?.scorePercent,
+    seen: stats.seen,
+    total: stats.total,
+  });
   const usesLocalReadiness = readinessSummary == null;
   const examReadiness = Math.round(
     readinessSummary?.readinessScore ?? localReadiness
@@ -251,7 +269,7 @@ export default function StatisticsScreen() {
   const signsLearnedPercent =
     signsCatalogProgress.total > 0
       ? Math.round(
-          (signsCatalogProgress.correct / signsCatalogProgress.total) * 100
+          (signsCatalogProgress.seen / signsCatalogProgress.total) * 100
         )
       : 0;
   const readiness = examReadiness;
@@ -277,16 +295,14 @@ export default function StatisticsScreen() {
     [attempts, preferredLocale]
   );
 
+  // User-set / remote exam date only — never invent from plan horizon.
   const examDate =
-    currentStudyPlan?.examDate ??
     studyPlanSetup.examDate ??
     (readinessSummary?.examDate?.trim()
       ? readinessSummary.examDate
       : null);
   const daysUntilExam =
-    examDate != null
-      ? getDaysUntilExamFromDate(examDate)
-      : readinessSummary?.daysUntilExam ?? null;
+    examDate != null ? getDaysUntilExamFromDate(examDate) : null;
 
   const readinessWeekChangePercent = useMemo(() => {
     if (!usesLocalReadiness || stats.seen <= 0) {
@@ -344,9 +360,9 @@ export default function StatisticsScreen() {
 
   const openMistakes = () => router.navigate("/mistakes");
   const openReview = () =>
-    router.navigate({
-      pathname: "/question",
-      params: buildQuestionRouteParams({ mode: "review_due" }),
+    openMode({
+      mode: "review_due",
+      title: t("statistics.smartReviewTitle"),
     });
   const openExamDate = () => setExamDatePickerVisible(true);
 
@@ -425,9 +441,9 @@ export default function StatisticsScreen() {
               size={backIconSize}
             />
           </Pressable>
-          <Text style={styles.headerTitle}>
+          <CText style={styles.headerTitle}>
             {t("statistics.title")}
-          </Text>
+          </CText>
         </View>
 
         <ScrollView
@@ -444,14 +460,14 @@ export default function StatisticsScreen() {
                 activeTab === "exam" ? styles.segmentItemActive : null,
               ]}
             >
-              <Text
+              <CText
                 style={[
                   styles.segmentLabel,
                   activeTab === "exam" ? styles.segmentLabelActive : null,
                 ]}
               >
                 {t("statistics.tabExam")}
-              </Text>
+              </CText>
             </Pressable>
             <Pressable
               accessibilityRole="button"
@@ -461,14 +477,14 @@ export default function StatisticsScreen() {
                 activeTab === "signs" ? styles.segmentItemActive : null,
               ]}
             >
-              <Text
+              <CText
                 style={[
                   styles.segmentLabel,
                   activeTab === "signs" ? styles.segmentLabelActive : null,
                 ]}
               >
                 {t("statistics.tabSigns")}
-              </Text>
+              </CText>
             </Pressable>
           </View>
 
@@ -481,19 +497,20 @@ export default function StatisticsScreen() {
                   stroke={ringStroke}
                   color={ringColor}
                 >
-                  <Text style={styles.ringValue}>
-                    {`${readiness}%`}
-                  </Text>
+                  <CText style={styles.ringValue}>
+                    <CText style={styles.ringValueNumber}>{readiness}</CText>
+                    <CText style={styles.ringValuePercent}>%</CText>
+                  </CText>
                 </ProgressRing>
 
                 <View style={styles.overviewCopy}>
                   <View style={styles.overviewBlock}>
-                    <Text style={styles.levelTitle}>
+                    <CText style={styles.levelTitle}>
                       {t(`statistics.level.${readinessLevel}`)}
-                    </Text>
-                    <Text style={styles.levelSubtitle}>
+                    </CText>
+                    <CText style={styles.levelSubtitle}>
                       {t("statistics.readinessIndex")}
-                    </Text>
+                    </CText>
                   </View>
 
                   {showWeekChangeBadge ? (
@@ -521,7 +538,7 @@ export default function StatisticsScreen() {
                           }
                         />
                       ) : null}
-                      <Text
+                      <CText
                         style={[
                           styles.weekBadgeLabel,
                           isWeekChangeFlat
@@ -532,16 +549,16 @@ export default function StatisticsScreen() {
                         ]}
                       >
                         {readinessWeekChangeLabel}
-                      </Text>
+                      </CText>
                     </View>
                   ) : null}
 
                   {daysUntilExam != null ? (
                     <View style={styles.overviewBlock}>
-                      <Text style={styles.daysValue}>{daysUntilExam}</Text>
-                      <Text style={styles.levelSubtitle}>
+                      <CText style={styles.daysValue}>{daysUntilExam}</CText>
+                      <CText style={styles.levelSubtitle}>
                         {t("statistics.daysUntilExam")}
-                      </Text>
+                      </CText>
                     </View>
                   ) : (
                     <Pressable
@@ -557,9 +574,9 @@ export default function StatisticsScreen() {
                         name="calendar-outline"
                         size={smallIconSize}
                       />
-                      <Text style={styles.examDateCtaLabel}>
+                      <CText style={styles.examDateCtaLabel}>
                         {t("statistics.examDateCta")}
-                      </Text>
+                      </CText>
                     </Pressable>
                   )}
                 </View>
@@ -579,9 +596,9 @@ export default function StatisticsScreen() {
 
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>
+                  <CText style={styles.cardTitle}>
                     {t("statistics.topicsTitle")}
-                  </Text>
+                  </CText>
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={t("statistics.topicsInfoTitle")}
@@ -643,12 +660,12 @@ export default function StatisticsScreen() {
                   <>
                     <View style={styles.divider} />
                     <View style={styles.weakSection}>
-                      <Text style={styles.weakTitle}>
+                      <CText style={styles.weakTitle}>
                         {t("statistics.weakTopicsTitle")}
-                      </Text>
-                      <Text style={styles.weakSubtitle}>
+                      </CText>
+                      <CText style={styles.weakSubtitle}>
                         {t("statistics.weakTopicsSubtitle")}
-                      </Text>
+                      </CText>
                       <View style={styles.chipRow}>
                         {weakTopics.map((topic) => (
                           <Pressable
@@ -660,7 +677,7 @@ export default function StatisticsScreen() {
                               pressed ? styles.pressed : null,
                             ]}
                           >
-                            <Text style={styles.chipLabel}>{topic.title}</Text>
+                            <CText style={styles.chipLabel}>{topic.title}</CText>
                             <Ionicons
                               color={colors.textSecondary}
                               name="chevron-forward"
@@ -712,7 +729,7 @@ export default function StatisticsScreen() {
                   styles={styles}
                   label={t("statistics.questionsCovered")}
                   value={`${stats.seen} / ${stats.total}`}
-                  badge={`${localReadiness}%`}
+                  badge={`${coveragePercent}%`}
                 />
                 <View style={styles.divider} />
                 <StatisticsSummaryRow
@@ -736,9 +753,11 @@ export default function StatisticsScreen() {
               <SignsSummaryCard
                 title={t("statistics.learned")}
                 progress={signsLearnedPercent}
+                correct={signsCatalogProgress.correct}
+                wrong={signsCatalogProgress.wrong}
                 seen={signsCatalogProgress.seen}
                 total={signsCatalogProgress.total}
-                totalAnswersLabel={t("signs.totalAnswers")}
+                correctAnswersLabel={t("statistics.correctAnswers")}
                 trainAllLabel={t("signs.trainAll")}
                 onTrainAll={openSignsTraining}
               />
@@ -786,6 +805,8 @@ export default function StatisticsScreen() {
           onSelectCount={setSignsSelectedCount}
           onStart={startSignsTraining}
         />
+
+        {questionModeCountDialog}
 
         <CalendarSheet
           visible={examDatePickerVisible}
@@ -837,11 +858,11 @@ function StatisticsQueueRow({
       ]}
     >
       <View style={styles.queueCopy}>
-        <Text style={styles.queueTitle}>{title}</Text>
-        <Text style={styles.queueSubtitle}>{subtitle}</Text>
+        <CText style={styles.queueTitle}>{title}</CText>
+        <CText style={styles.queueSubtitle}>{subtitle}</CText>
       </View>
       <View style={rowStyles.queueCount}>
-        <Text style={rowStyles.queueCountText}>{count}</Text>
+        <CText style={rowStyles.queueCountText}>{count}</CText>
       </View>
     </Pressable>
   );
@@ -889,14 +910,14 @@ function StatisticsSummaryRow({
 }) {
   return (
     <View style={styles.summaryRow}>
-      <Text style={styles.summaryLabel}>{label}</Text>
+      <CText style={styles.summaryLabel}>{label}</CText>
       <View style={styles.summaryValueGroup}>
         {badge ? (
           <View style={styles.summaryBadge}>
-            <Text style={styles.summaryBadgeText}>{badge}</Text>
+            <CText style={styles.summaryBadgeText}>{badge}</CText>
           </View>
         ) : null}
-        <Text style={styles.summaryValue}>{value}</Text>
+        <CText style={styles.summaryValue}>{value}</CText>
       </View>
     </View>
   );
@@ -926,8 +947,8 @@ function TopicsInfoDialog({
     >
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.body}>{body}</Text>
+          <CText style={styles.title}>{title}</CText>
+          <CText style={styles.body}>{body}</CText>
           <Pressable
             accessibilityRole="button"
             onPress={onClose}
@@ -936,7 +957,7 @@ function TopicsInfoDialog({
               pressed ? styles.pressed : null,
             ]}
           >
-            <Text style={styles.closeLabel}>{closeLabel}</Text>
+            <CText style={styles.closeLabel}>{closeLabel}</CText>
           </Pressable>
         </View>
       </View>
@@ -1068,8 +1089,19 @@ function useStyles({
         gap: spacing.exact(16),
       },
       ringValue: {
+        textAlign: "center",
+        color: ringColor,
+      },
+      ringValueNumber: {
+        fontSize: responsiveFont(52),
+        lineHeight: responsiveFont(52),
+        fontWeight: "700",
+        letterSpacing: -1.04,
+        color: ringColor,
+      },
+      ringValuePercent: {
         fontSize: responsiveFont(40),
-        lineHeight: responsiveFont(40),
+        lineHeight: responsiveFont(52),
         fontWeight: "700",
         letterSpacing: -0.8,
         color: ringColor,

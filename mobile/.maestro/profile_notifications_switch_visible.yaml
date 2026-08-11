@@ -1,0 +1,18 @@
+# Feature: Profile notifications
+# Scenario: Onboarded user sees notifications switch on Profile settings
+appId: com.mindjar.prawko
+tags:
+  - profile
+  - notifications
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      TARGET_ID: screen-profile
+
+- assertVisible:
+    id: "profile-row-notifications"
+
+- assertVisible:
+    id: "profile-row-notifications-switch"

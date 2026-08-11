@@ -1,0 +1,18 @@
+# Feature: Onboarding exam date
+# Scenario: Continuing without picking a date does not invent an exam date
+appId: com.mindjar.prawko
+tags:
+  - onboarding
+---
+- runFlow: subflows/complete_onboarding.yaml
+
+- tapOn:
+    id: "tab-profile"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
+- assertVisible:
+    id: "profile-exam-date-missing"

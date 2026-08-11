@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { AppTextInput } from "../../src/components/shell/AppTextInput";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 
 export default function SchoolCodeScreen() {
@@ -57,9 +57,9 @@ export default function SchoolCodeScreen() {
         </AppCard>
 
         <AppCard accent>
-          <Text style={styles.helpText}>
+          <CText style={styles.helpText}>
             {t("onboarding.schoolCodeHelp")}
-          </Text>
+          </CText>
         </AppCard>
       </View>
     </AppScreen>

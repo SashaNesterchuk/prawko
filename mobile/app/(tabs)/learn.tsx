@@ -1,9 +1,9 @@
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon, type IconName } from "../../src/components/icons";
@@ -23,15 +23,18 @@ import {
   getTopicProgress,
 } from "../../src/features/questions/question-engine";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
 import {
   fetchRemoteHomeProgress,
   getWarsawIsoDate,
   type RemoteReadinessSummary,
 } from "../../src/features/study-plan/supabase-study-plan-progress";
 import {
+  CText,
   getTypographyStyle,
   useResponsiveFonts,
   useResponsiveStyles,
+  withResponsiveFont,
 } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
@@ -73,6 +76,7 @@ export default function LearnTabScreen() {
   const isFocused = useIsFocused();
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
+  const { openMode, dialog: countDialog } = useQuestionModeCountDialog();
 
   useEffect(() => {
     if (!isFocused) {
@@ -109,17 +113,39 @@ export default function LearnTabScreen() {
     [questionCatalogVersion, questionUserState]
   );
 
-  const topicIds = useMemo(
-    () =>
-      getQuestionTopicIds().filter(
-        (topicId) =>
-          getTopicProgress(topicId, questionUserState, topicQuestionProgress)
-            .total > 0
-      ),
-    [questionCatalogVersion, questionUserState, topicQuestionProgress]
-  );
-  const displayTopicIds =
-    topicIds.length > 0 ? topicIds : getQuestionTopicIds();
+  const topicCardsRef = useRef<
+    Array<{
+      progress: ReturnType<typeof getTopicProgress>;
+      topicId: ReturnType<typeof getQuestionTopicIds>[number];
+    }>
+  >([]);
+  const topicCards = useMemo(() => {
+    // Keep Learn cheap while covered by exam/trainer — recomputing every topic
+    // on each progress write was freezing the result screen.
+    if (!isFocused) {
+      return topicCardsRef.current;
+    }
+
+    const allTopicIds = getQuestionTopicIds();
+    const rows = allTopicIds.map((topicId) => {
+      const progress = getTopicProgress(
+        topicId,
+        questionUserState,
+        topicQuestionProgress
+      );
+      return { topicId, progress };
+    });
+    const withQuestions = rows.filter((row) => row.progress.total > 0);
+    const nextRows = withQuestions.length > 0 ? withQuestions : rows;
+    topicCardsRef.current = nextRows;
+    return nextRows;
+  }, [
+    isFocused,
+    questionCatalogVersion,
+    questionUserState,
+    topicQuestionProgress,
+  ]);
+  const displayTopicCards = topicCards;
 
   const recentExamPassed = readinessSummary?.recentExamStatus === "completed";
   const dueReviews = readinessSummary?.dueReviews ?? stats.reviewDue;
@@ -163,14 +189,19 @@ export default function LearnTabScreen() {
     },
   ];
 
+  const mistakesTitle = t("learn.tileMistakesTitle", {
+    defaultValue: "Виправити помилки",
+  });
+  const srsTitle = t("learn.tileSrsTitle", {
+    defaultValue: "Розумні повторення",
+  });
+
   const personalizedTiles: ActionTileItem[] = [
     {
       key: "mistakes",
       accent: "red",
       style: "faded",
-      title: t("learn.tileMistakesTitle", {
-        defaultValue: "Виправити помилки",
-      }),
+      title: mistakesTitle,
       subtitle: t("learn.tileMistakesSubtitle", {
         defaultValue: "Невиправлених помилок: {{count}}",
         count: stats.wrongAnswers,
@@ -182,13 +213,17 @@ export default function LearnTabScreen() {
       key: "srs",
       accent: "amber",
       style: "faded",
-      title: t("learn.tileSrsTitle", { defaultValue: "Розумні повторення" }),
+      title: srsTitle,
       subtitle: t("learn.tileSrsSubtitle", {
         defaultValue: "Питання на сьогодні: {{count}}",
         count: dueReviews,
       }),
       icon: <LearnActionIcon accent="amber" name="idea" />,
-      onPress: () => openQuestionMode("review_due"),
+      onPress: () =>
+        openMode({
+          mode: "review_due",
+          title: srsTitle,
+        }),
     },
     {
       key: "traps",
@@ -231,15 +266,16 @@ export default function LearnTabScreen() {
               style="faded"
               icon={<LearnActionIcon accent="green" name="stateDefault" />}
               onPress={() => openQuestionMode("saved")}
+              testID="learn-tile-saved"
             />
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+            <CText style={styles.sectionTitle}>
               {t("learn.personalizedTitle", {
                 defaultValue: "Персоналізоване тренування",
               })}
-            </Text>
+            </CText>
             <View style={styles.stack}>
               {personalizedTiles.map((tile) => (
                 <ActionTile
@@ -250,29 +286,23 @@ export default function LearnTabScreen() {
                   style={tile.style}
                   icon={tile.icon}
                   onPress={tile.onPress}
+                  testID={`learn-tile-${tile.key}`}
                 />
               ))}
             </View>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+            <CText style={styles.sectionTitle}>
               {t("learn.topicsByThemeTitle", {
                 defaultValue: "Навчання за темами",
               })}
-            </Text>
+            </CText>
             <View style={styles.stack}>
-              {displayTopicIds.map((topic, index) => {
-                const progress = getTopicProgress(
-                  topic,
-                  questionUserState,
-                  topicQuestionProgress
-                );
-
-                return (
+              {displayTopicCards.map(({ topicId, progress }, index) => (
                   <TopicReadinessCard
-                    key={topic}
-                    title={getQuestionTopicTitle(topic, preferredLocale)}
+                    key={topicId}
+                    title={getQuestionTopicTitle(topicId, preferredLocale)}
                     seen={progress.seen}
                     total={progress.total}
                     readiness={progress.progress}
@@ -282,22 +312,22 @@ export default function LearnTabScreen() {
                     onPress={() =>
                       router.navigate({
                         pathname: "/topic/[topicId]",
-                        params: { topicId: topic },
+                        params: { topicId },
                       })
                     }
                   />
-                );
-              })}
+              ))}
             </View>
           </View>
         </ScrollView>
       </SafeAreaView>
+      {countDialog}
     </GreenWaveScreen>
   );
 }
 
 function useStyles({ safeBottom }: { safeBottom: number }) {
-  return useResponsiveStyles(({ colors, spacing }) => ({
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
     safeArea: {
       flex: 1,
     },
@@ -316,7 +346,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       gap: spacing.exact(8),
     },
     sectionTitle: {
-      ...getTypographyStyle("bodyM"),
+      ...withResponsiveFont(getTypographyStyle("bodyM"), responsiveFont),
       color: colors.ink3,
     },
   }));

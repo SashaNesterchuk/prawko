@@ -1,11 +1,11 @@
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 
 const MINUTE_OPTIONS = [15, 25, 45, 60] as const;
@@ -48,14 +48,14 @@ export default function MinutesScreen() {
               accent={isActive}
               onPress={() => setMinutesPerDay(minutes)}
             >
-              <Text style={styles.optionTitle}>
+              <CText style={styles.optionTitle}>
                 {t("onboarding.minutesOptionTitle", { minutes })}
-              </Text>
-              <Text style={styles.optionBody}>
+              </CText>
+              <CText style={styles.optionBody}>
                 {minutes <= 20
                   ? t("onboarding.minutesOptionMinimum")
                   : t("onboarding.minutesOptionFull")}
-              </Text>
+              </CText>
             </AppCard>
           );
         })}

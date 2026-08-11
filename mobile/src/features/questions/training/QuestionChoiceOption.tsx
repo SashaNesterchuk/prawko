@@ -1,7 +1,7 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "../../../components/icons";
-import { useResponsiveStyles } from "../../../portable-ui";
+import { CText, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 
 type QuestionChoice = {
@@ -17,6 +17,7 @@ export function QuestionChoiceOption({
   isCorrectChoice,
   isSelected,
   onPress,
+  testID,
 }: {
   choice: QuestionChoice;
   choiceIndex: number;
@@ -25,6 +26,7 @@ export function QuestionChoiceOption({
   isCorrectChoice: boolean;
   isSelected: boolean;
   onPress: () => void;
+  testID?: string;
 }) {
   const { accents, colors } = useTheme();
   const revealCorrect = hasAnswered && isCorrectChoice;
@@ -45,7 +47,7 @@ export function QuestionChoiceOption({
       disabled={hasAnswered}
       onPress={onPress}
       style={styles.container}
-      testID={`question-choice-index-${choiceIndex}`}
+      testID={testID ?? `question-choice-index-${choiceIndex}`}
     >
       {!isBooleanQuestion ? (
         revealCorrect || revealWrong ? (
@@ -56,11 +58,11 @@ export function QuestionChoiceOption({
           />
         ) : (
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{choice.id.toUpperCase()}</Text>
+            <CText style={styles.badgeText}>{choice.id.toUpperCase()}</CText>
           </View>
         )
       ) : null}
-      <Text style={styles.label}>{choice.label}</Text>
+      <CText style={styles.label}>{choice.label}</CText>
     </Pressable>
   );
 }

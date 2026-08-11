@@ -103,6 +103,14 @@ export function isAppResumeAdsSuppressed() {
   return Date.now() < suppressAppResumeAdsUntil;
 }
 
+/** Test-only: wipe module session so suites stay isolated. */
+export function resetAdSessionStateForTests() {
+  sessionState = createFreshSessionState();
+  examSessionActive = false;
+  lastBackgroundAt = null;
+  suppressAppResumeAdsUntil = 0;
+}
+
 export function shouldShowInterstitialForTrigger(
   trigger: AdInterstitialTrigger,
   input: {

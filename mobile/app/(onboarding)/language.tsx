@@ -1,17 +1,18 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@prawko/config";
 
+import { ActionTile } from "../../src/components/shell/ActionTile";
 import { AppButton } from "../../src/components/shell/AppButton";
-import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { LocaleFlag } from "../../src/components/shell/LocaleFlag";
 import { NavigationButton } from "../../src/components/shell/NavigationButton";
-import { getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 
 export default function LanguageScreen() {
@@ -39,6 +40,28 @@ export default function LanguageScreen() {
     }
   };
 
+  const languageList = (
+    <View style={styles.cardStack} testID="onboarding-language-list">
+      {SUPPORTED_LOCALES.map((locale) => {
+        const isActive = preferredLocale === locale;
+
+        return (
+          <ActionTile
+            key={locale}
+            fullWidth
+            selected={isActive}
+            style="faded"
+            testID={`onboarding-language-${locale}`}
+            title={t(`languages.${locale}.label`)}
+            subtitle={t(`languages.${locale}.description`)}
+            icon={<LocaleFlag locale={locale} />}
+            onPress={() => handleSelectLocale(locale)}
+          />
+        );
+      })}
+    </View>
+  );
+
   if (isSettingsMode) {
     return (
       <GreenWaveScreen>
@@ -51,39 +74,14 @@ export default function LanguageScreen() {
               type="back"
               inset
             />
-            <Text style={styles.topBarTitle}>{t("profile.languageTitle")}</Text>
+            <CText style={styles.topBarTitle}>{t("profile.languageTitle")}</CText>
           </View>
 
           <ScrollView
             contentContainerStyle={styles.settingsContent}
             showsVerticalScrollIndicator={false}
           >
-            <View style={styles.cardStack}>
-              {SUPPORTED_LOCALES.map((locale) => {
-                const isActive = preferredLocale === locale;
-
-                return (
-                  <AppCard
-                    key={locale}
-                    accent={isActive}
-                    testID={`onboarding-language-${locale}`}
-                    onPress={() => handleSelectLocale(locale)}
-                  >
-                    <Text style={styles.optionTitle}>
-                      {t(`languages.${locale}.label`)}
-                    </Text>
-                    <Text style={styles.optionBody}>
-                      {t(`languages.${locale}.description`)}
-                    </Text>
-                    {isActive ? (
-                      <Text style={styles.selectedLabel}>
-                        {t("common.selected")}
-                      </Text>
-                    ) : null}
-                  </AppCard>
-                );
-              })}
-            </View>
+            {languageList}
           </ScrollView>
         </SafeAreaView>
       </GreenWaveScreen>
@@ -105,32 +103,7 @@ export default function LanguageScreen() {
         />
       }
     >
-      <View style={styles.cardStack}>
-        {SUPPORTED_LOCALES.map((locale) => {
-          const isActive = preferredLocale === locale;
-
-          return (
-            <AppCard
-              key={locale}
-              accent={isActive}
-              testID={`onboarding-language-${locale}`}
-              onPress={() => handleSelectLocale(locale)}
-            >
-              <Text style={styles.optionTitle}>
-                {t(`languages.${locale}.label`)}
-              </Text>
-              <Text style={styles.optionBody}>
-                {t(`languages.${locale}.description`)}
-              </Text>
-              {isActive ? (
-                <Text style={styles.selectedLabel}>
-                  {t("common.selected")}
-                </Text>
-              ) : null}
-            </AppCard>
-          );
-        })}
-      </View>
+      {languageList}
     </AppScreen>
   );
 }
@@ -143,8 +116,8 @@ function useStyles() {
     topBar: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing.exact(12),
-      paddingHorizontal: spacing.exact(20),
+      gap: spacing.exact(16),
+      paddingHorizontal: spacing.exact(24),
       paddingTop: spacing.exact(8),
       paddingBottom: spacing.exact(12),
     },
@@ -152,34 +125,18 @@ function useStyles() {
       flex: 1,
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      fontFamily: getFontFamily("bold"),
+      fontFamily: getFontFamily("semiBold"),
+      letterSpacing: -0.2,
       color: colors.textPrimary,
     },
     settingsContent: {
-      paddingHorizontal: spacing.exact(20),
+      paddingHorizontal: spacing.exact(24),
+      paddingTop: spacing.exact(12),
       paddingBottom: spacing.exact(32),
     },
     cardStack: {
-      gap: spacing.exact(12),
-    },
-    optionTitle: {
-      fontSize: responsiveFont(18),
-      fontFamily: getFontFamily("bold"),
-      color: colors.textPrimary,
-      marginBottom: spacing.exact(4),
-    },
-    optionBody: {
-      fontSize: responsiveFont(14),
-      lineHeight: responsiveFont(22),
-      fontFamily: getFontFamily("regular"),
-      color: colors.textSecondary,
-    },
-    selectedLabel: {
-      marginTop: spacing.exact(12),
-      fontSize: responsiveFont(12),
-      fontFamily: getFontFamily("bold"),
-      color: colors.accent,
-      textTransform: "uppercase",
+      gap: spacing.exact(8),
+      width: "100%" as const,
     },
   }));
 }

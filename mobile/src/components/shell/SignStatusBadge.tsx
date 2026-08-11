@@ -1,7 +1,7 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { Icon, type IconName } from "../icons";
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 export type SignLearningStatus = "new" | "mastered" | "wrong";
@@ -37,7 +37,7 @@ export function SignStatusBadge({ status, label }: SignStatusBadgeProps) {
   return (
     <View style={[styles.badge, { backgroundColor: palette.background }]}>
       <Icon color={palette.color} name={palette.icon} size={16} />
-      <Text style={[styles.label, { color: palette.color }]}>{label}</Text>
+      <CText style={[styles.label, { color: palette.color }]}>{label}</CText>
     </View>
   );
 }

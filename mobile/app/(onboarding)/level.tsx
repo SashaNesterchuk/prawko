@@ -1,13 +1,13 @@
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { PLAN_LEVELS } from "@prawko/config";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 
 export default function LevelScreen() {
@@ -44,12 +44,12 @@ export default function LevelScreen() {
 
           return (
             <AppCard key={level} accent={isActive} onPress={() => setLevel(level)}>
-              <Text style={styles.optionTitle}>
+              <CText style={styles.optionTitle}>
                 {t(`levels.${level}.label`)}
-              </Text>
-              <Text style={styles.optionBody}>
+              </CText>
+              <CText style={styles.optionBody}>
                 {t(`levels.${level}.description`)}
-              </Text>
+              </CText>
             </AppCard>
           );
         })}

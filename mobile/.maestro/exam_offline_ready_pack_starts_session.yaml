@@ -20,7 +20,7 @@ tags:
 
 - extendedWaitUntil:
     visible:
-      id: "question-choice-index-0"
+      id: "screen-exam-session"
     timeout: 20000
 
 - assertVisible:

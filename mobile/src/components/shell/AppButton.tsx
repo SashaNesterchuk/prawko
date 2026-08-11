@@ -1,8 +1,13 @@
-import { Pressable, Text } from "react-native";
+import { Pressable } from "react-native";
 
-import { getTypographyStyle, useResponsiveStyles } from "../../portable-ui";
+import {
+  CText,
+  getTypographyStyle,
+  useResponsiveStyles,
+  withResponsiveFont,
+} from "../../portable-ui";
 
-type AppButtonVariant = "primary" | "secondary" | "ghost";
+type AppButtonVariant = "primary" | "danger" | "secondary" | "ghost";
 
 type AppButtonProps = {
   disabled?: boolean;
@@ -20,6 +25,7 @@ export function AppButton({
   variant = "primary",
 }: AppButtonProps) {
   const styles = useStyles();
+  const isFilled = variant === "primary" || variant === "danger";
 
   return (
     <Pressable
@@ -30,29 +36,31 @@ export function AppButton({
       style={({ pressed }) => [
         styles.base,
         variant === "primary" ? styles.primary : null,
+        variant === "danger" ? styles.danger : null,
         variant === "secondary" ? styles.secondary : null,
         variant === "ghost" ? styles.ghost : null,
-        variant === "primary" && !disabled ? styles.primaryShadow : null,
-        disabled && variant === "primary" ? styles.primaryDisabled : null,
+        isFilled && !disabled ? styles.primaryShadow : null,
+        disabled && isFilled ? styles.primaryDisabled : null,
         pressed && !disabled ? styles.pressed : null,
       ]}
     >
-      <Text
+      <CText
         style={[
           styles.label,
-          variant === "primary" ? styles.primaryLabel : styles.secondaryLabel,
+          isFilled ? styles.primaryLabel : styles.secondaryLabel,
           variant === "ghost" ? styles.ghostLabel : null,
-          disabled && variant === "primary" ? styles.primaryDisabledLabel : null,
+          disabled && isFilled ? styles.primaryDisabledLabel : null,
         ]}
       >
         {label}
-      </Text>
+      </CText>
     </Pressable>
   );
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ colors, elevation, radius, spacing, theme }) => ({
+  return useResponsiveStyles(
+    ({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
     base: {
       minHeight: spacing.exact(52),
       borderRadius: radius.pill,
@@ -63,6 +71,9 @@ function useStyles() {
     },
     primary: {
       backgroundColor: theme.accents.green.fill,
+    },
+    danger: {
+      backgroundColor: theme.accents.red.fill,
     },
     primaryShadow: {
       ...elevation.raised,
@@ -84,7 +95,7 @@ function useStyles() {
       opacity: 0.96,
     },
     label: {
-      ...getTypographyStyle("headingM"),
+      ...withResponsiveFont(getTypographyStyle("headingM"), responsiveFont),
     },
     primaryLabel: {
       color: colors.onAccent,
@@ -98,5 +109,6 @@ function useStyles() {
     ghostLabel: {
       color: colors.ink,
     },
-  }));
+  })
+  );
 }

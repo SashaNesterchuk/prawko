@@ -17,6 +17,7 @@ import {
   STUDY_PLAN_TASK_TYPES,
   SUPPORTED_LOCALES,
   TOPIC_BLOCK_IDS,
+  type QuestionTopicId,
 } from "@prawko/config";
 import { z } from "zod";
 
@@ -25,7 +26,7 @@ export const categorySchema = z.enum(ACTIVE_CATEGORIES);
 export const planLevelSchema = z.enum(PLAN_LEVELS);
 export const topicBlockSchema = z.enum(TOPIC_BLOCK_IDS);
 export const questionTopicIdSchema = z.enum(
-  QUESTION_TOPIC_IDS as [string, ...string[]]
+  QUESTION_TOPIC_IDS as unknown as [QuestionTopicId, ...QuestionTopicId[]]
 );
 export const questionScopeSchema = z.enum(QUESTION_SCOPES);
 export const answerTypeSchema = z.enum(QUESTION_ANSWER_TYPES);
@@ -64,7 +65,8 @@ export const generatedStudyPlanTaskSchema = z.object({
   description: z.string().min(1),
   estimatedMinutes: z.number().int().min(1).max(180),
   questionCountTarget: z.number().int().min(1).max(64).optional(),
-  topicBlock: topicBlockSchema.optional(),
+  /** Catalog topic id (question_topic_catalog). Legacy key name kept for RPC payloads. */
+  topicBlock: questionTopicIdSchema.optional(),
   countsForMinimum: z.boolean().default(false),
 });
 
@@ -72,7 +74,7 @@ export const generatedStudyPlanDaySchema = z.object({
   id: z.string().min(1),
   dayNumber: z.number().int().min(1).max(STUDY_PLAN_LIMITS.maxDays),
   planDate: z.string().min(10).max(10),
-  focusTopic: topicBlockSchema.optional(),
+  focusTopic: questionTopicIdSchema.optional(),
   estimatedMinutes: z.number().int().min(1).max(STUDY_PLAN_LIMITS.maxMinutesPerDay),
   minimumMode: z.boolean().default(false),
   tasks: z.array(generatedStudyPlanTaskSchema).min(1),
@@ -130,7 +132,9 @@ export const questionChatContextSchema = z.object({
   correctAnswer: z.string().min(1),
   selectedAnswer: z.string().min(1).optional(),
   answerType: answerTypeSchema,
-  topicBlock: topicBlockSchema,
+  topicId: questionTopicIdSchema,
+  /** @deprecated Prefer topicId; kept for older clients during rollout. */
+  topicBlock: topicBlockSchema.optional(),
   scope: questionScopeSchema,
   points: z.number().int().min(1).max(3),
   options: z.array(questionChatOptionSchema).max(3),
@@ -160,7 +164,7 @@ export const questionChatResponseSchema = z.object({
 
 export const todayTaskSchema = z.object({
   id: z.string().uuid(),
-  topicBlock: topicBlockSchema.optional(),
+  topicBlock: questionTopicIdSchema.optional(),
   type: z.enum(["learn", "review", "mini_test", "full_exam"]),
   title: z.string().min(1),
   isCompleted: z.boolean().default(false),

@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
@@ -18,6 +18,7 @@ import {
   getTopicProgress,
 } from "../../src/features/questions/question-engine";
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../src/portable-ui";
@@ -46,15 +47,19 @@ export default function TopicsScreen() {
     () => getOverallLearningStats(questionUserState),
     [questionCatalogVersion, questionUserState]
   );
-  const topicIds = useMemo(
-    () =>
-      getQuestionTopicIds().filter(
-        (topicId) =>
-          getTopicProgress(topicId, questionUserState, topicQuestionProgress)
-            .total > 0
+  const topicCards = useMemo(() => {
+    const allTopicIds = getQuestionTopicIds();
+    const rows = allTopicIds.map((topicId) => ({
+      topicId,
+      progress: getTopicProgress(
+        topicId,
+        questionUserState,
+        topicQuestionProgress
       ),
-    [questionCatalogVersion, questionUserState, topicQuestionProgress]
-  );
+    }));
+    const withQuestions = rows.filter((row) => row.progress.total > 0);
+    return withQuestions.length > 0 ? withQuestions : rows;
+  }, [questionCatalogVersion, questionUserState, topicQuestionProgress]);
 
   return (
     <GreenWaveScreen>
@@ -77,9 +82,9 @@ export default function TopicsScreen() {
               size={backIconSize}
             />
           </Pressable>
-          <Text style={styles.headerTitle}>
+          <CText style={styles.headerTitle}>
             {t("learn.topicsTitle", { defaultValue: "Теми" })}
-          </Text>
+          </CText>
         </View>
 
         <ScrollView
@@ -95,17 +100,10 @@ export default function TopicsScreen() {
             wrong={overallStats.wrong}
           />
 
-          {topicIds.map((topic, index) => {
-            const progress = getTopicProgress(
-              topic,
-              questionUserState,
-              topicQuestionProgress
-            );
-
-            return (
+          {topicCards.map(({ topicId, progress }, index) => (
               <TopicReadinessCard
-                key={topic}
-                title={getQuestionTopicTitle(topic, preferredLocale)}
+                key={topicId}
+                title={getQuestionTopicTitle(topicId, preferredLocale)}
                 seen={progress.seen}
                 total={progress.total}
                 readiness={progress.progress}
@@ -115,12 +113,11 @@ export default function TopicsScreen() {
                 onPress={() =>
                   router.navigate({
                     pathname: "/topic/[topicId]",
-                    params: { topicId: topic },
+                    params: { topicId },
                   })
                 }
               />
-            );
-          })}
+          ))}
         </ScrollView>
       </SafeAreaView>
     </GreenWaveScreen>

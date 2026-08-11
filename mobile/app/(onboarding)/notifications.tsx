@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Icon } from "../../src/components/icons";
@@ -13,6 +13,7 @@ import {
   enableStudyNotificationsAsync,
 } from "../../src/features/notifications/runtime";
 import {
+  CText,
   getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
@@ -79,19 +80,19 @@ export default function NotificationsScreen() {
                 ]}
                 testID="onboarding-notifications-skip"
               >
-                <Text style={styles.skipLabel}>
+                <CText style={styles.skipLabel}>
                   {t("onboarding.notifyLater")}
-                </Text>
+                </CText>
               </Pressable>
             </View>
 
-            <Text
+            <CText
               style={styles.title}
               testID="screen-onboarding-notifications"
             >
               {t("onboarding.notifyTitle")}
-            </Text>
-            <Text style={styles.subtitle}>{t("onboarding.notifySubtitle")}</Text>
+            </CText>
+            <CText style={styles.subtitle}>{t("onboarding.notifySubtitle")}</CText>
 
             <View style={styles.points}>
               {points.map((point) => (
@@ -103,7 +104,7 @@ export default function NotificationsScreen() {
                       color={accents.green.ink}
                     />
                   </View>
-                  <Text style={styles.pointText}>{point}</Text>
+                  <CText style={styles.pointText}>{point}</CText>
                 </View>
               ))}
             </View>
@@ -127,7 +128,7 @@ export default function NotificationsScreen() {
               ]}
               testID="onboarding-notifications-allow"
             >
-              <Text style={styles.ctaLabel}>{t("onboarding.notifyAllow")}</Text>
+              <CText style={styles.ctaLabel}>{t("onboarding.notifyAllow")}</CText>
             </Pressable>
           </View>
         </View>

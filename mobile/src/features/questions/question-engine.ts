@@ -5,6 +5,7 @@ import {
   getExamBaseVideoMinTarget,
   getQuestionTopicFallbackFromTopicBlock,
   getContentLocale,
+  isQuestionTopicId,
   isTopicBlockId,
   type DrivingCategory,
   type LearningTopicId,
@@ -79,17 +80,62 @@ function questionMatchesTopic(
   question: LocalQuestion,
   topic: LearningTopicId
 ) {
-  return isTopicBlockId(topic)
-    ? question.topicBlock === topic
-    : getQuestionTopicIds(question).includes(topic);
+  // Prefer catalog ids when an id exists in both taxonomies (e.g. "overtaking").
+  if (isQuestionTopicId(topic)) {
+    return getQuestionTopicIds(question).includes(topic);
+  }
+
+  return isTopicBlockId(topic) && question.topicBlock === topic;
 }
 
 function getTopicScopedQuestions(topic?: LearningTopicId) {
-  const questionBank = getQuestionBank();
+  if (!topic) {
+    return getQuestionBank();
+  }
 
-  return topic
-    ? questionBank.filter((question) => questionMatchesTopic(question, topic))
-    : questionBank;
+  return getCachedQuestionsForTopic(topic);
+}
+
+type TopicQuestionsCache = {
+  bank: LocalQuestion[];
+  byTopic: Map<string, LocalQuestion[]>;
+};
+
+let topicQuestionsCache: TopicQuestionsCache | null = null;
+
+function topicQuestionsCacheKey(topic: LearningTopicId) {
+  // Catalog ids win when an id exists in both taxonomies (e.g. "overtaking"),
+  // matching questionMatchesTopic. Separate keys avoid mixing legacy block
+  // membership into catalog lookups.
+  return isQuestionTopicId(topic) ? `catalog:${topic}` : `block:${topic}`;
+}
+
+function getCachedQuestionsForTopic(topic: LearningTopicId) {
+  const bank = getQuestionBank();
+
+  if (!topicQuestionsCache || topicQuestionsCache.bank !== bank) {
+    const byTopic = new Map<string, LocalQuestion[]>();
+
+    const push = (cacheKey: string, question: LocalQuestion) => {
+      const existing = byTopic.get(cacheKey);
+      if (existing) {
+        existing.push(question);
+        return;
+      }
+      byTopic.set(cacheKey, [question]);
+    };
+
+    for (const question of bank) {
+      push(`block:${question.topicBlock}`, question);
+      for (const topicId of getQuestionTopicIds(question)) {
+        push(`catalog:${topicId}`, question);
+      }
+    }
+
+    topicQuestionsCache = { bank, byTopic };
+  }
+
+  return topicQuestionsCache.byTopic.get(topicQuestionsCacheKey(topic)) ?? [];
 }
 
 function isHighPointsQuestion(question: LocalQuestion) {
@@ -398,7 +444,9 @@ export function getTopicScopedUserStates(
   topic: LearningTopicId
 ): QuestionUserStateMap {
   const questions = getTopicScopedQuestions(topic);
-  const nextStates: QuestionUserStateMap = { ...userStates };
+  // Only materialize states for this topic's questions. Spreading the entire
+  // global map here previously froze Learn/topics when many topics recomputed.
+  const nextStates: QuestionUserStateMap = {};
 
   for (const question of questions) {
     const globalState = getQuestionUserState(userStates, question.id);
@@ -424,11 +472,18 @@ export function getTopicScopedUserStates(
 function getEffectiveUserStatesForTopicRequest(
   userStates: QuestionUserStateMap,
   topicProgress: TopicQuestionProgressMap,
-  topic?: LearningTopicId
+  topic?: LearningTopicId,
+  mode?: QuestionSessionMode
 ) {
   // Topic blocks have single membership per question; only multi-topic ids need
   // the overlay. Blocks keep reading the global map.
   if (!topic || isTopicBlockId(topic)) {
+    return userStates;
+  }
+
+  // Mistakes are global (exams / random / other topics still count). Topic only
+  // filters the question pool — same rule as getTopicMistakeProgress.
+  if (mode === "wrong_answers") {
     return userStates;
   }
 
@@ -619,7 +674,8 @@ function computeQuestionDisplayStats(
       stats.saved += 1;
     }
 
-    if (isDueForReview) {
+    // Smart review pool includes mastered cards whose refresh timer elapsed.
+    if (isQuestionEligibleForSmartReview(state, now)) {
       stats.reviewDue += 1;
     }
 
@@ -657,13 +713,18 @@ export function getTrainerModeStats(
   const states = questions.map((question) =>
     getQuestionUserState(effectiveStates, question.id)
   );
+  // Count global unresolved wrongs for the topic pool — not the Learn overlay.
+  const globalStates = questions.map((question) =>
+    getQuestionUserState(userStates, question.id)
+  );
 
   return {
     total: questions.length,
     unseen: states.filter((state) => state.timesSeen === 0).length,
     saved: states.filter((state) => state.isBookmarked).length,
-    wrongAnswers: states.filter((state) => isQuestionUnresolvedWrong(state))
-      .length,
+    wrongAnswers: globalStates.filter((state) =>
+      isQuestionUnresolvedWrong(state)
+    ).length,
     highPoints: questions.filter(isHighPointsQuestion).length,
   };
 }
@@ -689,7 +750,8 @@ export function getQuestionCountForMode(
     getEffectiveUserStatesForTopicRequest(
       userStates,
       topicProgress,
-      input.topic
+      input.topic,
+      input.mode
     ),
     now
   ).length;
@@ -841,13 +903,12 @@ export function getTopicMistakeProgress(
   const questions = getQuestionBank().filter(
     (question) => questionMatchesTopic(question, topic)
   );
-  const effectiveStates = getEffectiveUserStatesForTopicRequest(
-    userStates,
-    topicProgress,
-    topic
-  );
+  // Mistakes are global unresolved wrongs attributed to each question's topics.
+  // Do not use the topic-scoped overlay here: wrong answers from exams / random
+  // sessions still belong on the mistakes monitor for that catalog topic.
+  void topicProgress;
   const states = questions.map((question) =>
-    getQuestionUserState(effectiveStates, question.id)
+    getQuestionUserState(userStates, question.id)
   );
   const wrong = states.filter((state) => isQuestionUnresolvedWrong(state)).length;
   const seen = states.filter((state) => state.timesSeen > 0).length;
@@ -870,22 +931,50 @@ export function getTopicProgress(
   userStates: QuestionUserStateMap,
   topicProgress: TopicQuestionProgressMap = {}
 ) {
-  const questions = getQuestionBank().filter(
-    (question) => questionMatchesTopic(question, topic)
-  );
-  const effectiveStates = getEffectiveUserStatesForTopicRequest(
-    userStates,
-    topicProgress,
-    topic
-  );
-  const states = questions.map((question) =>
-    getQuestionUserState(effectiveStates, question.id)
-  );
-  const seen = states.filter((state) => state.timesSeen > 0).length;
-  const correct = states.filter((state) => state.timesCorrect > 0).length;
-  const wrong = states.filter((state) => state.timesWrong > 0).length;
-  const weak = states.filter((state) => isWeakSpotState(state)).length;
-  const mastered = states.filter((state) => isQuestionMastered(state)).length;
+  const questions = getCachedQuestionsForTopic(topic);
+  const useTopicOverlay = !isTopicBlockId(topic);
+  let seen = 0;
+  let correct = 0;
+  let wrong = 0;
+  let weak = 0;
+  let mastered = 0;
+
+  for (const question of questions) {
+    const globalState = getQuestionUserState(userStates, question.id);
+    let state = globalState;
+
+    if (useTopicOverlay) {
+      const topicState = getTopicQuestionProgress(
+        topicProgress,
+        topic,
+        question.id
+      );
+      state = {
+        ...globalState,
+        timesSeen: topicState.timesSeen,
+        timesCorrect: topicState.timesCorrect,
+        timesWrong: topicState.timesWrong,
+        lastCorrectAt: topicState.lastCorrectAt,
+        lastWrongAt: topicState.lastWrongAt,
+      };
+    }
+
+    if (state.timesSeen > 0) {
+      seen += 1;
+    }
+    if (state.timesCorrect > 0) {
+      correct += 1;
+    }
+    if (state.timesWrong > 0) {
+      wrong += 1;
+    }
+    if (isWeakSpotState(state)) {
+      weak += 1;
+    }
+    if (isQuestionMastered(state)) {
+      mastered += 1;
+    }
+  }
 
   return {
     total: questions.length,
@@ -916,7 +1005,8 @@ export function buildQuestionSession(
   const effectiveStates = getEffectiveUserStatesForTopicRequest(
     userStates,
     topicProgress,
-    request.topic
+    request.topic,
+    request.mode
   );
   const questionIds = getQuestionIdsForMode(request, effectiveStates, now);
   const emptyReason = getEmptyReason(request, questionIds.length);
@@ -1104,8 +1194,13 @@ function getWeakSpotQuestionIds(
   now: Date
 ) {
   const questionBank = getQuestionBank();
+  const dueWeakReviews = getReviewDueQuestions(questionBank, userStates, now).filter(
+    (question) =>
+      !isQuestionMastered(getQuestionUserState(userStates, question.id))
+  );
+
   return uniqueQuestionIds([
-    ...getReviewDueQuestions(questionBank, userStates, now),
+    ...dueWeakReviews,
     ...getWrongQuestions(questionBank, userStates, now),
     ...getHardQuestions(questionBank, userStates, now),
   ]);
@@ -1332,7 +1427,10 @@ function getReviewDueQuestions(
 ) {
   return sortQuestionsForReview(
     questions.filter((question) =>
-      isQuestionDueForReview(getQuestionUserState(userStates, question.id), now)
+      isQuestionEligibleForSmartReview(
+        getQuestionUserState(userStates, question.id),
+        now
+      )
     ),
     userStates,
     now
@@ -1475,29 +1573,54 @@ function getReviewPriorityScore(
 ) {
   let score = question.difficultySeed;
 
-  if (isQuestionDueForReview(state, now)) {
-    score -= 80;
-  }
+  // More overdue → earlier in the smart-review queue.
+  score -= Math.min(120, Math.floor(getDaysOverdue(state, now) * 8));
 
   if (isQuestionUnresolvedWrong(state)) {
-    score -= 50;
+    // Still wrong — fix first.
+    score -= 70;
+  } else if (isQuestionConsolidating(state)) {
+    // Corrected after a mistake — reinforce on the 3-day schedule.
+    score -= 55;
+  } else if (state.consecutiveCorrect === 1) {
+    // Fragile first correct (often the 3-day refresh slot).
+    score -= 40;
+  } else if (
+    state.consecutiveCorrect ===
+    QUESTION_MASTERY_RULES.consecutiveCorrect - 1
+  ) {
+    // One step from mastery — 7-day refresh.
+    score -= 32;
+  } else if (isQuestionMastered(state)) {
+    // Maintenance refresh after longer interval — still due, but lower urgency.
+    score -= 20;
   }
 
-  score -= state.timesWrong * 14;
+  score -= state.timesWrong * 10;
 
   if (state.isHard) {
     score -= 35;
   }
 
-  if (isQuestionMastered(state)) {
-    score += 150;
-  }
-
-  score += state.masteryScore;
-  score += state.timesCorrect * 8;
-  score += state.timesSeen * 4;
+  // Light mastery damping so well-known cards don't dominate over fragile ones.
+  score += Math.round(state.masteryScore / 4);
+  score += state.timesCorrect * 2;
 
   return score;
+}
+
+function getDaysOverdue(state: QuestionUserState, now: Date) {
+  if (!state.reviewDueAt) {
+    return 0;
+  }
+
+  const dueAt = new Date(state.reviewDueAt).getTime();
+
+  if (!Number.isFinite(dueAt)) {
+    return 0;
+  }
+
+  return Math.max(0, (now.getTime() - dueAt) / (24 * 60 * 60 * 1000));
 }
 
 function getExamPriorityScore(
@@ -1616,6 +1739,19 @@ function isQuestionDueForReview(
   now: Date = new Date()
 ) {
   return isQuestionReviewDue(state, now) && !isQuestionMastered(state);
+}
+
+/**
+ * Smart-review eligibility: any seen question whose spaced-repetition timer
+ * has elapsed. Unlike weak-spot "due" checks, this includes mastered cards
+ * that need a maintenance refresh (e.g. 14 days after mastery, or 7/3-day
+ * intervals after earlier correct / post-mistake corrections).
+ */
+function isQuestionEligibleForSmartReview(
+  state: QuestionUserState,
+  now: Date = new Date()
+) {
+  return state.timesSeen > 0 && isQuestionReviewDue(state, now);
 }
 
 function isSeenNotMasteredState(

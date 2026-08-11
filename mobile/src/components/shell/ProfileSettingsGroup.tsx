@@ -1,8 +1,9 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
-import { Pressable, Switch, Text, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
 
 import {
+  CText,
   getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
@@ -50,17 +51,18 @@ export function ProfileSettingsRow({
       </View>
 
       <View style={styles.copy}>
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        <CText style={styles.title}>{title}</CText>
+        {subtitle ? <CText style={styles.subtitle}>{subtitle}</CText> : null}
       </View>
 
       {trailing === "value" && value ? (
-        <Text style={styles.value}>{value}</Text>
+        <CText style={styles.value}>{value}</CText>
       ) : null}
       {trailing === "switch" ? (
         <Switch
           accessibilityLabel={title}
           onValueChange={onSwitchChange}
+          testID={testID ? `${testID}-switch` : undefined}
           thumbColor={theme.colors.white}
           trackColor={{
             false: theme.colors.track,

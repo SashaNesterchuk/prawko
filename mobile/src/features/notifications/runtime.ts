@@ -8,6 +8,9 @@ import {
   type NotificationHour,
   useAppShellStore,
 } from "../../state/app-shell";
+import { areNotificationsAllowed } from "./permission";
+
+export { areNotificationsAllowed } from "./permission";
 
 const STUDY_NOTIFICATIONS_CHANNEL_ID = "study-reminders";
 
@@ -19,6 +22,10 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
+export type EnableStudyNotificationsResult =
+  | { ok: true }
+  | { ok: false; reason: "permission-denied"; canAskAgain: boolean };
 
 function getProjectId() {
   return (
@@ -105,6 +112,9 @@ async function scheduleStudyNotificationsAsync(hours: NotificationHour[]) {
         type: Notifications.SchedulableTriggerInputTypes.DAILY,
         hour: hour.hour,
         minute: hour.minute,
+        ...(Platform.OS === "android"
+          ? { channelId: STUDY_NOTIFICATIONS_CHANNEL_ID }
+          : null),
       },
     });
 
@@ -119,23 +129,30 @@ export async function disableStudyNotificationsAsync() {
   useAppShellStore.getState().setScheduleNotificationEnabled(false);
 }
 
-export async function enableStudyNotificationsAsync() {
+export async function enableStudyNotificationsAsync(): Promise<EnableStudyNotificationsResult> {
   await ensureNotificationChannelAsync();
 
   let permission = await Notifications.getPermissionsAsync();
 
-  if (permission.status !== "granted") {
+  if (!areNotificationsAllowed(permission)) {
     permission = await Notifications.requestPermissionsAsync();
   }
 
-  if (permission.status !== "granted") {
+  if (!areNotificationsAllowed(permission)) {
     const store = useAppShellStore.getState();
     store.setScheduleNotificationEnabled(false);
     store.setScheduledNotificationIds([]);
-    return false;
+    return {
+      ok: false,
+      reason: "permission-denied",
+      canAskAgain: permission.canAskAgain,
+    };
   }
 
-  await maybeStorePushTokenAsync();
+  // Push token is optional for local study reminders and can hang/fail on
+  // simulators — never block enabling the toggle on it.
+  void maybeStorePushTokenAsync();
+
   await cancelAllStudyNotificationsAsync();
 
   const scheduledNotificationIds = await scheduleStudyNotificationsAsync(
@@ -144,9 +161,9 @@ export async function enableStudyNotificationsAsync() {
   const store = useAppShellStore.getState();
 
   store.setScheduledNotificationIds(scheduledNotificationIds);
-  store.setScheduleNotificationEnabled(scheduledNotificationIds.length > 0);
+  store.setScheduleNotificationEnabled(true);
 
-  return scheduledNotificationIds.length > 0;
+  return { ok: true };
 }
 
 export async function syncNotificationStateAsync() {
@@ -154,7 +171,7 @@ export async function syncNotificationStateAsync() {
 
   const permission = await Notifications.getPermissionsAsync();
 
-  if (permission.status !== "granted") {
+  if (!areNotificationsAllowed(permission)) {
     const store = useAppShellStore.getState();
 
     store.setScheduleNotificationEnabled(false);
@@ -162,7 +179,7 @@ export async function syncNotificationStateAsync() {
     return false;
   }
 
-  await maybeStorePushTokenAsync();
+  void maybeStorePushTokenAsync();
 
   const store = useAppShellStore.getState();
   const scheduledNotifications =
@@ -183,7 +200,7 @@ export async function syncNotificationStateAsync() {
   const nextStore = useAppShellStore.getState();
 
   nextStore.setScheduledNotificationIds(scheduledNotificationIds);
-  nextStore.setScheduleNotificationEnabled(scheduledNotificationIds.length > 0);
+  nextStore.setScheduleNotificationEnabled(true);
 
-  return scheduledNotificationIds.length > 0;
+  return true;
 }

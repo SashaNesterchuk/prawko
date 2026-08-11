@@ -1,11 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import type { TopicBlockId } from "@prawko/config";
 
 import { getTopicSections } from "../../features/learn/topic-sections";
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -35,9 +36,9 @@ export function TopicSectionsList({
 
   return (
     <View style={styles.root}>
-      <Text style={styles.sectionTitle}>
+      <CText style={styles.sectionTitle}>
         {t("learn.topicSectionsTitle", { defaultValue: "Розділи" })}
-      </Text>
+      </CText>
 
       {sections.map((section, index) => (
         <Pressable
@@ -47,17 +48,17 @@ export function TopicSectionsList({
           style={({ pressed }) => [styles.sectionCard, pressed ? styles.pressed : null]}
         >
           <View style={styles.sectionIndex}>
-            <Text style={styles.sectionIndexLabel}>
+            <CText style={styles.sectionIndexLabel}>
               {index + 1}
-            </Text>
+            </CText>
           </View>
           <View style={styles.sectionCopy}>
-            <Text style={styles.sectionName}>{section}</Text>
-            <Text style={styles.sectionHint}>
+            <CText style={styles.sectionName}>{section}</CText>
+            <CText style={styles.sectionHint}>
               {t("learn.topicSectionHint", {
                 defaultValue: "Почати розділ",
               })}
-            </Text>
+            </CText>
           </View>
           <Ionicons
             color={theme.colors.inkMuted}

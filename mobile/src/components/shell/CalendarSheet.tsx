@@ -2,11 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Modal,
   Pressable,
-  Text,
   View,
 } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type CalendarSheetProps = {
@@ -170,9 +169,9 @@ export function CalendarSheet({
             <View style={[styles.chevron, styles.chevronLeft]} />
           </Pressable>
 
-          <Text style={styles.monthLabel}>
+          <CText style={styles.monthLabel}>
             {`${months[viewMonth.getMonth()]} ${viewMonth.getFullYear()}`}
-          </Text>
+          </CText>
 
           <Pressable
             accessibilityRole="button"
@@ -186,9 +185,9 @@ export function CalendarSheet({
 
         <View style={styles.weekRow}>
           {weekdays.map((weekday) => (
-            <Text key={weekday} style={styles.weekday}>
+            <CText key={weekday} style={styles.weekday}>
               {weekday}
-            </Text>
+            </CText>
           ))}
         </View>
 
@@ -217,7 +216,7 @@ export function CalendarSheet({
                     isToday && !isSelected ? styles.dayPillToday : null,
                   ]}
                 >
-                  <Text
+                  <CText
                     style={[
                       styles.dayText,
                       isPast ? styles.dayTextPast : null,
@@ -225,7 +224,7 @@ export function CalendarSheet({
                     ]}
                   >
                     {cell.getDate()}
-                  </Text>
+                  </CText>
                 </View>
               </Pressable>
             );
@@ -241,7 +240,7 @@ export function CalendarSheet({
               pressed ? styles.pressed : null,
             ]}
           >
-            <Text style={styles.clearLabel}>{clearLabel}</Text>
+            <CText style={styles.clearLabel}>{clearLabel}</CText>
           </Pressable>
 
           <Pressable
@@ -258,7 +257,7 @@ export function CalendarSheet({
               pressed && selected ? styles.pressed : null,
             ]}
           >
-            <Text style={styles.confirmLabel}>{confirmLabel}</Text>
+            <CText style={styles.confirmLabel}>{confirmLabel}</CText>
           </Pressable>
         </View>
       </View>

@@ -1,10 +1,11 @@
 import { PropsWithChildren, ReactNode } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
-import { getFontFamily, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { GreenWaveScreen } from "./GreenWaveScreen";
+import { NavigationButton } from "./NavigationButton";
 
 type AppScreenProps = PropsWithChildren<{
   title?: string;
@@ -12,11 +13,17 @@ type AppScreenProps = PropsWithChildren<{
   footer?: ReactNode;
   scroll?: boolean;
   testID?: string;
+  onClose?: () => void;
+  closeAccessibilityLabel?: string;
+  closeTestID?: string;
 }>;
 
 export function AppScreen({
   children,
+  closeAccessibilityLabel,
+  closeTestID,
   footer,
+  onClose,
   scroll = true,
   subtitle,
   testID,
@@ -24,14 +31,31 @@ export function AppScreen({
 }: AppScreenProps) {
   const styles = useStyles();
 
-  const hasHeader = Boolean(title || subtitle);
+  const hasHeader = Boolean(title || subtitle || onClose);
+  const hasInlineTitle = Boolean(onClose && title);
 
   const content = (
     <View style={styles.inner}>
       {hasHeader ? (
         <View style={styles.header}>
-          {title ? <Text style={styles.title}>{title}</Text> : null}
-          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+          {onClose ? (
+            <View style={hasInlineTitle ? styles.titleRow : styles.toolbar}>
+              <NavigationButton
+                accessibilityLabel={closeAccessibilityLabel ?? "Close"}
+                inset
+                onPress={onClose}
+                testID={closeTestID}
+                type="close"
+              />
+              {hasInlineTitle ? (
+                <CText style={styles.inlineTitle}>{title}</CText>
+              ) : null}
+            </View>
+          ) : null}
+          {!hasInlineTitle && title ? (
+            <CText style={styles.title}>{title}</CText>
+          ) : null}
+          {subtitle ? <CText style={styles.subtitle}>{subtitle}</CText> : null}
         </View>
       ) : null}
       <View style={styles.content}>{children}</View>
@@ -75,11 +99,27 @@ function useStyles() {
     },
     inner: {
       paddingHorizontal: spacing.exact(20),
-      paddingTop: spacing.exact(20),
+      paddingTop: spacing.exact(12),
     },
     header: {
       marginBottom: spacing.exact(18),
       gap: spacing.exact(8),
+    },
+    toolbar: {
+      marginBottom: spacing.exact(4),
+    },
+    titleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.exact(16),
+    },
+    inlineTitle: {
+      flex: 1,
+      fontSize: responsiveFont(20),
+      lineHeight: responsiveFont(28),
+      fontFamily: getFontFamily("semiBold"),
+      letterSpacing: -0.2,
+      color: colors.textPrimary,
     },
     title: {
       fontSize: responsiveFont(32),
@@ -101,8 +141,6 @@ function useStyles() {
       paddingHorizontal: spacing.exact(20),
       paddingTop: spacing.exact(12),
       paddingBottom: spacing.exact(16),
-      borderTopWidth: 1,
-      borderTopColor: colors.borderSoft,
     },
   }));
 }

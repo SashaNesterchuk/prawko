@@ -1,9 +1,9 @@
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActionTile } from "../../src/components/shell/ActionTile";
@@ -17,6 +17,7 @@ import {
 import { StatusPromptCard } from "../../src/components/shell/StatusPromptCard";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
+  CText,
   getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
@@ -28,6 +29,10 @@ import {
   getQuestionDisplayStats,
   getSeenQuestionIds,
 } from "../../src/features/questions/question-engine";
+import {
+  READINESS_ASSESSMENT_QUESTION_COUNT,
+  resolveLocalReadinessPercent,
+} from "../../src/features/questions/readiness-assessment";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import {
   fetchRemoteHomeProgress,
@@ -77,6 +82,9 @@ export default function HomeTabScreen() {
     (state) => state.questionUserState
   );
   const attempts = useQuestionProgressStore((state) => state.attempts);
+  const readinessAssessment = useQuestionProgressStore(
+    (state) => state.readinessAssessment
+  );
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
 
@@ -110,23 +118,30 @@ export default function HomeTabScreen() {
     };
   }, [authMode, isFocused]);
 
-  const stats = useMemo(
-    () => getQuestionDisplayStats(questionUserState),
-    [questionCatalogVersion, questionUserState]
-  );
+  const statsRef = useRef(getQuestionDisplayStats(questionUserState));
+  const stats = useMemo(() => {
+    if (!isFocused) {
+      return statsRef.current;
+    }
 
-  const localReadiness =
-    stats.total > 0 ? Math.round((stats.seen / stats.total) * 100) : 0;
+    const next = getQuestionDisplayStats(questionUserState);
+    statsRef.current = next;
+    return next;
+  }, [isFocused, questionCatalogVersion, questionUserState]);
+
+  const localReadiness = resolveLocalReadinessPercent({
+    assessmentScorePercent: readinessAssessment?.scorePercent,
+    seen: stats.seen,
+    total: stats.total,
+  });
   const readiness = Math.round(
     readinessSummary?.readinessScore ?? localReadiness
   );
-  const isReadinessEmpty = stats.seen <= 0;
+  const isReadinessEmpty =
+    stats.seen <= 0 && readinessAssessment == null;
   const readinessLevel = resolveReadinessLevel(readiness);
   const readinessWeekChangePercent = useMemo(() => {
-    // Coverage week-change is local (attempts + seen). Show it even when the
-    // ring uses remote readinessScore — Figma always pairs the badge with the
-    // covered-questions block.
-    if (isReadinessEmpty) {
+    if (!isFocused || isReadinessEmpty) {
       return null;
     }
 
@@ -137,6 +152,7 @@ export default function HomeTabScreen() {
     });
   }, [
     attempts,
+    isFocused,
     isReadinessEmpty,
     questionCatalogVersion,
     questionUserState,
@@ -240,6 +256,7 @@ export default function HomeTabScreen() {
           <ReadinessIndexCard
             empty={isReadinessEmpty}
             progress={readiness}
+            testID="home-readiness-index"
             title={t("dash.readinessTitle", {
               defaultValue: "Індекс готовності",
             })}
@@ -275,10 +292,13 @@ export default function HomeTabScreen() {
             weekChangeLabel={readinessWeekChangeLabel}
             onPress={() => {
               if (isReadinessEmpty) {
-                // Figma empty CTA is «Оціни знання» (assess), not «Почати навчання».
+                // Untimed training assessment (not exam simulator) — larger than Quick Session.
                 router.navigate({
-                  pathname: "/exam",
-                  params: buildExamRouteParams({ mode: "mini_test" }),
+                  pathname: "/question",
+                  params: buildQuestionRouteParams({
+                    mode: "mini_test",
+                    questionLimit: READINESS_ASSESSMENT_QUESTION_COUNT,
+                  }),
                 });
                 return;
               }
@@ -323,9 +343,9 @@ export default function HomeTabScreen() {
                   pressed ? styles.debugPremiumPressed : null,
                 ]}
               >
-                <Text style={styles.debugPremiumLabel}>
+                <CText style={styles.debugPremiumLabel}>
                   {hasPlusAccess ? "DEV Plus: ON" : "DEV Plus: OFF"}
-                </Text>
+                </CText>
               </Pressable>
             ) : null}
           </View>
@@ -348,7 +368,7 @@ export default function HomeTabScreen() {
 }
 
 function useStyles({ safeBottom }: { safeBottom: number }) {
-  return useResponsiveStyles(({ colors, spacing }) => ({
+  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
     safeArea: {
       flex: 1,
     },
@@ -385,7 +405,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
     debugPremiumLabel: {
       color: colors.ink,
       fontFamily: getFontFamily("medium"),
-      fontSize: 13,
+      fontSize: responsiveFont(13),
       letterSpacing: 0.2,
     },
   }));

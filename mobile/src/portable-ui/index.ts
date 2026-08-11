@@ -11,6 +11,15 @@ export {
 export type { FontRegistry, FontWeightKey } from "./typography/fontRegistry";
 
 export {
+  FIGMA_BASELINE,
+  FONT_SCALE,
+  clamp,
+  computeWidthFontScale,
+  effectiveFontScale,
+  scaleFontSize,
+} from "./typography/font-scale";
+
+export {
   fontSizes,
   getFontSizeMetrics,
   getTextSizeStyle,
@@ -20,6 +29,7 @@ export {
   textSize,
   textStyle,
   textWeight,
+  withResponsiveFont,
 } from "./typography/styles";
 export type { TextSizeKey, TypographyStyleKey } from "./typography/styles";
 

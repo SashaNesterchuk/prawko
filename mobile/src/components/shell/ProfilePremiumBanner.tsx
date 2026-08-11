@@ -1,7 +1,8 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -44,13 +45,13 @@ export function ProfilePremiumBanner({
         </View>
         {priceBadge ? (
           <View style={styles.priceBadge}>
-            <Text style={styles.priceBadgeText}>{priceBadge}</Text>
+            <CText style={styles.priceBadgeText}>{priceBadge}</CText>
           </View>
         ) : null}
       </View>
       <View style={styles.copy}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
+        <CText style={styles.title}>{title}</CText>
+        <CText style={styles.description}>{description}</CText>
       </View>
     </Pressable>
   );

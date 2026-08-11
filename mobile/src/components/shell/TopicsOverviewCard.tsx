@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
-import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
+import { CText, useResponsiveStyles, type PercentageString } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { resolveTopicReadinessStatus } from "./TopicReadinessCard";
 
@@ -50,31 +50,31 @@ export function TopicsOverviewCard({
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>{resolvedTitle}</Text>
-        <Text style={styles.readinessValue}>{clamped}%</Text>
+        <CText style={styles.title}>{resolvedTitle}</CText>
+        <CText style={styles.readinessValue}>{clamped}%</CText>
       </View>
 
       <View style={styles.track}>
         {answered > 0 ? <View style={styles.fill} /> : null}
       </View>
 
-      <Text style={styles.answersLabel}>{resolvedAnsweredLabel}</Text>
-      <Text style={styles.answersValue}>
+      <CText style={styles.answersLabel}>{resolvedAnsweredLabel}</CText>
+      <CText style={styles.answersValue}>
         {`${answered} / ${total}`}
-      </Text>
+      </CText>
 
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
           <View style={[styles.statIcon, styles.statIconGood]}>
-            <Text style={styles.statIconLabel}>✓</Text>
+            <CText style={styles.statIconLabel}>✓</CText>
           </View>
-          <Text style={styles.statValue}>{correct}</Text>
+          <CText style={styles.statValue}>{correct}</CText>
         </View>
         <View style={styles.statItem}>
           <View style={[styles.statIcon, styles.statIconBad]}>
-            <Text style={styles.statIconLabel}>✕</Text>
+            <CText style={styles.statIconLabel}>✕</CText>
           </View>
-          <Text style={styles.statValue}>{wrong}</Text>
+          <CText style={styles.statValue}>{wrong}</CText>
         </View>
       </View>
     </View>
@@ -108,16 +108,17 @@ function useStyles({
       justifyContent: "space-between",
     },
     title: {
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
-      fontWeight: "600",
-      letterSpacing: -0.16,
+      fontSize: responsiveFont(24),
+      lineHeight: responsiveFont(32),
+      fontWeight: "700",
+      letterSpacing: -0.48,
       color: colors.ink,
     },
     readinessValue: {
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
-      fontWeight: "400",
+      fontSize: responsiveFont(24),
+      lineHeight: responsiveFont(32),
+      fontWeight: "600",
+      letterSpacing: -0.24,
       color: readinessTextColor,
     },
     track: {

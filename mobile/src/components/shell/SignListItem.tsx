@@ -1,7 +1,8 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -37,12 +38,12 @@ export function SignListItem({ sign, categoryLabel, onPress }: SignListItemProps
       </View>
 
       <View style={styles.copy}>
-        <Text style={styles.title} numberOfLines={1}>
+        <CText style={styles.title} numberOfLines={1}>
           {displayName}
-        </Text>
-        <Text style={styles.meta} numberOfLines={1}>
+        </CText>
+        <CText style={styles.meta} numberOfLines={1}>
           {`${sign.code} · ${categoryLabel}`}
-        </Text>
+        </CText>
       </View>
 
       <Icon

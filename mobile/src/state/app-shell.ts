@@ -94,12 +94,12 @@ type AppShellState = {
   saveCurrentStudyPlan: (plan: GeneratedStudyPlan) => void;
   setExamSchedule: (payload: {
     daysUntilExam: number;
-    examDate: string;
+    examDate: string | null;
   }) => void;
   /** Updates exam date in setup without clearing an active study plan. */
   patchExamDate: (payload: {
     daysUntilExam: number;
-    examDate: string;
+    examDate: string | null;
   }) => void;
   setCurrentStudyPlanRemoteId: (remoteId: string | null) => void;
   setHasHydrated: (value: boolean) => void;
@@ -494,8 +494,7 @@ export function getNextOnboardingRoute(state: AppShellState): OnboardingRoute {
 
   if (
     !state.onboardingProgress.scheduleDone ||
-    state.studyPlanSetup.daysUntilExam === null ||
-    state.studyPlanSetup.examDate === null
+    state.studyPlanSetup.daysUntilExam === null
   ) {
     return "/(onboarding)/exam-schedule";
   }

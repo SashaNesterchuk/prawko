@@ -1,0 +1,35 @@
+# Feature: Training session result
+# Scenario: Finished non-exam training opens the Figma-style result screen
+appId: com.mindjar.prawko
+tags:
+  - training
+  - result
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: question-result
+      TARGET_ID: screen-question-result
+
+- assertVisible:
+    id: "screen-question-result"
+
+- assertVisible:
+    id: "question-result-primary"
+
+- assertVisible:
+    id: "question-result-answers"
+
+- assertVisible:
+    id: "question-result-new-attempt"
+
+- tapOn:
+    id: "question-result-answers"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-answers-review"
+    timeout: 10000
+
+- assertVisible:
+    id: "screen-question-answers-review"

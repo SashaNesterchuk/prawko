@@ -1,7 +1,7 @@
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type ExamRestartGateDialogProps = {
@@ -56,8 +56,8 @@ export function ExamRestartGateDialog({
             <Icon color={theme.colors.ink2} name="close" size={24} />
           </Pressable>
 
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.body}>{body}</Text>
+          <CText style={styles.title}>{title}</CText>
+          <CText style={styles.body}>{body}</CText>
 
           <View style={styles.actions}>
             <Pressable
@@ -72,7 +72,7 @@ export function ExamRestartGateDialog({
               ]}
             >
               <Icon name="play" size={20} color={theme.colors.white} />
-              <Text style={styles.watchLabel}>{watchAdLabel}</Text>
+              <CText style={styles.watchLabel}>{watchAdLabel}</CText>
             </Pressable>
 
             <Pressable
@@ -87,7 +87,7 @@ export function ExamRestartGateDialog({
               ]}
             >
               <Icon name="premium" size={20} color={theme.accents.green.fill} />
-              <Text style={styles.premiumLabel}>{premiumLabel}</Text>
+              <CText style={styles.premiumLabel}>{premiumLabel}</CText>
             </Pressable>
           </View>
         </View>

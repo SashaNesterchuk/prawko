@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveStyles,
 } from "../../portable-ui";
@@ -54,7 +55,7 @@ export function ProfileStatsCard({
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>{title}</Text>
+        <CText style={styles.title}>{title}</CText>
         <Pressable
           accessibilityRole="button"
           disabled={!onPressDetails}
@@ -64,7 +65,7 @@ export function ProfileStatsCard({
             pressed ? styles.pressed : null,
           ]}
         >
-          <Text style={styles.detailsLabel}>{detailsLabel}</Text>
+          <CText style={styles.detailsLabel}>{detailsLabel}</CText>
           <Ionicons
             color={theme.accents.blue.ink}
             name="chevron-forward"
@@ -76,8 +77,8 @@ export function ProfileStatsCard({
       <View style={styles.metricsRow}>
         {statItems.map((item) => (
           <View key={item.key} style={styles.metric}>
-            <Text style={styles.metricValue}>{item.value}</Text>
-            <Text style={styles.metricLabel}>{item.label}</Text>
+            <CText style={styles.metricValue}>{item.value}</CText>
+            <CText style={styles.metricLabel}>{item.label}</CText>
           </View>
         ))}
       </View>

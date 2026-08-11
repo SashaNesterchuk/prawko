@@ -1,7 +1,7 @@
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import {
   getQuestionCountOptions,
@@ -69,8 +69,8 @@ export function QuestionCountDialog({
             <Icon color={theme.colors.ink2} name="close" size={24} />
           </Pressable>
 
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
+          <CText style={styles.title}>{title}</CText>
+          <CText style={styles.subtitle}>{subtitle}</CText>
 
           <View style={styles.grid}>
             {options.map((option) => {
@@ -94,14 +94,14 @@ export function QuestionCountDialog({
                   ]}
                   testID={`question-count-option-${option}`}
                 >
-                  <Text
+                  <CText
                     style={[
                       styles.optionLabel,
                       isSelected ? styles.optionLabelSelected : null,
                     ]}
                   >
                     {label}
-                  </Text>
+                  </CText>
                 </Pressable>
               );
             })}
@@ -116,7 +116,7 @@ export function QuestionCountDialog({
             ]}
             testID="question-count-start"
           >
-            <Text style={styles.startLabel}>{startLabel}</Text>
+            <CText style={styles.startLabel}>{startLabel}</CText>
           </Pressable>
         </View>
       </View>

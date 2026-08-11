@@ -41,6 +41,9 @@ export default function TabsLayout() {
       tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
+        // Freeze inactive tabs so exam/progress updates don't re-render Home+Learn+Profile
+        // in the background and block the tab bar. Learn topic math is cheap now, so
+        // unfreeze on tab press should stay snappy.
         freezeOnBlur: true,
         tabBarStyle: {
           position: "absolute",

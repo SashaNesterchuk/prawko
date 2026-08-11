@@ -1,14 +1,16 @@
 import { Tabs } from "expo-router";
 import type { ComponentProps } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon, type IconName } from "../icons";
 import {
+  CText,
   getTypographyStyle,
   useResponsiveFonts,
   useResponsiveSpacing,
   useResponsiveStyles,
+  withResponsiveFont,
 } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
@@ -83,7 +85,7 @@ export function FloatingTabBar({
               testID={`tab-${route.name}`}
             >
               <Icon color={color} name={iconName} size={responsiveFont(24)} />
-              <Text
+              <CText
                 numberOfLines={1}
                 style={[
                   styles.label,
@@ -91,7 +93,7 @@ export function FloatingTabBar({
                 ]}
               >
                 {label}
-              </Text>
+              </CText>
             </Pressable>
           );
         })}
@@ -105,7 +107,8 @@ function useStyles({
 }: {
   bottomPadding: number;
 }) {
-  return useResponsiveStyles(({ colors, elevation, radius, spacing, theme }) => ({
+  return useResponsiveStyles(
+    ({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
     wrap: {
       position: "absolute",
       left: 0,
@@ -136,7 +139,7 @@ function useStyles({
       backgroundColor: theme.accents.green.soft,
     },
     label: {
-      ...getTypographyStyle("labelXS"),
+      ...withResponsiveFont(getTypographyStyle("labelXS"), responsiveFont),
     },
     labelActive: {
       color: theme.accents.green.ink,
@@ -144,5 +147,6 @@ function useStyles({
     labelInactive: {
       color: colors.ink3,
     },
-  }));
+  })
+  );
 }

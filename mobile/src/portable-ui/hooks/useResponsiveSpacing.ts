@@ -1,21 +1,10 @@
 import { useMemo } from "react";
 import { PixelRatio, useWindowDimensions } from "react-native";
 
-const BASELINE = { width: 440, height: 956 };
-const MIN_SCALE = 0.8;
-const MAX_SCALE = 1.2;
+import { FIGMA_BASELINE, clamp } from "../typography/font-scale";
 
-function clamp(value: number, min: number, max: number) {
-  if (value < min) {
-    return min;
-  }
-
-  if (value > max) {
-    return max;
-  }
-
-  return value;
-}
+const MIN_SCALE = 0.9;
+const MAX_SCALE = 1.12;
 
 function snap4(value: number) {
   return Math.round(value / 4) * 4;
@@ -36,12 +25,17 @@ export function useResponsiveSpacing(): ResponsiveSpacingApi {
   const { width, height } = useWindowDimensions();
 
   const scale = useMemo(() => {
-    const nextScale = Math.min(width / BASELINE.width, height / BASELINE.height);
+    // Spacing can use both axes so dense vertical layouts still compress gently.
+    const nextScale = Math.min(
+      width / FIGMA_BASELINE.width,
+      height / FIGMA_BASELINE.height
+    );
     return clamp(nextScale, MIN_SCALE, MAX_SCALE);
   }, [width, height]);
 
   const scaleValue = useMemo(() => {
-    const mix = (a: number, b: number, weight: number) => a * (1 - weight) + b * weight;
+    const mix = (a: number, b: number, weight: number) =>
+      a * (1 - weight) + b * weight;
 
     return (base: number, snapToGrid: boolean) => {
       let factor = scale;

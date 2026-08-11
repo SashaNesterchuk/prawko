@@ -5,6 +5,7 @@ import {
   type PercentageString,
 } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
+import { resolveDualColorProgressSegments } from "./dual-color-progress";
 
 type DualColorProgressBarProps = {
   correct: number;
@@ -20,15 +21,10 @@ export function DualColorProgressBar({
   height = 8,
 }: DualColorProgressBarProps) {
   const theme = useTheme();
-  const safeTotal = Math.max(total, 0);
-  const wrongWidth =
-    safeTotal > 0
-      ? (`${Math.min((wrong / safeTotal) * 100, 100)}%` as PercentageString)
-      : ("0%" as PercentageString);
-  const correctWidth =
-    safeTotal > 0
-      ? (`${Math.min((correct / safeTotal) * 100, 100)}%` as PercentageString)
-      : ("0%" as PercentageString);
+  const { wrongPercent, correctPercent, filledPercent, accessibilityText } =
+    resolveDualColorProgressSegments({ correct, wrong, total });
+  const wrongWidth = `${wrongPercent}%` as PercentageString;
+  const correctWidth = `${correctPercent}%` as PercentageString;
   const styles = useStyles({
     height,
     wrongWidth,
@@ -38,7 +34,16 @@ export function DualColorProgressBar({
   });
 
   return (
-    <View style={styles.track}>
+    <View
+      accessibilityRole="progressbar"
+      accessibilityValue={{
+        min: 0,
+        max: 100,
+        now: Math.round(filledPercent),
+        text: accessibilityText,
+      }}
+      style={styles.track}
+    >
       {wrong > 0 ? <View style={styles.wrongFill} /> : null}
       {correct > 0 ? <View style={styles.correctFill} /> : null}
     </View>

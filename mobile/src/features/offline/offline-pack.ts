@@ -4,10 +4,12 @@ import { Directory, File, Paths } from "expo-file-system";
 import { Platform } from "react-native";
 
 import { mobileEnv } from "../../config/env";
-import { getE2EOfflinePackOverride } from "../../testing/e2e/state";
+import {
+  getE2EOfflinePackOverride,
+  setE2EOfflinePackOverride,
+} from "../../testing/e2e/state";
 import { getQuestionBank } from "../questions/question-bank";
 import type { LocalQuestion } from "../questions/types";
-import generatedAssetSizeMap from "./generated-asset-size-map.json";
 import { checkInternetReachability } from "./reachability";
 
 const OFFLINE_PACK_VERSION = 1;
@@ -18,8 +20,23 @@ const OFFLINE_METADATA_FILENAME = "metadata.json";
 const SAFETY_FREE_SPACE_BYTES = 150 * 1024 * 1024;
 const UNKNOWN_ASSET_RESERVE_BYTES = 2 * 1024 * 1024;
 
-const offlineAssetSizeMap = generatedAssetSizeMap as Record<string, number>;
 const offlineAssetUriCache = new Map<string, string | null>();
+const catalogSignatureCache = new WeakMap<LocalQuestion[], string>();
+let offlineAssetSizeMap: Record<string, number> | null = null;
+
+/** false until the app is actively serving the offline catalog. */
+let offlinePackMediaEnabled = false;
+
+export function setOfflinePackMediaEnabled(enabled: boolean) {
+  offlinePackMediaEnabled = enabled;
+  if (!enabled) {
+    offlineAssetUriCache.clear();
+  }
+}
+
+function rememberOfflinePackMediaEnabled(enabled: boolean) {
+  setOfflinePackMediaEnabled(enabled);
+}
 
 export type OfflineTransferStatus = "downloading" | "error";
 
@@ -72,11 +89,27 @@ export type OfflinePackSnapshot = {
   transfer: OfflinePackTransfer | null;
 };
 
+const offlinePackPlanSummaryCache = new WeakMap<
+  LocalQuestion[],
+  { category: DrivingCategory; plan: OfflinePackPlan }
+>();
+
+let offlinePackSnapshotCache: {
+  category: DrivingCategory;
+  matchLiveCatalog: boolean;
+  questionBank: LocalQuestion[] | null;
+  snapshot: OfflinePackSnapshot;
+} | null = null;
+
 type ValidatedReadyOfflinePackState = {
   metadata: OfflinePackMetadata;
   readyPack: OfflinePackReadyInfo | null;
   readyQuestions: LocalQuestion[] | null;
 };
+
+let validatedReadyPackCache: ValidatedReadyOfflinePackState | null = null;
+let validatedReadyPackCachePromise: Promise<ValidatedReadyOfflinePackState> | null =
+  null;
 
 type OfflineAssetEntry = {
   bucket: string;
@@ -97,6 +130,11 @@ type DownloadOfflinePackInput = {
 
 type RelatedOfflineContext = {
   currentCategory: DrivingCategory;
+  /**
+   * When true and a ready pack exists, compare catalog signatures.
+   * Expensive over large banks — keep false for status-only UI.
+   */
+  matchLiveCatalog?: boolean;
   questionBank?: LocalQuestion[] | null;
 };
 
@@ -105,9 +143,12 @@ export type OfflinePackBlockedReason =
   | "missing_ready_pack"
   | "pack_for_other_category";
 
+let offlinePackDownloadCancelRequested = false;
+
 export class OfflinePackError extends Error {
   availableBytes?: number;
   code:
+    | "cancelled"
     | "catalog_unavailable"
     | "connectivity_required"
     | "platform_unsupported"
@@ -151,19 +192,38 @@ export async function readOfflinePackSnapshot(
     };
   }
 
-  const { metadata, readyPack } = await readValidatedReadyOfflinePackState();
+  const questionBank = input.questionBank ?? null;
+  const matchLiveCatalog = Boolean(input.matchLiveCatalog);
+
+  if (
+    offlinePackSnapshotCache &&
+    offlinePackSnapshotCache.category === input.currentCategory &&
+    offlinePackSnapshotCache.questionBank === questionBank &&
+    offlinePackSnapshotCache.matchLiveCatalog === matchLiveCatalog
+  ) {
+    return offlinePackSnapshotCache.snapshot;
+  }
+
+  // Snapshot is opened from Profile / Offline modal on every focus — never parse
+  // the full catalog or stat thousands of asset files here.
+  const metadata = await readOfflinePackMetadata();
+  const readyPack = resolveReadyPackFromMetadata(metadata);
   const plan =
-    input.questionBank && input.questionBank.length > 0
-      ? buildOfflinePackPlan(input.questionBank, input.currentCategory)
+    questionBank && questionBank.length > 0
+      ? buildOfflinePackPlanSummary(questionBank, input.currentCategory)
       : null;
   const readyPackMatchesCurrentCategory =
     readyPack?.category === input.currentCategory;
   const readyPackMatchesCurrentCatalog =
-    readyPackMatchesCurrentCategory && readyPack && plan
-      ? readyPack.catalogSignature === plan.catalogSignature
+    matchLiveCatalog &&
+    readyPackMatchesCurrentCategory &&
+    readyPack &&
+    questionBank &&
+    questionBank.length > 0
+      ? readyPack.catalogSignature === buildCatalogSignature(questionBank)
       : null;
 
-  return {
+  const snapshot: OfflinePackSnapshot = {
     availableDiskSpace: readAvailableDiskSpace(),
     hasStoredData: hasOfflinePackData(metadata),
     plan,
@@ -172,26 +232,22 @@ export async function readOfflinePackSnapshot(
     readyPackMatchesCurrentCategory,
     transfer: metadata.transfer,
   };
+
+  offlinePackSnapshotCache = {
+    category: input.currentCategory,
+    matchLiveCatalog,
+    questionBank,
+    snapshot,
+  };
+
+  return snapshot;
 }
 
 export async function hasReadyOfflinePackForCategory(
   category: DrivingCategory
 ) {
-  const e2eOverride = getE2EOfflinePackOverride();
-
-  if (e2eOverride) {
-    return (
-      e2eOverride.status === "ready" && e2eOverride.category === category
-    );
-  }
-
-  if (Platform.OS === "web") {
-    return false;
-  }
-
-  const { readyPack } = await readValidatedReadyOfflinePackState();
-
-  return readyPack?.category === category;
+  const availability = await getOfflinePackAvailability(category);
+  return availability.offlineReady;
 }
 
 export async function getOfflinePackBlockedReason(
@@ -200,19 +256,34 @@ export async function getOfflinePackBlockedReason(
   downloadedCategory: DrivingCategory | null;
   reason: OfflinePackBlockedReason;
 }> {
+  const availability = await getOfflinePackAvailability(category);
+
+  return {
+    downloadedCategory: availability.downloadedCategory,
+    reason: availability.reason,
+  };
+}
+
+export async function getOfflinePackAvailability(
+  category: DrivingCategory
+): Promise<{
+  downloadedCategory: DrivingCategory | null;
+  offlineReady: boolean;
+  reason: OfflinePackBlockedReason;
+}> {
   const e2eOverride = getE2EOfflinePackOverride();
 
   if (e2eOverride) {
     if (e2eOverride.status === "ready" && e2eOverride.category) {
-      return e2eOverride.category === category
-        ? {
-            downloadedCategory: e2eOverride.category,
-            reason: "missing_ready_pack",
-          }
-        : {
-            downloadedCategory: e2eOverride.category,
-            reason: "pack_for_other_category",
-          };
+      const offlineReady = e2eOverride.category === category;
+
+      return {
+        downloadedCategory: e2eOverride.category,
+        offlineReady,
+        reason: offlineReady
+          ? "missing_ready_pack"
+          : "pack_for_other_category",
+      };
     }
 
     if (
@@ -221,6 +292,7 @@ export async function getOfflinePackBlockedReason(
     ) {
       return {
         downloadedCategory: null,
+        offlineReady: false,
         reason: "download_incomplete",
       };
     }
@@ -228,12 +300,14 @@ export async function getOfflinePackBlockedReason(
     if (e2eOverride.status === "incomplete" && e2eOverride.category) {
       return {
         downloadedCategory: e2eOverride.category,
+        offlineReady: false,
         reason: "pack_for_other_category",
       };
     }
 
     return {
       downloadedCategory: null,
+      offlineReady: false,
       reason: "missing_ready_pack",
     };
   }
@@ -241,33 +315,58 @@ export async function getOfflinePackBlockedReason(
   if (Platform.OS === "web") {
     return {
       downloadedCategory: null,
+      offlineReady: false,
       reason: "missing_ready_pack",
     };
   }
 
-  const { metadata, readyPack } = await readValidatedReadyOfflinePackState();
+  // Gate checks run before exam/training starts — keep them metadata-cheap.
+  // Full catalog parsing happens only when the pack is actually loaded.
+  const metadata = await readOfflinePackMetadata();
+  const readyPack = resolveReadyPackFromMetadata(metadata);
 
   if (readyPack?.category) {
-    return readyPack.category === category
-      ? {
-          downloadedCategory: readyPack.category,
-          reason: "missing_ready_pack",
-        }
-      : {
-          downloadedCategory: readyPack.category,
-          reason: "pack_for_other_category",
-        };
+    const offlineReady = readyPack.category === category;
+
+    return {
+      downloadedCategory: readyPack.category,
+      offlineReady,
+      reason: offlineReady
+        ? "missing_ready_pack"
+        : "pack_for_other_category",
+    };
   }
 
   if (metadata.transfer?.targetCategory === category) {
     return {
       downloadedCategory: null,
+      offlineReady: false,
       reason: "download_incomplete",
+    };
+  }
+
+  if (metadata.transfer?.targetCategory) {
+    return {
+      downloadedCategory: metadata.transfer.targetCategory,
+      offlineReady: false,
+      reason: "pack_for_other_category",
+    };
+  }
+
+  if (metadata.readyPack?.category) {
+    return {
+      downloadedCategory: metadata.readyPack.category,
+      offlineReady: false,
+      reason:
+        metadata.readyPack.category === category
+          ? "download_incomplete"
+          : "pack_for_other_category",
     };
   }
 
   return {
     downloadedCategory: null,
+    offlineReady: false,
     reason: "missing_ready_pack",
   };
 }
@@ -284,6 +383,11 @@ export async function loadReadyOfflineQuestionCatalog(
   }
 
   if (Platform.OS === "web") {
+    return null;
+  }
+
+  const metadata = await readOfflinePackMetadata();
+  if (!metadata.readyPack || metadata.readyPack.category !== category) {
     return null;
   }
 
@@ -326,24 +430,60 @@ export function getOfflineQuestionPosterUrl(
   );
 }
 
+export function cancelOfflinePackDownload() {
+  offlinePackDownloadCancelRequested = true;
+
+  if (!mobileEnv.enableE2ETestMode) {
+    return;
+  }
+
+  const e2eOverride = getE2EOfflinePackOverride();
+  if (e2eOverride?.status === "downloading") {
+    setE2EOfflinePackOverride({
+      category: e2eOverride.category,
+      status: "incomplete",
+    });
+  }
+}
+
+function throwIfOfflinePackDownloadCancelled() {
+  if (!offlinePackDownloadCancelRequested) {
+    return;
+  }
+
+  throw new OfflinePackError(
+    "cancelled",
+    "The offline pack download was stopped."
+  );
+}
+
 export async function downloadOfflinePack({
   category,
   questionBank,
   onProgress,
 }: DownloadOfflinePackInput) {
   assertOfflinePackSupported();
-
-  if (!(await checkInternetReachability())) {
-    throw new OfflinePackError(
-      "connectivity_required",
-      "An internet connection is required to download the offline pack."
-    );
-  }
+  offlinePackDownloadCancelRequested = false;
 
   if (questionBank.length === 0) {
     throw new OfflinePackError(
       "catalog_unavailable",
       "The question catalog is not ready yet."
+    );
+  }
+
+  if (mobileEnv.enableE2ETestMode) {
+    return completeE2EOfflinePackDownload({
+      category,
+      onProgress,
+      questionBank,
+    });
+  }
+
+  if (!(await checkInternetReachability())) {
+    throw new OfflinePackError(
+      "connectivity_required",
+      "An internet connection is required to download the offline pack."
     );
   }
 
@@ -386,6 +526,7 @@ export async function downloadOfflinePack({
     transfer: transferBase,
     version: OFFLINE_PACK_VERSION,
   });
+  invalidateValidatedReadyPackCache();
   onProgress?.(transferBase);
 
   try {
@@ -398,6 +539,8 @@ export async function downloadOfflinePack({
     let downloadedBytes = initialProgress.downloadedBytes;
 
     for (const asset of assets) {
+      throwIfOfflinePackDownloadCancelled();
+
       if (isOfflineAssetComplete(asset)) {
         continue;
       }
@@ -412,6 +555,8 @@ export async function downloadOfflinePack({
         asset.file.delete();
       }
 
+      throwIfOfflinePackDownloadCancelled();
+
       await File.downloadFileAsync(asset.url, asset.file, {
         idempotent: true,
       });
@@ -422,7 +567,7 @@ export async function downloadOfflinePack({
 
       offlineAssetUriCache.set(asset.key, asset.file.uri);
       downloadedAssetCount += 1;
-      downloadedBytes += asset.expectedBytes ?? asset.file.size;
+      downloadedBytes += asset.file.size;
 
       const nextTransfer: OfflinePackTransfer = {
         ...transferBase,
@@ -451,19 +596,30 @@ export async function downloadOfflinePack({
       totalBytes: downloadedBytes,
     };
 
-    await writeOfflinePackMetadata({
+    const completedMetadata: OfflinePackMetadata = {
       readyPack,
       transfer: null,
       version: OFFLINE_PACK_VERSION,
-    });
+    };
+    await writeOfflinePackMetadata(completedMetadata);
     pruneOfflineAssetFiles(assets);
+    seedValidatedReadyPackCache({
+      metadata: completedMetadata,
+      readyPack,
+      readyQuestions: questionBank,
+    });
+    for (const asset of assets) {
+      offlineAssetUriCache.set(asset.key, asset.file.uri);
+    }
 
     return readyPack;
   } catch (error) {
+    const wasCancelled =
+      error instanceof OfflinePackError && error.code === "cancelled";
     const failedTransfer: OfflinePackTransfer = {
       ...transferBase,
       ...computeTransferProgress(assets),
-      lastError: getOfflinePackErrorMessage(error),
+      lastError: wasCancelled ? null : getOfflinePackErrorMessage(error),
       status: "error",
       updatedAt: new Date().toISOString(),
     };
@@ -475,6 +631,7 @@ export async function downloadOfflinePack({
       transfer: failedTransfer,
       version: OFFLINE_PACK_VERSION,
     });
+    invalidateValidatedReadyPackCache();
     onProgress?.(failedTransfer);
     throw error;
   }
@@ -482,6 +639,14 @@ export async function downloadOfflinePack({
 
 export async function clearOfflinePack() {
   assertOfflinePackSupported();
+
+  if (mobileEnv.enableE2ETestMode) {
+    setE2EOfflinePackOverride({
+      category: null,
+      status: "missing",
+    });
+  }
+
   const root = getOfflineRootDirectory();
 
   if (root.exists) {
@@ -489,6 +654,8 @@ export async function clearOfflinePack() {
   }
 
   offlineAssetUriCache.clear();
+  rememberOfflinePackMediaEnabled(false);
+  invalidateValidatedReadyPackCache();
 }
 
 export function formatOfflineBytes(bytes: number | null | undefined) {
@@ -580,25 +747,116 @@ function buildOfflinePackPlan(
   };
 }
 
-function buildSyntheticOfflinePackPlan(
+/**
+ * Snapshot/UI plan estimate without creating File handles for every asset.
+ * File objects from expo-file-system are expensive when built en masse.
+ */
+function buildOfflinePackPlanSummary(
   questionBank: LocalQuestion[],
   category: DrivingCategory
 ): OfflinePackPlan {
-  const assets = buildOfflineAssetIntegrityEntries(questionBank);
+  const cached = offlinePackPlanSummaryCache.get(questionBank);
+  if (cached && cached.category === category) {
+    return cached.plan;
+  }
 
-  return {
-    assetCount: assets.length,
-    catalogSignature: buildCatalogSignature(questionBank),
+  const assetKeys = new Set<string>();
+  let totalBytes = 0;
+  let unknownSizeAssetCount = 0;
+
+  const pushAsset = (asset: QuestionDeliveryAsset | null | undefined) => {
+    if (!asset) {
+      return;
+    }
+
+    const mainKey = buildOfflineAssetKey(asset.storageBucket, asset.storagePath);
+    if (!assetKeys.has(mainKey)) {
+      assetKeys.add(mainKey);
+      const expectedBytes = lookupOfflineAssetBytes(
+        asset.storageBucket,
+        asset.storagePath
+      );
+      if (expectedBytes === null) {
+        unknownSizeAssetCount += 1;
+      } else {
+        totalBytes += expectedBytes;
+      }
+    }
+
+    // Video posters are not part of the offline pack — they are missing on CDN
+    // and not required for playback (preview-only).
+  };
+
+  for (const question of questionBank) {
+    pushAsset(question.media?.asset);
+    pushAsset(question.media?.pjm?.questionAsset ?? null);
+
+    const answerAssets = question.media?.pjm?.answerAssets ?? {};
+    for (const answerAsset of Object.values(answerAssets)) {
+      pushAsset(answerAsset ?? null);
+    }
+  }
+
+  const plan: OfflinePackPlan = {
+    assetCount: assetKeys.size,
+    // Real signature is computed only for download / explicit catalog matching.
+    catalogSignature: `estimate-${category}-${questionBank.length}`,
     category,
     questionCount: questionBank.length,
-    totalBytes: assets.reduce(
-      (sum, asset) => sum + (asset.expectedBytes ?? 0),
-      0
-    ),
-    unknownSizeAssetCount: assets.filter(
-      (asset) => asset.expectedBytes === null
-    ).length,
+    totalBytes,
+    unknownSizeAssetCount,
   };
+  offlinePackPlanSummaryCache.set(questionBank, { category, plan });
+  return plan;
+}
+
+function buildLightweightE2EOfflinePackPlan(
+  questionCount: number,
+  category: DrivingCategory
+): OfflinePackPlan {
+  const safeQuestionCount = Math.max(0, questionCount);
+  const assetCount = Math.max(1, safeQuestionCount);
+  const totalBytes = Math.max(assetCount * 256 * 1024, 1024 * 1024);
+
+  return {
+    assetCount,
+    catalogSignature: `e2e-${category}-${safeQuestionCount}`,
+    category,
+    questionCount: safeQuestionCount,
+    totalBytes,
+    unknownSizeAssetCount: 0,
+  };
+}
+
+async function completeE2EOfflinePackDownload({
+  category,
+  onProgress,
+  questionBank,
+}: DownloadOfflinePackInput) {
+  const plan = buildLightweightE2EOfflinePackPlan(questionBank.length, category);
+  const now = new Date().toISOString();
+  const transferring: OfflinePackTransfer = {
+    catalogSignature: plan.catalogSignature,
+    downloadedAssetCount: Math.max(0, Math.floor(plan.assetCount / 2)),
+    downloadedBytes: Math.floor(plan.totalBytes * 0.5),
+    lastError: null,
+    startedAt: now,
+    status: "downloading",
+    targetAssetCount: plan.assetCount,
+    targetCategory: category,
+    targetQuestionCount: plan.questionCount,
+    targetTotalBytes: plan.totalBytes,
+    unknownSizeAssetCount: plan.unknownSizeAssetCount,
+    updatedAt: now,
+  };
+
+  onProgress?.(transferring);
+  setE2EOfflinePackOverride({
+    category,
+    status: "ready",
+  });
+
+  return createLightweightE2EReadyPack(questionBank.length, category);
 }
 
 function readE2EOfflinePackSnapshot(
@@ -613,17 +871,26 @@ function readE2EOfflinePackSnapshot(
   const questionBank = input.questionBank ?? getQuestionBank();
   const plan =
     questionBank.length > 0
-      ? buildSyntheticOfflinePackPlan(questionBank, input.currentCategory)
+      ? buildLightweightE2EOfflinePackPlan(
+          questionBank.length,
+          input.currentCategory
+        )
       : null;
   const overrideCategory = e2eOverride.category ?? input.currentCategory;
   const readyPack =
     e2eOverride.status === "ready"
-      ? createSyntheticReadyPack(questionBank, overrideCategory)
+      ? createLightweightE2EReadyPack(questionBank.length, overrideCategory)
       : null;
   const transfer =
     e2eOverride.status === "incomplete"
-      ? createSyntheticTransfer(questionBank, overrideCategory)
-      : null;
+      ? createLightweightE2ETransfer(questionBank.length, overrideCategory, "error")
+      : e2eOverride.status === "downloading"
+        ? createLightweightE2ETransfer(
+            questionBank.length,
+            overrideCategory,
+            "downloading"
+          )
+        : null;
   const readyPackMatchesCurrentCategory =
     readyPack?.category === input.currentCategory;
   const readyPackMatchesCurrentCatalog =
@@ -642,11 +909,11 @@ function readE2EOfflinePackSnapshot(
   };
 }
 
-function createSyntheticReadyPack(
-  questionBank: LocalQuestion[],
+function createLightweightE2EReadyPack(
+  questionCount: number,
   category: DrivingCategory
 ): OfflinePackReadyInfo {
-  const plan = buildSyntheticOfflinePackPlan(questionBank, category);
+  const plan = buildLightweightE2EOfflinePackPlan(questionCount, category);
 
   return {
     assetCount: plan.assetCount,
@@ -658,30 +925,25 @@ function createSyntheticReadyPack(
   };
 }
 
-function createSyntheticTransfer(
-  questionBank: LocalQuestion[],
-  category: DrivingCategory
+function createLightweightE2ETransfer(
+  questionCount: number,
+  category: DrivingCategory,
+  status: OfflineTransferStatus = "error"
 ): OfflinePackTransfer {
-  const plan = buildSyntheticOfflinePackPlan(questionBank, category);
-  const targetTotalBytes = estimateOfflinePackDownloadBytes(plan);
-  const downloadedAssetCount =
-    plan.assetCount > 0 ? Math.max(0, Math.floor(plan.assetCount / 2)) : 0;
-  const downloadedBytes =
-    plan.assetCount > 0
-      ? Math.floor(targetTotalBytes * 0.5)
-      : Math.floor(targetTotalBytes * 0.25);
+  const plan = buildLightweightE2EOfflinePackPlan(questionCount, category);
 
   return {
     catalogSignature: plan.catalogSignature,
-    downloadedAssetCount,
-    downloadedBytes,
-    lastError: "E2E seeded interrupted offline download.",
+    downloadedAssetCount: Math.max(0, Math.floor(plan.assetCount / 2)),
+    downloadedBytes: Math.floor(plan.totalBytes * 0.5),
+    lastError:
+      status === "error" ? "E2E seeded interrupted offline download." : null,
     startedAt: new Date(Date.now() - 60_000).toISOString(),
-    status: "error",
+    status,
     targetAssetCount: plan.assetCount,
     targetCategory: category,
     targetQuestionCount: plan.questionCount,
-    targetTotalBytes,
+    targetTotalBytes: plan.totalBytes,
     unknownSizeAssetCount: plan.unknownSizeAssetCount,
     updatedAt: new Date().toISOString(),
   };
@@ -726,43 +988,7 @@ function buildOfflineAssetEntries(questionBank: LocalQuestion[]) {
       });
     }
 
-    if (!asset.posterStorageBucket || !asset.posterStoragePath) {
-      return;
-    }
-
-    const posterUrl = buildRemoteStorageUrl(
-      asset.posterStorageBucket,
-      asset.posterStoragePath
-    );
-
-    if (!posterUrl) {
-      throw new OfflinePackError(
-        "storage_url_missing",
-        "The poster base URL is missing for offline downloads."
-      );
-    }
-
-    const posterKey = buildOfflineAssetKey(
-      asset.posterStorageBucket,
-      asset.posterStoragePath
-    );
-
-    if (!entries.has(posterKey)) {
-      entries.set(posterKey, {
-        bucket: asset.posterStorageBucket,
-        expectedBytes: lookupOfflineAssetBytes(
-          asset.posterStorageBucket,
-          asset.posterStoragePath
-        ),
-        file: getOfflineAssetFile(
-          asset.posterStorageBucket,
-          asset.posterStoragePath
-        ),
-        key: posterKey,
-        storagePath: asset.posterStoragePath,
-        url: posterUrl,
-      });
-    }
+    // Skip posterStorage* — previews only; not on CDN and not needed offline.
   };
 
   for (const question of questionBank) {
@@ -775,19 +1001,17 @@ function buildOfflineAssetEntries(questionBank: LocalQuestion[]) {
     }
   }
 
-  return Array.from(entries.values()).sort((left, right) => {
-    const leftWeight = left.bucket === "question-posters" ? 0 : 1;
-    const rightWeight = right.bucket === "question-posters" ? 0 : 1;
-
-    if (leftWeight !== rightWeight) {
-      return leftWeight - rightWeight;
-    }
-
-    return left.key.localeCompare(right.key);
-  });
+  return Array.from(entries.values()).sort((left, right) =>
+    left.key.localeCompare(right.key)
+  );
 }
 
 function buildCatalogSignature(questionBank: LocalQuestion[]) {
+  const cached = catalogSignatureCache.get(questionBank);
+  if (cached) {
+    return cached;
+  }
+
   const normalized = [...questionBank]
     .sort((left, right) => left.id.localeCompare(right.id))
     .map((question) => JSON.stringify(normalizeQuestionForSignature(question)))
@@ -800,7 +1024,9 @@ function buildCatalogSignature(questionBank: LocalQuestion[]) {
     hash = Math.imul(hash, 16777619);
   }
 
-  return `offline-${questionBank.length}-${(hash >>> 0).toString(16)}`;
+  const signature = `offline-${questionBank.length}-${(hash >>> 0).toString(16)}`;
+  catalogSignatureCache.set(questionBank, signature);
+  return signature;
 }
 
 function normalizeQuestionForSignature(question: LocalQuestion) {
@@ -911,8 +1137,21 @@ function encodeStoragePath(storagePath: string) {
     .join("/");
 }
 
+function getOfflineAssetSizeMap() {
+  if (!offlineAssetSizeMap) {
+    // Lazily load — this JSON is ~500KB and was freezing app boot whenever
+    // anything imported offline-pack (catalog provider, media URLs, profile).
+    offlineAssetSizeMap = require("./generated-asset-size-map.json") as Record<
+      string,
+      number
+    >;
+  }
+
+  return offlineAssetSizeMap;
+}
+
 function lookupOfflineAssetBytes(bucket: string, storagePath: string) {
-  const value = offlineAssetSizeMap[buildOfflineAssetKey(bucket, storagePath)];
+  const value = getOfflineAssetSizeMap()[buildOfflineAssetKey(bucket, storagePath)];
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
@@ -945,23 +1184,20 @@ function getOfflineAssetFile(bucket: string, storagePath: string) {
 }
 
 function getOfflineAssetUriIfComplete(bucket: string, storagePath: string) {
-  const key = buildOfflineAssetKey(bucket, storagePath);
-  const file = getOfflineAssetFile(bucket, storagePath);
-  const cached = offlineAssetUriCache.get(key);
-
-  if (cached !== undefined) {
-    if (cached && isOfflineAssetComplete({
-      expectedBytes: lookupOfflineAssetBytes(bucket, storagePath),
-      file,
-    })) {
-      return cached;
-    }
-
-    if (!cached) {
-      return null;
-    }
+  if (!offlinePackMediaEnabled) {
+    return null;
   }
 
+  const key = buildOfflineAssetKey(bucket, storagePath);
+  const cached = offlineAssetUriCache.get(key);
+
+  // Trust the cache. Re-statting every media URL on render floods the bridge
+  // after a pack is downloaded (thousands of exists/size calls).
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const file = getOfflineAssetFile(bucket, storagePath);
   const uri = isOfflineAssetComplete({
     expectedBytes: lookupOfflineAssetBytes(bucket, storagePath),
     file,
@@ -982,7 +1218,7 @@ function computeTransferProgress(assets: OfflineAssetEntry[]) {
       return {
         downloadedAssetCount: progress.downloadedAssetCount + 1,
         downloadedBytes:
-          progress.downloadedBytes + (asset.expectedBytes ?? asset.file.size),
+          progress.downloadedBytes + asset.file.size,
       };
     },
     {
@@ -990,65 +1226,6 @@ function computeTransferProgress(assets: OfflineAssetEntry[]) {
       downloadedBytes: 0,
     }
   );
-}
-
-function buildOfflineAssetIntegrityEntries(questionBank: LocalQuestion[]) {
-  const entries = new Map<string, OfflineAssetIntegrityEntry>();
-
-  const pushAsset = (asset: QuestionDeliveryAsset | null | undefined) => {
-    if (!asset) {
-      return;
-    }
-
-    const mainKey = buildOfflineAssetKey(
-      asset.storageBucket,
-      asset.storagePath
-    );
-
-    if (!entries.has(mainKey)) {
-      entries.set(mainKey, {
-        expectedBytes: lookupOfflineAssetBytes(
-          asset.storageBucket,
-          asset.storagePath
-        ),
-        file: getOfflineAssetFile(asset.storageBucket, asset.storagePath),
-      });
-    }
-
-    if (!asset.posterStorageBucket || !asset.posterStoragePath) {
-      return;
-    }
-
-    const posterKey = buildOfflineAssetKey(
-      asset.posterStorageBucket,
-      asset.posterStoragePath
-    );
-
-    if (!entries.has(posterKey)) {
-      entries.set(posterKey, {
-        expectedBytes: lookupOfflineAssetBytes(
-          asset.posterStorageBucket,
-          asset.posterStoragePath
-        ),
-        file: getOfflineAssetFile(
-          asset.posterStorageBucket,
-          asset.posterStoragePath
-        ),
-      });
-    }
-  };
-
-  for (const question of questionBank) {
-    pushAsset(question.media?.asset);
-    pushAsset(question.media?.pjm?.questionAsset ?? null);
-
-    const answerAssets = question.media?.pjm?.answerAssets ?? {};
-    for (const asset of Object.values(answerAssets)) {
-      pushAsset(asset ?? null);
-    }
-  }
-
-  return Array.from(entries.values());
 }
 
 function pruneIncompleteOfflineAssetFiles(assets: OfflineAssetEntry[]) {
@@ -1117,15 +1294,9 @@ function getRemainingBytes(assets: OfflineAssetEntry[]) {
 }
 
 function isOfflineAssetComplete(asset: OfflineAssetIntegrityEntry) {
-  if (!asset.file.exists) {
-    return false;
-  }
-
-  if (asset.expectedBytes === null) {
-    return asset.file.size > 0;
-  }
-
-  return asset.file.size === asset.expectedBytes;
+  // Size-map bytes are estimates for UI/disk planning only. Delivery assets on
+  // CDN often differ from the bundled map, so do not require an exact match.
+  return asset.file.exists && asset.file.size > 0;
 }
 
 function ensureDirectoryExists(directory: Directory) {
@@ -1229,50 +1400,103 @@ async function readOfflinePackMetadata() {
 }
 
 async function readValidatedReadyOfflinePackState(): Promise<ValidatedReadyOfflinePackState> {
-  const metadata = await readOfflinePackMetadata();
-  const readyPack = metadata.readyPack;
-
-  if (!readyPack) {
-    return {
-      metadata,
-      readyPack: null,
-      readyQuestions: null,
-    };
+  if (validatedReadyPackCache) {
+    return validatedReadyPackCache;
   }
 
-  const readyQuestions = await readOfflineCatalogQuestions();
-
-  if (!readyQuestions || readyQuestions.length === 0) {
-    return {
-      metadata,
-      readyPack: null,
-      readyQuestions: null,
-    };
+  if (validatedReadyPackCachePromise) {
+    return validatedReadyPackCachePromise;
   }
 
-  if (buildCatalogSignature(readyQuestions) !== readyPack.catalogSignature) {
-    return {
+  validatedReadyPackCachePromise = (async () => {
+    const metadata = await readOfflinePackMetadata();
+    const readyPackMeta = metadata.readyPack;
+
+    if (!readyPackMeta || !getOfflineCatalogFile().exists) {
+      const emptyState = {
+        metadata,
+        readyPack: null,
+        readyQuestions: null,
+      } satisfies ValidatedReadyOfflinePackState;
+      validatedReadyPackCache = emptyState;
+      return emptyState;
+    }
+
+    const readyQuestions = await readOfflineCatalogQuestions();
+
+    if (!readyQuestions || readyQuestions.length === 0) {
+      const emptyState = {
+        metadata,
+        readyPack: null,
+        readyQuestions: null,
+      } satisfies ValidatedReadyOfflinePackState;
+      validatedReadyPackCache = emptyState;
+      return emptyState;
+    }
+
+    // Trust metadata written at download time. Re-hashing the full catalog here
+    // freezes the JS thread for seconds on every cold start / offline fallback.
+    if (
+      readyPackMeta.questionCount > 0 &&
+      readyQuestions.length !== readyPackMeta.questionCount
+    ) {
+      const emptyState = {
+        metadata,
+        readyPack: null,
+        readyQuestions: null,
+      } satisfies ValidatedReadyOfflinePackState;
+      validatedReadyPackCache = emptyState;
+      return emptyState;
+    }
+
+    const state = {
       metadata,
-      readyPack: null,
-      readyQuestions: null,
-    };
+      readyPack: readyPackMeta,
+      readyQuestions,
+    } satisfies ValidatedReadyOfflinePackState;
+    validatedReadyPackCache = state;
+    return state;
+  })();
+
+  try {
+    return await validatedReadyPackCachePromise;
+  } finally {
+    validatedReadyPackCachePromise = null;
+  }
+}
+
+function resolveReadyPackFromMetadata(metadata: OfflinePackMetadata) {
+  if (!metadata.readyPack) {
+    return null;
   }
 
-  const readyAssets = buildOfflineAssetIntegrityEntries(readyQuestions);
-
-  if (readyAssets.some((asset) => !isOfflineAssetComplete(asset))) {
-    return {
-      metadata,
-      readyPack: null,
-      readyQuestions: null,
-    };
+  if (validatedReadyPackCache) {
+    return validatedReadyPackCache.readyPack;
   }
 
-  return {
-    metadata,
-    readyPack,
-    readyQuestions,
-  };
+  if (!getOfflineCatalogFile().exists) {
+    return null;
+  }
+
+  return metadata.readyPack;
+}
+
+function seedValidatedReadyPackCache(state: ValidatedReadyOfflinePackState) {
+  validatedReadyPackCache = state;
+  validatedReadyPackCachePromise = null;
+  offlinePackSnapshotCache = null;
+  if (state.readyQuestions && state.readyPack) {
+    catalogSignatureCache.set(
+      state.readyQuestions,
+      state.readyPack.catalogSignature
+    );
+  }
+}
+
+function invalidateValidatedReadyPackCache() {
+  validatedReadyPackCache = null;
+  validatedReadyPackCachePromise = null;
+  offlinePackSnapshotCache = null;
 }
 
 async function readOfflineCatalogQuestions() {

@@ -3,8 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { DrivingCategory } from "@prawko/config";
 
 import {
-  getOfflinePackBlockedReason,
-  hasReadyOfflinePackForCategory,
+  getOfflinePackAvailability,
   type OfflinePackBlockedReason,
 } from "./offline-pack";
 import { checkInternetReachability } from "./reachability";
@@ -30,6 +29,10 @@ type OfflineFeatureGateState =
       status: "checking";
     };
 
+/**
+ * Online → always allowed, no offline pack I/O.
+ * Offline → allowed only when a ready pack exists for the category.
+ */
 export function useOfflineFeatureGate(category: DrivingCategory) {
   const [state, setState] = useState<OfflineFeatureGateState>({
     downloadedCategory: null,
@@ -42,7 +45,6 @@ export function useOfflineFeatureGate(category: DrivingCategory) {
   const refresh = useCallback(() => {
     const refreshId = refreshIdRef.current + 1;
     refreshIdRef.current = refreshId;
-    const reachabilityPromise = checkInternetReachability().catch(() => false);
     const isStale = () => refreshIdRef.current !== refreshId;
 
     setState({
@@ -52,68 +54,58 @@ export function useOfflineFeatureGate(category: DrivingCategory) {
       status: "checking",
     });
 
-    const localStatePromise = Promise.allSettled([
-      hasReadyOfflinePackForCategory(category),
-      getOfflinePackBlockedReason(category),
-    ]).then(([offlineReadyResult, blockedResult]) => {
-      if (isStale()) {
-        return null;
-      }
-
-      const offlineReady =
-        offlineReadyResult.status === "fulfilled"
-          ? offlineReadyResult.value
-          : false;
-      const blocked =
-        blockedResult.status === "fulfilled"
-          ? blockedResult.value
-          : {
-              downloadedCategory: null,
-              reason: "missing_ready_pack" as const,
-            };
-
-      setState({
-        downloadedCategory: blocked.downloadedCategory,
-        isOnline: null,
-        offlineReady,
-        status: "checking",
-      });
-
-      return {
-        blocked,
-        offlineReady,
-      };
-    });
-
-    void localStatePromise.then(async (localState) => {
-      if (!localState || isStale()) {
-        return;
-      }
-
-      const isOnline = await reachabilityPromise;
+    void (async () => {
+      const isOnline = await checkInternetReachability().catch(() => false);
 
       if (isStale()) {
         return;
       }
 
-      if (isOnline || localState.offlineReady) {
+      // Online path: never touch offline pack files.
+      if (isOnline) {
         setState({
-          downloadedCategory: localState.blocked.downloadedCategory,
-          isOnline,
-          offlineReady: localState.offlineReady,
+          downloadedCategory: null,
+          isOnline: true,
+          offlineReady: false,
+          status: "allowed",
+        });
+        return;
+      }
+
+      let availability: Awaited<ReturnType<typeof getOfflinePackAvailability>>;
+
+      try {
+        availability = await getOfflinePackAvailability(category);
+      } catch {
+        availability = {
+          downloadedCategory: null,
+          offlineReady: false,
+          reason: "missing_ready_pack",
+        };
+      }
+
+      if (isStale()) {
+        return;
+      }
+
+      if (availability.offlineReady) {
+        setState({
+          downloadedCategory: availability.downloadedCategory,
+          isOnline: false,
+          offlineReady: true,
           status: "allowed",
         });
         return;
       }
 
       setState({
-        downloadedCategory: localState.blocked.downloadedCategory,
-        isOnline,
-        offlineReady: localState.offlineReady,
-        reason: localState.blocked.reason,
+        downloadedCategory: availability.downloadedCategory,
+        isOnline: false,
+        offlineReady: false,
+        reason: availability.reason,
         status: "blocked",
       });
-    });
+    })();
   }, [category]);
 
   useEffect(() => {

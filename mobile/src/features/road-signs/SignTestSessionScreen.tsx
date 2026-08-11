@@ -2,16 +2,18 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
+import { QuestionChoiceOption } from "../questions/training/QuestionChoiceOption";
 import { QuestionFeedbackBottomSheet } from "../questions/training/QuestionFeedbackBottomSheet";
 import { QuestionFeedbackPushStage } from "../questions/training/QuestionFeedbackPushStage";
 import { QuestionStepPill } from "../questions/training/QuestionStepPill";
 import { getQuestionStepState } from "../questions/training/visible-steps";
 import {
+  CText,
   useResponsiveFonts,
   useResponsiveSpacing,
   useResponsiveStyles,
@@ -30,7 +32,6 @@ type SignTestAnswer = {
   isCorrect: boolean;
 };
 
-const OPTION_LETTERS = ["A", "B", "C", "D"];
 const SUPPORT_EMAIL = "support@prawko.app";
 
 type SignTestSessionScreenProps = {
@@ -203,7 +204,7 @@ export function SignTestSessionScreen({
         <SafeAreaView style={styles.safeArea} edges={["top"]}>
           <StatusBar style="dark" />
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>{t("signs.testUnavailable")}</Text>
+            <CText style={styles.emptyTitle}>{t("signs.testUnavailable")}</CText>
             <Pressable
               accessibilityRole="button"
               onPress={() => router.back()}
@@ -212,7 +213,7 @@ export function SignTestSessionScreen({
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Text style={styles.emptyButtonLabel}>{t("common.back")}</Text>
+              <CText style={styles.emptyButtonLabel}>{t("common.back")}</CText>
             </Pressable>
           </View>
         </SafeAreaView>
@@ -240,15 +241,15 @@ export function SignTestSessionScreen({
           />
 
           <View style={styles.headerCopy}>
-            <Text style={styles.headerTitle}>{title}</Text>
+            <CText style={styles.headerTitle}>{title}</CText>
             {subtitle ? (
-              <Text style={styles.headerSubtitle}>{subtitle}</Text>
+              <CText style={styles.headerSubtitle}>{subtitle}</CText>
             ) : null}
           </View>
 
-          <Text style={styles.headerCounter}>
+          <CText style={styles.headerCounter}>
             {`${questionIndex + 1} / ${questions.length}`}
-          </Text>
+          </CText>
         </View>
 
         <ScrollView
@@ -287,7 +288,9 @@ export function SignTestSessionScreen({
               nextLabel={
                 questionIndex >= questions.length - 1
                   ? t("question.finish")
-                  : t("question.nextQuestion")
+                  : isCorrect
+                    ? t("question.nextQuestion")
+                    : t("question.gotIt")
               }
               feedbackAccentFill={feedbackAccent.fill}
               feedbackAccentInk={feedbackAccent.ink}
@@ -307,39 +310,22 @@ export function SignTestSessionScreen({
           </View>
 
           <View style={styles.options}>
-            {currentQuestion.options.map((option, index) => {
-              const isSelected = selectedOptionId === option.id;
-              const isCorrectOption =
-                option.id === currentQuestion.correctOptionId;
-
-              return (
-                <Pressable
-                  key={option.id}
-                  accessibilityRole="button"
-                  disabled={hasAnswered}
-                  onPress={() => handleSelectOption(option.id)}
-                  style={({ pressed }) => [
-                    styles.option,
-                    hasAnswered && isCorrectOption ? styles.optionCorrect : null,
-                    hasAnswered && isSelected && !isCorrectOption
-                      ? styles.optionWrong
-                      : null,
-                    !hasAnswered && isSelected ? styles.optionSelected : null,
-                    pressed ? styles.pressed : null,
-                  ]}
-                  testID={`sign-test-option-index-${index}`}
-                >
-                  <View style={styles.optionLetterWrap}>
-                    <Text style={styles.optionLetter}>
-                      {OPTION_LETTERS[index] ?? "?"}
-                    </Text>
-                  </View>
-                  <Text style={styles.optionLabel}>
-                    {pickLocalized(option.label, i18n.language)}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            {currentQuestion.options.map((option, index) => (
+              <QuestionChoiceOption
+                key={option.id}
+                choice={{
+                  id: option.id,
+                  label: pickLocalized(option.label, i18n.language),
+                }}
+                choiceIndex={index}
+                hasAnswered={hasAnswered}
+                isBooleanQuestion={false}
+                isCorrectChoice={option.id === currentQuestion.correctOptionId}
+                isSelected={selectedOptionId === option.id}
+                onPress={() => handleSelectOption(option.id)}
+                testID={`sign-test-option-index-${index}`}
+              />
+            ))}
           </View>
         </QuestionFeedbackPushStage>
       </SafeAreaView>
@@ -349,7 +335,7 @@ export function SignTestSessionScreen({
 
 function useStyles() {
   return useResponsiveStyles(
-    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+    ({ colors, radius, responsiveFont, spacing }) => ({
       safeArea: {
         flex: 1,
       },
@@ -409,49 +395,6 @@ function useStyles() {
       options: {
         gap: spacing.exact(4),
         paddingHorizontal: spacing.exact(24),
-      },
-      option: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.exact(12),
-        paddingVertical: spacing.exact(12),
-        paddingHorizontal: spacing.exact(12),
-        borderRadius: radius.lg,
-        backgroundColor: colors.surface,
-      },
-      optionSelected: {
-        borderWidth: 1,
-        borderColor: accents.amber.fill,
-      },
-      optionCorrect: {
-        borderWidth: 1,
-        borderColor: accents.green.fill,
-        backgroundColor: accents.green.soft,
-      },
-      optionWrong: {
-        borderWidth: 1,
-        borderColor: accents.red.fill,
-        backgroundColor: accents.red.soft,
-      },
-      optionLetterWrap: {
-        width: spacing.exact(24),
-        height: spacing.exact(24),
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: radius.pill,
-        backgroundColor: colors.paper,
-      },
-      optionLetter: {
-        fontSize: responsiveFont(12),
-        lineHeight: responsiveFont(16),
-        fontWeight: "600",
-        color: colors.ink2,
-      },
-      optionLabel: {
-        flex: 1,
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        color: colors.ink,
       },
       emptyState: {
         flex: 1,

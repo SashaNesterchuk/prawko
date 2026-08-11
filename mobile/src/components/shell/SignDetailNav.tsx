@@ -1,7 +1,7 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type SignDetailNavProps = {
@@ -34,7 +34,7 @@ export function SignDetailNav({
           style={({ pressed }) => [styles.button, pressed ? styles.pressed : null]}
         >
           <Icon color={theme.colors.ink2} name="back" size={20} />
-          <Text style={styles.buttonLabel}>{backLabel}</Text>
+          <CText style={styles.buttonLabel}>{backLabel}</CText>
         </Pressable>
       ) : (
         <View style={styles.buttonPlaceholder} />
@@ -46,7 +46,7 @@ export function SignDetailNav({
           onPress={onForward}
           style={({ pressed }) => [styles.button, pressed ? styles.pressed : null]}
         >
-          <Text style={styles.buttonLabel}>{forwardLabelText}</Text>
+          <CText style={styles.buttonLabel}>{forwardLabelText}</CText>
           <Icon color={theme.colors.ink2} name="chevron" size={20} />
         </Pressable>
       ) : (

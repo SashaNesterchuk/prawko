@@ -16,6 +16,7 @@ export type WeekDayActivity = {
   dayOfMonth: number;
   weekdayLabel: string;
   isToday: boolean;
+  isFuture: boolean;
   hasActivity: boolean;
   isStreakDay: boolean;
 };
@@ -136,6 +137,7 @@ export function buildWeekActivity(
       dayOfMonth,
       weekdayLabel,
       isToday: isoDate === todayIso,
+      isFuture: isoDate > todayIso,
       hasActivity: activityDates.has(isoDate),
       isStreakDay: streakDates.has(isoDate),
     };

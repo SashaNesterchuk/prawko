@@ -1,12 +1,13 @@
 import {
   EXAM_RULES,
   STUDY_PLAN_LIMITS,
-  TOPIC_BLOCK_IDS,
+  QUESTION_TOPIC_IDS,
   getContentLocale,
+  getQuestionTopicCatalogEntry,
   type DrivingCategory,
+  type QuestionTopicId,
   type StudyPlanTaskType,
   type SupportedLocale,
-  type TopicBlockId,
 } from "@prawko/config";
 import type {
   GeneratedStudyPlan,
@@ -24,50 +25,7 @@ type StudyPlanBlueprint = {
   estimatedMinutes: number;
   questionCountTarget?: number;
   taskType: StudyPlanTaskType;
-  topicBlock?: TopicBlockId;
-};
-
-const topicLabels: Record<"pl" | "ua" | "en" | "de", Record<TopicBlockId, string>> = {
-  pl: {
-    signs: "Znaki",
-    intersections: "Skrzyzowania",
-    overtaking: "Wyprzedzanie",
-    pedestrians: "Piesi",
-    first_aid: "Pierwsza pomoc",
-    priority: "Pierwszenstwo",
-    safety: "Bezpieczenstwo",
-    technical: "Technika pojazdu",
-  },
-  ua: {
-    signs: "Знаки",
-    intersections: "Перехрестя",
-    overtaking: "Обгін",
-    pedestrians: "Пішоходи",
-    first_aid: "Перша допомога",
-    priority: "Пріоритет",
-    safety: "Безпека",
-    technical: "Технічний стан",
-  },
-  en: {
-    signs: "Signs",
-    intersections: "Intersections",
-    overtaking: "Overtaking",
-    pedestrians: "Pedestrians",
-    first_aid: "First aid",
-    priority: "Priority",
-    safety: "Safety",
-    technical: "Technical",
-  },
-  de: {
-    signs: "Schilder",
-    intersections: "Kreuzungen",
-    overtaking: "Ueberholen",
-    pedestrians: "Fussgaenger",
-    first_aid: "Erste Hilfe",
-    priority: "Vorfahrt",
-    safety: "Sicherheit",
-    technical: "Technik",
-  },
+  topicBlock?: QuestionTopicId;
 };
 
 type LocalPlanInput = StudyPlanSetupInput & {
@@ -188,7 +146,8 @@ function buildPlanDay({
   input: LocalPlanInput;
 }): GeneratedStudyPlanDay {
   const planDate = toIsoDate(addDays(startOfDay(fromDate), dayNumber - 1));
-  const focusTopic = TOPIC_BLOCK_IDS[(dayNumber - 1) % TOPIC_BLOCK_IDS.length];
+  const focusTopic =
+    QUESTION_TOPIC_IDS[(dayNumber - 1) % QUESTION_TOPIC_IDS.length];
   const minimumMode = input.minutesPerDay <= MINIMUM_MODE_THRESHOLD;
   const remainingDays = daysPlanned - dayNumber + 1;
   const blueprints = buildDayBlueprints({
@@ -234,7 +193,7 @@ function buildDayBlueprints({
 }: {
   dayNumber: number;
   daysPlanned: number;
-  focusTopic: TopicBlockId;
+  focusTopic: QuestionTopicId;
   input: LocalPlanInput;
   minimumMode: boolean;
   remainingDays: number;
@@ -485,10 +444,17 @@ function createTask({
 function getTaskCopy(
   locale: SupportedLocale,
   taskType: StudyPlanTaskType,
-  topicBlock?: TopicBlockId
+  topicId?: QuestionTopicId
 ) {
   const contentLocale = getContentLocale(locale);
-  const topic = topicBlock ? topicLabels[contentLocale][topicBlock] : null;
+  const topicEntry = topicId ? getQuestionTopicCatalogEntry(topicId) : null;
+  const topic = topicEntry
+    ? contentLocale === "pl"
+      ? topicEntry.titlePl
+      : contentLocale === "ua"
+        ? topicEntry.titleUa
+        : topicEntry.titleEn
+    : null;
 
   switch (taskType) {
     case "learn_topic":

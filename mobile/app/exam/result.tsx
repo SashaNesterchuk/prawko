@@ -12,7 +12,7 @@ import {
   getExamDurationSeconds,
   getExamResultOutcome,
   getExamScoreDelta,
-  getWeakestTopicBlock,
+  getWeakestTopic,
 } from "../../src/features/exam/exam-result-stats";
 import {
   ExamResultCenteredState,
@@ -35,7 +35,7 @@ import type {
   RemoteExamSnapshot,
 } from "../../src/features/exam/types";
 import { useAdInterstitialActions } from "../../src/features/ads/show-interstitial";
-import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import { getQuestionTopicTitle } from "../../src/features/question-topics/catalog";
 import { getQuestionUserState } from "../../src/features/questions/question-engine";
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
 import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefetchQuestionMedia";
@@ -202,8 +202,11 @@ export default function ExamResultScreen() {
 
     didAttemptResultInterstitialRef.current = true;
 
-    // Shared hook: ensure → show (same path as practice session end).
-    void showInterstitialForTrigger("after_exam_complete");
+    // Fire-and-forget: ensure → show → retry → skip. Hard timeouts in the
+    // interstitial controller keep this screen tappable even if the ad dies.
+    void showInterstitialForTrigger("after_exam_complete").catch((error) => {
+      console.warn("Exam result interstitial failed open.", error);
+    });
   }, [hasPlusAccess, showInterstitialForTrigger, snapshot]);
 
   // Only bounce an *active* session back to the player — never while reviewing
@@ -243,9 +246,9 @@ export default function ExamResultScreen() {
       snapshot ? getExamScoreDelta(snapshot.session, recentSessions) : null,
     [recentSessions, snapshot]
   );
-  const weakestTopicBlock = getWeakestTopicBlock(topicStats);
-  const weakestTopicLabel = weakestTopicBlock
-    ? t(`topics.${weakestTopicBlock}`)
+  const weakestTopic = getWeakestTopic(topicStats);
+  const weakestTopicLabel = weakestTopic
+    ? getQuestionTopicTitle(weakestTopic, preferredLocale)
     : null;
   const sortedQuestions = useMemo(
     () => (snapshot ? sortExamQuestionsByOrder(snapshot.questions) : []),
@@ -447,12 +450,7 @@ export default function ExamResultScreen() {
   }
 
   function goWorkOnMistakes() {
-    router.replace({
-      pathname: "/question",
-      params: buildQuestionRouteParams({
-        mode: "wrong_answers",
-      }),
-    });
+    router.replace("/mistakes");
   }
 
   function handleReviewAnswers() {

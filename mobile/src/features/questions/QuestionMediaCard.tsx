@@ -5,7 +5,6 @@ import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from "reac
 import {
   Image,
   Pressable,
-  Text,
   View,
 } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -14,6 +13,7 @@ import type { SupportedLocale } from "@prawko/config";
 import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
 import {
+  CText,
   type PercentageString,
   useResponsiveFonts,
   useResponsiveStyles,
@@ -118,7 +118,7 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
                 pressed && isEnabled ? styles.pjmIconButtonPressed : null,
               ]}
             >
-              <Text style={styles.pjmIconGlyph}>{action.shortLabel}</Text>
+              <CText style={styles.pjmIconGlyph}>{action.shortLabel}</CText>
             </Pressable>
           );
         })}
@@ -150,12 +150,12 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
     return (
       <View style={styles.root}>
         <View style={[styles.frame, styles.errorFrame]}>
-          <Text style={styles.errorTitle}>
+          <CText style={styles.errorTitle}>
             {t("question.media.mediaUnavailableTitle")}
-          </Text>
-          <Text style={styles.errorBody}>
+          </CText>
+          <CText style={styles.errorBody}>
             {t("question.media.mediaUnavailableBody")}
-          </Text>
+          </CText>
           {pjmOverlay}
         </View>
       </View>
@@ -166,16 +166,16 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
     return (
       <View style={styles.root}>
         <View style={[styles.frame, styles.errorFrame]}>
-          <Text style={styles.errorTitle}>
+          <CText style={styles.errorTitle}>
             {t("question.media.mediaUnavailableTitle")}
-          </Text>
-          <Text style={styles.errorBody}>
+          </CText>
+          <CText style={styles.errorBody}>
             {t("question.media.mediaUnavailableBody")}
-          </Text>
+          </CText>
           {__DEV__ && previewUrl ? (
-            <Text selectable style={styles.debugUrl}>
+            <CText selectable style={styles.debugUrl}>
               {previewUrl}
-            </Text>
+            </CText>
           ) : null}
           {previewUrl ? (
             <Pressable
@@ -191,7 +191,7 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
                 size={refreshIconSize}
                 color={colors.textSecondary}
               />
-              <Text style={styles.retryLabel}>{t("question.media.retry")}</Text>
+              <CText style={styles.retryLabel}>{t("question.media.retry")}</CText>
             </Pressable>
           ) : null}
         </View>

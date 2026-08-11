@@ -1,19 +1,20 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import {
-  useResponsiveStyles,
-  type PercentageString,
-} from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
+import { DualColorProgressBar } from "./DualColorProgressBar";
+import { resolveSignsSummaryDisplay } from "./signs-summary-display";
 
 type SignsSummaryCardProps = {
   title: string;
-  /** Mastery percent 0–100 (correct / total). Drives the bar fill. */
-  progress: number;
+  /** Completion percent 0–100 (seen / total). Optional override; derived when omitted. */
+  progress?: number;
+  correct: number;
+  wrong: number;
   seen: number;
   total: number;
-  totalAnswersLabel: string;
+  correctAnswersLabel: string;
   trainAllLabel: string;
   onTrainAll?: () => void;
 };
@@ -21,36 +22,50 @@ type SignsSummaryCardProps = {
 export function SignsSummaryCard({
   title,
   progress,
+  correct,
+  wrong,
   seen,
   total,
-  totalAnswersLabel,
+  correctAnswersLabel,
   trainAllLabel,
   onTrainAll,
 }: SignsSummaryCardProps) {
   const theme = useTheme();
-  const clamped = Math.max(0, Math.min(progress, 100));
-  const styles = useStyles({
-    fillWidth: `${clamped}%` as PercentageString,
+  const display = resolveSignsSummaryDisplay({
+    correct,
+    wrong,
+    seen,
+    total,
   });
+  const learnedPercent =
+    progress != null
+      ? Math.max(0, Math.min(Math.round(progress), 100))
+      : display.learnedPercent;
+  const styles = useStyles();
   const trainLabel = trainAllLabel.replace(/\s*>\s*$/, "");
 
   return (
     <View style={styles.card}>
       <View style={styles.topSection}>
         <View style={styles.headerRow}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.readiness}>{`${Math.round(clamped)}%`}</Text>
+          <CText style={styles.title}>{title}</CText>
+          <CText style={styles.readiness}>{`${learnedPercent}%`}</CText>
         </View>
 
-        <View style={styles.track}>
-          {clamped > 0 ? <View style={styles.fill} /> : null}
-        </View>
+        <CText style={styles.fraction}>{display.coverageLabel}</CText>
+
+        <DualColorProgressBar
+          correct={correct}
+          wrong={wrong}
+          total={total}
+          height={8}
+        />
       </View>
 
       <View style={styles.footerRow}>
         <View style={styles.statsCopy}>
-          <Text style={styles.statsLabel}>{totalAnswersLabel}</Text>
-          <Text style={styles.statsValue}>{`${seen} / ${total}`}</Text>
+          <CText style={styles.statsLabel}>{correctAnswersLabel}</CText>
+          <CText style={styles.statsValue}>{display.correctAnswersLabel}</CText>
         </View>
 
         <Pressable
@@ -62,7 +77,7 @@ export function SignsSummaryCard({
           ]}
           testID="signs-train-all"
         >
-          <Text style={styles.trainButtonLabel}>{trainLabel}</Text>
+          <CText style={styles.trainButtonLabel}>{trainLabel}</CText>
           <Icon color={theme.colors.ink2} name="chevron" size={20} />
         </Pressable>
       </View>
@@ -70,7 +85,7 @@ export function SignsSummaryCard({
   );
 }
 
-function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
+function useStyles() {
   return useResponsiveStyles(({ colors, elevation, radius, responsiveFont, spacing }) => ({
     card: {
       borderRadius: radius.xxl,
@@ -105,17 +120,11 @@ function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
       letterSpacing: -0.24,
       color: colors.ink,
     },
-    track: {
-      height: spacing.exact(8),
-      borderRadius: radius.pill,
-      backgroundColor: colors.surface2,
-      overflow: "hidden",
-    },
-    fill: {
-      width: fillWidth,
-      height: "100%",
-      borderRadius: radius.pill,
-      backgroundColor: colors.ink3,
+    fraction: {
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
+      fontWeight: "400",
+      color: colors.ink,
     },
     footerRow: {
       flexDirection: "row",

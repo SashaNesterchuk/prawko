@@ -36,7 +36,8 @@ type QuestionChatRequest = {
     correctAnswer: string;
     selectedAnswer?: string;
     answerType: "boolean" | "abc";
-    topicBlock: string;
+    topicId: string;
+    topicBlock?: string;
     scope: "base" | "specialist";
     points: number;
     options: Array<{
@@ -150,7 +151,8 @@ Deno.serve(async (request) => {
         locale: payload.locale,
         rawQuestionId: payload.question.questionId,
         selectedAnswer: payload.question.selectedAnswer ?? null,
-        topicBlock: payload.question.topicBlock,
+        topicId: payload.question.topicId,
+        topicBlock: payload.question.topicBlock ?? null,
       },
       questionId: normalizedQuestionId,
       userId: user.id,
@@ -211,7 +213,8 @@ Deno.serve(async (request) => {
           providerResponse.model === PREGENERATED_EXPLANATION_MODEL,
         rawQuestionId: payload.question.questionId,
         selectedAnswer: payload.question.selectedAnswer ?? null,
-        topicBlock: payload.question.topicBlock,
+        topicId: payload.question.topicId,
+        topicBlock: payload.question.topicBlock ?? null,
       },
       model: providerResponse.model,
       outputTokens: providerResponse.outputTokens ?? null,
@@ -693,7 +696,7 @@ function buildUserPrompt(request: QuestionChatRequest) {
 
   return [
     `Question locale: ${request.locale}`,
-    `Topic block: ${request.question.topicBlock}`,
+    `Topic: ${request.question.topicId}`,
     `Question: ${request.question.prompt}`,
     optionLines ? `Options:\n${optionLines}` : null,
     `Correct answer: ${request.question.correctAnswer}`,

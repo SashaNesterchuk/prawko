@@ -1,13 +1,13 @@
 import type { SupportedLocale } from "@prawko/config";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Linking, Text, View } from "react-native";
+import { Linking, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
-import { useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { useHasAiChatAccess } from "../../state/entitlements";
 import {
@@ -37,6 +37,8 @@ type ExamAnswersReviewViewProps = {
   onPrevious: () => void;
   onToggleBookmark: () => void;
   questionRef: RemoteExamQuestionRef;
+  /** Defaults to exam answers review title. */
+  title?: string;
   testID?: string;
   totalQuestions: number;
 };
@@ -53,6 +55,7 @@ export function ExamAnswersReviewView({
   onPrevious,
   onToggleBookmark,
   questionRef,
+  title,
   testID,
   totalQuestions,
 }: ExamAnswersReviewViewProps) {
@@ -62,6 +65,7 @@ export function ExamAnswersReviewView({
   const hasAiChatAccess = useHasAiChatAccess();
   const insets = useSafeAreaInsets();
   const styles = useStyles();
+  const reviewTitle = title ?? t("exam.answersReviewTitle");
 
   const question = getQuestionById(questionRef.questionSourceId);
   const questionChoices = question
@@ -144,22 +148,22 @@ export function ExamAnswersReviewView({
                 onPress={onBack}
               />
               <View style={styles.headerCenter}>
-                <Text style={styles.headerTitle}>
-                  {t("exam.answersReviewTitle")}
-                </Text>
+                <CText style={styles.headerTitle}>
+                  {reviewTitle}
+                </CText>
               </View>
             </View>
           </View>
           <View style={styles.missingState}>
-            <Text style={styles.missingTitle}>
+            <CText style={styles.missingTitle}>
               {t("exam.questionUnavailable")}
-            </Text>
-            <Text style={styles.missingBody}>
+            </CText>
+            <CText style={styles.missingBody}>
               {t("exam.sessionSubtitle", {
                 current: currentIndex + 1,
                 total: totalQuestions,
               })}
-            </Text>
+            </CText>
           </View>
         </SafeAreaView>
       </GreenWaveScreen>
@@ -180,9 +184,9 @@ export function ExamAnswersReviewView({
         )}
       </View>
 
-      <Text style={styles.prompt}>
+      <CText style={styles.prompt}>
         {getLocalizedText(question.prompt, displayLocale)}
-      </Text>
+      </CText>
 
       <View style={isBooleanQuestion ? styles.booleanOptions : styles.options}>
         {questionChoices.map((choice, index) => (
@@ -220,25 +224,25 @@ export function ExamAnswersReviewView({
               />
               <View style={styles.headerCenter}>
                 <View style={styles.headerTitles}>
-                  <Text style={styles.headerTitle} numberOfLines={1}>
-                    {t("exam.answersReviewTitle")}
-                  </Text>
-                  <Text style={styles.headerCounter}>
+                  <CText style={styles.headerTitle} numberOfLines={1}>
+                    {reviewTitle}
+                  </CText>
+                  <CText style={styles.headerCounter}>
                     {t("exam.sessionSubtitle", {
                       current: currentIndex + 1,
                       total: totalQuestions,
                     })}
-                  </Text>
+                  </CText>
                 </View>
               </View>
             </View>
           </View>
 
           <View style={styles.metaRow}>
-            <Text style={styles.metaText}>{scopeLabel}</Text>
-            <Text style={styles.metaText}>
+            <CText style={styles.metaText}>{scopeLabel}</CText>
+            <CText style={styles.metaText}>
               {t("question.pointsLabel", { points })}
-            </Text>
+            </CText>
           </View>
 
           <QuestionFeedbackPushStage

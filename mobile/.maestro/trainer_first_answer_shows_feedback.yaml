@@ -1,5 +1,6 @@
 # Feature: Trainer
 # Scenario: Onboarded user answers the first trainer question and sees feedback
+# Wrong answers show a red "Зрозуміло" CTA; correct answers keep "Наступне питання"
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -24,6 +25,22 @@ tags:
     file: subflows/answer_first_available_option.yaml
     env:
       OPTION_ID: question-choice-index-0
+
+- runFlow:
+    when:
+      visible: "Неправильно"
+    commands:
+      - assertVisible: "Зрозуміло"
+      - assertVisible:
+          id: "question-feedback-next"
+
+- runFlow:
+    when:
+      visible: "Правильно"
+    commands:
+      - assertVisible: "Наступне питання"
+      - assertVisible:
+          id: "question-feedback-next"
 
 - tapOn:
     id: "question-feedback-next"

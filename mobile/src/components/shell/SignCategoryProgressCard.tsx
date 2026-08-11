@@ -1,13 +1,11 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import {
-  useResponsiveStyles,
-  type PercentageString,
-} from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { SignCategoryIcon } from "../../features/road-signs/SignCategoryIcon";
 import type { RoadSignCategory } from "../../features/road-signs/types";
+import { DualColorProgressBar } from "./DualColorProgressBar";
 
 export type SignCategoryProgress = {
   correct: number;
@@ -33,15 +31,8 @@ export function SignCategoryProgressCard({
   embedded = false,
 }: SignCategoryProgressCardProps) {
   const theme = useTheme();
-  const answered = progress.correct + progress.wrong;
-  const fillPercent =
-    progress.total > 0
-      ? Math.min(100, (answered / progress.total) * 100)
-      : 0;
-  const styles = useStyles({
-    embedded,
-    fillWidth: `${fillPercent}%` as PercentageString,
-  });
+  const seen = progress.correct + progress.wrong;
+  const styles = useStyles({ embedded });
 
   return (
     <Pressable
@@ -51,13 +42,16 @@ export function SignCategoryProgressCard({
       testID={`sign-category-${category.id}`}
     >
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={2}>
+        <CText style={styles.title} numberOfLines={2}>
           {title}
-        </Text>
+        </CText>
 
-        <View style={styles.track}>
-          {answered > 0 ? <View style={styles.fill} /> : null}
-        </View>
+        <DualColorProgressBar
+          correct={progress.correct}
+          wrong={progress.wrong}
+          total={progress.total}
+          height={4}
+        />
 
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
@@ -66,7 +60,7 @@ export function SignCategoryProgressCard({
               name="check"
               size={16}
             />
-            <Text style={styles.statValue}>{progress.correct}</Text>
+            <CText style={styles.statValue}>{progress.correct}</CText>
           </View>
           <View style={styles.statItem}>
             <Icon
@@ -74,9 +68,9 @@ export function SignCategoryProgressCard({
               name="close"
               size={16}
             />
-            <Text style={styles.statValue}>{progress.wrong}</Text>
+            <CText style={styles.statValue}>{progress.wrong}</CText>
           </View>
-          <Text style={styles.fraction}>{`${answered} / ${progress.total}`}</Text>
+          <CText style={styles.fraction}>{`${seen} / ${progress.total}`}</CText>
         </View>
       </View>
 
@@ -89,13 +83,7 @@ export function SignCategoryProgressCard({
   );
 }
 
-function useStyles({
-  embedded,
-  fillWidth,
-}: {
-  embedded: boolean;
-  fillWidth: PercentageString;
-}) {
+function useStyles({ embedded }: { embedded: boolean }) {
   return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     card: {
       flexDirection: "row",
@@ -118,18 +106,6 @@ function useStyles({
       fontWeight: embedded ? "500" : "600",
       letterSpacing: embedded ? 0 : -0.16,
       color: colors.ink,
-    },
-    track: {
-      height: spacing.exact(4),
-      borderRadius: radius.pill,
-      backgroundColor: colors.surface2,
-      overflow: "hidden",
-    },
-    fill: {
-      width: fillWidth,
-      height: "100%",
-      borderRadius: radius.pill,
-      backgroundColor: colors.ink3,
     },
     statsRow: {
       flexDirection: "row",

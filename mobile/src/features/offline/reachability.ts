@@ -3,7 +3,8 @@ import { Platform } from "react-native";
 import { mobileEnv } from "../../config/env";
 import { getE2ETestReachabilityOverride } from "../../testing/e2e/state";
 
-const REACHABILITY_TIMEOUT_MS = 3500;
+/** Keep this short — hung fetches must never freeze the UI thread for seconds. */
+const REACHABILITY_TIMEOUT_MS = 1200;
 
 function buildReachabilityUrls() {
   const urls: string[] = [];
@@ -47,6 +48,10 @@ async function pingUrl(url: string, timeoutMs: number) {
   }
 }
 
+/**
+ * Best-effort online check. Fail-open to `true` on timeout so the online path
+ * stays the default and the UI never waits on a hung native fetch.
+ */
 export async function checkInternetReachability(
   timeoutMs = REACHABILITY_TIMEOUT_MS
 ) {
@@ -79,6 +84,17 @@ export async function checkInternetReachability(
     return true;
   }
 
-  const results = await Promise.all(urls.map((url) => pingUrl(url, timeoutMs)));
-  return results.some(Boolean);
+  try {
+    const result = await Promise.race([
+      Promise.all(urls.map((url) => pingUrl(url, timeoutMs))).then((results) =>
+        results.some(Boolean)
+      ),
+      new Promise<boolean>((resolve) => {
+        setTimeout(() => resolve(true), timeoutMs + 200);
+      }),
+    ]);
+    return result;
+  } catch {
+    return true;
+  }
 }

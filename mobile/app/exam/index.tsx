@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppScreen } from "../../src/components/shell/AppScreen";
@@ -9,7 +9,7 @@ import {
   ErrorStateView,
   LoadingStateView,
 } from "../../src/components/shell/StateViews";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import {
   isMobileSupabaseConfigured,
 } from "../../src/config/env";
@@ -28,11 +28,13 @@ import {
   useCurrentUser,
   useAppShellStore,
 } from "../../src/state/app-shell";
+import { useHasPlusAccess } from "../../src/state/entitlements";
 import { useQuestionCatalogResolved } from "../../src/state/question-catalog";
 
 export default function ExamIntroScreen() {
   const { t } = useTranslation();
   const styles = useStyles();
+  const hasPlusAccess = useHasPlusAccess();
   const params = useLocalSearchParams<{
     mode?: string | string[];
     questionLimit?: string | string[];
@@ -165,7 +167,7 @@ export default function ExamIntroScreen() {
           </View>
         }
       >
-        <Text style={styles.errorText}>{startError}</Text>
+        <CText style={styles.errorText}>{startError}</CText>
       </AppScreen>
     );
   }
@@ -203,7 +205,9 @@ export default function ExamIntroScreen() {
               variant="secondary"
               label={t("offlineGate.openOfflineMode")}
               testID="exam-offline-open-offline-mode"
-              onPress={() => router.push("/modals/offline-mode")}
+              onPress={() =>
+                router.push(hasPlusAccess ? "/offline-mode" : "/paywall")
+              }
             />
             <AppButton
               variant="ghost"

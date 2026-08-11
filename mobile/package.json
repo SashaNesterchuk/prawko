@@ -11,6 +11,9 @@
     "ios:e2e": "EXPO_PUBLIC_E2E_TEST_MODE=1 EXPO_UNSTABLE_MCP_SERVER=1 expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --collectCoverageFrom='src/features/ads/**/*.{ts,tsx}' --collectCoverageFrom='!src/features/ads/__tests__/**' --collectCoverageFrom='!src/features/ads/AdProvider.tsx' --collectCoverageFrom='!src/features/ads/AppResumeAdListener.tsx' --collectCoverageFrom='!src/features/ads/use-should-show-ads.ts'",
     "icons:generate": "node scripts/generate-icon-registry.mjs",
     "offline:sizes:generate": "node scripts/generate-offline-asset-size-map.mjs",
     "road-signs:generate": "node scripts/generate-road-signs-content.mjs",
@@ -60,8 +63,13 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.29.7",
+    "@babel/preset-typescript": "^7.28.5",
+    "@types/jest": "^29.5.14",
     "@types/react": "^19.1.17",
+    "babel-jest": "^29.7.0",
     "expo-mcp": "~0.2.1",
+    "jest": "^29.7.0",
     "react-native-svg-transformer": "^1.5.3",
     "typescript": "^5.9.3"
   }

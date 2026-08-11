@@ -1,7 +1,7 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
-import { useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { ProgressRing } from "./ProgressRing";
 
@@ -25,6 +25,7 @@ type ReadinessIndexCardProps = {
   weekChangeLabel?: string;
   empty?: boolean;
   onPress?: () => void;
+  testID?: string;
 };
 
 export function resolveReadinessLevel(progress: number): ReadinessLevel {
@@ -68,6 +69,7 @@ export function ReadinessIndexCard({
   weekChangeLabel,
   empty = false,
   onPress,
+  testID,
 }: ReadinessIndexCardProps) {
   const theme = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -86,6 +88,7 @@ export function ReadinessIndexCard({
       accessibilityRole={onPress ? "button" : undefined}
       disabled={!onPress}
       onPress={onPress}
+      testID={testID}
       style={({ pressed }) => [
         styles.card,
         pressed && onPress ? styles.pressed : null,
@@ -99,17 +102,20 @@ export function ReadinessIndexCard({
             size={responsiveFont(40)}
           />
         ) : (
-          <Text style={styles.ringValue}>{`${Math.round(clamped)}%`}</Text>
+          <CText style={styles.ringValue}>
+            <CText style={styles.ringValueNumber}>{Math.round(clamped)}</CText>
+            <CText style={styles.ringValuePercent}>%</CText>
+          </CText>
         )}
       </ProgressRing>
 
       {empty ? (
         <View style={styles.emptyCopy}>
-          <Text style={styles.emptyTitle}>{title}</Text>
-          {subtitle ? <Text style={styles.emptySubtitle}>{subtitle}</Text> : null}
+          <CText style={styles.emptyTitle}>{title}</CText>
+          {subtitle ? <CText style={styles.emptySubtitle}>{subtitle}</CText> : null}
           {detailsLabel ? (
             <View style={styles.detailsRow}>
-              <Text style={styles.detailsLabel}>{detailsLabel}</Text>
+              <CText style={styles.detailsLabel}>{detailsLabel}</CText>
               <Icon
                 color={theme.accents.blue.ink}
                 name="chevron"
@@ -123,9 +129,9 @@ export function ReadinessIndexCard({
           <View style={styles.topBlock}>
             <View style={styles.levelBlock}>
               {levelLabel ? (
-                <Text style={styles.levelTitle}>{levelLabel}</Text>
+                <CText style={styles.levelTitle}>{levelLabel}</CText>
               ) : null}
-              <Text style={styles.levelSubtitle}>{title}</Text>
+              <CText style={styles.levelSubtitle}>{title}</CText>
             </View>
 
             {showWeekChange ? (
@@ -151,7 +157,7 @@ export function ReadinessIndexCard({
                     style={isWeekUp ? styles.arrowUp : undefined}
                   />
                 ) : null}
-                <Text
+                <CText
                   style={[
                     styles.weekBadgeLabel,
                     isWeekFlat
@@ -162,16 +168,16 @@ export function ReadinessIndexCard({
                   ]}
                 >
                   {weekChangeLabel}
-                </Text>
+                </CText>
               </View>
             ) : null}
           </View>
 
           {coveredCountLabel ? (
             <View style={styles.coveredBlock}>
-              <Text style={styles.coveredCount}>{coveredCountLabel}</Text>
+              <CText style={styles.coveredCount}>{coveredCountLabel}</CText>
               {coveredCaption ? (
-                <Text style={styles.coveredCaption}>{coveredCaption}</Text>
+                <CText style={styles.coveredCaption}>{coveredCaption}</CText>
               ) : null}
             </View>
           ) : null}
@@ -202,12 +208,22 @@ function useStyles({ ringColor }: { ringColor: string }) {
       opacity: 0.7,
     },
     ringValue: {
-      fontSize: responsiveFont(28),
+      textAlign: "center",
+      color: ringColor,
+    },
+    ringValueNumber: {
+      fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
       fontWeight: "700",
-      letterSpacing: -0.56,
+      letterSpacing: -0.64,
       color: ringColor,
-      textAlign: "center",
+    },
+    ringValuePercent: {
+      fontSize: responsiveFont(24),
+      lineHeight: responsiveFont(32),
+      fontWeight: "700",
+      letterSpacing: -0.48,
+      color: ringColor,
     },
     emptyCopy: {
       flex: 1,

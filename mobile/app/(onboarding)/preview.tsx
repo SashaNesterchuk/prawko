@@ -1,18 +1,19 @@
 import { Redirect, router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { AppButton } from "../../src/components/shell/AppButton";
 import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   formatPlanDate,
   generateLocalStudyPlan,
 } from "../../src/features/study-plan/generate-local-study-plan";
 import { saveGeneratedStudyPlanRemotely } from "../../src/features/study-plan/supabase-study-plan";
+import { getQuestionTopicTitleSafe } from "../../src/features/question-topics/catalog";
 import {
   useCurrentStudyPlan,
   useCurrentUser,
@@ -43,7 +44,6 @@ export default function PreviewScreen() {
 
   const isSetupReady =
     studyPlanSetup.daysUntilExam !== null &&
-    studyPlanSetup.examDate !== null &&
     studyPlanSetup.minutesPerDay !== null &&
     studyPlanSetup.level !== null;
   const generatedPlan =
@@ -129,85 +129,93 @@ export default function PreviewScreen() {
     >
       <View style={styles.cardStack}>
         <AppCard accent>
-          <Text style={styles.summaryTitle}>
+          <CText style={styles.summaryTitle}>
             {generatedPlan.title}
-          </Text>
-          <Text style={styles.summaryLine}>
-            {t("onboarding.previewDate", {
-              date: formatPlanDate(generatedPlan.examDate),
-            })}
-          </Text>
-          <Text style={styles.summaryLine}>
+          </CText>
+          {studyPlanSetup.examDate ? (
+            <CText style={styles.summaryLine}>
+              {t("onboarding.previewDate", {
+                date: formatPlanDate(studyPlanSetup.examDate),
+              })}
+            </CText>
+          ) : (
+            <CText style={styles.summaryLine}>
+              {t("onboarding.examDateSkip")}
+            </CText>
+          )}
+          <CText style={styles.summaryLine}>
             {t("onboarding.previewMinutes", {
               minutes: generatedPlan.minutesPerDay,
             })}
-          </Text>
-          <Text style={styles.summaryLine}>
+          </CText>
+          <CText style={styles.summaryLine}>
             {t("onboarding.previewLevel", {
               level: t(`levels.${generatedPlan.level}.label`),
             })}
-          </Text>
+          </CText>
           {generatedPlan.schoolCode ? (
-            <Text style={styles.summaryLine}>
+            <CText style={styles.summaryLine}>
               {t("onboarding.previewSchoolCode", {
                 code: generatedPlan.schoolCode,
               })}
-            </Text>
+            </CText>
           ) : null}
         </AppCard>
 
         <View style={styles.metricsRow}>
           <AppCard accent>
-            <Text style={styles.metricLabel}>
+            <CText style={styles.metricLabel}>
               {t("onboarding.previewMiniTests")}
-            </Text>
-            <Text style={styles.metricValue}>
+            </CText>
+            <CText style={styles.metricValue}>
               {generatedPlan.summary.miniTestDays}
-            </Text>
+            </CText>
           </AppCard>
           <AppCard accent>
-            <Text style={styles.metricLabel}>
+            <CText style={styles.metricLabel}>
               {t("onboarding.previewFullExams")}
-            </Text>
-            <Text style={styles.metricValue}>
+            </CText>
+            <CText style={styles.metricValue}>
               {generatedPlan.summary.fullExamDays}
-            </Text>
+            </CText>
           </AppCard>
         </View>
 
         <AppCard>
-          <Text style={styles.sectionTitle}>
+          <CText style={styles.sectionTitle}>
             {t("onboarding.previewMinimumMode", {
               days: generatedPlan.summary.minimumModeDays,
             })}
-          </Text>
-          <Text style={styles.sectionBody}>
+          </CText>
+          <CText style={styles.sectionBody}>
             {t("onboarding.previewWeakSpots", {
               days: generatedPlan.summary.weakSpotDays,
             })}
-          </Text>
+          </CText>
         </AppCard>
 
         {generatedPlan.days.slice(0, 5).map((day) => (
           <AppCard key={day.id}>
-            <Text style={styles.dayTitle}>
+            <CText style={styles.dayTitle}>
               {t("onboarding.previewDayTitle", {
                 dayNumber: day.dayNumber,
                 date: formatPlanDate(day.planDate),
                 })}
-            </Text>
+            </CText>
             {day.focusTopic ? (
-              <Text style={styles.dayFocus}>
+              <CText style={styles.dayFocus}>
                 {t("onboarding.previewFocus", {
-                  topic: t(`topics.${day.focusTopic}`),
+                  topic:
+                    getQuestionTopicTitleSafe(day.focusTopic, preferredLocale) ??
+                    day.focusTopic,
                 })}
-              </Text>
+              </CText>
             ) : null}
             <View style={styles.taskList}>
               {day.tasks.map((task) => (
-                <Text key={task.id} style={styles.taskText}>
+                <CText key={task.id} style={styles.taskText}>
                   - {task.title} - {task.estimatedMinutes}m
-                </Text>
+                </CText>
               ))}
             </View>
           </AppCard>
@@ -215,11 +223,11 @@ export default function PreviewScreen() {
 
         {generatedPlan.days.length > 5 ? (
           <AppCard>
-            <Text style={styles.summaryLine}>
+            <CText style={styles.summaryLine}>
               {t("onboarding.previewMoreDays", {
                 days: generatedPlan.days.length - 5,
               })}
-            </Text>
+            </CText>
           </AppCard>
         ) : null}
       </View>

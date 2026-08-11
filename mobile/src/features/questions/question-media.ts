@@ -42,6 +42,8 @@ export function getQuestionDeliveryAssetUrl(
     return null;
   }
 
+  // Offline media is only used when the app is actively serving the offline
+  // catalog (device offline / remote unavailable). Online always uses remote URLs.
   const offlineUrl = getOfflineQuestionAssetUrl(asset);
 
   if (offlineUrl) {

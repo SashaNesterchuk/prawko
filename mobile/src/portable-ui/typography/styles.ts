@@ -82,6 +82,24 @@ export function getTypographyStyle(key: TypographyStyleKey): TextStyle {
   };
 }
 
+/** Apply Figma→device font scaling to a typography preset / text style. */
+export function withResponsiveFont(
+  style: TextStyle,
+  responsiveFont: (size: number) => number
+): TextStyle {
+  return {
+    ...style,
+    fontSize:
+      typeof style.fontSize === "number"
+        ? responsiveFont(style.fontSize)
+        : style.fontSize,
+    lineHeight:
+      typeof style.lineHeight === "number"
+        ? responsiveFont(style.lineHeight)
+        : style.lineHeight,
+  };
+}
+
 export function getFontSizeMetrics(sizeKey: TextSizeKey) {
   const metricsKey =
     SIZE_TO_FONT_SIZE_KEY[sizeKey] as keyof typeof fontSizes;

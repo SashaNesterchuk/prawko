@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef } from "react";
-import { Linking, ScrollView, Text, View } from "react-native";
+import { Linking, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -22,6 +22,7 @@ import type { QuestionTrainingSession } from "./useQuestionTrainingSession";
 import { getQuestionStepState } from "./visible-steps";
 import { useHasAiChatAccess } from "../../../state/entitlements";
 
+import { CText } from "../../../portable-ui";
 const SUPPORT_EMAIL = "support@prawko.app";
 
 type QuestionTrainingViewProps = Pick<
@@ -186,9 +187,9 @@ export function QuestionTrainingView({
         )}
       </View>
 
-      <Text style={trainerStyles.prompt}>
+      <CText style={trainerStyles.prompt}>
         {getLocalizedText(currentQuestion.prompt, displayLocale)}
-      </Text>
+      </CText>
 
       <View
         style={
@@ -234,12 +235,12 @@ export function QuestionTrainingView({
                 testID="question-close"
               />
               <View style={trainerStyles.headerCenter}>
-                <Text style={trainerStyles.headerTitle}>
+                <CText style={trainerStyles.headerTitle}>
                   {t("question.trainerTitle")}
-                </Text>
-                <Text style={trainerStyles.headerCounter}>
+                </CText>
+                <CText style={trainerStyles.headerCounter}>
                   {currentStep} / {totalQuestions}
-                </Text>
+                </CText>
               </View>
             </View>
           </View>
@@ -277,10 +278,10 @@ export function QuestionTrainingView({
           </ScrollView>
 
           <View style={trainerStyles.metaRow}>
-            <Text style={trainerStyles.metaText}>{scopeLabel}</Text>
-            <Text style={trainerStyles.metaText}>
+            <CText style={trainerStyles.metaText}>{scopeLabel}</CText>
+            <CText style={trainerStyles.metaText}>
               {t("question.pointsLabel", { points: currentQuestion.points })}
-            </Text>
+            </CText>
           </View>
 
           <QuestionFeedbackPushStage
@@ -299,7 +300,9 @@ export function QuestionTrainingView({
                 nextLabel={
                   summary.answered >= summary.total
                     ? t("question.finish")
-                    : t("question.nextQuestion")
+                    : isCorrectAnswer
+                      ? t("question.nextQuestion")
+                      : t("question.gotIt")
                 }
                 feedbackAccentFill={feedbackAccent.fill}
                 feedbackAccentInk={feedbackAccent.ink}

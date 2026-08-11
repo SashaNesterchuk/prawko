@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -14,9 +14,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Icon } from "../../components/icons";
 import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
-import { getFontFamily, useResponsiveStyles } from "../../portable-ui";
+import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
+import { useAppShellStore } from "../../state/app-shell";
 import type { AppThemeAccent } from "../../theme";
+import { getQuestionTopicTitle } from "../question-topics/catalog";
 
 import {
   formatExamDurationParts,
@@ -141,16 +143,16 @@ export function ExamResultView({
                 />
               </View>
 
-              <Text style={styles.title}>{title}</Text>
-              <Text style={styles.passThreshold}>
+              <CText style={styles.title}>{title}</CText>
+              <CText style={styles.passThreshold}>
                 {t("exam.passThresholdLine", { pass: passPoints })}
-              </Text>
-              <Text style={styles.score}>
+              </CText>
+              <CText style={styles.score}>
                 {t("exam.scoreSlashTotal", {
                   score: scorePoints,
                   total: totalPointsTarget,
                 })}
-              </Text>
+              </CText>
 
               {scoreDelta ? (
                 <View
@@ -161,7 +163,7 @@ export function ExamResultView({
                       : styles.deltaBadgeNegative,
                   ]}
                 >
-                  <Text
+                  <CText
                     style={[
                       styles.deltaBadgeText,
                       scoreDelta.percentPoints > 0
@@ -176,24 +178,24 @@ export function ExamResultView({
                       : t("exam.deltaWorse", {
                           percent: Math.abs(scoreDelta.percentPoints),
                         })}
-                  </Text>
+                  </CText>
                 </View>
               ) : null}
 
-              <Text style={styles.statLine}>
+              <CText style={styles.statLine}>
                 {t("exam.correctAnswersLine", {
                   correct: correctAnswersCount,
                   total: totalQuestionsAnswered,
                 })}
-              </Text>
+              </CText>
 
               <View style={styles.timeRow}>
-                <Text style={styles.statLine}>
+                <CText style={styles.statLine}>
                   {t("exam.examTimeLine", {
                     minutes: durationParts.minutes,
                     seconds: durationParts.seconds,
                   })}
-                </Text>
+                </CText>
                 {isPositiveResult ? (
                   <Icon name="cup" size={16} color={accents.amber.fill} />
                 ) : null}
@@ -203,7 +205,7 @@ export function ExamResultView({
             {topicStats.length > 0 ? (
               <View style={styles.card}>
                 {topicStats.map((stat) => (
-                  <TopicProgressRow key={stat.topicBlock} stat={stat} />
+                  <TopicProgressRow key={stat.topicId} stat={stat} />
                 ))}
               </View>
             ) : null}
@@ -225,10 +227,10 @@ export function ExamResultView({
             ) : null}
 
             <View style={styles.card}>
-              <Text style={styles.whatsNextTitle}>
+              <CText style={styles.whatsNextTitle}>
                 {t("exam.whatsNextTitle")}
-              </Text>
-              <Text style={styles.whatsNextBody}>{whatsNextBody}</Text>
+              </CText>
+              <CText style={styles.whatsNextBody}>{whatsNextBody}</CText>
             </View>
           </Animated.ScrollView>
 
@@ -263,7 +265,7 @@ export function ExamResultView({
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Text style={styles.primaryButtonText}>{primaryLabel}</Text>
+              <CText style={styles.primaryButtonText}>{primaryLabel}</CText>
             </Pressable>
 
             <View style={styles.secondaryRow}>
@@ -276,9 +278,9 @@ export function ExamResultView({
                 ]}
               >
                 <Icon name="checkmark" size={20} color={colors.ink2} />
-                <Text style={styles.secondaryButtonText}>
+                <CText style={styles.secondaryButtonText}>
                   {t("exam.answersCta")}
-                </Text>
+                </CText>
               </Pressable>
 
               <Pressable
@@ -290,9 +292,9 @@ export function ExamResultView({
                 ]}
               >
                 <Icon name="replay" size={20} color={colors.ink2} />
-                <Text style={styles.secondaryButtonText}>
+                <CText style={styles.secondaryButtonText}>
                   {t("exam.newAttemptCta")}
-                </Text>
+                </CText>
               </Pressable>
             </View>
           </View>
@@ -307,17 +309,17 @@ function TopicProgressRow({
 }: {
   stat: ExamResultTopicStat;
 }) {
-  const { t } = useTranslation();
   const { accents, colors } = useTheme();
+  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const styles = useStyles();
   const accentKey = getProgressBarAccent(stat.percent);
   const fillColor = accents[accentKey as AppThemeAccent].fill;
 
   return (
     <View style={styles.topicRow}>
-      <Text style={styles.topicLabel} numberOfLines={1}>
-        {t(`topics.${stat.topicBlock}`)}
-      </Text>
+      <CText style={styles.topicLabel} numberOfLines={1}>
+        {getQuestionTopicTitle(stat.topicId, preferredLocale)}
+      </CText>
       <View style={styles.topicMeter}>
         <View style={styles.topicTrack}>
           <View
@@ -330,7 +332,7 @@ function TopicProgressRow({
             ]}
           />
         </View>
-        <Text style={styles.topicPercent}>{stat.percent}%</Text>
+        <CText style={styles.topicPercent}>{stat.percent}%</CText>
       </View>
     </View>
   );
@@ -348,10 +350,10 @@ function ScopeQuestionsBlock({
   return (
     <View style={styles.scopeBlock}>
       <View style={styles.scopeHeader}>
-        <Text style={styles.scopeTitle}>{title}</Text>
-        <Text style={styles.scopeCount}>
+        <CText style={styles.scopeTitle}>{title}</CText>
+        <CText style={styles.scopeCount}>
           {section.correctCount} / {section.totalCount}
-        </Text>
+        </CText>
       </View>
       <View style={styles.chipGrid}>
         {section.questions.map((question) => (
@@ -388,9 +390,9 @@ function QuestionResultChip({
 
   return (
     <View style={[styles.chip, { backgroundColor: palette.backgroundColor }]}>
-      <Text style={[styles.chipText, { color: palette.color }]}>
+      <CText style={[styles.chipText, { color: palette.color }]}>
         {question.number}
-      </Text>
+      </CText>
       {question.isBookmarked ? (
         <View style={styles.bookmarkFlag}>
           <Icon name="stateActive" size={12} color={colors.white} />
@@ -426,8 +428,8 @@ export function ExamResultCenteredState({
       >
         <StatusBar style="dark" />
         <View style={styles.centeredState}>
-          <Text style={styles.centeredTitle}>{title}</Text>
-          <Text style={styles.centeredBody}>{description}</Text>
+          <CText style={styles.centeredTitle}>{title}</CText>
+          <CText style={styles.centeredBody}>{description}</CText>
           {actionLabel && onAction ? (
             <Pressable
               accessibilityRole="button"
@@ -439,7 +441,7 @@ export function ExamResultCenteredState({
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Text style={styles.primaryButtonText}>{actionLabel}</Text>
+              <CText style={styles.primaryButtonText}>{actionLabel}</CText>
             </Pressable>
           ) : null}
         </View>

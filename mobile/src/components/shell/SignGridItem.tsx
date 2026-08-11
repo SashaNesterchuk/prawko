@@ -1,7 +1,7 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { getSignDisplayName } from "../../features/road-signs/content/registry";
 import { SignImage } from "../../features/road-signs/SignImage";
 import type { RoadSign } from "../../features/road-signs/types";
@@ -25,12 +25,12 @@ export function SignGridItem({ sign, onPress }: SignGridItemProps) {
     >
       <SignImage sign={sign} size={72} />
       <View style={styles.copy}>
-        <Text style={styles.title} numberOfLines={2}>
+        <CText style={styles.title} numberOfLines={2}>
           {displayName}
-        </Text>
-        <Text style={styles.code} numberOfLines={1}>
+        </CText>
+        <CText style={styles.code} numberOfLines={1}>
           {sign.code}
-        </Text>
+        </CText>
       </View>
     </Pressable>
   );

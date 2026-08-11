@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
-import { Text } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { getRoadSignById } from "../../features/road-signs/catalog";
 import { SignPlatePopup } from "./SignPlatePopup";
 
@@ -58,23 +57,23 @@ export function SignDescriptionWithPlates({
 
   return (
     <>
-      <Text style={styles.body}>
+      <CText style={styles.body}>
         {parts.map((part, index) => {
           if (part.type === "text") {
-            return <Text key={`text-${index}`}>{part.value}</Text>;
+            return <CText key={`text-${index}`}>{part.value}</CText>;
           }
 
           return (
-            <Text
+            <CText
               key={`chip-${part.signId}-${index}`}
               onPress={() => setActiveSignId(part.signId)}
               style={styles.chip}
             >
               {` ${part.value} `}
-            </Text>
+            </CText>
           );
         })}
-      </Text>
+      </CText>
 
       <SignPlatePopup
         signId={activeSignId}

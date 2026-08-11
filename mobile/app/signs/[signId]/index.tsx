@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
@@ -11,6 +11,7 @@ import { SignDetailNav } from "../../../src/components/shell/SignDetailNav";
 import { SignDetailToolbar } from "../../../src/components/shell/SignDetailToolbar";
 import { SignStatusBadge } from "../../../src/components/shell/SignStatusBadge";
 import {
+  CText,
   useResponsiveSpacing,
   useResponsiveStyles,
 } from "../../../src/portable-ui";
@@ -102,9 +103,9 @@ export default function SignDetailScreen() {
         <SafeAreaView style={styles.safeArea} edges={["top"]}>
           <StatusBar style="dark" />
           <View style={styles.missingState}>
-            <Text style={styles.missingTitle}>
+            <CText style={styles.missingTitle}>
               {t("signs.notFoundTitle")}
-            </Text>
+            </CText>
           </View>
         </SafeAreaView>
       </GreenWaveScreen>
@@ -145,7 +146,7 @@ export default function SignDetailScreen() {
 
           <View style={styles.descriptionBlock}>
             <SignStatusBadge status={learningStatus} label={statusLabel} />
-            <Text style={styles.name}>{displayName}</Text>
+            <CText style={styles.name}>{displayName}</CText>
             <SignDescriptionWithPlates
               excludeSignId={sign.id}
               text={description}
@@ -185,7 +186,6 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       alignItems: "center",
       justifyContent: "center",
       paddingVertical: spacing.xl,
-      backgroundColor: colors.white,
     },
     descriptionBlock: {
       gap: spacing.sm,

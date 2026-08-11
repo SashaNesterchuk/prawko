@@ -3,12 +3,13 @@ import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Icon } from "../../src/components/icons";
 import { AppButton } from "../../src/components/shell/AppButton";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { NavigationButton } from "../../src/components/shell/NavigationButton";
 import { ErrorStateView } from "../../src/components/shell/StateViews";
 import { TrainingExitDialog } from "../../src/components/shell/TrainingExitDialog";
 import { setExamSessionActive } from "../../src/features/ads/ad-session-policy";
@@ -42,11 +43,13 @@ import {
 import { getOfflineGateDescription } from "../../src/features/offline/offline-gate-copy";
 import { useOfflineFeatureGate } from "../../src/features/offline/useOfflineFeatureGate";
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
+import type { LocalQuestion } from "../../src/features/questions/types";
 import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefetchQuestionMedia";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
-import { useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
+import { useHasPlusAccess } from "../../src/state/entitlements";
 import {
   useQuestionCatalogResolved,
   useQuestionCatalogStore,
@@ -86,6 +89,7 @@ export default function ExamSessionScreen() {
     sessionId?: string | string[];
   }>();
   const authMode = useAppShellStore((state) => state.authMode);
+  const hasPlusAccess = useHasPlusAccess();
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const setPreferredCategory = useAppShellStore(
@@ -109,6 +113,11 @@ export default function ExamSessionScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  // Keep exam questions even if the preferred-category catalog reloads/replaces
+  // the in-memory bank (e.g. after switching back to the session category).
+  const [sessionQuestionCache, setSessionQuestionCache] = useState<
+    Record<string, LocalQuestion>
+  >({});
   const allowNavigationRef = useRef(false);
   const timeoutHandledRef = useRef(false);
   const questionTimeoutHandledRef = useRef(false);
@@ -139,11 +148,17 @@ export default function ExamSessionScreen() {
       ) ?? null
     );
   }, [snapshot]);
-  const currentQuestion = useMemo(
-    () =>
-      currentQuestionRef ? getQuestionById(currentQuestionRef.questionSourceId) : null,
-    [currentQuestionRef, questionCatalogVersion]
-  );
+  const currentQuestion = useMemo(() => {
+    if (!currentQuestionRef) {
+      return null;
+    }
+
+    return (
+      sessionQuestionCache[currentQuestionRef.questionSourceId] ??
+      getQuestionById(currentQuestionRef.questionSourceId) ??
+      null
+    );
+  }, [currentQuestionRef, questionCatalogVersion, sessionQuestionCache]);
   const orderedExamQuestionIds = useMemo(() => {
     if (!snapshot) {
       return null;
@@ -230,6 +245,7 @@ export default function ExamSessionScreen() {
     allowNavigationRef.current = false;
     setIsLoading(true);
     setErrorMessage(null);
+    setSessionQuestionCache({});
 
     void (async () => {
       try {
@@ -266,6 +282,33 @@ export default function ExamSessionScreen() {
       cancelled = true;
     };
   }, [sessionId]);
+
+  useEffect(() => {
+    if (!snapshot) {
+      return;
+    }
+
+    setSessionQuestionCache((previous) => {
+      let changed = false;
+      const next = { ...previous };
+
+      for (const questionRef of snapshot.questions) {
+        if (next[questionRef.questionSourceId]) {
+          continue;
+        }
+
+        const question = getQuestionById(questionRef.questionSourceId);
+        if (!question) {
+          continue;
+        }
+
+        next[questionRef.questionSourceId] = question;
+        changed = true;
+      }
+
+      return changed ? next : previous;
+    });
+  }, [snapshot, questionCatalogVersion]);
 
   useEffect(() => {
     const isActive = snapshot?.session.status === "active";
@@ -671,7 +714,7 @@ export default function ExamSessionScreen() {
   };
 
   if (
-    !questionCatalogResolved ||
+    (!questionCatalogResolved && !currentQuestion) ||
     (offlineGate.status === "checking" && !offlineGate.offlineReady)
   ) {
     return (
@@ -728,7 +771,9 @@ export default function ExamSessionScreen() {
               variant="secondary"
               label={t("offlineGate.openOfflineMode")}
               testID="exam-session-offline-open-offline-mode"
-              onPress={() => router.push("/modals/offline-mode")}
+              onPress={() =>
+                router.push(hasPlusAccess ? "/offline-mode" : "/paywall")
+              }
             />
             <AppButton
               variant="ghost"
@@ -872,7 +917,7 @@ export default function ExamSessionScreen() {
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Text style={styles.devCheatLabel}>OK</Text>
+              <CText style={styles.devCheatLabel}>OK</CText>
             </Pressable>
             <Pressable
               accessibilityRole="button"
@@ -885,7 +930,7 @@ export default function ExamSessionScreen() {
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Text style={styles.devCheatLabel}>Rnd</Text>
+              <CText style={styles.devCheatLabel}>Rnd</CText>
             </Pressable>
             <Pressable
               accessibilityRole="button"
@@ -898,33 +943,28 @@ export default function ExamSessionScreen() {
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Text style={styles.devCheatLabel}>Skip</Text>
+              <CText style={styles.devCheatLabel}>Skip</CText>
             </Pressable>
           </View>
         ) : null}
         <View style={styles.headerBlock}>
           <View style={styles.topBar}>
-            <Pressable
-              accessibilityRole="button"
+            <NavigationButton
+              inset
+              type="close"
               accessibilityLabel={t("exam.exitConfirmTitle")}
-              disabled={isEnding}
               onPress={handleExitPress}
-              style={({ pressed }) => [
-                styles.iconButton,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <CloseIcon color={colors.textPrimary} />
-            </Pressable>
+              testID="exam-close"
+            />
 
             <View style={styles.topBarTitle}>
-              <Text style={styles.eyebrow}>{t("exam.sessionEyebrow")}</Text>
-              <Text style={styles.topBarHeading} numberOfLines={1}>
+              <CText style={styles.eyebrow}>{t("exam.sessionEyebrow")}</CText>
+              <CText style={styles.topBarHeading} numberOfLines={1}>
                 {t("exam.sessionSubtitle", {
                   current: questionNumber,
                   total: totalQuestions,
                 })}
-              </Text>
+              </CText>
             </View>
 
             <View
@@ -936,24 +976,24 @@ export default function ExamSessionScreen() {
               <ClockIcon
                 color={isSessionUrgent ? accents.red.ink : colors.textPrimary}
               />
-              <Text
+              <CText
                 style={[
                   styles.timerPillText,
                   isSessionUrgent ? styles.timerPillTextUrgent : null,
                 ]}
               >
                 {formatExamCountdown(remainingSeconds)}
-              </Text>
+              </CText>
             </View>
           </View>
 
           <View style={styles.scopeRow}>
-            <Text style={styles.scopeText}>
+            <CText style={styles.scopeText}>
               {t(`question.scopes.${currentQuestion.scope}`)}
-            </Text>
-            <Text style={styles.scopeText}>
+            </CText>
+            <CText style={styles.scopeText}>
               {t("question.pointsLabel", { points: currentQuestion.points })}
-            </Text>
+            </CText>
           </View>
         </View>
 
@@ -980,10 +1020,10 @@ export default function ExamSessionScreen() {
 
           <View style={styles.timerBlock}>
             <View style={styles.timerLabelRow}>
-              <Text style={styles.timerLabel}>{questionTimerLabel}</Text>
-              <Text style={styles.timerValue}>
+              <CText style={styles.timerLabel}>{questionTimerLabel}</CText>
+              <CText style={styles.timerValue}>
                 {formatQuestionCountdown(questionTimer.remainingSeconds)}
-              </Text>
+              </CText>
             </View>
             <ExamQuestionProgressBar
               animationKey={progressAnimationKey}
@@ -992,13 +1032,13 @@ export default function ExamSessionScreen() {
             />
           </View>
 
-          <Text style={styles.promptText}>
+          <CText style={styles.promptText}>
             {getLocalizedText(currentQuestion.prompt, displayLocale)}
-          </Text>
+          </CText>
 
           {isBoolean ? (
             <View style={styles.optionsRow}>
-              {questionChoices.map((choice) => {
+              {questionChoices.map((choice, choiceIndex) => {
                 const selected = selectedAnswerId === choice.id;
 
                 return (
@@ -1013,22 +1053,23 @@ export default function ExamSessionScreen() {
                       selected ? styles.optionSelected : null,
                       answersDisabled ? styles.optionDisabled : null,
                     ]}
+                    testID={`question-choice-index-${choiceIndex}`}
                   >
-                    <Text
+                    <CText
                       style={[
                         styles.booleanOptionLabel,
                         selected ? styles.optionLabelSelected : null,
                       ]}
                     >
                       {choice.label}
-                    </Text>
+                    </CText>
                   </Pressable>
                 );
               })}
             </View>
           ) : (
             <View style={styles.optionsColumn}>
-              {questionChoices.map((choice) => {
+              {questionChoices.map((choice, choiceIndex) => {
                 const selected = selectedAnswerId === choice.id;
 
                 return (
@@ -1043,6 +1084,7 @@ export default function ExamSessionScreen() {
                       selected ? styles.optionSelected : null,
                       answersDisabled ? styles.optionDisabled : null,
                     ]}
+                    testID={`question-choice-index-${choiceIndex}`}
                   >
                     <View
                       style={[
@@ -1050,23 +1092,23 @@ export default function ExamSessionScreen() {
                         selected ? styles.letterCircleSelected : null,
                       ]}
                     >
-                      <Text
+                      <CText
                         style={[
                           styles.letterText,
                           selected ? styles.letterTextSelected : null,
                         ]}
                       >
                         {choice.id.toUpperCase()}
-                      </Text>
+                      </CText>
                     </View>
-                    <Text
+                    <CText
                       style={[
                         styles.multiOptionLabel,
                         selected ? styles.optionLabelSelected : null,
                       ]}
                     >
                       {choice.label}
-                    </Text>
+                    </CText>
                   </Pressable>
                 );
               })}
@@ -1076,7 +1118,7 @@ export default function ExamSessionScreen() {
 
         <View style={styles.footer}>
           {errorMessage ? (
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <CText style={styles.errorText}>{errorMessage}</CText>
           ) : null}
           <Pressable
             accessibilityRole="button"
@@ -1088,11 +1130,11 @@ export default function ExamSessionScreen() {
               pressed && !primaryDisabled ? styles.pressed : null,
             ]}
           >
-            <Text style={styles.primaryButtonLabel}>
+            <CText style={styles.primaryButtonLabel}>
               {isLastQuestion
                 ? t("exam.finishCta")
                 : t("exam.nextQuestionCta")}
-            </Text>
+            </CText>
           </Pressable>
 
           <View style={styles.ghostRow}>
@@ -1105,7 +1147,7 @@ export default function ExamSessionScreen() {
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Text style={styles.ghostButtonLabel}>{t("exam.reportCta")}</Text>
+              <CText style={styles.ghostButtonLabel}>{t("exam.reportCta")}</CText>
               <Icon name="problem" size={20} color={colors.ink2} />
             </Pressable>
 
@@ -1122,7 +1164,7 @@ export default function ExamSessionScreen() {
                 pressed ? styles.pressed : null,
               ]}
             >
-              <Text style={styles.ghostButtonLabel}>{t("exam.saveCta")}</Text>
+              <CText style={styles.ghostButtonLabel}>{t("exam.saveCta")}</CText>
               <Icon
                 name={isCurrentBookmarked ? "stateActive" : "stateDefault"}
                 size={20}
@@ -1161,8 +1203,8 @@ function CenteredState({
 
   return (
     <View style={styles.centeredState}>
-      <Text style={styles.centeredTitle}>{title}</Text>
-      <Text style={styles.centeredBody}>{description}</Text>
+      <CText style={styles.centeredTitle}>{title}</CText>
+      <CText style={styles.centeredBody}>{description}</CText>
       {actionLabel && onAction ? (
         <Pressable
           accessibilityRole="button"
@@ -1173,43 +1215,9 @@ function CenteredState({
             pressed ? styles.pressed : null,
           ]}
         >
-          <Text style={styles.primaryButtonLabel}>{actionLabel}</Text>
+          <CText style={styles.primaryButtonLabel}>{actionLabel}</CText>
         </Pressable>
       ) : null}
-    </View>
-  );
-}
-
-function CloseIcon({ color }: { color: string }) {
-  const styles = useResponsiveStyles(({ spacing }) => ({
-    glyph18: {
-      width: spacing.exact(18),
-      height: spacing.exact(18),
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    glyphLinePositive: {
-      position: "absolute",
-      width: spacing.exact(18),
-      height: spacing.exact(2),
-      borderRadius: spacing.exact(1),
-      backgroundColor: color,
-      transform: [{ rotate: "45deg" }],
-    },
-    glyphLineNegative: {
-      position: "absolute",
-      width: spacing.exact(18),
-      height: spacing.exact(2),
-      borderRadius: spacing.exact(1),
-      backgroundColor: color,
-      transform: [{ rotate: "-45deg" }],
-    },
-  }));
-
-  return (
-    <View style={styles.glyph18}>
-      <View style={styles.glyphLinePositive} />
-      <View style={styles.glyphLineNegative} />
     </View>
   );
 }
@@ -1331,27 +1339,19 @@ function useStyles() {
         alignItems: "center",
         gap: spacing.exact(12),
       },
-      iconButton: {
-        width: spacing.exact(40),
-        height: spacing.exact(40),
-        marginLeft: -spacing.exact(8),
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: radius.md,
-      },
       topBarTitle: {
         flex: 1,
         gap: spacing.exact(2),
       },
       eyebrow: {
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        color: colors.textPrimary,
+      },
+      topBarHeading: {
         fontSize: responsiveFont(12),
         lineHeight: responsiveFont(16),
         color: colors.textMuted,
-      },
-      topBarHeading: {
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(24),
-        color: colors.textPrimary,
       },
       timerPill: {
         flexDirection: "row",

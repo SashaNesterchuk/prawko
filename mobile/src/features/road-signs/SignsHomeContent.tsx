@@ -52,9 +52,9 @@ export function SignsHomeContent({
   const readiness = useMemo(
     () =>
       catalogProgress.total > 0
-        ? (catalogProgress.correct / catalogProgress.total) * 100
+        ? (catalogProgress.seen / catalogProgress.total) * 100
         : 0,
-    [catalogProgress.correct, catalogProgress.total]
+    [catalogProgress.seen, catalogProgress.total]
   );
 
   const categoryPreviews = useMemo(
@@ -107,9 +107,11 @@ export function SignsHomeContent({
         <SignsSummaryCard
           title={t("signs.title")}
           progress={readiness}
+          correct={catalogProgress.correct}
+          wrong={catalogProgress.wrong}
           seen={catalogProgress.seen}
           total={catalogProgress.total}
-          totalAnswersLabel={t("signs.totalAnswers")}
+          correctAnswersLabel={t("signs.correctAnswers")}
           trainAllLabel={t("signs.trainAll")}
           onTrainAll={openSignsTraining}
         />

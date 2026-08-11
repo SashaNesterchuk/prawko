@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { mobileEnv } from "../../src/config/env";
 import { normalizeSupportedLocale } from "../../src/i18n/locale";
@@ -12,6 +12,7 @@ import {
 import type { E2EOfflinePackStatus } from "../../src/testing/e2e/state";
 import type { RemoteExamSessionStatus } from "../../src/features/exam/types";
 
+import { CText } from "../../src/portable-ui";
 type BootstrapParams = {
   category?: string | string[];
   daysUntilExam?: string | string[];
@@ -73,6 +74,7 @@ export default function E2EBootstrapScreen() {
         offlinePackStatus,
         plusAccess,
         reachability,
+        seedQuestionResult: destination === "question-result",
       });
 
       router.replace(
@@ -80,6 +82,7 @@ export default function E2EBootstrapScreen() {
           destination,
           reviewStartOrder,
           seededExamSessionId: prepared.seededExamSessionId,
+          seededQuestionSessionKey: prepared.seededQuestionSessionKey,
           signCategoryId,
           topicId,
         }),
@@ -117,8 +120,8 @@ export default function E2EBootstrapScreen() {
       style={styles.container}
       testID={isEnabled ? "screen-e2e-bootstrap" : "screen-e2e-bootstrap-disabled"}
     >
-      <Text style={styles.title}>{status}</Text>
-      <Text style={styles.detail}>{detail}</Text>
+      <CText style={styles.title}>{status}</CText>
+      <CText style={styles.detail}>{detail}</CText>
     </View>
   );
 }
@@ -166,6 +169,8 @@ function parseOfflinePackStatus(
       return "ready";
     case "incomplete":
       return "incomplete";
+    case "downloading":
+      return "downloading";
     default:
       return null;
   }

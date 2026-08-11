@@ -1,0 +1,32 @@
+---
+description: Always run and update Maestro e2e coverage alongside app fixes and UX/behavior changes
+alwaysApply: true
+---
+
+# E2E with every fix
+
+When fixing bugs, changing UX/behavior, routes, gates, or `testID`s in `mobile/`, treat Maestro e2e as part of the fix — not a follow-up.
+
+## Required workflow
+
+1. **Map the change** to existing flows in `mobile/.maestro/` (and shared `subflows/`).
+2. **Update or add coverage** before considering the fix done:
+   - Adjust broken selectors / steps when UI or navigation changed.
+   - Add a new flow when the scenario is new or previously untested.
+   - Prefer stable `testID` + `id:` selectors; reuse bootstrap/subflows from the README.
+3. **Run the relevant e2e**, not only unit tests:
+   - From `mobile/`: targeted flow(s) first, then broader suite if the change is shared.
+   - `pnpm test:e2e -- .maestro/<flow>.yaml`
+   - Smoke / suite: `pnpm test:e2e:smoke` or `pnpm test:e2e`
+   - App must be an e2e build (`pnpm ios:e2e` / `pnpm android:e2e` or EAS `e2e-test`).
+4. **Keep docs in sync**: update `mobile/.maestro/README.md` flow table when adding/renaming/removing flows.
+
+## Do not
+
+- Ship a UI/behavior fix with stale Maestro flows that still assert the old screen, copy path, or modal.
+- Rely only on Jest when the change is user-visible navigation, offline gates, paywall, or session start.
+- Invent new e2e patterns when existing subflows / env overrides (`PLUS_ACCESS`, `OFFLINE_PACK_STATUS`, etc.) already cover the bootstrap.
+
+## Done criteria
+
+A fix touching user flows is done only when: code change + matching Maestro coverage updated + relevant `pnpm test:e2e` (or smoke) pass (or blockers are reported explicitly: no simulator / no e2e build).

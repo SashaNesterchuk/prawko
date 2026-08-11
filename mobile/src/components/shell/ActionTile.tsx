@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
 import {
+  CText,
   getTypographyStyle,
   useResponsiveFonts,
   useResponsiveStyles,
+  withResponsiveFont,
 } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { type GreenWaveAccent } from "../../theme/green-wave";
@@ -22,6 +24,8 @@ type ActionTileProps = {
   style?: ActionTileStyle;
   /** Full-width horizontal layout (Figma Action tile at FILL width). */
   fullWidth?: boolean;
+  /** Selected language / option state (green fill + check). */
+  selected?: boolean;
   testID?: string;
 };
 
@@ -34,10 +38,14 @@ export function ActionTile({
   onPress,
   style = "default",
   fullWidth = false,
+  selected = false,
   testID,
 }: ActionTileProps) {
   const isInline = fullWidth || style === "faded";
-  const styles = useStyles({ style, isInline });
+  const styles = useStyles({ style, isInline, selected });
+  const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const showTrailing = isInline && selected;
 
   const body = (
     <>
@@ -48,13 +56,23 @@ export function ActionTile({
       ) : null}
 
       <View style={styles.copy}>
-        <Text style={styles.title} numberOfLines={1}>
+        <CText style={styles.title} numberOfLines={1}>
           {title}
-        </Text>
-        <Text style={styles.subtitle} numberOfLines={2}>
+        </CText>
+        <CText style={styles.subtitle} numberOfLines={2}>
           {subtitle}
-        </Text>
+        </CText>
       </View>
+
+      {showTrailing ? (
+        <View style={styles.trailingWrap}>
+          <Icon
+            color={theme.colors.onAccent}
+            name="check"
+            size={responsiveFont(24)}
+          />
+        </View>
+      ) : null}
 
       {premium ? <PremiumBadge /> : null}
     </>
@@ -64,6 +82,7 @@ export function ActionTile({
     return (
       <Pressable
         accessibilityRole="button"
+        accessibilityState={{ selected }}
         disabled={style === "inactive"}
         onPress={onPress}
         style={({ pressed }) => [
@@ -103,11 +122,13 @@ function PremiumBadge() {
 function useStyles({
   style = "default",
   isInline = false,
+  selected = false,
 }: {
   style?: ActionTileStyle;
   isInline?: boolean;
+  selected?: boolean;
 } = {}) {
-  return useResponsiveStyles(({ colors, elevation, radius, spacing, theme }) => ({
+  return useResponsiveStyles(({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
     tile: {
       flex: isInline ? undefined : 1,
       width: isInline ? ("100%" as const) : undefined,
@@ -118,10 +139,13 @@ function useStyles({
       gap: spacing.md,
       padding: spacing.lg,
       borderRadius: radius.xxl,
-      backgroundColor:
-        style === "faded" ? "rgba(255,255,255,0.6)" : colors.white,
+      backgroundColor: selected
+        ? theme.accents.green.fill
+        : style === "faded"
+          ? "rgba(255,255,255,0.6)"
+          : colors.white,
       opacity: style === "inactive" ? 0.4 : 1,
-      ...(style === "raised" ? elevation.sharp : null),
+      ...(style === "raised" && !selected ? elevation.sharp : null),
     },
     pressed: {
       opacity: style === "inactive" ? 0.4 : 0.9,
@@ -148,13 +172,21 @@ function useStyles({
       gap: spacing.exact(0),
     },
     title: {
-      ...getTypographyStyle("headingS"),
-      color: colors.ink,
+      ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
+      color: selected ? colors.white : colors.ink,
     },
     subtitle: {
       width: "100%" as const,
-      ...getTypographyStyle("labelS"),
-      color: colors.ink3,
+      ...withResponsiveFont(getTypographyStyle("labelS"), responsiveFont),
+      color: selected ? colors.paper : colors.ink3,
+    },
+    trailingWrap: {
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+      padding: spacing.sm,
+      borderRadius: radius.md,
+      overflow: "hidden" as const,
+      backgroundColor: colors.surface2,
     },
     badge: {
       position: "absolute" as const,

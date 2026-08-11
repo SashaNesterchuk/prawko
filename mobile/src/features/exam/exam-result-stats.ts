@@ -1,7 +1,8 @@
-import type { QuestionScope, TopicBlockId } from "@prawko/config";
+import type { QuestionScope, QuestionTopicId } from "@prawko/config";
 
 import {
   getQuestionById,
+  getQuestionPrimaryTopicId,
   getQuestionUserState,
 } from "../questions/question-engine";
 import type { QuestionUserStateMap } from "../questions/types";
@@ -35,7 +36,7 @@ export type ExamResultScopeSection = {
 export type ExamResultTopicStat = {
   correctCount: number;
   percent: number;
-  topicBlock: TopicBlockId;
+  topicId: QuestionTopicId;
   totalCount: number;
 };
 
@@ -106,7 +107,7 @@ export function buildExamTopicStats(
 ): ExamResultTopicStat[] {
   const answerByOrder = indexAnswersByOrder(snapshot.answers);
   const buckets = new Map<
-    TopicBlockId,
+    QuestionTopicId,
     { correctCount: number; totalCount: number }
   >();
 
@@ -116,7 +117,8 @@ export function buildExamTopicStats(
       continue;
     }
 
-    const bucket = buckets.get(question.topicBlock) ?? {
+    const topicId = getQuestionPrimaryTopicId(question);
+    const bucket = buckets.get(topicId) ?? {
       correctCount: 0,
       totalCount: 0,
     };
@@ -127,12 +129,12 @@ export function buildExamTopicStats(
       bucket.correctCount += 1;
     }
 
-    buckets.set(question.topicBlock, bucket);
+    buckets.set(topicId, bucket);
   }
 
   return [...buckets.entries()]
-    .map(([topicBlock, bucket]) => ({
-      topicBlock,
+    .map(([topicId, bucket]) => ({
+      topicId,
       correctCount: bucket.correctCount,
       totalCount: bucket.totalCount,
       percent:
@@ -186,16 +188,19 @@ export function buildExamScopeSections(
     .filter((section) => section.totalCount > 0);
 }
 
-export function getWeakestTopicBlock(
+export function getWeakestTopic(
   topicStats: ExamResultTopicStat[]
-): TopicBlockId | null {
+): QuestionTopicId | null {
   if (topicStats.length === 0) {
     return null;
   }
 
   return [...topicStats].sort((left, right) => left.percent - right.percent)[0]
-    ?.topicBlock ?? null;
+    ?.topicId ?? null;
 }
+
+/** @deprecated Use getWeakestTopic */
+export const getWeakestTopicBlock = getWeakestTopic;
 
 export function getExamScoreDelta(
   currentSession: RemoteExamSession,

@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "../icons";
 import { NavigationButton } from "./NavigationButton";
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type SignDetailToolbarProps = {
@@ -48,14 +48,14 @@ export function SignDetailToolbar({
       )}
 
       <View style={styles.titleBlock}>
-        <Text style={styles.code}>{code}</Text>
-        <Text style={styles.category} numberOfLines={1}>
+        <CText style={styles.code}>{code}</CText>
+        <CText style={styles.category} numberOfLines={1}>
           {categoryLabel}
-        </Text>
+        </CText>
       </View>
 
       <View style={styles.metaBlock}>
-        <Text style={styles.counter}>{`${currentIndex + 1} / ${totalCount}`}</Text>
+        <CText style={styles.counter}>{`${currentIndex + 1} / ${totalCount}`}</CText>
         {rightSlot ?? (
           <Pressable
             accessibilityRole="button"

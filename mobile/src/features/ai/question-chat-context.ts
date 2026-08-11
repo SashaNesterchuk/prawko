@@ -2,6 +2,7 @@ import type { SupportedLocale } from "@prawko/config";
 import type { QuestionChatContext } from "@prawko/schemas";
 
 import {
+  getQuestionPrimaryTopicId,
   getLocalizedText,
   getQuestionById,
   getQuestionChoices,
@@ -27,7 +28,7 @@ export function buildQuestionChatContext(input: {
     correctAnswer: question.correctAnswer,
     selectedAnswer: input.selectedAnswer,
     answerType: question.answerType,
-    topicBlock: question.topicBlock,
+    topicId: getQuestionPrimaryTopicId(question),
     scope: question.scope,
     points: question.points,
     options: getQuestionChoices(question, input.locale).map((option) => ({

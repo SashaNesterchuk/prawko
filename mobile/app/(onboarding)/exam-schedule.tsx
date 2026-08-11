@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StatusBar } from "expo-status-bar";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { STUDY_PLAN_LIMITS } from "@prawko/config";
@@ -10,7 +10,7 @@ import { STUDY_PLAN_LIMITS } from "@prawko/config";
 import { Icon } from "../../src/components/icons";
 import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
-import { useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
+import { CText, useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import {
   parseNullableIsoDate,
@@ -19,7 +19,6 @@ import {
 import {
   formatPlanDate,
   getDaysUntilExamFromDate,
-  getExamDateFromDays,
 } from "../../src/features/study-plan/generate-local-study-plan";
 import { useAppShellStore } from "../../src/state/app-shell";
 
@@ -46,10 +45,10 @@ export default function ExamScheduleScreen() {
         examDate,
       });
     } else {
-      const daysUntilExam = STUDY_PLAN_LIMITS.recommendedDays;
+      // Optional date: keep examDate unset, but still seed a planning horizon.
       setExamSchedule({
-        daysUntilExam,
-        examDate: getExamDateFromDays(daysUntilExam),
+        daysUntilExam: STUDY_PLAN_LIMITS.recommendedDays,
+        examDate: null,
       });
     }
 
@@ -66,12 +65,12 @@ export default function ExamScheduleScreen() {
               <Icon name="calendar" size={badgeIconSize} color={colors.icon} />
             </View>
 
-            <Text
+            <CText
               style={styles.title}
               testID="screen-onboarding-exam-schedule"
             >
               {t("onboarding.examDateTitle")}
-            </Text>
+            </CText>
 
             <Pressable
               accessibilityRole="button"
@@ -89,7 +88,7 @@ export default function ExamScheduleScreen() {
                   selectedDate ? colors.textPrimary : colors.textMuted
                 }
               />
-              <Text
+              <CText
                 style={[
                   styles.fieldText,
                   selectedDate ? styles.fieldTextFilled : null,
@@ -98,7 +97,7 @@ export default function ExamScheduleScreen() {
                 {selectedDate
                   ? formatPlanDate(toIsoDate(selectedDate))
                   : t("onboarding.examDatePlaceholder")}
-              </Text>
+              </CText>
             </Pressable>
           </View>
 
@@ -118,7 +117,7 @@ export default function ExamScheduleScreen() {
               ]}
               testID="onboarding-exam-schedule-continue"
             >
-              <Text style={styles.ctaLabel}>{t("common.continue")}</Text>
+              <CText style={styles.ctaLabel}>{t("common.continue")}</CText>
             </Pressable>
           </View>
         </View>

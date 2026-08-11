@@ -1,0 +1,26 @@
+# Feature: Learn personalized training
+# Scenario: Fix mistakes opens the mistakes monitor (empty state when no wrong answers)
+appId: com.mindjar.prawko
+tags:
+  - learn
+  - mistakes
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: learn
+      TARGET_ID: screen-learn
+
+- tapOn:
+    id: "learn-tile-mistakes"
+
+# Fresh onboarded state has no wrong answers → Figma mistakes-empty screen.
+- extendedWaitUntil:
+    visible:
+      id: "screen-mistakes-empty"
+    timeout: 15000
+
+- assertVisible:
+    id: "practice-empty-tile-traps"
+- assertVisible:
+    id: "practice-empty-tile-srs"

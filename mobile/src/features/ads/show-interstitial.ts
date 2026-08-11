@@ -20,10 +20,10 @@ import {
   ensureInterstitialReady,
 } from "./interstitial-controller";
 
-/** Same warm-up budget used on exam result — shared by every intentional show. */
+/** Cap intentional warm-up so exam result never waits more than a few seconds. */
 export const INTERSTITIAL_ENSURE_OPTIONS = {
-  attempts: 3,
-  timeoutMs: 12_000,
+  attempts: 2,
+  timeoutMs: 5_000,
 } as const;
 
 type ShowInterstitialInput = {
@@ -119,6 +119,28 @@ async function presentInterstitial(input: ShowInterstitialInput): Promise<boolea
   const shown = await showPreloadedInterstitial();
 
   if (!shown) {
+    // Load → show failed: one short retry, then skip. Never leave UI hung.
+    trackAdFailed(input, "show_returned_false_retrying");
+
+    const readyAgain = await ensureInterstitialReady({
+      attempts: 1,
+      timeoutMs: 3_000,
+    });
+
+    if (readyAgain) {
+      const retried = await showPreloadedInterstitial();
+      if (retried) {
+        trackAdShown(input, { retried: true });
+        recordAdShown();
+        clearAppBackgroundMark();
+        input.track("ad_interstitial_dismissed", {
+          trigger: input.trigger,
+          retried: true,
+        });
+        return true;
+      }
+    }
+
     trackAdFailed(input, "show_returned_false");
     return false;
   }
@@ -237,13 +259,13 @@ export async function showInterstitialForUnlockGate(
 
   const shown = await showPreloadedInterstitial();
 
-  // One more full retry if show itself failed (common on first attempt).
+  // One more short retry if show itself failed (common on first attempt).
   if (!shown) {
     trackAdFailed(normalizedInput, "show_returned_false_retrying");
 
     const readyAgain = await ensureInterstitialReady({
-      attempts: 2,
-      timeoutMs: 8_000,
+      attempts: 1,
+      timeoutMs: 3_000,
     });
 
     if (readyAgain) {

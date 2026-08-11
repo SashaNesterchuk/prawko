@@ -1,5 +1,5 @@
 # Feature: Offline mode
-# Scenario: Onboarded Plus user opens Offline mode from Profile settings
+# Scenario: Incomplete offline pack shows resume + remove actions
 appId: com.mindjar.prawko
 tags:
   - offline
@@ -9,6 +9,8 @@ tags:
     file: subflows/launch_onboarded_destination.yaml
     env:
       DESTINATION: profile
+      OFFLINE_PACK_CATEGORY: B
+      OFFLINE_PACK_STATUS: incomplete
       PLUS_ACCESS: "true"
       TARGET_ID: screen-profile
 
@@ -17,8 +19,10 @@ tags:
 
 - extendedWaitUntil:
     visible:
-      id: "screen-offline-mode"
+      id: "offline-mode-pack-state-incomplete"
     timeout: 15000
 
 - assertVisible:
-    id: "screen-offline-mode"
+    id: "offline-mode-primary-action"
+- assertVisible:
+    id: "offline-mode-remove-action"

@@ -1,6 +1,6 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
-import { useResponsiveStyles, type PercentageString } from "../../portable-ui";
+import { CText, useResponsiveStyles, type PercentageString } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { resolveTopicReadinessStatus } from "./TopicReadinessCard";
 
@@ -36,17 +36,17 @@ export function StatisticsTopicProgressRow({
   return (
     <View style={styles.row}>
       <View style={styles.copy}>
-        <Text style={styles.title} numberOfLines={2}>
+        <CText style={styles.title} numberOfLines={2}>
           {title}
-        </Text>
-        <Text style={styles.meta}>{`${seen} / ${total}`}</Text>
+        </CText>
+        <CText style={styles.meta}>{`${seen} / ${total}`}</CText>
       </View>
 
       <View style={styles.barGroup}>
         <View style={styles.track}>
           {seen > 0 ? <View style={styles.fill} /> : null}
         </View>
-        <Text style={styles.percent}>{`${normalized}%`}</Text>
+        <CText style={styles.percent}>{`${normalized}%`}</CText>
       </View>
     </View>
   );

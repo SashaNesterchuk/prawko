@@ -1,6 +1,6 @@
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 
 type TrainingExitDialogProps = {
   body: string;
@@ -39,7 +39,7 @@ export function TrainingExitDialog({
       ]}
       testID="training-exit-finish"
     >
-      <Text style={styles.finishLabel}>{finishLabel}</Text>
+      <CText style={styles.finishLabel}>{finishLabel}</CText>
     </Pressable>
   );
 
@@ -55,14 +55,14 @@ export function TrainingExitDialog({
       ]}
       testID="training-exit-continue"
     >
-      <Text
+      <CText
         style={[
           styles.continueLabel,
           isHorizontal ? styles.continueLabelMuted : null,
         ]}
       >
         {continueLabel}
-      </Text>
+      </CText>
     </Pressable>
   );
 
@@ -76,8 +76,8 @@ export function TrainingExitDialog({
     >
       <View style={styles.overlay} testID="training-exit-dialog">
         <View style={styles.card}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.body}>{body}</Text>
+          <CText style={styles.title}>{title}</CText>
+          <CText style={styles.body}>{body}</CText>
 
           <View
             style={[

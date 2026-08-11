@@ -5,11 +5,12 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Alert,
+  InteractionManager,
   Linking,
   Pressable,
   ScrollView,
   Share,
-  Text,
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -38,8 +39,8 @@ import {
   type OfflinePackSnapshot,
   readOfflinePackSnapshot,
 } from "../../src/features/offline/offline-pack";
-import { getQuestionBank } from "../../src/features/questions/question-bank";
 import { getQuestionDisplayStats } from "../../src/features/questions/question-engine";
+import { resolveLocalReadinessPercent } from "../../src/features/questions/readiness-assessment";
 import {
   applyExamDateChange,
   parseNullableIsoDate,
@@ -55,6 +56,7 @@ import {
 } from "../../src/features/study-plan/supabase-study-plan-progress";
 import { getMobileSupabaseClient } from "../../src/lib/supabase";
 import {
+  CText,
   getFontFamily,
   useResponsiveFonts,
   useResponsiveStyles,
@@ -67,11 +69,7 @@ import {
   useCurrentStudyPlan,
   useAppShellStore,
 } from "../../src/state/app-shell";
-import {
-  useQuestionCatalogResolved,
-  useQuestionCatalogStatus,
-  useQuestionCatalogVersion,
-} from "../../src/state/question-catalog";
+import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 import { resetAppToFreshStart } from "../../src/state/reset-app";
 
@@ -104,10 +102,11 @@ export default function ProfileTabScreen() {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
+  const readinessAssessment = useQuestionProgressStore(
+    (state) => state.readinessAssessment
+  );
   const resetProgress = useQuestionProgressStore((state) => state.resetProgress);
   const questionCatalogVersion = useQuestionCatalogVersion();
-  const questionCatalogResolved = useQuestionCatalogResolved();
-  const questionCatalogStatus = useQuestionCatalogStatus();
   const hasPlusAccess = useHasPlusAccess();
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
@@ -160,37 +159,30 @@ export default function ProfileTabScreen() {
     }
 
     let cancelled = false;
-    const questionBank =
-      questionCatalogResolved &&
-      (questionCatalogStatus === "remote" || questionCatalogStatus === "offline")
-        ? getQuestionBank()
-        : null;
-
-    void readOfflinePackSnapshot({
-      currentCategory: preferredCategory,
-      questionBank,
-    })
-      .then((nextSnapshot) => {
-        if (!cancelled) {
-          setOfflineSnapshot(nextSnapshot);
-        }
+    const task = InteractionManager.runAfterInteractions(() => {
+      void readOfflinePackSnapshot({
+        currentCategory: preferredCategory,
+        // Profile only needs pack status for the settings row. Catalog/plan
+        // hashing is for the offline modal (update-available), not every tab focus.
+        questionBank: null,
       })
-      .catch(() => {
-        if (!cancelled) {
-          setOfflineSnapshot(null);
-        }
-      });
+        .then((nextSnapshot) => {
+          if (!cancelled) {
+            setOfflineSnapshot(nextSnapshot);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setOfflineSnapshot(null);
+          }
+        });
+    });
 
     return () => {
       cancelled = true;
+      task.cancel();
     };
-  }, [
-    isFocused,
-    preferredCategory,
-    questionCatalogResolved,
-    questionCatalogStatus,
-    questionCatalogVersion,
-  ]);
+  }, [isFocused, preferredCategory, questionCatalogVersion]);
 
   const questionStats = useMemo(
     () => getQuestionDisplayStats(questionUserState),
@@ -198,10 +190,11 @@ export default function ProfileTabScreen() {
   );
 
   const metrics = useMemo(() => {
-    const localReadiness =
-      questionStats.total > 0
-        ? Math.round((questionStats.seen / questionStats.total) * 100)
-        : 0;
+    const localReadiness = resolveLocalReadinessPercent({
+      assessmentScorePercent: readinessAssessment?.scorePercent,
+      seen: questionStats.seen,
+      total: questionStats.total,
+    });
     const coverage =
       questionStats.total > 0
         ? Math.round((questionStats.seen / questionStats.total) * 100)
@@ -214,10 +207,10 @@ export default function ProfileTabScreen() {
       coverage,
       streak: getCurrentStreakFromAttempts(attempts),
     };
-  }, [attempts, questionStats, readinessSummary]);
+  }, [attempts, questionStats, readinessAssessment, readinessSummary]);
 
-  const examDate =
-    currentStudyPlan?.examDate ?? studyPlanSetup.examDate ?? null;
+  // User-set date only — plan.examDate is a planning horizon, not a chosen exam date.
+  const examDate = studyPlanSetup.examDate ?? null;
   const daysUntilExam =
     examDate != null ? getDaysUntilExamFromDate(examDate) : null;
   const localeLabel = t(`languages.${preferredLocale}.label`);
@@ -257,10 +250,29 @@ export default function ProfileTabScreen() {
     }
   };
 
+  const openNotificationSettings = () => {
+    Alert.alert(
+      t("profile.notificationsPermissionTitle"),
+      t("profile.notificationsPermissionMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("profile.notificationsOpenSettings"),
+          onPress: () => {
+            void Linking.openSettings();
+          },
+        },
+      ]
+    );
+  };
+
   const handleToggleNotifications = async (nextValue: boolean) => {
     try {
       if (nextValue) {
-        await enableStudyNotificationsAsync();
+        const result = await enableStudyNotificationsAsync();
+        if (!result.ok) {
+          openNotificationSettings();
+        }
         return;
       }
 
@@ -367,6 +379,11 @@ export default function ProfileTabScreen() {
                   ? formatProfileExamDate(examDate, preferredLocale)
                   : t("profile.examDateMissing")
               }
+              testID={
+                examDate != null
+                  ? "profile-exam-date-set"
+                  : "profile-exam-date-missing"
+              }
               icon={
                 <Ionicons
                   color={colors.textSecondary}
@@ -396,6 +413,7 @@ export default function ProfileTabScreen() {
             <ProfileSettingsRow
               title={t("profile.languageTitle")}
               value={localeLabel}
+              testID="profile-row-language"
               icon={
                 <Ionicons
                   color={colors.textSecondary}
@@ -412,6 +430,7 @@ export default function ProfileTabScreen() {
             />
             <ProfileSettingsRow
               title={t("profile.notificationsTitle")}
+              testID="profile-row-notifications"
               icon={
                 <Ionicons
                   color={colors.textSecondary}
@@ -436,22 +455,11 @@ export default function ProfileTabScreen() {
                 />
               }
               trailing={hasPlusAccess ? "value" : "premium"}
-              onPress={() => router.navigate("/modals/offline-mode")}
-            />
-            <ProfileSettingsRow
-              title={t("profile.plusTitle")}
-              icon={
-                <Ionicons
-                  color={colors.textSecondary}
-                  name="star-outline"
-                  size={iconSize}
-                />
-              }
               isLast
               onPress={() =>
-                hasPlusAccess
-                  ? router.navigate("/modals/access-center")
-                  : router.navigate("/paywall")
+                router.navigate(
+                  hasPlusAccess ? "/offline-mode" : "/paywall"
+                )
               }
             />
           </ProfileSettingsGroup>
@@ -512,7 +520,7 @@ export default function ProfileTabScreen() {
                 size={iconSize}
               />
             </View>
-            <Text style={styles.resetTitle}>{t("profile.resetProgress")}</Text>
+            <CText style={styles.resetTitle}>{t("profile.resetProgress")}</CText>
           </Pressable>
         </ScrollView>
       </SafeAreaView>

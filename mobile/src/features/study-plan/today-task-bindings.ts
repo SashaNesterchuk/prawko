@@ -1,7 +1,6 @@
 import type {
   LearningTopicId,
   QuestionSessionMode,
-  TopicBlockId,
 } from "@prawko/config";
 
 import type {
@@ -77,7 +76,7 @@ export function createTaskSessionBinding(
 }
 
 export function createLearningSessionBinding(
-  topic: TopicBlockId,
+  topic: LearningTopicId,
   todayPlan: RemoteTodayPlan | null
 ): QuestionSessionBinding {
   const task = findTodayTask(todayPlan, ["learn_topic"], topic);
@@ -169,7 +168,7 @@ export function createPracticeSessionBinding(
 function findTodayTask(
   todayPlan: RemoteTodayPlan | null,
   acceptedTaskTypes: RemoteTodayPlanTask["taskType"][],
-  topic?: TopicBlockId
+  topic?: LearningTopicId
 ) {
   if (!todayPlan) {
     return null;

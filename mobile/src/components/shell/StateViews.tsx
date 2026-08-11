@@ -1,6 +1,6 @@
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
 type StateViewProps = {
@@ -14,8 +14,8 @@ export function StateView({ title, description }: StateViewProps) {
 
   return (
     <View style={styles.base}>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
+      <CText style={styles.title}>{title}</CText>
+      <CText style={styles.description}>{description}</CText>
     </View>
   );
 }
@@ -27,8 +27,8 @@ export function LoadingStateView({ title, description }: StateViewProps) {
   return (
     <View style={styles.base}>
       <ActivityIndicator size="large" color={theme.colors.accent} />
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
+      <CText style={styles.title}>{title}</CText>
+      <CText style={styles.description}>{description}</CText>
     </View>
   );
 }

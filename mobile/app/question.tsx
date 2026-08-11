@@ -22,6 +22,7 @@ import { useQuestionTrainingSession } from "../src/features/questions/training/u
 import {
   useAppShellStore,
 } from "../src/state/app-shell";
+import { useHasPlusAccess } from "../src/state/entitlements";
 import { useQuestionCatalogResolved } from "../src/state/question-catalog";
 import { useQuestionProgressStore } from "../src/state/question-progress";
 import { useResponsiveStyles } from "../src/portable-ui";
@@ -29,6 +30,7 @@ import { useResponsiveStyles } from "../src/portable-ui";
 export default function QuestionScreen() {
   const { t } = useTranslation();
   const styles = useStyles();
+  const hasPlusAccess = useHasPlusAccess();
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const questionCatalogResolved = useQuestionCatalogResolved();
   const offlineGate = useOfflineFeatureGate(preferredCategory);
@@ -66,7 +68,9 @@ export default function QuestionScreen() {
               variant="secondary"
               label={t("offlineGate.openOfflineMode")}
               testID="question-offline-open-offline-mode"
-              onPress={() => router.push("/modals/offline-mode")}
+              onPress={() =>
+                router.push(hasPlusAccess ? "/offline-mode" : "/paywall")
+              }
             />
             <AppButton
               variant="ghost"
@@ -158,19 +162,40 @@ function QuestionTrainingScreen() {
     );
   }
 
-  if (session.isEmptyState && session.activeSession?.emptyReason === "saved_empty") {
+  if (
+    session.isEmptyState &&
+    (session.activeSession?.emptyReason === "saved_empty" ||
+      session.activeSession?.emptyReason === "wrong_answers_empty")
+  ) {
     // Read on demand: deriving it for every answered question would scan the
     // whole catalog on each tap.
     const { questionUserState } = useQuestionProgressStore.getState();
+    const isMistakesEmpty =
+      session.activeSession?.emptyReason === "wrong_answers_empty";
 
     return (
       <PracticeEmptyState
-        headerTitle={t("practice.savedTitle")}
-        title={t("practice.savedEmptyTitle")}
-        description={t("practice.savedEmptyDescription")}
+        headerTitle={
+          isMistakesEmpty
+            ? t("mistakes.screenTitle")
+            : t("practice.savedTitle")
+        }
+        title={
+          isMistakesEmpty
+            ? t("mistakes.emptyTitle")
+            : t("practice.savedEmptyTitle")
+        }
+        description={
+          isMistakesEmpty
+            ? t("mistakes.emptyDescription")
+            : t("practice.savedEmptyDescription")
+        }
         iconName="like"
         dueReviews={getQuestionDisplayStats(questionUserState).reviewDue}
         onBack={exitToTabs}
+        testID={
+          isMistakesEmpty ? "screen-mistakes-empty" : "screen-practice-empty"
+        }
       />
     );
   }
@@ -179,6 +204,7 @@ function QuestionTrainingScreen() {
     return (
       <AppScreen
         scroll={false}
+        testID="screen-question-empty"
         footer={
           <QuestionTrainingFooter
             activeSession={session.activeSession}
@@ -207,13 +233,9 @@ function QuestionTrainingScreen() {
       <QuestionSessionResultView
         activeSession={session.activeSession}
         onClose={exitToTabs}
-        resultIconSize={session.resultIconSize}
         sessionMode={session.sessionMode}
-        sessionPassed={session.sessionPassed}
-        sessionResultAccent={session.sessionResultAccent}
         sessionResultPercent={session.sessionResultPercent}
         summary={session.summary}
-        trainerStyles={session.trainerStyles}
       />
     );
   }

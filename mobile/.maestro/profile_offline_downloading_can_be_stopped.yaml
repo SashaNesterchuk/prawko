@@ -1,0 +1,41 @@
+# Feature: Offline mode
+# Scenario: Active offline download can be stopped and resumed later
+appId: com.mindjar.prawko
+tags:
+  - offline
+  - profile
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      OFFLINE_PACK_CATEGORY: B
+      OFFLINE_PACK_STATUS: downloading
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-profile
+
+- tapOn:
+    id: "profile-row-offline-mode"
+
+- extendedWaitUntil:
+    visible:
+      id: "offline-mode-pack-state-downloading"
+    timeout: 15000
+
+- assertVisible:
+    id: "offline-mode-stop-action"
+- assertNotVisible:
+    id: "offline-mode-remove-action"
+
+- tapOn:
+    id: "offline-mode-stop-action"
+
+- extendedWaitUntil:
+    visible:
+      id: "offline-mode-pack-state-incomplete"
+    timeout: 15000
+
+- assertVisible:
+    id: "offline-mode-primary-action"
+- assertVisible:
+    id: "offline-mode-remove-action"

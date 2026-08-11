@@ -1,7 +1,7 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { useResponsiveStyles } from "../../portable-ui";
+import { CText, useResponsiveStyles } from "../../portable-ui";
 
 const MEDIA_HEIGHT = 220;
 
@@ -16,7 +16,7 @@ export function QuestionMediaEmptyPlaceholder() {
       style={styles.root}
     >
       <View style={styles.frame}>
-        <Text style={styles.label}>{t("question.media.noIllustration")}</Text>
+        <CText style={styles.label}>{t("question.media.noIllustration")}</CText>
       </View>
     </View>
   );
