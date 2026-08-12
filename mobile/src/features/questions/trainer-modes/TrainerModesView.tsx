@@ -60,8 +60,8 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
-  const topicQuestionProgress = useQuestionProgressStore(
-    (state) => state.topicQuestionProgress
+  const topicQuestionContextProgress = useQuestionProgressStore(
+    (state) => state.topicQuestionContextProgress
   );
 
   const [pendingTile, setPendingTile] = useState<TrainerModeTile | null>(null);
@@ -69,8 +69,18 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     useState<QuestionCountSelection>("all");
 
   const stats = useMemo(
-    () => getTrainerModeStats(questionUserState, topic, topicQuestionProgress),
-    [questionCatalogVersion, questionUserState, topic, topicQuestionProgress]
+    () =>
+      getTrainerModeStats(
+        questionUserState,
+        topic,
+        topicQuestionContextProgress
+      ),
+    [
+      questionCatalogVersion,
+      questionUserState,
+      topic,
+      topicQuestionContextProgress,
+    ]
   );
 
   const pendingModeCount = useMemo(() => {
@@ -81,14 +91,14 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     return getQuestionCountForMode(
       { currentCategory: preferredCategory, mode: pendingTile.mode, topic },
       questionUserState,
-      topicQuestionProgress
+      topicQuestionContextProgress
     );
   }, [
     pendingTile,
     preferredCategory,
     questionUserState,
     topic,
-    topicQuestionProgress,
+    topicQuestionContextProgress,
   ]);
 
   const screenTitle = topic
@@ -202,7 +212,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     const availableCount = getQuestionCountForMode(
       { currentCategory: preferredCategory, mode: tile.mode, topic },
       questionUserState,
-      topicQuestionProgress
+      topicQuestionContextProgress
     );
     const { shouldShowDialog, defaultCount } =
       resolveQuestionCountDialog(availableCount);

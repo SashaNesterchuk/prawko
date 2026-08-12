@@ -30,8 +30,8 @@ export function useQuestionModeCountDialog() {
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
-  const topicQuestionProgress = useQuestionProgressStore(
-    (state) => state.topicQuestionProgress
+  const topicQuestionContextProgress = useQuestionProgressStore(
+    (state) => state.topicQuestionContextProgress
   );
 
   const [pending, setPending] = useState<PendingMode | null>(null);
@@ -50,9 +50,14 @@ export function useQuestionModeCountDialog() {
         topic: pending.topic,
       },
       questionUserState,
-      topicQuestionProgress
+      topicQuestionContextProgress
     );
-  }, [pending, preferredCategory, questionUserState, topicQuestionProgress]);
+  }, [
+    pending,
+    preferredCategory,
+    questionUserState,
+    topicQuestionContextProgress,
+  ]);
 
   function startMode(
     mode: QuestionSessionMode,
@@ -77,7 +82,7 @@ export function useQuestionModeCountDialog() {
         topic: input.topic,
       },
       questionUserState,
-      topicQuestionProgress
+      topicQuestionContextProgress
     );
     const { shouldShowDialog, defaultCount } =
       resolveQuestionCountDialog(availableCount);

@@ -1,0 +1,57 @@
+# Feature: Trainer topic progress
+# Scenario: A random training answer covers every catalog topic on the question
+appId: com.mindjar.prawko
+tags:
+  - trainer
+  - topics
+  - topic-progress
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: trainer-modes
+      QUESTION_SCENARIO: topic-progress
+      TARGET_ID: screen-trainer-modes
+
+- tapOn:
+    id: "trainer-mode-random"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 15000
+
+- runFlow:
+    file: subflows/answer_first_available_option.yaml
+    env:
+      OPTION_ID: question-choice-index-0
+
+- tapOn:
+    id: "question-feedback-next"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-result"
+    timeout: 10000
+
+- tapOn:
+    id: "question-result-primary"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 10000
+
+- tapOn:
+    id: "tab-learn"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-learn"
+    timeout: 10000
+
+- assertVisible:
+    id: "learn-topic-card-horizontal_road_markings-readiness-100"
+
+- assertVisible:
+    id: "learn-topic-card-warning_signs-readiness-100"

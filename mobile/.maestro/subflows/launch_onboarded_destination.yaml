@@ -13,6 +13,7 @@ env:
   OFFLINE_PACK_CATEGORY: ${OFFLINE_PACK_CATEGORY || ""}
   OFFLINE_PACK_STATUS: ${OFFLINE_PACK_STATUS || ""}
   PLUS_ACCESS: ${PLUS_ACCESS || "false"}
+  QUESTION_SCENARIO: ${QUESTION_SCENARIO || ""}
   REACHABILITY: ${REACHABILITY || ""}
   SIGN_CATEGORY_ID: ${SIGN_CATEGORY_ID || "A"}
   TOPIC_ID: ${TOPIC_ID || "horizontal_road_markings"}
@@ -23,7 +24,7 @@ env:
     clearKeychain: true
 
 - openLink:
-    link: "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}"
+    link: "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}"
 
 - extendedWaitUntil:
     visible:

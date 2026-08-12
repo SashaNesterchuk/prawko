@@ -435,8 +435,47 @@ export function getNextTopicQuestionProgressAfterAttempt(
 }
 
 /**
- * Topic cards / topic-scoped queues should only see attempts made inside that
- * topic. Global flags (bookmark, hard, SRS) stay shared across topics.
+ * One training attempt covers every catalog topic assigned to the question.
+ * The caller decides whether the map represents overall topic coverage or
+ * practice completed inside a specifically opened topic.
+ */
+export function getNextTopicQuestionProgressMapAfterAttempt(
+  topicProgress: TopicQuestionProgressMap,
+  topicIds: readonly QuestionTopicId[],
+  questionId: string,
+  input: {
+    answeredAt: string;
+    isCorrect: boolean;
+  }
+): TopicQuestionProgressMap {
+  let nextTopicProgress = topicProgress;
+
+  for (const topicId of new Set(topicIds)) {
+    const previousTopicProgress = getTopicQuestionProgress(
+      nextTopicProgress,
+      topicId,
+      questionId
+    );
+    const nextQuestionProgress = getNextTopicQuestionProgressAfterAttempt(
+      previousTopicProgress,
+      input
+    );
+
+    nextTopicProgress = {
+      ...nextTopicProgress,
+      [topicId]: {
+        ...nextTopicProgress[topicId],
+        [questionId]: nextQuestionProgress,
+      },
+    };
+  }
+
+  return nextTopicProgress;
+}
+
+/**
+ * Topic-scoped queues should only see attempts made inside that topic. Global
+ * flags (bookmark, hard, SRS) stay shared across topics.
  */
 export function getTopicScopedUserStates(
   userStates: QuestionUserStateMap,
@@ -702,12 +741,12 @@ function computeQuestionDisplayStats(
 export function getTrainerModeStats(
   userStates: QuestionUserStateMap,
   topic?: LearningTopicId,
-  topicProgress: TopicQuestionProgressMap = {}
+  topicContextProgress: TopicQuestionProgressMap = {}
 ) {
   const questions = getTopicScopedQuestions(topic);
   const effectiveStates = getEffectiveUserStatesForTopicRequest(
     userStates,
-    topicProgress,
+    topicContextProgress,
     topic
   );
   const states = questions.map((question) =>
@@ -737,7 +776,7 @@ export function getQuestionCountForMode(
     topic?: LearningTopicId;
   },
   userStates: QuestionUserStateMap,
-  topicProgress: TopicQuestionProgressMap = {},
+  topicContextProgress: TopicQuestionProgressMap = {},
   now: Date = new Date()
 ) {
   return getQuestionIdsForMode(
@@ -749,7 +788,7 @@ export function getQuestionCountForMode(
     },
     getEffectiveUserStatesForTopicRequest(
       userStates,
-      topicProgress,
+      topicContextProgress,
       input.topic,
       input.mode
     ),
@@ -1000,11 +1039,11 @@ export function buildQuestionSession(
   request: QuestionSessionRequest,
   userStates: QuestionUserStateMap,
   now: Date = new Date(),
-  topicProgress: TopicQuestionProgressMap = {}
+  topicContextProgress: TopicQuestionProgressMap = {}
 ): QuestionSession {
   const effectiveStates = getEffectiveUserStatesForTopicRequest(
     userStates,
-    topicProgress,
+    topicContextProgress,
     request.topic,
     request.mode
   );

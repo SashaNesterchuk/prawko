@@ -8,7 +8,10 @@ import {
 } from "@prawko/config";
 import type { Href } from "expo-router";
 
-import { getQuestionBank } from "../../features/questions/question-bank";
+import {
+  getQuestionBank,
+  hydrateQuestionBankFromLocalQuestions,
+} from "../../features/questions/question-bank";
 import type {
   QuestionOptionValue,
   QuestionSession,
@@ -26,12 +29,15 @@ import { finalizeLocalOnboarding } from "../../features/onboarding/finalize-loca
 import { isRoadSignCategoryId } from "../../features/road-signs/catalog";
 import { getExamDateFromDays } from "../../features/study-plan/generate-local-study-plan";
 import { useAppShellStore } from "../../state/app-shell";
+import { useQuestionCatalogStore } from "../../state/question-catalog";
 import { useQuestionProgressStore } from "../../state/question-progress";
 import {
   configureE2ETestOverrides,
   resetE2ETestOverrides,
   type E2EOfflinePackStatus,
+  type E2EQuestionScenario,
 } from "./state";
+import { getE2EQuestionScenarioQuestions } from "./question-scenarios";
 
 export type E2EDestination =
   | "home"
@@ -58,6 +64,7 @@ type PrepareE2EAppStateInput = {
   offlinePackCategory?: string | null;
   offlinePackStatus?: E2EOfflinePackStatus | null;
   plusAccess?: boolean | null;
+  questionScenario?: E2EQuestionScenario | null;
   reachability?: boolean | null;
   seedQuestionResult?: boolean | null;
 };
@@ -87,8 +94,17 @@ export async function prepareE2EAppState(
     offlinePackCategory: input.offlinePackCategory,
     offlinePackStatus: input.offlinePackStatus,
     plusAccess: input.plusAccess,
+    questionScenario: input.questionScenario,
     reachability: input.reachability,
   });
+
+  if (input.questionScenario) {
+    const questions = getE2EQuestionScenarioQuestions(input.questionScenario);
+    hydrateQuestionBankFromLocalQuestions(questions);
+    useQuestionCatalogStore.getState().setMock({
+      questionCount: questions.length,
+    });
+  }
 
   store.setSessionResolved(true);
   store.setPreferredCategory(preferredCategory);
@@ -104,6 +120,12 @@ export async function prepareE2EAppState(
   finalizeLocalOnboarding();
 
   await waitForQuestionProgressHydrated();
+
+  if (input.questionScenario) {
+    const questionIds = getQuestionBank().map((question) => question.id);
+    useQuestionProgressStore.getState().reconcileCatalog(questionIds);
+    useQuestionProgressStore.getState().ensureTopicQuestionProgressSeeded();
+  }
 
   const seededExamSessionId = input.examSessionStatus
     ? await seedE2EExamSnapshot({

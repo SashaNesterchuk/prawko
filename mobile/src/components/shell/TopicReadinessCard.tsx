@@ -16,6 +16,7 @@ type TopicReadinessCardProps = {
   wrong?: number;
   status?: TopicReadinessStatus;
   onPress?: () => void;
+  progressTestID?: string;
   testID?: string;
 };
 
@@ -48,6 +49,7 @@ export function TopicReadinessCard({
   wrong,
   status,
   onPress,
+  progressTestID,
   testID,
 }: TopicReadinessCardProps) {
   const theme = useTheme();
@@ -65,14 +67,21 @@ export function TopicReadinessCard({
 
   const resolvedWrong = wrong ?? mistakes ?? 0;
   const resolvedCorrect = correct ?? Math.max(0, seen - resolvedWrong);
+  const readinessTestID = progressTestID
+    ? `${progressTestID}-readiness-${normalizedReadiness}`
+    : testID
+      ? `${testID}-readiness-${normalizedReadiness}`
+      : undefined;
 
   const body = (
     <View style={styles.inner}>
       <View style={styles.headerRow}>
-        <CText style={styles.title} numberOfLines={2}>
+        <CText style={styles.title} numberOfLines={1}>
           {title}
         </CText>
-        <CText style={styles.readinessValue}>{normalizedReadiness}%</CText>
+        <CText style={styles.readinessValue} testID={readinessTestID}>
+          {normalizedReadiness}%
+        </CText>
       </View>
 
       <View style={styles.track}>

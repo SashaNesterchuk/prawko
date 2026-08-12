@@ -79,10 +79,7 @@ export type QuestionUserState = {
 
 export type QuestionUserStateMap = Record<string, QuestionUserState>;
 
-/**
- * Progress for a question inside one learning topic/group.
- * A multi-topic question can be completed in topic A without counting in topic B.
- */
+/** Per-question attempt counters attributed to one catalog topic. */
 export type TopicQuestionProgress = {
   timesSeen: number;
   timesCorrect: number;
@@ -91,7 +88,7 @@ export type TopicQuestionProgress = {
   lastWrongAt: string | null;
 };
 
-/** topicId → questionId → progress within that topic */
+/** topicId → questionId → attributed progress */
 export type TopicQuestionProgressMap = Record<
   string,
   Record<string, TopicQuestionProgress>

@@ -57,6 +57,8 @@ pnpm test:e2e:studio
 | `exam_answers_category_mismatch_switches_category.yaml` | Direct exam answer review → category mismatch → switch and load review |
 | `trainer_random_mode_starts_questions.yaml` | Trainer modes → count picker → first question |
 | `trainer_first_answer_shows_feedback.yaml` | Trainer question → first answer → feedback sheet (wrong → Зрозуміло / correct → Наступне питання) |
+| `trainer_random_answer_covers_all_question_topics.yaml` | Random training answer closes every assigned topic card |
+| `topic_training_answer_covers_all_question_topics.yaml` | Topic training closes every assigned card while the question remains new in another topic queue |
 | `signs_training_starts_from_tab.yaml` | Signs tab → train all → sign test session |
 | `signs_category_training_starts.yaml` | Direct sign category bootstrap → category training |
 | `signs_first_answer_shows_feedback.yaml` | Sign test → first answer → feedback sheet (wrong → Зрозуміло / correct → Наступне питання) |
@@ -77,7 +79,7 @@ Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `stati
 3. Use `subflows/launch_onboarded_destination.yaml` for any scenario that does not need to re-test onboarding itself.
 4. Pass `DESTINATION` / `TARGET_ID` through `runFlow.env` so each new flow lands on the screen it cares about.
 5. Override `LOCALE`, `CATEGORY`, `DAYS_UNTIL_EXAM`, `SIGN_CATEGORY_ID`, and `TOPIC_ID` only when the scenario needs them.
-6. Use `PLUS_ACCESS`, `REACHABILITY`, `OFFLINE_PACK_STATUS` (`missing` / `ready` / `incomplete` / `downloading`), `OFFLINE_PACK_CATEGORY`, `EXAM_SESSION_STATUS`, `EXAM_SESSION_CATEGORY`, and `EXAM_START_ORDER` for deterministic E2E-only state overrides.
+6. Use `PLUS_ACCESS`, `QUESTION_SCENARIO` (`topic-progress`), `REACHABILITY`, `OFFLINE_PACK_STATUS` (`missing` / `ready` / `incomplete` / `downloading`), `OFFLINE_PACK_CATEGORY`, `EXAM_SESSION_STATUS`, `EXAM_SESSION_CATEGORY`, and `EXAM_START_ORDER` for deterministic E2E-only state overrides.
 7. Reuse `subflows/start_default_question_count.yaml` anywhere a trainer or signs picker opens before practice starts.
 8. Practice answers can use generic selectors like `question-choice-index-0` and `sign-test-option-index-0`, so flows do not depend on catalog data.
 9. Keep `subflows/complete_onboarding.yaml` only for fresh-install onboarding coverage.

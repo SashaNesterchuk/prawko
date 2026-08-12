@@ -308,6 +308,7 @@ export default function LearnTabScreen() {
                     readiness={progress.progress}
                     correct={progress.correct}
                     wrong={progress.wrong}
+                    progressTestID={`learn-topic-card-${topicId}`}
                     testID={`learn-topic-card-index-${index}`}
                     onPress={() =>
                       router.navigate({

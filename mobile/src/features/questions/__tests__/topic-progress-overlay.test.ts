@@ -1,5 +1,6 @@
 import {
   createEmptyQuestionUserState,
+  getNextTopicQuestionProgressMapAfterAttempt,
   getTopicProgress,
 } from "../question-engine";
 import {
@@ -52,7 +53,7 @@ function seenCorrect(questionId: string): QuestionUserState {
   };
 }
 
-describe("getTopicProgress catalog overlay", () => {
+describe("getTopicProgress training coverage", () => {
   beforeEach(() => {
     hydrateQuestionBankFromLocalQuestions([
       makeQuestion("warn-1", "warning_signs"),
@@ -64,7 +65,7 @@ describe("getTopicProgress catalog overlay", () => {
     resetQuestionBankToMock();
   });
 
-  it("ignores global user state for catalog topics without topic overlay", () => {
+  it("requires attributed training coverage for catalog topics", () => {
     const userStates = {
       "warn-1": seenCorrect("warn-1"),
       "warn-2": seenCorrect("warn-2"),
@@ -80,7 +81,7 @@ describe("getTopicProgress catalog overlay", () => {
     });
   });
 
-  it("uses topicQuestionProgress overlay for catalog topic readiness", () => {
+  it("uses attributed training coverage for catalog topic readiness", () => {
     const userStates = {
       "warn-1": seenCorrect("warn-1"),
       "warn-2": seenCorrect("warn-2"),
@@ -108,6 +109,29 @@ describe("getTopicProgress catalog overlay", () => {
       seen: 1,
       correct: 1,
       progress: 50,
+    });
+  });
+
+  it("attributes one training answer to every catalog topic on the question", () => {
+    const progress = getNextTopicQuestionProgressMapAfterAttempt(
+      {},
+      ["warning_signs", "overtaking"],
+      "shared-question",
+      {
+        answeredAt: "2026-08-12T12:00:00.000Z",
+        isCorrect: true,
+      }
+    );
+
+    expect(progress.warning_signs?.["shared-question"]).toMatchObject({
+      timesSeen: 1,
+      timesCorrect: 1,
+      timesWrong: 0,
+    });
+    expect(progress.overtaking?.["shared-question"]).toMatchObject({
+      timesSeen: 1,
+      timesCorrect: 1,
+      timesWrong: 0,
     });
   });
 });

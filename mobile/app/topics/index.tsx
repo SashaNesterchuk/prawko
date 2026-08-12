@@ -110,6 +110,7 @@ export default function TopicsScreen() {
                 readiness={progress.progress}
                 correct={progress.correct}
                 wrong={progress.wrong}
+                progressTestID={`topics-topic-card-${topicId}`}
                 testID={`topics-topic-card-index-${index}`}
                 onPress={() =>
                   router.navigate({

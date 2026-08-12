@@ -36,7 +36,7 @@ export function StatisticsTopicProgressRow({
   return (
     <View style={styles.row}>
       <View style={styles.copy}>
-        <CText style={styles.title} numberOfLines={2}>
+        <CText style={styles.title} numberOfLines={1}>
           {title}
         </CText>
         <CText style={styles.meta}>{`${seen} / ${total}`}</CText>

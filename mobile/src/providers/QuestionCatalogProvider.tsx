@@ -26,6 +26,8 @@ import {
   useQuestionProgressHydrated,
   useQuestionProgressStore,
 } from "../state/question-progress";
+import { getE2EQuestionScenario } from "../testing/e2e/state";
+import { getE2EQuestionScenarioQuestions } from "../testing/e2e/question-scenarios";
 import {
   loadReadyOfflineQuestionCatalog,
   setOfflinePackMediaEnabled,
@@ -261,6 +263,23 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
       });
       return true;
     };
+
+    const e2eQuestionScenario = getE2EQuestionScenario();
+
+    if (e2eQuestionScenario) {
+      const questions = getE2EQuestionScenarioQuestions(e2eQuestionScenario);
+      hydrateQuestionBankFromLocalQuestions(questions);
+      setOfflinePackMediaEnabled(false);
+
+      if (!cancelled) {
+        const questionIds = questions.map((question) => question.id);
+        reconcileCatalog(questionIds);
+        ensureTopicQuestionProgressSeeded();
+        setMock({ questionCount: questionIds.length });
+      }
+
+      return;
+    }
 
     void (async () => {
       setOfflinePackMediaEnabled(false);

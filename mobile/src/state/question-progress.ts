@@ -8,10 +8,10 @@ import {
   buildQuestionSession,
   canResumeQuestionSession,
   getQuestionById,
+  getQuestionTopicIds,
   getNextQuestionUserStateAfterAttempt,
-  getNextTopicQuestionProgressAfterAttempt,
+  getNextTopicQuestionProgressMapAfterAttempt,
   getQuestionUserState,
-  getTopicQuestionProgress,
   normalizeQuestionUserStateMap,
   resumeQuestionSession,
   seedTopicQuestionProgressFromUserState,
@@ -36,6 +36,7 @@ type PersistedQuestionProgress = Pick<
   | "lastTrainingSessionPercents"
   | "questionUserState"
   | "readinessAssessment"
+  | "topicQuestionContextProgress"
   | "topicQuestionProgress"
   | "topicQuestionProgressSeeded"
 >;
@@ -127,8 +128,14 @@ type QuestionProgressState = {
   questionUserState: QuestionUserStateMap;
   /** Latest completed mini_test score — separate from coverage / remote readiness. */
   readinessAssessment: ReadinessAssessmentResult | null;
+  /**
+   * Attempts completed from an explicitly opened catalog topic. This controls
+   * the topic queue, so random training can still be practised in its topic.
+   */
+  topicQuestionContextProgress: TopicQuestionProgressMap;
+  /** Training coverage attributed to every catalog topic on the question. */
   topicQuestionProgress: TopicQuestionProgressMap;
-  /** False only for pre-scoped saves until the catalog can attribute legacy attempts. */
+  /** False only for legacy saves until the catalog can attribute their progress. */
   topicQuestionProgressSeeded: boolean;
   applyQuestionAttemptOutcome: (
     questionId: string,
@@ -168,6 +175,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
       lastTrainingSessionPercents: {},
       questionUserState: {},
       readinessAssessment: null,
+      topicQuestionContextProgress: {},
       topicQuestionProgress: {},
       topicQuestionProgressSeeded: true,
       applyQuestionAttemptOutcome: (questionId, input) =>
@@ -316,34 +324,38 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           answeredAt,
           isCorrect,
         });
+        const isTrainingSession = activeSession.request.mode !== "exam";
         const sessionTopic = activeSession.request.topic;
-        const shouldScopeToTopic =
-          typeof sessionTopic === "string" && !isTopicBlockId(sessionTopic);
-        const previousTopicProgress = shouldScopeToTopic
-          ? getTopicQuestionProgress(
-              state.topicQuestionProgress,
-              sessionTopic,
-              questionId
-            )
-          : null;
-        const nextTopicProgress = previousTopicProgress
-          ? getNextTopicQuestionProgressAfterAttempt(previousTopicProgress, {
-              answeredAt,
-              isCorrect,
-            })
-          : null;
+        const topicContextId =
+          isTrainingSession &&
+          typeof sessionTopic === "string" &&
+          !isTopicBlockId(sessionTopic)
+            ? sessionTopic
+            : null;
+        // Every non-exam training answer covers all catalog topics assigned to
+        // the question. Topic context remains separate, so another topic can
+        // still offer the question in its own practice queue.
+        const coveredTopicIds = !isTrainingSession
+          ? []
+          : getQuestionTopicIds(question);
 
         set((currentState) => {
-          const nextTopicQuestionProgress =
-            shouldScopeToTopic && nextTopicProgress
-              ? {
-                  ...currentState.topicQuestionProgress,
-                  [sessionTopic]: {
-                    ...currentState.topicQuestionProgress[sessionTopic],
-                    [questionId]: nextTopicProgress,
-                  },
-                }
-              : currentState.topicQuestionProgress;
+          const nextTopicQuestionProgress = isTrainingSession
+            ? getNextTopicQuestionProgressMapAfterAttempt(
+                currentState.topicQuestionProgress,
+                coveredTopicIds,
+                questionId,
+                { answeredAt, isCorrect }
+              )
+            : currentState.topicQuestionProgress;
+          const nextTopicQuestionContextProgress = topicContextId
+            ? getNextTopicQuestionProgressMapAfterAttempt(
+                currentState.topicQuestionContextProgress,
+                [topicContextId],
+                questionId,
+                { answeredAt, isCorrect }
+              )
+            : currentState.topicQuestionContextProgress;
 
           return {
             attempts: [...currentState.attempts, attempt],
@@ -352,6 +364,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
               [questionId]: nextState,
             },
             topicQuestionProgress: nextTopicQuestionProgress,
+            topicQuestionContextProgress: nextTopicQuestionContextProgress,
             activeSession: currentState.activeSession
               ? {
                   ...currentState.activeSession,
@@ -379,10 +392,13 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           return;
         }
 
+        const seededTopicProgress = seedTopicQuestionProgressFromUserState(
+          state.questionUserState
+        );
+
         set({
-          topicQuestionProgress: seedTopicQuestionProgressFromUserState(
-            state.questionUserState
-          ),
+          topicQuestionContextProgress: seededTopicProgress,
+          topicQuestionProgress: seededTopicProgress,
           topicQuestionProgressSeeded: true,
         });
       },
@@ -411,6 +427,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           lastTrainingSessionPercents: {},
           questionUserState: {},
           readinessAssessment: null,
+          topicQuestionContextProgress: {},
           topicQuestionProgress: {},
           topicQuestionProgressSeeded: true,
         }),
@@ -433,7 +450,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           request,
           state.questionUserState,
           new Date(),
-          state.topicQuestionProgress
+          state.topicQuestionContextProgress
         );
         set({ activeSession: session });
         return session;
@@ -485,13 +502,17 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         lastTrainingSessionPercents: state.lastTrainingSessionPercents,
         questionUserState: state.questionUserState,
         readinessAssessment: state.readinessAssessment,
+        topicQuestionContextProgress: state.topicQuestionContextProgress,
         topicQuestionProgress: state.topicQuestionProgress,
         topicQuestionProgressSeeded: state.topicQuestionProgressSeeded,
       }),
       merge: (persistedState, currentState) => {
         const persisted = (persistedState ?? {}) as Partial<
           PersistedQuestionProgress
-        > & { topicQuestionProgress?: TopicQuestionProgressMap | null };
+        > & {
+          topicQuestionContextProgress?: TopicQuestionProgressMap | null;
+          topicQuestionProgress?: TopicQuestionProgressMap | null;
+        };
         const questionUserState = normalizeQuestionUserStateMap(
           persisted.questionUserState ?? currentState.questionUserState
         );
@@ -500,7 +521,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           typeof persisted.lastTrainingSessionPercents === "object"
             ? persisted.lastTrainingSessionPercents
             : currentState.lastTrainingSessionPercents;
-        // Pre-scoped saves omit the overlay; seed after the question bank loads.
+        // Legacy saves omit topic progress; seed after the question bank loads.
         const hasTopicProgressField =
           Object.prototype.hasOwnProperty.call(
             persisted,
@@ -519,6 +540,11 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           topicQuestionProgress: hasTopicProgressField
             ? (persisted.topicQuestionProgress ?? {})
             : {},
+          // Until this split, topicQuestionProgress held the same
+          // topic-specific queue context. Preserve it for resumed learning.
+          topicQuestionContextProgress:
+            persisted.topicQuestionContextProgress ??
+            (hasTopicProgressField ? persisted.topicQuestionProgress ?? {} : {}),
           topicQuestionProgressSeeded: hasTopicProgressField
             ? (persisted.topicQuestionProgressSeeded ?? true)
             : false,

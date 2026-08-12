@@ -9,7 +9,10 @@ import {
   prepareE2EAppState,
   resolveE2EDestination,
 } from "../../src/testing/e2e/bootstrap";
-import type { E2EOfflinePackStatus } from "../../src/testing/e2e/state";
+import type {
+  E2EOfflinePackStatus,
+  E2EQuestionScenario,
+} from "../../src/testing/e2e/state";
 import type { RemoteExamSessionStatus } from "../../src/features/exam/types";
 
 import { CText, getFontFamily } from "../../src/portable-ui";
@@ -24,6 +27,7 @@ type BootstrapParams = {
   offlinePackCategory?: string | string[];
   offlinePackStatus?: string | string[];
   plusAccess?: string | string[];
+  questionScenario?: string | string[];
   reachability?: string | string[];
   signCategoryId?: string | string[];
   topicId?: string | string[];
@@ -41,6 +45,9 @@ export default function E2EBootstrapScreen() {
   const offlinePackCategory = getSingleParam(params.offlinePackCategory);
   const offlinePackStatus = parseOfflinePackStatus(
     getSingleParam(params.offlinePackStatus)
+  );
+  const questionScenario = parseQuestionScenario(
+    getSingleParam(params.questionScenario)
   );
   const examSessionCategory = getSingleParam(params.examSessionCategory);
   const examSessionStatus = parseExamSessionStatus(
@@ -73,6 +80,7 @@ export default function E2EBootstrapScreen() {
         offlinePackCategory,
         offlinePackStatus,
         plusAccess,
+        questionScenario,
         reachability,
         seedQuestionResult: destination === "question-result",
       });
@@ -99,6 +107,7 @@ export default function E2EBootstrapScreen() {
     offlinePackCategory,
     offlinePackStatus,
     plusAccess,
+    questionScenario,
     reachability,
     reviewStartOrder,
     signCategoryId,
@@ -191,6 +200,14 @@ function parseExamSessionStatus(
     default:
       return null;
   }
+}
+
+function parseQuestionScenario(
+  value: string | undefined
+): E2EQuestionScenario | null {
+  return value?.trim().toLowerCase() === "topic-progress"
+    ? "topic-progress"
+    : null;
 }
 
 const styles = StyleSheet.create({
