@@ -2,9 +2,11 @@ import { APP_FEATURES, type AppFeature } from "@prawko/config";
 import { Platform } from "react-native";
 import type {
   CustomerInfo,
+  CustomerInfoUpdateListener,
   PurchasesOfferings,
   PurchasesPackage,
 } from "react-native-purchases";
+import { PAYWALL_RESULT } from "react-native-purchases-ui";
 
 import { mobileEnv } from "../../config/env";
 import {
@@ -12,8 +14,17 @@ import {
   type PurchaseAccessState,
   type RevenueCatPackageSummary,
 } from "../../state/entitlements";
+import {
+  REVENUECAT_PACKAGE_ALIASES,
+  REVENUECAT_PRO_ENTITLEMENT_ALIASES,
+  REVENUECAT_PRO_ENTITLEMENT_ID,
+  REVENUECAT_PRODUCT_IDS,
+  type RevenueCatPaywallOutcome,
+  type RevenueCatProductId,
+} from "./revenuecat-config";
 
 type RevenueCatModule = typeof import("react-native-purchases");
+type RevenueCatUIModule = typeof import("react-native-purchases-ui");
 
 export type RevenueCatSnapshot = {
   featureEntitlements: ReturnType<typeof createEmptyFeatureEntitlements>;
@@ -23,19 +34,48 @@ export type RevenueCatSnapshot = {
 };
 
 const ENTITLEMENT_ALIASES: Record<AppFeature, string[]> = {
-  premium_access: ["premium_access", "premium", "pro", "full_access"],
-  ai_explanations: ["ai_explanations", "premium_access", "premium"],
-  ai_question_chat: ["ai_question_chat", "ai_chat", "plus", "premium_access", "premium"],
-  exam_simulator: ["exam_simulator", "exam", "premium_access", "premium"],
+  premium_access: [
+    REVENUECAT_PRO_ENTITLEMENT_ID.toLowerCase(),
+    ...REVENUECAT_PRO_ENTITLEMENT_ALIASES,
+  ],
+  ai_explanations: [
+    REVENUECAT_PRO_ENTITLEMENT_ID.toLowerCase(),
+    ...REVENUECAT_PRO_ENTITLEMENT_ALIASES,
+    "ai_explanations",
+  ],
+  ai_question_chat: [
+    REVENUECAT_PRO_ENTITLEMENT_ID.toLowerCase(),
+    ...REVENUECAT_PRO_ENTITLEMENT_ALIASES,
+    "ai_question_chat",
+    "ai_chat",
+  ],
+  exam_simulator: [
+    REVENUECAT_PRO_ENTITLEMENT_ID.toLowerCase(),
+    ...REVENUECAT_PRO_ENTITLEMENT_ALIASES,
+    "exam_simulator",
+    "exam",
+  ],
 };
 
 let configuredAppUserId: string | null = null;
 let configuredApiKey: string | null = null;
 let didConfigurePurchases = false;
 let revenueCatModulePromise: Promise<RevenueCatModule> | null = null;
+let revenueCatUIModulePromise: Promise<RevenueCatUIModule> | null = null;
+let customerInfoListener: CustomerInfoUpdateListener | null = null;
 
 export function isRevenueCatConfiguredForCurrentPlatform() {
   return Boolean(getRevenueCatPublicApiKey());
+}
+
+export function hasProEntitlement(customerInfo: CustomerInfo) {
+  const activeIds = Object.keys(customerInfo.entitlements.active).map((value) =>
+    value.toLowerCase()
+  );
+
+  return ENTITLEMENT_ALIASES.premium_access.some((candidate) =>
+    activeIds.includes(candidate.toLowerCase())
+  );
 }
 
 export async function fetchRevenueCatSnapshot(
@@ -108,7 +148,133 @@ export async function restoreRevenueCatPurchases(appUserId: string) {
   });
 }
 
+/**
+ * Presents the remotely configured RevenueCat Paywall for the current offering.
+ * Falls back to `not_presented` when the dashboard paywall is missing.
+ */
+export async function presentRevenueCatPaywall(input: {
+  appUserId: string;
+  requiredEntitlementIdentifier?: string;
+}): Promise<{
+  outcome: RevenueCatPaywallOutcome;
+  snapshot: RevenueCatSnapshot | null;
+}> {
+  const isConfigured = await ensureRevenueCatReady(input.appUserId);
+
+  if (!isConfigured) {
+    return { outcome: "not_presented", snapshot: null };
+  }
+
+  try {
+    const RevenueCatUI = (await getRevenueCatUIModule()).default;
+    const requiredEntitlementIdentifier =
+      input.requiredEntitlementIdentifier ?? REVENUECAT_PRO_ENTITLEMENT_ID;
+
+    const result = await RevenueCatUI.presentPaywallIfNeeded({
+      displayCloseButton: true,
+      requiredEntitlementIdentifier,
+    });
+
+    const outcome = mapPaywallResult(result);
+
+    if (outcome !== "purchased" && outcome !== "restored") {
+      return { outcome, snapshot: null };
+    }
+
+    const snapshot = await fetchRevenueCatSnapshot(input.appUserId);
+    return { outcome, snapshot };
+  } catch (error) {
+    console.warn("Failed to present RevenueCat paywall.", error);
+    return { outcome: "error", snapshot: null };
+  }
+}
+
+/**
+ * Opens RevenueCat Customer Center for restore / manage / support flows.
+ */
+export async function presentRevenueCatCustomerCenter(input: {
+  appUserId: string;
+  onCustomerInfoUpdated?: (snapshot: RevenueCatSnapshot) => void;
+}) {
+  const isConfigured = await ensureRevenueCatReady(input.appUserId);
+
+  if (!isConfigured) {
+    throw new Error("RevenueCat is not configured for this build.");
+  }
+
+  const RevenueCatUI = (await getRevenueCatUIModule()).default;
+
+  await RevenueCatUI.presentCustomerCenter({
+    callbacks: {
+      onRestoreCompleted: ({ customerInfo }) => {
+        if (!input.onCustomerInfoUpdated) {
+          return;
+        }
+
+        void buildSnapshotFromCustomerInfo(customerInfo).then(
+          input.onCustomerInfoUpdated
+        );
+      },
+      onPromotionalOfferSucceeded: ({ customerInfo }) => {
+        if (!input.onCustomerInfoUpdated) {
+          return;
+        }
+
+        void buildSnapshotFromCustomerInfo(customerInfo).then(
+          input.onCustomerInfoUpdated
+        );
+      },
+    },
+  });
+}
+
+export async function subscribeToRevenueCatCustomerInfo(
+  appUserId: string,
+  onUpdate: (snapshot: RevenueCatSnapshot) => void
+) {
+  const isConfigured = await ensureRevenueCatReady(appUserId);
+
+  if (!isConfigured) {
+    return () => undefined;
+  }
+
+  const Purchases = (await getRevenueCatModule()).default;
+
+  if (customerInfoListener) {
+    Purchases.removeCustomerInfoUpdateListener(customerInfoListener);
+    customerInfoListener = null;
+  }
+
+  const listener: CustomerInfoUpdateListener = (customerInfo) => {
+    void buildSnapshotFromCustomerInfo(customerInfo)
+      .then(onUpdate)
+      .catch((error) => {
+        console.warn("Failed to map RevenueCat customer info update.", error);
+      });
+  };
+
+  Purchases.addCustomerInfoUpdateListener(listener);
+  customerInfoListener = listener;
+
+  return () => {
+    if (customerInfoListener === listener) {
+      Purchases.removeCustomerInfoUpdateListener(listener);
+      customerInfoListener = null;
+    }
+  };
+}
+
 export async function logoutRevenueCatUser() {
+  if (customerInfoListener) {
+    try {
+      const Purchases = (await getRevenueCatModule()).default;
+      Purchases.removeCustomerInfoUpdateListener(customerInfoListener);
+    } catch {
+      // Module may be unavailable during teardown.
+    }
+    customerInfoListener = null;
+  }
+
   if (!didConfigurePurchases) {
     configuredAppUserId = null;
     configuredApiKey = null;
@@ -155,6 +321,37 @@ export function getRevenueCatErrorMessage(error: unknown) {
   return message;
 }
 
+export function matchRevenueCatProductId(
+  item: Pick<
+    RevenueCatPackageSummary,
+    "identifier" | "packageType" | "productIdentifier"
+  >
+): RevenueCatProductId | null {
+  const candidates = [
+    item.identifier,
+    item.productIdentifier,
+    item.packageType,
+  ].map((value) => value.toLowerCase());
+
+  for (const productId of Object.values(REVENUECAT_PRODUCT_IDS)) {
+    const aliases = REVENUECAT_PACKAGE_ALIASES[productId].map((alias) =>
+      alias.toLowerCase()
+    );
+
+    if (
+      aliases.some((alias) =>
+        candidates.some(
+          (candidate) => candidate === alias || candidate.includes(alias)
+        )
+      )
+    ) {
+      return productId;
+    }
+  }
+
+  return null;
+}
+
 function createEmptyRevenueCatSnapshot(
   isConfigured: boolean
 ): RevenueCatSnapshot {
@@ -177,7 +374,9 @@ async function ensureRevenueCatReady(appUserId: string) {
 
   if (!didConfigurePurchases) {
     if ("setLogLevel" in Purchases) {
-      Purchases.setLogLevel(Purchases.LOG_LEVEL.WARN);
+      Purchases.setLogLevel(
+        __DEV__ ? Purchases.LOG_LEVEL.DEBUG : Purchases.LOG_LEVEL.WARN
+      );
     }
 
     Purchases.configure({
@@ -216,6 +415,14 @@ async function getRevenueCatModule() {
   return revenueCatModulePromise;
 }
 
+async function getRevenueCatUIModule() {
+  if (!revenueCatUIModulePromise) {
+    revenueCatUIModulePromise = import("react-native-purchases-ui");
+  }
+
+  return revenueCatUIModulePromise;
+}
+
 function getRevenueCatPublicApiKey() {
   if (Platform.OS === "ios") {
     return mobileEnv.revenueCatAppleApiKey;
@@ -228,6 +435,33 @@ function getRevenueCatPublicApiKey() {
   return "";
 }
 
+async function buildSnapshotFromCustomerInfo(customerInfo: CustomerInfo) {
+  const Purchases = (await getRevenueCatModule()).default;
+  const offerings = await Purchases.getOfferings();
+
+  return mapRevenueCatSnapshot({
+    customerInfo,
+    isConfigured: true,
+    offerings,
+  });
+}
+
+function mapPaywallResult(result: PAYWALL_RESULT): RevenueCatPaywallOutcome {
+  switch (result) {
+    case PAYWALL_RESULT.PURCHASED:
+      return "purchased";
+    case PAYWALL_RESULT.RESTORED:
+      return "restored";
+    case PAYWALL_RESULT.CANCELLED:
+      return "cancelled";
+    case PAYWALL_RESULT.NOT_PRESENTED:
+      return "not_presented";
+    case PAYWALL_RESULT.ERROR:
+    default:
+      return "error";
+  }
+}
+
 function mapRevenueCatSnapshot(input: {
   customerInfo: CustomerInfo;
   isConfigured: boolean;
@@ -237,7 +471,10 @@ function mapRevenueCatSnapshot(input: {
   const activeEntitlements = input.customerInfo.entitlements.active;
 
   for (const feature of APP_FEATURES) {
-    featureEntitlements[feature] = hasMappedEntitlement(activeEntitlements, feature);
+    featureEntitlements[feature] = hasMappedEntitlement(
+      activeEntitlements,
+      feature
+    );
   }
 
   return {
@@ -316,27 +553,50 @@ function hasMappedEntitlement(
   activeEntitlements: CustomerInfo["entitlements"]["active"],
   feature: AppFeature
 ) {
-  const activeIds = Object.keys(activeEntitlements).map((value) => value.toLowerCase());
+  const activeIds = Object.keys(activeEntitlements).map((value) =>
+    value.toLowerCase()
+  );
 
   return ENTITLEMENT_ALIASES[feature].some((candidate) =>
-    activeIds.includes(candidate)
+    activeIds.includes(candidate.toLowerCase())
   );
 }
 
 function sortRevenueCatPackages(items: RevenueCatPackageSummary[]) {
   const order: Record<string, number> = {
-    WEEKLY: 0,
-    MONTHLY: 1,
-    TWO_MONTH: 2,
-    THREE_MONTH: 3,
-    SIX_MONTH: 4,
-    ANNUAL: 5,
-    LIFETIME: 6,
+    MONTHLY: 0,
+    ANNUAL: 1,
+    LIFETIME: 2,
+    WEEKLY: 3,
+    TWO_MONTH: 4,
+    THREE_MONTH: 5,
+    SIX_MONTH: 6,
     CUSTOM: 7,
     UNKNOWN: 8,
   };
 
   return [...items].sort((left, right) => {
+    const leftProduct = matchRevenueCatProductId(left);
+    const rightProduct = matchRevenueCatProductId(right);
+    const productOrder: RevenueCatProductId[] = [
+      "monthly",
+      "yearly",
+      "lifetime",
+    ];
+
+    if (leftProduct || rightProduct) {
+      const leftIndex = leftProduct
+        ? productOrder.indexOf(leftProduct)
+        : 99;
+      const rightIndex = rightProduct
+        ? productOrder.indexOf(rightProduct)
+        : 99;
+
+      if (leftIndex !== rightIndex) {
+        return leftIndex - rightIndex;
+      }
+    }
+
     const leftOrder = order[left.packageType] ?? 99;
     const rightOrder = order[right.packageType] ?? 99;
 

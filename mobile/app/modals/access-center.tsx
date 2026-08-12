@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Linking, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "../../src/components/shell/AppButton";
@@ -10,6 +10,7 @@ import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   getRevenueCatErrorMessage,
+  presentRevenueCatCustomerCenter,
   restoreRevenueCatPurchases,
 } from "../../src/features/entitlements/revenuecat";
 import { formatPlanDate } from "../../src/features/study-plan/generate-local-study-plan";
@@ -47,6 +48,7 @@ export default function AccessCenterModalScreen() {
     (state) => state.setRevenueCatStatus
   );
   const [isRestoring, setIsRestoring] = useState(false);
+  const [isOpeningCustomerCenter, setIsOpeningCustomerCenter] = useState(false);
   const [restoreFeedback, setRestoreFeedback] = useState<FeedbackState>(null);
 
   const hasRealAuth =
@@ -133,23 +135,52 @@ export default function AccessCenterModalScreen() {
     }
   }
 
-  async function handleOpenManagementUrl() {
-    if (!purchaseAccess?.managementUrl) {
+  async function handleOpenCustomerCenter() {
+    if (!currentUser || authMode !== "supabase") {
+      setRestoreFeedback({
+        kind: "error",
+        message: t("paywall.directRequiresAuth"),
+      });
       return;
     }
 
+    if (!revenueCatConfigured) {
+      setRestoreFeedback({
+        kind: "error",
+        message: t("paywall.directMissingConfig"),
+      });
+      return;
+    }
+
+    setIsOpeningCustomerCenter(true);
+    setRestoreFeedback(null);
+    track("customer_center_opened", {
+      source: "access_center",
+    });
+
     try {
-      await Linking.openURL(purchaseAccess.managementUrl);
+      await presentRevenueCatCustomerCenter({
+        appUserId: currentUser.id,
+        onCustomerInfoUpdated: (snapshot) => {
+          hydrateRevenueCatSnapshot(snapshot);
+        },
+      });
     } catch (error) {
       captureError({
         area: "payments",
         error,
-        eventName: "purchase_management_url_open_failed",
-        message: "Failed to open the purchase management URL from the access center.",
+        eventName: "customer_center_open_failed",
+        message: "Failed to open RevenueCat Customer Center.",
         metadata: {
           source: "access_center",
         },
       });
+      setRestoreFeedback({
+        kind: "error",
+        message: t("accessCenter.manageSubscriptionFailedBody"),
+      });
+    } finally {
+      setIsOpeningCustomerCenter(false);
     }
   }
 
@@ -208,12 +239,17 @@ export default function AccessCenterModalScreen() {
                 : t("profile.purchaseAccessMissing")}
             </CText>
           </View>
-          {purchaseAccess?.managementUrl ? (
+          {revenueCatConfigured ? (
             <View style={styles.inlineAction}>
               <AppButton
                 variant="secondary"
-                label={t("accessCenter.manageSubscription")}
-                onPress={() => void handleOpenManagementUrl()}
+                disabled={isOpeningCustomerCenter}
+                label={t(
+                  isOpeningCustomerCenter
+                    ? "accessCenter.customerCenterLoading"
+                    : "accessCenter.manageSubscription"
+                )}
+                onPress={() => void handleOpenCustomerCenter()}
               />
             </View>
           ) : null}

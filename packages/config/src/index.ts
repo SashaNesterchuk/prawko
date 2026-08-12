@@ -192,7 +192,7 @@ export const FEATURE_FLAGS = {
   enableAiQuestionChat: true,
   enableExamSimulator: true,
   enableAds: true,
-  enablePlusPurchase: false,
+  enablePlusPurchase: true,
   devPlusAccess: false,
 } as const;
 

@@ -22,6 +22,8 @@ import { NavigationButton } from "../src/components/shell/NavigationButton";
 import {
   getRevenueCatErrorMessage,
   isRevenueCatPurchaseCancelled,
+  matchRevenueCatProductId,
+  presentRevenueCatPaywall,
   purchaseRevenueCatPackage,
   restoreRevenueCatPurchases,
 } from "../src/features/entitlements/revenuecat";
@@ -266,37 +268,91 @@ export default function PaywallPage() {
       return;
     }
 
-    if (!selectedPackage) {
-      setPurchaseFeedback({
-        kind: "error",
-        message: t("paywall.directNoOfferSelected"),
-      });
-      return;
-    }
-
     setIsPurchasing(true);
     setPurchaseFeedback(null);
     setRevenueCatStatus("loading");
     track("plus_purchase_started", {
       feature: highlightedFeature ?? "premium_access",
-      offering_identifier: selectedPackage.offeringIdentifier,
-      package_identifier: selectedPackage.identifier,
-      package_type: selectedPackage.packageType,
-      price: selectedPackage.price,
-      product_identifier: selectedPackage.productIdentifier,
+      offering_identifier: selectedPackage?.offeringIdentifier ?? null,
+      package_identifier: selectedPackage?.identifier ?? null,
+      package_type: selectedPackage?.packageType ?? null,
+      price: selectedPackage?.price ?? null,
+      product_identifier: selectedPackage?.productIdentifier ?? null,
       source: paywallSource,
+      ui: "revenuecat_paywall",
     });
     track("purchase_started", {
       feature: highlightedFeature ?? "premium_access",
-      offering_identifier: selectedPackage.offeringIdentifier,
-      package_identifier: selectedPackage.identifier,
-      package_type: selectedPackage.packageType,
-      price: selectedPackage.price,
-      product_identifier: selectedPackage.productIdentifier,
+      offering_identifier: selectedPackage?.offeringIdentifier ?? null,
+      package_identifier: selectedPackage?.identifier ?? null,
+      package_type: selectedPackage?.packageType ?? null,
+      price: selectedPackage?.price ?? null,
+      product_identifier: selectedPackage?.productIdentifier ?? null,
       source: paywallSource,
+      ui: "revenuecat_paywall",
     });
 
     try {
+      const paywallPresentation = await presentRevenueCatPaywall({
+        appUserId: currentUser.id,
+      });
+
+      if (
+        paywallPresentation.outcome === "purchased" ||
+        paywallPresentation.outcome === "restored"
+      ) {
+        const snapshot =
+          paywallPresentation.snapshot ??
+          (await restoreRevenueCatPurchases(currentUser.id));
+
+        hydrateRevenueCatSnapshot(snapshot);
+        track("plus_purchase_success", {
+          active_entitlements_count:
+            snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
+          source: paywallSource,
+          ui: "revenuecat_paywall",
+          outcome: paywallPresentation.outcome,
+        });
+        track("purchase_succeeded", {
+          active_entitlements_count:
+            snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
+          source: paywallSource,
+          ui: "revenuecat_paywall",
+          outcome: paywallPresentation.outcome,
+        });
+        setPurchaseFeedback({
+          kind: "success",
+          message: t("paywall.purchaseSuccess", {
+            title: selectedPackage?.title ?? t("paywall.title"),
+          }),
+        });
+        continueAfterUnlock();
+        return;
+      }
+
+      if (paywallPresentation.outcome === "cancelled") {
+        setRevenueCatStatus("ready");
+        track("purchase_cancelled", {
+          source: "paywall",
+          ui: "revenuecat_paywall",
+        });
+        setPurchaseFeedback({
+          kind: "error",
+          message: t("paywall.purchaseCancelled"),
+        });
+        return;
+      }
+
+      // Dashboard paywall missing/unavailable — fall back to package purchase.
+      if (!selectedPackage) {
+        setRevenueCatStatus("ready");
+        setPurchaseFeedback({
+          kind: "error",
+          message: t("paywall.directNoOfferSelected"),
+        });
+        return;
+      }
+
       const snapshot = await purchaseRevenueCatPackage({
         appUserId: currentUser.id,
         identifier: selectedPackage.identifier,
@@ -312,6 +368,7 @@ export default function PaywallPage() {
         package_type: selectedPackage.packageType,
         product_identifier: selectedPackage.productIdentifier,
         source: paywallSource,
+        ui: "package_fallback",
       });
       track("purchase_succeeded", {
         active_entitlements_count:
@@ -321,6 +378,7 @@ export default function PaywallPage() {
         package_type: selectedPackage.packageType,
         product_identifier: selectedPackage.productIdentifier,
         source: paywallSource,
+        ui: "package_fallback",
       });
       setPurchaseFeedback({
         kind: "success",
@@ -333,10 +391,10 @@ export default function PaywallPage() {
       if (isRevenueCatPurchaseCancelled(error)) {
         setRevenueCatStatus("ready");
         track("purchase_cancelled", {
-          offering_identifier: selectedPackage.offeringIdentifier,
-          package_identifier: selectedPackage.identifier,
-          package_type: selectedPackage.packageType,
-          product_identifier: selectedPackage.productIdentifier,
+          offering_identifier: selectedPackage?.offeringIdentifier ?? null,
+          package_identifier: selectedPackage?.identifier ?? null,
+          package_type: selectedPackage?.packageType ?? null,
+          product_identifier: selectedPackage?.productIdentifier ?? null,
           source: "paywall",
         });
         setPurchaseFeedback({
@@ -355,28 +413,28 @@ export default function PaywallPage() {
         message: "Direct purchase failed from the paywall.",
         metadata: {
           feature: highlightedFeature ?? "premium_access",
-          offering_identifier: selectedPackage.offeringIdentifier,
-          package_identifier: selectedPackage.identifier,
-          package_type: selectedPackage.packageType,
-          product_identifier: selectedPackage.productIdentifier,
+          offering_identifier: selectedPackage?.offeringIdentifier ?? null,
+          package_identifier: selectedPackage?.identifier ?? null,
+          package_type: selectedPackage?.packageType ?? null,
+          product_identifier: selectedPackage?.productIdentifier ?? null,
           source: "paywall",
         },
       });
       setRevenueCatStatus("ready");
       track("plus_purchase_fail", {
         message,
-        offering_identifier: selectedPackage.offeringIdentifier,
-        package_identifier: selectedPackage.identifier,
-        package_type: selectedPackage.packageType,
-        product_identifier: selectedPackage.productIdentifier,
+        offering_identifier: selectedPackage?.offeringIdentifier ?? null,
+        package_identifier: selectedPackage?.identifier ?? null,
+        package_type: selectedPackage?.packageType ?? null,
+        product_identifier: selectedPackage?.productIdentifier ?? null,
         source: paywallSource,
       });
       track("purchase_failed", {
         message,
-        offering_identifier: selectedPackage.offeringIdentifier,
-        package_identifier: selectedPackage.identifier,
-        package_type: selectedPackage.packageType,
-        product_identifier: selectedPackage.productIdentifier,
+        offering_identifier: selectedPackage?.offeringIdentifier ?? null,
+        package_identifier: selectedPackage?.identifier ?? null,
+        package_type: selectedPackage?.packageType ?? null,
+        product_identifier: selectedPackage?.productIdentifier ?? null,
         source: paywallSource,
       });
       setPurchaseFeedback({
@@ -470,7 +528,6 @@ export default function PaywallPage() {
     isRestoring ||
     (canUseDirectPurchase &&
       (revenueCatStatus === "loading" ||
-        !selectedPackage ||
         !FEATURE_FLAGS.enablePlusPurchase ||
         !revenueCatConfigured));
   const helperMessage =
@@ -484,9 +541,7 @@ export default function PaywallPage() {
           ? t("paywall.directMissingConfig")
           : revenueCatStatus === "loading" && revenueCatOfferings.length === 0
             ? t("paywall.directLoading")
-            : revenueCatOfferings.length === 0
-              ? t("paywall.directNoOffers")
-              : null
+            : null
       : null;
 
   return (
@@ -553,6 +608,56 @@ export default function PaywallPage() {
               premiumLabel={t("paywall.columnPremium")}
               rows={comparisonRows}
             />
+
+            {!hasPlusAccess && revenueCatOfferings.length > 1 ? (
+              <View style={styles.packageList}>
+                {revenueCatOfferings.map((item) => {
+                  const key = getPackageKey(item);
+                  const productId = matchRevenueCatProductId(item);
+                  const isSelected =
+                    selectedPackage != null && getPackageKey(selectedPackage) === key;
+                  const label =
+                    productId === "monthly"
+                      ? t("paywall.packageMonthly")
+                      : productId === "yearly"
+                        ? t("paywall.packageYearly")
+                        : productId === "lifetime"
+                          ? t("paywall.packageLifetime")
+                          : item.title;
+
+                  return (
+                    <Pressable
+                      key={key}
+                      accessibilityRole="button"
+                      onPress={() => setSelectedPackageKey(key)}
+                      style={({ pressed }) => [
+                        styles.packageChip,
+                        isSelected ? styles.packageChipSelected : null,
+                        pressed ? styles.pressed : null,
+                      ]}
+                    >
+                      <CText
+                        semiBold
+                        style={[
+                          styles.packageChipLabel,
+                          isSelected ? styles.packageChipLabelSelected : null,
+                        ]}
+                      >
+                        {label}
+                      </CText>
+                      <CText
+                        style={[
+                          styles.packageChipPrice,
+                          isSelected ? styles.packageChipLabelSelected : null,
+                        ]}
+                      >
+                        {item.priceString}
+                      </CText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : null}
 
             {!hasPlusAccess ? (
               <View style={styles.noAdsBadge}>
@@ -669,8 +774,11 @@ function pickRecommendedPackage(
   packages: ReturnType<typeof useRevenueCatOfferings>
 ) {
   return (
+    packages.find((item) => matchRevenueCatProductId(item) === "yearly") ??
+    packages.find((item) => matchRevenueCatProductId(item) === "lifetime") ??
+    packages.find((item) => item.packageType === "ANNUAL") ??
     packages.find((item) => item.packageType === "LIFETIME") ??
-    packages.find((item) => item.productIdentifier.includes("lifetime")) ??
+    packages.find((item) => matchRevenueCatProductId(item) === "monthly") ??
     packages[0] ??
     null
   );
@@ -749,6 +857,39 @@ function useStyles() {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
       color: colors.onAccentMuted,
+    },
+    packageList: {
+      width: "100%",
+      gap: spacing.exact(8),
+    },
+    packageChip: {
+      width: "100%",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: spacing.exact(16),
+      paddingVertical: spacing.exact(14),
+      borderRadius: radius.xl,
+      borderWidth: 1,
+      borderColor: colors.glassThin,
+      backgroundColor: colors.glassThin,
+    },
+    packageChipSelected: {
+      borderColor: accents.amber.fill,
+      backgroundColor: accents.amber.fill,
+    },
+    packageChipLabel: {
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(22),
+      color: colors.onAccent,
+    },
+    packageChipPrice: {
+      fontSize: responsiveFont(15),
+      lineHeight: responsiveFont(22),
+      color: colors.onAccentMuted,
+    },
+    packageChipLabelSelected: {
+      color: colors.onAccent,
     },
     noAdsBadge: {
       alignSelf: "center",

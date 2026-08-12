@@ -5,6 +5,7 @@ import {
   fetchRevenueCatSnapshot,
   isRevenueCatConfiguredForCurrentPlatform,
   logoutRevenueCatUser,
+  subscribeToRevenueCatCustomerInfo,
 } from "../features/entitlements/revenuecat";
 import { useHasHydrated, useAppShellStore } from "../state/app-shell";
 import { useEntitlementStore } from "../state/entitlements";
@@ -43,13 +44,25 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
     }
 
     let cancelled = false;
+    let unsubscribeCustomerInfo: (() => void) | undefined;
     setRevenueCatStatus("loading");
 
     void fetchRevenueCatSnapshot(supabaseUserId)
-      .then((snapshot) => {
-        if (!cancelled) {
-          hydrateRevenueCatSnapshot(snapshot);
+      .then(async (snapshot) => {
+        if (cancelled) {
+          return;
         }
+
+        hydrateRevenueCatSnapshot(snapshot);
+
+        unsubscribeCustomerInfo = await subscribeToRevenueCatCustomerInfo(
+          supabaseUserId,
+          (nextSnapshot) => {
+            if (!cancelled) {
+              hydrateRevenueCatSnapshot(nextSnapshot);
+            }
+          }
+        );
       })
       .catch((error) => {
         if (!cancelled) {
@@ -69,6 +82,7 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
 
     return () => {
       cancelled = true;
+      unsubscribeCustomerInfo?.();
     };
   }, [
     appShellHydrated,
