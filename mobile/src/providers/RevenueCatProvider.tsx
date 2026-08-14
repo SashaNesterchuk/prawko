@@ -1,10 +1,9 @@
 import type { PropsWithChildren } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import {
   fetchRevenueCatSnapshot,
   isRevenueCatConfiguredForCurrentPlatform,
-  logoutRevenueCatUser,
   subscribeToRevenueCatCustomerInfo,
 } from "../features/entitlements/revenuecat";
 import { useHasHydrated, useAppShellStore } from "../state/app-shell";
@@ -15,6 +14,8 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
   const appShellHydrated = useHasHydrated();
   const authMode = useAppShellStore((state) => state.authMode);
   const { captureError } = useErrorLogger();
+  const captureErrorRef = useRef(captureError);
+  captureErrorRef.current = captureError;
   const sessionResolved = useAppShellStore((state) => state.sessionResolved);
   const supabaseUserId = useAppShellStore((state) => state.supabaseUser?.id ?? null);
   const clearRevenueCatState = useEntitlementStore(
@@ -32,22 +33,19 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    if (authMode !== "supabase" || !supabaseUserId) {
-      clearRevenueCatState("idle");
-      void logoutRevenueCatUser();
-      return;
-    }
-
     if (!isRevenueCatConfiguredForCurrentPlatform()) {
       clearRevenueCatState("ready");
       return;
     }
 
+    const appUserId =
+      authMode === "supabase" && supabaseUserId ? supabaseUserId : null;
+
     let cancelled = false;
     let unsubscribeCustomerInfo: (() => void) | undefined;
     setRevenueCatStatus("loading");
 
-    void fetchRevenueCatSnapshot(supabaseUserId)
+    void fetchRevenueCatSnapshot(appUserId)
       .then(async (snapshot) => {
         if (cancelled) {
           return;
@@ -56,7 +54,7 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
         hydrateRevenueCatSnapshot(snapshot);
 
         unsubscribeCustomerInfo = await subscribeToRevenueCatCustomerInfo(
-          supabaseUserId,
+          appUserId,
           (nextSnapshot) => {
             if (!cancelled) {
               hydrateRevenueCatSnapshot(nextSnapshot);
@@ -67,13 +65,13 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
       .catch((error) => {
         if (!cancelled) {
           console.warn("Failed to hydrate RevenueCat state.", error);
-          captureError({
+          captureErrorRef.current({
             area: "revenuecat",
             error,
             eventName: "revenuecat_hydration_failed",
             message: "Failed to hydrate RevenueCat customer state.",
             metadata: {
-              user_id: supabaseUserId,
+              user_id: appUserId,
             },
           });
           clearRevenueCatState("ready");
@@ -87,7 +85,6 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
   }, [
     appShellHydrated,
     authMode,
-    captureError,
     clearRevenueCatState,
     hydrateRevenueCatSnapshot,
     sessionResolved,

@@ -1,0 +1,33 @@
+# Feature: Paywall
+# Scenario: Guest tapping Activate stays on paywall and never opens App access
+appId: com.mindjar.prawko
+tags:
+  - paywall
+  - smoke
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-profile
+
+- tapOn:
+    id: "profile-row-offline-mode"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+
+- assertVisible:
+    id: "screen-paywall"
+
+- tapOn:
+    id: "paywall-activate-cta"
+
+- assertNotVisible:
+    id: "screen-onboarding-access"
+
+- assertVisible:
+    id: "screen-paywall"

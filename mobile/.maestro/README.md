@@ -43,6 +43,7 @@ pnpm test:e2e:studio
 | `profile_notifications_switch_visible.yaml` | Profile → notifications switch is visible |
 | `profile_language_screen_opens.yaml` | Profile → Language screen with locale tiles |
 | `profile_offline_without_plus_opens_paywall.yaml` | Profile → Offline mode row → paywall (free) |
+| `paywall_activate_stays_on_paywall.yaml` | Guest Activate on paywall stays on paywall (never App access) |
 | `profile_offline_missing_pack_can_download.yaml` | Offline mode → download missing pack (e2e) |
 | `profile_offline_incomplete_pack_shows_resume.yaml` | Incomplete pack shows resume + remove |
 | `profile_offline_downloading_can_be_stopped.yaml` | Downloading pack can be stopped → incomplete |

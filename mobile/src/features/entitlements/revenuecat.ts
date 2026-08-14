@@ -23,6 +23,11 @@ import {
   type RevenueCatProductId,
 } from "./revenuecat-config";
 
+export {
+  getRevenueCatErrorMessage,
+  isRevenueCatPurchaseCancelled,
+} from "./revenuecat-errors";
+
 type RevenueCatModule = typeof import("react-native-purchases");
 type RevenueCatUIModule = typeof import("react-native-purchases-ui");
 
@@ -63,6 +68,7 @@ let didConfigurePurchases = false;
 let revenueCatModulePromise: Promise<RevenueCatModule> | null = null;
 let revenueCatUIModulePromise: Promise<RevenueCatUIModule> | null = null;
 let customerInfoListener: CustomerInfoUpdateListener | null = null;
+const STORE_REQUEST_TIMEOUT_MS = 20_000;
 
 export function isRevenueCatConfiguredForCurrentPlatform() {
   return Boolean(getRevenueCatPublicApiKey());
@@ -79,7 +85,7 @@ export function hasProEntitlement(customerInfo: CustomerInfo) {
 }
 
 export async function fetchRevenueCatSnapshot(
-  appUserId: string
+  appUserId: string | null = null
 ): Promise<RevenueCatSnapshot> {
   const isConfigured = await ensureRevenueCatReady(appUserId);
 
@@ -88,10 +94,11 @@ export async function fetchRevenueCatSnapshot(
   }
 
   const Purchases = (await getRevenueCatModule()).default;
-  const [customerInfo, offerings] = await Promise.all([
-    Purchases.getCustomerInfo(),
-    Purchases.getOfferings(),
-  ]);
+  const [customerInfo, offerings] = await withTimeout(
+    Promise.all([Purchases.getCustomerInfo(), Purchases.getOfferings()]),
+    STORE_REQUEST_TIMEOUT_MS,
+    "Timed out loading Plus offers from the store."
+  );
 
   return mapRevenueCatSnapshot({
     customerInfo,
@@ -101,18 +108,22 @@ export async function fetchRevenueCatSnapshot(
 }
 
 export async function purchaseRevenueCatPackage(input: {
-  appUserId: string;
+  appUserId?: string | null;
   identifier: string;
   offeringIdentifier: string;
 }) {
-  const isConfigured = await ensureRevenueCatReady(input.appUserId);
+  const isConfigured = await ensureRevenueCatReady(input.appUserId ?? null);
 
   if (!isConfigured) {
     throw new Error("RevenueCat is not configured for this build.");
   }
 
   const Purchases = (await getRevenueCatModule()).default;
-  const offerings = await Purchases.getOfferings();
+  const offerings = await withTimeout(
+    Purchases.getOfferings(),
+    STORE_REQUEST_TIMEOUT_MS,
+    "Timed out loading Plus offers from the store."
+  );
   const targetPackage = findOfferingPackage(offerings, input);
 
   if (!targetPackage) {
@@ -128,7 +139,9 @@ export async function purchaseRevenueCatPackage(input: {
   });
 }
 
-export async function restoreRevenueCatPurchases(appUserId: string) {
+export async function restoreRevenueCatPurchases(
+  appUserId: string | null = null
+) {
   const isConfigured = await ensureRevenueCatReady(appUserId);
 
   if (!isConfigured) {
@@ -153,13 +166,14 @@ export async function restoreRevenueCatPurchases(appUserId: string) {
  * Falls back to `not_presented` when the dashboard paywall is missing.
  */
 export async function presentRevenueCatPaywall(input: {
-  appUserId: string;
+  appUserId?: string | null;
   requiredEntitlementIdentifier?: string;
 }): Promise<{
   outcome: RevenueCatPaywallOutcome;
   snapshot: RevenueCatSnapshot | null;
 }> {
-  const isConfigured = await ensureRevenueCatReady(input.appUserId);
+  const appUserId = input.appUserId ?? null;
+  const isConfigured = await ensureRevenueCatReady(appUserId);
 
   if (!isConfigured) {
     return { outcome: "not_presented", snapshot: null };
@@ -181,7 +195,7 @@ export async function presentRevenueCatPaywall(input: {
       return { outcome, snapshot: null };
     }
 
-    const snapshot = await fetchRevenueCatSnapshot(input.appUserId);
+    const snapshot = await fetchRevenueCatSnapshot(appUserId);
     return { outcome, snapshot };
   } catch (error) {
     console.warn("Failed to present RevenueCat paywall.", error);
@@ -193,10 +207,10 @@ export async function presentRevenueCatPaywall(input: {
  * Opens RevenueCat Customer Center for restore / manage / support flows.
  */
 export async function presentRevenueCatCustomerCenter(input: {
-  appUserId: string;
+  appUserId?: string | null;
   onCustomerInfoUpdated?: (snapshot: RevenueCatSnapshot) => void;
 }) {
-  const isConfigured = await ensureRevenueCatReady(input.appUserId);
+  const isConfigured = await ensureRevenueCatReady(input.appUserId ?? null);
 
   if (!isConfigured) {
     throw new Error("RevenueCat is not configured for this build.");
@@ -229,7 +243,7 @@ export async function presentRevenueCatCustomerCenter(input: {
 }
 
 export async function subscribeToRevenueCatCustomerInfo(
-  appUserId: string,
+  appUserId: string | null,
   onUpdate: (snapshot: RevenueCatSnapshot) => void
 ) {
   const isConfigured = await ensureRevenueCatReady(appUserId);
@@ -291,36 +305,6 @@ export async function logoutRevenueCatUser() {
   }
 }
 
-export function isRevenueCatPurchaseCancelled(error: unknown) {
-  return Boolean((error as { userCancelled?: unknown })?.userCancelled);
-}
-
-export function getRevenueCatErrorMessage(error: unknown) {
-  const message = getErrorMessage(error);
-
-  if (!message) {
-    return "The purchase action could not be completed.";
-  }
-
-  if (/not configured/i.test(message)) {
-    return "Direct purchase is not configured in this build yet.";
-  }
-
-  if (/network/i.test(message) || /offline/i.test(message)) {
-    return "The purchase request failed because the device is offline.";
-  }
-
-  if (/package is no longer available/i.test(message)) {
-    return "The selected offer is no longer available.";
-  }
-
-  if (/already.*subscribed/i.test(message)) {
-    return "This subscription is already active on this account.";
-  }
-
-  return message;
-}
-
 export function matchRevenueCatProductId(
   item: Pick<
     RevenueCatPackageSummary,
@@ -352,6 +336,21 @@ export function matchRevenueCatProductId(
   return null;
 }
 
+/** Prefer yearly → lifetime → monthly for marketing surfaces and paywall default. */
+export function pickRecommendedPackage(
+  packages: RevenueCatPackageSummary[]
+): RevenueCatPackageSummary | null {
+  return (
+    packages.find((item) => matchRevenueCatProductId(item) === "yearly") ??
+    packages.find((item) => matchRevenueCatProductId(item) === "lifetime") ??
+    packages.find((item) => item.packageType === "ANNUAL") ??
+    packages.find((item) => item.packageType === "LIFETIME") ??
+    packages.find((item) => matchRevenueCatProductId(item) === "monthly") ??
+    packages[0] ??
+    null
+  );
+}
+
 function createEmptyRevenueCatSnapshot(
   isConfigured: boolean
 ): RevenueCatSnapshot {
@@ -363,7 +362,7 @@ function createEmptyRevenueCatSnapshot(
   };
 }
 
-async function ensureRevenueCatReady(appUserId: string) {
+async function ensureRevenueCatReady(appUserId: string | null = null) {
   const apiKey = getRevenueCatPublicApiKey();
 
   if (!apiKey) {
@@ -371,6 +370,9 @@ async function ensureRevenueCatReady(appUserId: string) {
   }
 
   const Purchases = (await getRevenueCatModule()).default;
+  const configureOptions = appUserId
+    ? { apiKey, appUserID: appUserId }
+    : { apiKey };
 
   if (!didConfigurePurchases) {
     if ("setLogLevel" in Purchases) {
@@ -379,10 +381,7 @@ async function ensureRevenueCatReady(appUserId: string) {
       );
     }
 
-    Purchases.configure({
-      apiKey,
-      appUserID: appUserId,
-    });
+    Purchases.configure(configureOptions);
     configuredApiKey = apiKey;
     configuredAppUserId = appUserId;
     didConfigurePurchases = true;
@@ -390,18 +389,26 @@ async function ensureRevenueCatReady(appUserId: string) {
   }
 
   if (configuredApiKey !== apiKey) {
-    Purchases.configure({
-      apiKey,
-      appUserID: appUserId,
-    });
+    Purchases.configure(configureOptions);
     configuredApiKey = apiKey;
     configuredAppUserId = appUserId;
     return true;
   }
 
-  if (configuredAppUserId !== appUserId) {
+  if (appUserId && configuredAppUserId !== appUserId) {
     await Purchases.logIn(appUserId);
     configuredAppUserId = appUserId;
+    return true;
+  }
+
+  if (!appUserId && configuredAppUserId !== null) {
+    try {
+      await Purchases.logOut();
+    } catch (error) {
+      console.warn("Failed to switch RevenueCat to anonymous user.", error);
+    } finally {
+      configuredAppUserId = null;
+    }
   }
 
   return true;
@@ -537,14 +544,27 @@ function findOfferingPackage(
 ) {
   const packages = offerings.all[input.offeringIdentifier]?.availablePackages;
 
+  const currentPackages = offerings.current?.availablePackages ?? [];
+  const allPackages = Object.values(offerings.all).flatMap(
+    (offering) => offering.availablePackages
+  );
+
   return (
     packages?.find((item) => item.identifier === input.identifier) ??
-    offerings.current?.availablePackages.find(
+    currentPackages.find(
       (item) =>
         item.identifier === input.identifier &&
         item.presentedOfferingContext.offeringIdentifier ===
           input.offeringIdentifier
     ) ??
+    currentPackages.find((item) => item.identifier === input.identifier) ??
+    allPackages.find(
+      (item) =>
+        item.identifier === input.identifier &&
+        item.presentedOfferingContext.offeringIdentifier ===
+          input.offeringIdentifier
+    ) ??
+    allPackages.find((item) => item.identifier === input.identifier) ??
     null
   );
 }
@@ -623,12 +643,23 @@ function dedupeByKey<T>(items: T[], getKey: (item: T) => string) {
   });
 }
 
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error && error.message.trim()) {
-    return error.message.trim();
+async function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  message: string
+) {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(message)), ms);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
   }
-
-  const message = (error as { message?: unknown })?.message;
-
-  return typeof message === "string" && message.trim() ? message.trim() : null;
 }

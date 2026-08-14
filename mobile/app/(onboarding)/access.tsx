@@ -263,6 +263,7 @@ export default function AccessScreen() {
           ? "onboarding.accessSubtitle"
           : "onboarding.accessSubtitleNoMock"
       )}
+      testID="screen-onboarding-access"
       footer={
         <View style={styles.footerStack}>
           <AppButton

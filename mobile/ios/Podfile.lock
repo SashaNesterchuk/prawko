@@ -83,8 +83,11 @@ PODS:
   - hermes-engine (0.81.5):
     - hermes-engine/Pre-built (= 0.81.5)
   - hermes-engine/Pre-built (0.81.5)
-  - PurchasesHybridCommon (14.3.0):
-    - RevenueCat (= 5.32.0)
+  - PurchasesHybridCommon (18.29.0):
+    - RevenueCat (= 5.83.0)
+  - PurchasesHybridCommonUI (18.29.0):
+    - PurchasesHybridCommon (= 18.29.0)
+    - RevenueCatUI (= 5.83.0)
   - RCTDeprecation (0.81.5)
   - RCTRequired (0.81.5)
   - RCTTypeSafety (0.81.5):
@@ -1805,7 +1808,9 @@ PODS:
     - React-utils (= 0.81.5)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.81.5)
-  - RevenueCat (5.32.0)
+  - RevenueCat (5.83.0)
+  - RevenueCatUI (5.83.0):
+    - RevenueCat (= 5.83.0)
   - RNCAsyncStorage (2.2.0):
     - hermes-engine
     - RCTRequired
@@ -1874,8 +1879,11 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNPurchases (8.12.0):
-    - PurchasesHybridCommon (= 14.3.0)
+  - RNPaywalls (10.7.0):
+    - PurchasesHybridCommonUI (= 18.29.0)
+    - React-Core
+  - RNPurchases (10.7.0):
+    - PurchasesHybridCommon (= 18.29.0)
     - React-Core
   - RNReanimated (4.1.7):
     - hermes-engine
@@ -2124,7 +2132,7 @@ DEPENDENCIES:
   - "ExpoAsset (from `../../node_modules/.pnpm/expo-asset@12.0.13_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-co_nd3u2qlmq6447kdbvg63hc3fq4/node_modules/expo-asset/ios`)"
   - "ExpoFileSystem (from `../../node_modules/.pnpm/expo-file-system@19.0.22_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native+me_gv4dobmwkhryu4yd3ad7hr4cz4/node_modules/expo-file-system/ios`)"
   - "ExpoFont (from `../../node_modules/.pnpm/expo-font@14.0.11_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-con_irdpowq2zfyeouoemeu3uef7ay/node_modules/expo-font/ios`)"
-  - "ExpoHead (from `../../node_modules/.pnpm/expo-router@6.0.23_prduksynpqokqsg7qe4eppzym4/node_modules/expo-router/ios`)"
+  - "ExpoHead (from `../../node_modules/.pnpm/expo-router@6.0.23_ubwc6jawtnsjn2jleafmcx7c3i/node_modules/expo-router/ios`)"
   - "ExpoKeepAwake (from `../../node_modules/.pnpm/expo-keep-awake@15.0.8_expo@54.0.34_react@19.1.0/node_modules/expo-keep-awake/ios`)"
   - "ExpoLinearGradient (from `../../node_modules/.pnpm/expo-linear-gradient@15.0.8_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native_r7rs2p46z2sie3dlc37llqfmsu/node_modules/expo-linear-gradient/ios`)"
   - "ExpoLinking (from `../../node_modules/.pnpm/expo-linking@8.0.12_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-c_jvgrdm26aqg7jhrdcymmjh27ai/node_modules/expo-linking/ios`)"
@@ -2205,7 +2213,8 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../../node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.29.0_@react_cgc7k2i46wnqvxxuonk46vltq4/node_modules/@react-native-async-storage/async-storage`)"
   - "RNGestureHandler (from `../../node_modules/.pnpm/react-native-gesture-handler@2.28.0_react-native@0.81.5_@babel+core@7.29.0_@react-native+metr_6foaep53ktu3gk2itm3d47fidy/node_modules/react-native-gesture-handler`)"
   - "RNGoogleMobileAds (from `../../node_modules/.pnpm/react-native-google-mobile-ads@16.4.0_expo@54.0.34_react@19.1.0/node_modules/react-native-google-mobile-ads`)"
-  - "RNPurchases (from `../../node_modules/.pnpm/react-native-purchases@8.12.0_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-conf_oynofyry32xe3uz77r3hnzph7a/node_modules/react-native-purchases`)"
+  - "RNPaywalls (from `../../node_modules/.pnpm/react-native-purchases-ui@10.7.0_react-native-purchases@10.7.0_react-native@0.81.5_@babel+cor_rzyfxxlytgjk7jshv5b5xzssgy/node_modules/react-native-purchases-ui`)"
+  - "RNPurchases (from `../../node_modules/.pnpm/react-native-purchases@10.7.0_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-conf_rjwm3bowbnvlonnurqdjsyv4ua/node_modules/react-native-purchases`)"
   - "RNReanimated (from `../../node_modules/.pnpm/react-native-reanimated@4.1.7_react-native-worklets@0.5.1_@babel+core@7.29.0_react-native@0.8_bqg7aix5lc4jzzdl74jkhmzq4e/node_modules/react-native-reanimated`)"
   - "RNScreens (from `../../node_modules/.pnpm/react-native-screens@4.16.0_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-config_6uqvezptdwwt74nn2j24q6drba/node_modules/react-native-screens`)"
   - "RNSVG (from `../../node_modules/.pnpm/react-native-svg@15.15.5_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-config@0._6ygadly3lrxxyqfjvrn7x4n5ui/node_modules/react-native-svg`)"
@@ -2217,7 +2226,9 @@ SPEC REPOS:
     - Google-Mobile-Ads-SDK
     - GoogleUserMessagingPlatform
     - PurchasesHybridCommon
+    - PurchasesHybridCommonUI
     - RevenueCat
+    - RevenueCatUI
 
 EXTERNAL SOURCES:
   EXApplication:
@@ -2235,7 +2246,7 @@ EXTERNAL SOURCES:
   ExpoFont:
     :path: "../../node_modules/.pnpm/expo-font@14.0.11_expo@54.0.34_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-con_irdpowq2zfyeouoemeu3uef7ay/node_modules/expo-font/ios"
   ExpoHead:
-    :path: "../../node_modules/.pnpm/expo-router@6.0.23_prduksynpqokqsg7qe4eppzym4/node_modules/expo-router/ios"
+    :path: "../../node_modules/.pnpm/expo-router@6.0.23_ubwc6jawtnsjn2jleafmcx7c3i/node_modules/expo-router/ios"
   ExpoKeepAwake:
     :path: "../../node_modules/.pnpm/expo-keep-awake@15.0.8_expo@54.0.34_react@19.1.0/node_modules/expo-keep-awake/ios"
   ExpoLinearGradient:
@@ -2395,8 +2406,10 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/react-native-gesture-handler@2.28.0_react-native@0.81.5_@babel+core@7.29.0_@react-native+metr_6foaep53ktu3gk2itm3d47fidy/node_modules/react-native-gesture-handler"
   RNGoogleMobileAds:
     :path: "../../node_modules/.pnpm/react-native-google-mobile-ads@16.4.0_expo@54.0.34_react@19.1.0/node_modules/react-native-google-mobile-ads"
+  RNPaywalls:
+    :path: "../../node_modules/.pnpm/react-native-purchases-ui@10.7.0_react-native-purchases@10.7.0_react-native@0.81.5_@babel+cor_rzyfxxlytgjk7jshv5b5xzssgy/node_modules/react-native-purchases-ui"
   RNPurchases:
-    :path: "../../node_modules/.pnpm/react-native-purchases@8.12.0_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-conf_oynofyry32xe3uz77r3hnzph7a/node_modules/react-native-purchases"
+    :path: "../../node_modules/.pnpm/react-native-purchases@10.7.0_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-conf_rjwm3bowbnvlonnurqdjsyv4ua/node_modules/react-native-purchases"
   RNReanimated:
     :path: "../../node_modules/.pnpm/react-native-reanimated@4.1.7_react-native-worklets@0.5.1_@babel+core@7.29.0_react-native@0.8_bqg7aix5lc4jzzdl74jkhmzq4e/node_modules/react-native-reanimated"
   RNScreens:
@@ -2429,7 +2442,8 @@ SPEC CHECKSUMS:
   Google-Mobile-Ads-SDK: 2171620c6497804b57dc88b95644cc82e7dfb5b0
   GoogleUserMessagingPlatform: befe603da6501006420c206222acd449bba45a9c
   hermes-engine: 9f4dfe93326146a1c99eb535b1cb0b857a3cd172
-  PurchasesHybridCommon: 7f0944cc5411bdcd1ea5d69affa6a6f9aaf87b13
+  PurchasesHybridCommon: 94a0fde86cfecdc487fb64667b68f527af930265
+  PurchasesHybridCommonUI: f502ea0b5aefe81e8054af70be64688c8a51fd51
   RCTDeprecation: 943572d4be82d480a48f4884f670135ae30bf990
   RCTRequired: 8f3cfc90cc25cf6e420ddb3e7caaaabc57df6043
   RCTTypeSafety: 16a4144ca3f959583ab019b57d5633df10b5e97c
@@ -2496,11 +2510,13 @@ SPEC CHECKSUMS:
   ReactCodegen: 13ce61d34a05662a5934bb7505456ae5e7cd0867
   ReactCommon: 08810150b1206cc44aecf5f6ae19af32f29151a8
   ReactNativeDependencies: 71ce9c28beb282aa720ea7b46980fff9669f428a
-  RevenueCat: 7e1d0768fb287c9983173c9b28e39ccbeeb828a9
+  RevenueCat: a83de0391a1061302699cb55eb1ff0662f5768b5
+  RevenueCatUI: 6f819d25fe953112c3722e33d0879bd590d78810
   RNCAsyncStorage: 3a4f5e2777dae1688b781a487923a08569e27fe4
   RNGestureHandler: 2914750df066d89bf9d8f48a10ad5f0051108ac3
   RNGoogleMobileAds: f7aeb5dcf5362fe82d61ffa2c66671f85bbf20aa
-  RNPurchases: 6070b60f5d8f525a58905df50773f7a3252f0cfa
+  RNPaywalls: 766f341527f7f6c4174a4bc5448d83d12a762a06
+  RNPurchases: d646405958082374e8b3cb5d6398318114750804
   RNReanimated: 70781cac1aaea05f63c7be6133c02fcbec59772d
   RNScreens: d8d6f1792f6e7ac12b0190d33d8d390efc0c1845
   RNSVG: 1b2772436cb0cebfae91616c4fdd99feeef5ee6d

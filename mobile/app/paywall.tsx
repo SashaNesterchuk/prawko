@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   View,
@@ -13,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { APP_FEATURES, FEATURE_FLAGS, type AppFeature } from "@prawko/config";
 
+import { mobileEnv } from "../src/config/env";
 import {
   PaywallComparisonTable,
   type PaywallComparisonRow,
@@ -20,10 +22,12 @@ import {
 import { PaywallScreen } from "../src/components/shell/PaywallScreen";
 import { NavigationButton } from "../src/components/shell/NavigationButton";
 import {
+  fetchRevenueCatSnapshot,
   getRevenueCatErrorMessage,
+  isRevenueCatConfiguredForCurrentPlatform,
   isRevenueCatPurchaseCancelled,
   matchRevenueCatProductId,
-  presentRevenueCatPaywall,
+  pickRecommendedPackage,
   purchaseRevenueCatPackage,
   restoreRevenueCatPurchases,
 } from "../src/features/entitlements/revenuecat";
@@ -70,9 +74,6 @@ export default function PaywallPage() {
   const revenueCatOfferings = useRevenueCatOfferings();
   const revenueCatStatus = useRevenueCatStatus();
   const hasPlusAccess = useHasPlusAccess();
-  const setRevenueCatStatus = useEntitlementStore(
-    (state) => state.setRevenueCatStatus
-  );
   const hydrateRevenueCatSnapshot = useEntitlementStore(
     (state) => state.hydrateRevenueCatSnapshot
   );
@@ -133,10 +134,8 @@ export default function PaywallPage() {
     router.back();
   };
 
-  const canUseDirectPurchase =
-    FEATURE_FLAGS.enablePlusPurchase &&
-    authMode === "supabase" &&
-    Boolean(currentUser);
+  const revenueCatAppUserId =
+    authMode === "supabase" && currentUser ? currentUser.id : null;
   const purchaseEndsAt = purchaseAccess?.latestExpirationDate
     ? formatPlanDate(purchaseAccess.latestExpirationDate.slice(0, 10))
     : null;
@@ -246,150 +245,101 @@ export default function PaywallPage() {
     track,
   ]);
 
+  const showPurchaseError = (message: string) => {
+    setPurchaseFeedback({
+      kind: "error",
+      message,
+    });
+    if (!mobileEnv.enableE2ETestMode) {
+      Alert.alert(t("paywall.directTitle"), message);
+    }
+  };
+
   const handlePurchase = async () => {
-    if (!currentUser || authMode !== "supabase") {
-      router.replace("/(onboarding)/access");
-      return;
-    }
-
     if (!FEATURE_FLAGS.enablePlusPurchase) {
-      setPurchaseFeedback({
-        kind: "error",
-        message: t("paywall.purchaseUnavailable"),
-      });
+      showPurchaseError(t("paywall.purchaseUnavailable"));
       return;
     }
 
-    if (!revenueCatConfigured) {
-      setPurchaseFeedback({
-        kind: "error",
-        message: t("paywall.directMissingConfig"),
-      });
+    if (!revenueCatConfigured && !isRevenueCatConfiguredForCurrentPlatform()) {
+      showPurchaseError(t("paywall.directMissingConfig"));
       return;
     }
 
     setIsPurchasing(true);
     setPurchaseFeedback(null);
-    setRevenueCatStatus("loading");
-    track("plus_purchase_started", {
-      feature: highlightedFeature ?? "premium_access",
-      offering_identifier: selectedPackage?.offeringIdentifier ?? null,
-      package_identifier: selectedPackage?.identifier ?? null,
-      package_type: selectedPackage?.packageType ?? null,
-      price: selectedPackage?.price ?? null,
-      product_identifier: selectedPackage?.productIdentifier ?? null,
-      source: paywallSource,
-      ui: "revenuecat_paywall",
-    });
-    track("purchase_started", {
-      feature: highlightedFeature ?? "premium_access",
-      offering_identifier: selectedPackage?.offeringIdentifier ?? null,
-      package_identifier: selectedPackage?.identifier ?? null,
-      package_type: selectedPackage?.packageType ?? null,
-      price: selectedPackage?.price ?? null,
-      product_identifier: selectedPackage?.productIdentifier ?? null,
-      source: paywallSource,
-      ui: "revenuecat_paywall",
-    });
 
     try {
-      const paywallPresentation = await presentRevenueCatPaywall({
-        appUserId: currentUser.id,
+      let targetPackage = selectedPackage;
+
+      if (!targetPackage) {
+        const snapshot = await fetchRevenueCatSnapshot(revenueCatAppUserId);
+        hydrateRevenueCatSnapshot(snapshot);
+        targetPackage = pickRecommendedPackage(snapshot.offerings);
+      }
+
+      if (!targetPackage) {
+        showPurchaseError(t("paywall.directNoOffers"));
+        return;
+      }
+
+      track("plus_purchase_started", {
+        feature: highlightedFeature ?? "premium_access",
+        offering_identifier: targetPackage.offeringIdentifier,
+        package_identifier: targetPackage.identifier,
+        package_type: targetPackage.packageType,
+        price: targetPackage.price,
+        product_identifier: targetPackage.productIdentifier,
+        source: paywallSource,
+        ui: "package",
+      });
+      track("purchase_started", {
+        feature: highlightedFeature ?? "premium_access",
+        offering_identifier: targetPackage.offeringIdentifier,
+        package_identifier: targetPackage.identifier,
+        package_type: targetPackage.packageType,
+        price: targetPackage.price,
+        product_identifier: targetPackage.productIdentifier,
+        source: paywallSource,
+        ui: "package",
       });
 
-      if (
-        paywallPresentation.outcome === "purchased" ||
-        paywallPresentation.outcome === "restored"
-      ) {
-        const snapshot =
-          paywallPresentation.snapshot ??
-          (await restoreRevenueCatPurchases(currentUser.id));
-
-        hydrateRevenueCatSnapshot(snapshot);
-        track("plus_purchase_success", {
-          active_entitlements_count:
-            snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
-          source: paywallSource,
-          ui: "revenuecat_paywall",
-          outcome: paywallPresentation.outcome,
-        });
-        track("purchase_succeeded", {
-          active_entitlements_count:
-            snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
-          source: paywallSource,
-          ui: "revenuecat_paywall",
-          outcome: paywallPresentation.outcome,
-        });
-        setPurchaseFeedback({
-          kind: "success",
-          message: t("paywall.purchaseSuccess", {
-            title: selectedPackage?.title ?? t("paywall.title"),
-          }),
-        });
-        continueAfterUnlock();
-        return;
-      }
-
-      if (paywallPresentation.outcome === "cancelled") {
-        setRevenueCatStatus("ready");
-        track("purchase_cancelled", {
-          source: "paywall",
-          ui: "revenuecat_paywall",
-        });
-        setPurchaseFeedback({
-          kind: "error",
-          message: t("paywall.purchaseCancelled"),
-        });
-        return;
-      }
-
-      // Dashboard paywall missing/unavailable — fall back to package purchase.
-      if (!selectedPackage) {
-        setRevenueCatStatus("ready");
-        setPurchaseFeedback({
-          kind: "error",
-          message: t("paywall.directNoOfferSelected"),
-        });
-        return;
-      }
-
       const snapshot = await purchaseRevenueCatPackage({
-        appUserId: currentUser.id,
-        identifier: selectedPackage.identifier,
-        offeringIdentifier: selectedPackage.offeringIdentifier,
+        appUserId: revenueCatAppUserId,
+        identifier: targetPackage.identifier,
+        offeringIdentifier: targetPackage.offeringIdentifier,
       });
 
       hydrateRevenueCatSnapshot(snapshot);
       track("plus_purchase_success", {
         active_entitlements_count:
           snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
-        offering_identifier: selectedPackage.offeringIdentifier,
-        package_identifier: selectedPackage.identifier,
-        package_type: selectedPackage.packageType,
-        product_identifier: selectedPackage.productIdentifier,
+        offering_identifier: targetPackage.offeringIdentifier,
+        package_identifier: targetPackage.identifier,
+        package_type: targetPackage.packageType,
+        product_identifier: targetPackage.productIdentifier,
         source: paywallSource,
-        ui: "package_fallback",
+        ui: "package",
       });
       track("purchase_succeeded", {
         active_entitlements_count:
           snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
-        offering_identifier: selectedPackage.offeringIdentifier,
-        package_identifier: selectedPackage.identifier,
-        package_type: selectedPackage.packageType,
-        product_identifier: selectedPackage.productIdentifier,
+        offering_identifier: targetPackage.offeringIdentifier,
+        package_identifier: targetPackage.identifier,
+        package_type: targetPackage.packageType,
+        product_identifier: targetPackage.productIdentifier,
         source: paywallSource,
-        ui: "package_fallback",
+        ui: "package",
       });
       setPurchaseFeedback({
         kind: "success",
         message: t("paywall.purchaseSuccess", {
-          title: selectedPackage.title,
+          title: targetPackage.title,
         }),
       });
       continueAfterUnlock();
     } catch (error) {
       if (isRevenueCatPurchaseCancelled(error)) {
-        setRevenueCatStatus("ready");
         track("purchase_cancelled", {
           offering_identifier: selectedPackage?.offeringIdentifier ?? null,
           package_identifier: selectedPackage?.identifier ?? null,
@@ -420,7 +370,6 @@ export default function PaywallPage() {
           source: "paywall",
         },
       });
-      setRevenueCatStatus("ready");
       track("plus_purchase_fail", {
         message,
         offering_identifier: selectedPackage?.offeringIdentifier ?? null,
@@ -437,38 +386,26 @@ export default function PaywallPage() {
         product_identifier: selectedPackage?.productIdentifier ?? null,
         source: paywallSource,
       });
-      setPurchaseFeedback({
-        kind: "error",
-        message,
-      });
+      showPurchaseError(message);
     } finally {
       setIsPurchasing(false);
     }
   };
 
   const handleRestore = async () => {
-    if (!currentUser || authMode !== "supabase") {
-      router.replace("/(onboarding)/access");
-      return;
-    }
-
-    if (!revenueCatConfigured) {
-      setPurchaseFeedback({
-        kind: "error",
-        message: t("paywall.directMissingConfig"),
-      });
+    if (!revenueCatConfigured && !isRevenueCatConfiguredForCurrentPlatform()) {
+      showPurchaseError(t("paywall.directMissingConfig"));
       return;
     }
 
     setIsRestoring(true);
     setPurchaseFeedback(null);
-    setRevenueCatStatus("loading");
     track("purchase_restore_started", {
       source: "paywall",
     });
 
     try {
-      const snapshot = await restoreRevenueCatPurchases(currentUser.id);
+      const snapshot = await restoreRevenueCatPurchases(revenueCatAppUserId);
 
       hydrateRevenueCatSnapshot(snapshot);
 
@@ -479,10 +416,7 @@ export default function PaywallPage() {
         track("purchase_restore_empty", {
           source: "paywall",
         });
-        setPurchaseFeedback({
-          kind: "error",
-          message: t("paywall.restoreEmpty"),
-        });
+        showPurchaseError(t("paywall.restoreEmpty"));
         return;
       }
 
@@ -508,15 +442,11 @@ export default function PaywallPage() {
           source: "paywall",
         },
       });
-      setRevenueCatStatus("ready");
       track("purchase_restore_failed", {
         message,
         source: "paywall",
       });
-      setPurchaseFeedback({
-        kind: "error",
-        message,
-      });
+      showPurchaseError(message);
     } finally {
       setIsRestoring(false);
     }
@@ -526,23 +456,20 @@ export default function PaywallPage() {
     hasPlusAccess ||
     isPurchasing ||
     isRestoring ||
-    (canUseDirectPurchase &&
-      (revenueCatStatus === "loading" ||
-        !FEATURE_FLAGS.enablePlusPurchase ||
-        !revenueCatConfigured));
-  const helperMessage =
-    !hasPlusAccess &&
-    !canUseDirectPurchase &&
-    currentUser &&
-    authMode === "supabase"
-      ? !FEATURE_FLAGS.enablePlusPurchase
-        ? t("paywall.purchaseUnavailable")
-        : !revenueCatConfigured
-          ? t("paywall.directMissingConfig")
-          : revenueCatStatus === "loading" && revenueCatOfferings.length === 0
-            ? t("paywall.directLoading")
-            : null
-      : null;
+    !FEATURE_FLAGS.enablePlusPurchase;
+  const helperMessage = !hasPlusAccess
+    ? !FEATURE_FLAGS.enablePlusPurchase
+      ? t("paywall.purchaseUnavailable")
+      : isPurchasing
+        ? t("paywall.purchaseCtaLoading")
+        : revenueCatStatus === "loading" && revenueCatOfferings.length === 0
+          ? t("paywall.directLoading")
+          : !revenueCatConfigured
+            ? t("paywall.directMissingConfig")
+            : revenueCatStatus === "ready" && revenueCatOfferings.length === 0
+              ? t("paywall.directNoOffers")
+              : null
+    : null;
 
   return (
     <PaywallScreen>
@@ -677,6 +604,7 @@ export default function PaywallPage() {
                     ? styles.feedbackError
                     : styles.feedbackSuccess,
                 ]}
+                testID="paywall-purchase-feedback"
               >
                 {purchaseFeedback.message}
               </CText>
@@ -700,15 +628,14 @@ export default function PaywallPage() {
 
                 <Pressable
                   accessibilityRole="button"
-                  disabled={purchaseDisabled && canUseDirectPurchase}
+                  disabled={purchaseDisabled}
                   onPress={() => void handlePurchase()}
                   style={({ pressed }) => [
                     styles.cta,
-                    purchaseDisabled && canUseDirectPurchase
-                      ? styles.ctaDisabled
-                      : null,
+                    purchaseDisabled ? styles.ctaDisabled : null,
                     pressed ? styles.pressed : null,
                   ]}
+                  testID="paywall-activate-cta"
                 >
                   {isPurchasing ? (
                     <ActivityIndicator color={colors.onAccent} />
@@ -721,12 +648,13 @@ export default function PaywallPage() {
 
                 <Pressable
                   accessibilityRole="button"
-                  disabled={isPurchasing || isRestoring || !revenueCatConfigured}
+                  disabled={isPurchasing || isRestoring}
                   onPress={() => void handleRestore()}
                   style={({ pressed }) => [
                     styles.restoreButton,
                     pressed ? styles.pressed : null,
                   ]}
+                  testID="paywall-restore-cta"
                 >
                   <CText style={styles.restoreLabel}>
                     {t(
@@ -768,20 +696,6 @@ function getSingleParam(value: string | string[] | undefined) {
 
 function isAppFeature(value: string | undefined): value is AppFeature {
   return APP_FEATURES.includes(value as AppFeature);
-}
-
-function pickRecommendedPackage(
-  packages: ReturnType<typeof useRevenueCatOfferings>
-) {
-  return (
-    packages.find((item) => matchRevenueCatProductId(item) === "yearly") ??
-    packages.find((item) => matchRevenueCatProductId(item) === "lifetime") ??
-    packages.find((item) => item.packageType === "ANNUAL") ??
-    packages.find((item) => item.packageType === "LIFETIME") ??
-    packages.find((item) => matchRevenueCatProductId(item) === "monthly") ??
-    packages[0] ??
-    null
-  );
 }
 
 function getPackageKey(item: {
@@ -914,7 +828,7 @@ function useStyles() {
       textAlign: "center",
     },
     feedbackError: {
-      color: colors.warningSoft,
+      color: accents.amber.fill,
     },
     feedbackSuccess: {
       color: colors.onAccent,
@@ -923,7 +837,7 @@ function useStyles() {
       fontSize: responsiveFont(13),
       lineHeight: responsiveFont(20),
       textAlign: "center",
-      color: colors.onAccentMuted,
+      color: colors.onAccent,
     },
     lifetimeRow: {
       flexDirection: "row",

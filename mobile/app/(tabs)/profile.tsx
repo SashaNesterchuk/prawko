@@ -54,6 +54,7 @@ import {
   getWarsawIsoDate,
   type RemoteReadinessSummary,
 } from "../../src/features/study-plan/supabase-study-plan-progress";
+import { pickRecommendedPackage } from "../../src/features/entitlements/revenuecat";
 import { getMobileSupabaseClient } from "../../src/lib/supabase";
 import {
   CText,
@@ -64,6 +65,7 @@ import {
 import { useTheme } from "../../src/providers/ThemeProvider";
 import {
   useHasPlusAccess,
+  useRevenueCatOfferings,
 } from "../../src/state/entitlements";
 import {
   useCurrentStudyPlan,
@@ -108,6 +110,10 @@ export default function ProfileTabScreen() {
   const resetProgress = useQuestionProgressStore((state) => state.resetProgress);
   const questionCatalogVersion = useQuestionCatalogVersion();
   const hasPlusAccess = useHasPlusAccess();
+  const revenueCatOfferings = useRevenueCatOfferings();
+  const plusPriceLabel =
+    pickRecommendedPackage(revenueCatOfferings)?.priceString ??
+    t("paywall.ctaFallbackPrice");
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -348,7 +354,7 @@ export default function ProfileTabScreen() {
               title={t("profile.premiumTitle")}
               description={t("profile.premiumDescription")}
               priceBadge={t("profile.premiumPriceBadge", {
-                price: t("paywall.ctaFallbackPrice"),
+                price: plusPriceLabel,
               })}
               onPress={() => router.navigate("/paywall")}
             />
