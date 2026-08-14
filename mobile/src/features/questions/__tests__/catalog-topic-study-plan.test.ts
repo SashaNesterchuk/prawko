@@ -1,4 +1,10 @@
-import { QUESTION_TOPIC_IDS, isQuestionTopicId } from "@prawko/config";
+import {
+  LEGACY_QUESTION_TOPIC_ID_MAP,
+  QUESTION_TOPIC_IDS,
+  isQuestionTopicId,
+  normalizeQuestionTopicId,
+  normalizeQuestionTopicIds,
+} from "@prawko/config";
 
 import { buildQuestionChatContext } from "../../ai/question-chat-context";
 import { generateLocalStudyPlan } from "../../study-plan/generate-local-study-plan";
@@ -60,8 +66,8 @@ describe("study plan and AI chat catalog topics", () => {
       points: 2,
       scope: "base",
       topicBlock: "safety",
-      primaryTopicId: "warning_signs",
-      topicIds: ["warning_signs"],
+      primaryTopicId: "road_markings_and_warning_signs",
+      topicIds: ["road_markings_and_warning_signs"],
       difficultySeed: 20,
     };
 
@@ -74,7 +80,30 @@ describe("study plan and AI chat catalog topics", () => {
     });
 
     expect(context).not.toBeNull();
-    expect(context?.topicId).toBe("warning_signs");
+    expect(context?.topicId).toBe("road_markings_and_warning_signs");
     expect(context?.topicBlock).toBeUndefined();
+  });
+
+  it("maps every retired topic id into one of the 15 current topics", () => {
+    expect(QUESTION_TOPIC_IDS).toHaveLength(15);
+    expect(Object.keys(LEGACY_QUESTION_TOPIC_ID_MAP)).toHaveLength(30);
+
+    for (const legacyTopicId of Object.keys(LEGACY_QUESTION_TOPIC_ID_MAP)) {
+      const normalized = normalizeQuestionTopicId(legacyTopicId);
+
+      expect(normalized).not.toBeNull();
+      expect(QUESTION_TOPIC_IDS).toContain(normalized);
+    }
+
+    expect(
+      normalizeQuestionTopicIds([
+        "horizontal_road_markings",
+        "warning_signs",
+        "prohibition_and_mandatory_signs",
+      ])
+    ).toEqual([
+      "road_markings_and_warning_signs",
+      "road_signs_and_regulations",
+    ]);
   });
 });

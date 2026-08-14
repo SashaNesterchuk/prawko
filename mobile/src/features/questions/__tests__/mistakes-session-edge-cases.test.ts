@@ -64,24 +64,27 @@ describe("mistakes session edge cases", () => {
   beforeEach(() => {
     hydrateQuestionBankFromLocalQuestions([
       makeQuestion("warn-1", {
-        primaryTopicId: "warning_signs",
-        topicIds: ["warning_signs"],
+        primaryTopicId: "road_markings_and_warning_signs",
+        topicIds: ["road_markings_and_warning_signs"],
         topicBlock: "signs",
       }),
       makeQuestion("warn-2", {
-        primaryTopicId: "warning_signs",
-        topicIds: ["warning_signs", "prohibition_and_mandatory_signs"],
+        primaryTopicId: "road_markings_and_warning_signs",
+        topicIds: [
+          "road_markings_and_warning_signs",
+          "road_signs_and_regulations",
+        ],
         topicBlock: "signs",
       }),
-      // Legacy block id matches a catalog topic id, but catalog membership differs.
+      // Legacy block membership differs from the current catalog membership.
       makeQuestion("legacy-overtake-block", {
-        primaryTopicId: "warning_signs",
-        topicIds: ["warning_signs"],
+        primaryTopicId: "road_markings_and_warning_signs",
+        topicIds: ["road_markings_and_warning_signs"],
         topicBlock: "overtaking",
       }),
       makeQuestion("catalog-overtake", {
-        primaryTopicId: "overtaking",
-        topicIds: ["overtaking"],
+        primaryTopicId: "overtaking_and_maneuvers",
+        topicIds: ["overtaking_and_maneuvers"],
         topicBlock: "safety",
       }),
     ]);
@@ -98,15 +101,19 @@ describe("mistakes session edge cases", () => {
     // Empty topic overlay — typical after exam / random practice.
     const topicProgress = {};
 
-    expect(getTopicMistakeProgress("warning_signs", states, topicProgress).wrong).toBe(
-      1
-    );
+    expect(
+      getTopicMistakeProgress(
+        "road_markings_and_warning_signs",
+        states,
+        topicProgress
+      ).wrong
+    ).toBe(1);
 
     const count = getQuestionCountForMode(
       {
         currentCategory: "B",
         mode: "wrong_answers",
-        topic: "warning_signs",
+        topic: "road_markings_and_warning_signs",
       },
       states,
       topicProgress
@@ -118,7 +125,7 @@ describe("mistakes session edge cases", () => {
         currentCategory: "B",
         mode: "wrong_answers",
         sessionKey: "mistakes-warn",
-        topic: "warning_signs",
+        topic: "road_markings_and_warning_signs",
       },
       states,
       new Date("2026-08-08T12:00:00.000Z"),
@@ -129,7 +136,11 @@ describe("mistakes session edge cases", () => {
     expect(session.questionIds).toEqual(["warn-1"]);
 
     expect(
-      getTrainerModeStats(states, "warning_signs", topicProgress).wrongAnswers
+      getTrainerModeStats(
+        states,
+        "road_markings_and_warning_signs",
+        topicProgress
+      ).wrongAnswers
     ).toBe(1);
   });
 
@@ -138,7 +149,7 @@ describe("mistakes session edge cases", () => {
       "warn-1": unresolvedWrong("warn-1"),
     };
     const topicProgress = {
-      warning_signs: {
+      road_markings_and_warning_signs: {
         "warn-1": {
           timesSeen: 1,
           timesCorrect: 1,
@@ -150,16 +161,20 @@ describe("mistakes session edge cases", () => {
     };
 
     // Monitor still uses global unresolved wrong.
-    expect(getTopicMistakeProgress("warning_signs", states, topicProgress).wrong).toBe(
-      1
-    );
+    expect(
+      getTopicMistakeProgress(
+        "road_markings_and_warning_signs",
+        states,
+        topicProgress
+      ).wrong
+    ).toBe(1);
 
     const session = buildQuestionSession(
       {
         currentCategory: "B",
         mode: "wrong_answers",
         sessionKey: "mistakes-overlay-conflict",
-        topic: "warning_signs",
+        topic: "road_markings_and_warning_signs",
       },
       states,
       new Date("2026-08-08T12:00:00.000Z"),
@@ -169,21 +184,22 @@ describe("mistakes session edge cases", () => {
     expect(session.questionIds).toEqual(["warn-1"]);
   });
 
-  it("excludes legacy topicBlock-only matches from dual-id catalog topics", () => {
+  it("excludes legacy topicBlock-only matches from catalog topics", () => {
     const states = {
       "legacy-overtake-block": unresolvedWrong("legacy-overtake-block"),
       "catalog-overtake": unresolvedWrong("catalog-overtake"),
     };
 
-    // "overtaking" is both a block and a catalog id — catalog membership wins.
-    expect(getTopicMistakeProgress("overtaking", states).wrong).toBe(1);
+    expect(getTopicMistakeProgress("overtaking_and_maneuvers", states).wrong).toBe(
+      1
+    );
 
     const session = buildQuestionSession(
       {
         currentCategory: "B",
         mode: "wrong_answers",
         sessionKey: "mistakes-dual-id",
-        topic: "overtaking",
+        topic: "overtaking_and_maneuvers",
       },
       states,
       new Date("2026-08-08T12:00:00.000Z"),
@@ -199,9 +215,11 @@ describe("mistakes session edge cases", () => {
       "warn-2": unresolvedWrong("warn-2"),
     };
 
-    expect(getTopicMistakeProgress("warning_signs", states).wrong).toBe(1);
     expect(
-      getTopicMistakeProgress("prohibition_and_mandatory_signs", states).wrong
+      getTopicMistakeProgress("road_markings_and_warning_signs", states).wrong
+    ).toBe(1);
+    expect(
+      getTopicMistakeProgress("road_signs_and_regulations", states).wrong
     ).toBe(1);
 
     const secondarySession = buildQuestionSession(
@@ -209,7 +227,7 @@ describe("mistakes session edge cases", () => {
         currentCategory: "B",
         mode: "wrong_answers",
         sessionKey: "mistakes-secondary",
-        topic: "prohibition_and_mandatory_signs",
+        topic: "road_signs_and_regulations",
       },
       states,
       new Date("2026-08-08T12:00:00.000Z"),

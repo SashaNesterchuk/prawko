@@ -7,6 +7,8 @@ import {
   getContentLocale,
   isQuestionTopicId,
   isTopicBlockId,
+  normalizeQuestionTopicId,
+  normalizeQuestionTopicIds,
   type DrivingCategory,
   type LearningTopicId,
   type QuestionSessionMode,
@@ -57,9 +59,10 @@ export function isQuestionSessionMode(value: string): value is QuestionSessionMo
 
 export function getQuestionTopicIds(question: LocalQuestion): QuestionTopicId[] {
   const fallback = getQuestionTopicFallbackFromTopicBlock(question.topicBlock);
+  const topicIds = normalizeQuestionTopicIds(question.topicIds ?? []);
 
-  if (question.topicIds && question.topicIds.length > 0) {
-    return [...new Set(question.topicIds)];
+  if (topicIds.length > 0) {
+    return topicIds;
   }
 
   return fallback.topicIds;
@@ -68,9 +71,10 @@ export function getQuestionTopicIds(question: LocalQuestion): QuestionTopicId[] 
 export function getQuestionPrimaryTopicId(question: LocalQuestion): QuestionTopicId {
   const topicIds = getQuestionTopicIds(question);
   const fallback = getQuestionTopicFallbackFromTopicBlock(question.topicBlock);
+  const primaryTopicId = normalizeQuestionTopicId(question.primaryTopicId);
 
-  if (question.primaryTopicId && topicIds.includes(question.primaryTopicId)) {
-    return question.primaryTopicId;
+  if (primaryTopicId && topicIds.includes(primaryTopicId)) {
+    return primaryTopicId;
   }
 
   return topicIds[0] ?? fallback.primaryTopicId;
@@ -80,7 +84,7 @@ function questionMatchesTopic(
   question: LocalQuestion,
   topic: LearningTopicId
 ) {
-  // Prefer catalog ids when an id exists in both taxonomies (e.g. "overtaking").
+  // Catalog topics use explicit membership; legacy blocks use topicBlock.
   if (isQuestionTopicId(topic)) {
     return getQuestionTopicIds(question).includes(topic);
   }
@@ -104,9 +108,8 @@ type TopicQuestionsCache = {
 let topicQuestionsCache: TopicQuestionsCache | null = null;
 
 function topicQuestionsCacheKey(topic: LearningTopicId) {
-  // Catalog ids win when an id exists in both taxonomies (e.g. "overtaking"),
-  // matching questionMatchesTopic. Separate keys avoid mixing legacy block
-  // membership into catalog lookups.
+  // Separate keys prevent legacy block membership from leaking into catalog
+  // topic lookups.
   return isQuestionTopicId(topic) ? `catalog:${topic}` : `block:${topic}`;
 }
 

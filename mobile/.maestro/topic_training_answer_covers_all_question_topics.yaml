@@ -12,7 +12,7 @@ tags:
       DESTINATION: topic
       QUESTION_SCENARIO: topic-progress
       TARGET_ID: screen-trainer-modes
-      TOPIC_ID: horizontal_road_markings
+      TOPIC_ID: road_markings_and_warning_signs
 
 - tapOn:
     id: "trainer-mode-topic"
@@ -52,10 +52,10 @@ tags:
     timeout: 10000
 
 - assertVisible:
-    id: "learn-topic-card-horizontal_road_markings-readiness-100"
+    id: "learn-topic-card-road_markings_and_warning_signs-readiness-100"
 
 - assertVisible:
-    id: "learn-topic-card-warning_signs-readiness-100"
+    id: "learn-topic-card-road_signs_and_regulations-readiness-100"
 
 - tapOn:
     id: "learn-topic-card-index-1"

@@ -1,6 +1,7 @@
 import {
   getQuestionTopicFallbackFromTopicBlock,
-  type QuestionTopicId,
+  normalizeQuestionTopicId,
+  normalizeQuestionTopicIds,
   type QuestionAnswerType,
   type QuestionScope,
   type TopicBlockId,
@@ -44,8 +45,8 @@ export type SupabaseQuestionRecord = {
   points: number;
   scope: QuestionScope;
   topic_block: TopicBlockId;
-  primary_topic_id: QuestionTopicId | null;
-  topic_ids: QuestionTopicId[] | null;
+  primary_topic_id: string | null;
+  topic_ids: string[] | null;
   difficulty_seed: number;
   media_asset: QuestionDeliveryAsset | null;
   pjm_question_asset: QuestionDeliveryAsset | null;
@@ -128,13 +129,15 @@ export function mapSupabaseQuestionRecordToLocalQuestion(
   record: SupabaseQuestionRecord
 ): LocalQuestion {
   const fallbackTopics = getQuestionTopicFallbackFromTopicBlock(record.topic_block);
+  const mappedTopicIds = normalizeQuestionTopicIds(record.topic_ids ?? []);
   const topicIds =
-    record.topic_ids && record.topic_ids.length > 0
-      ? record.topic_ids
+    mappedTopicIds.length > 0
+      ? mappedTopicIds
       : fallbackTopics.topicIds;
+  const mappedPrimaryTopicId = normalizeQuestionTopicId(record.primary_topic_id);
   const primaryTopicId =
-    record.primary_topic_id && topicIds.includes(record.primary_topic_id)
-      ? record.primary_topic_id
+    mappedPrimaryTopicId && topicIds.includes(mappedPrimaryTopicId)
+      ? mappedPrimaryTopicId
       : topicIds[0] ?? fallbackTopics.primaryTopicId;
 
   const choices = [

@@ -1,7 +1,11 @@
 import path from "node:path";
 
 import { createClient } from "@supabase/supabase-js";
-import { QUESTION_TOPIC_CATALOG } from "@prawko/config";
+import {
+  QUESTION_TOPIC_CATALOG,
+  normalizeQuestionTopicId,
+  normalizeQuestionTopicIds,
+} from "@prawko/config";
 import {
   questionTopicAssignmentSchema,
   type QuestionTopicAssignment,
@@ -100,7 +104,10 @@ function buildTopicCatalogExportRows(): TopicCatalogExportRow[] {
     title_pl: topic.titlePl,
     title_en: topic.titleEn,
     source_label_ua: topic.sourceLabelUa,
-    notes_ua: "notesUa" in topic ? topic.notesUa ?? null : null,
+    notes_ua:
+      "notesUa" in topic && typeof topic.notesUa === "string"
+        ? topic.notesUa
+        : null,
     is_active: true,
   }));
 }
@@ -114,22 +121,34 @@ function validateTopicCatalogInput(
 
   const inputIds = input.topics
     .map((topic) => String(topic.id ?? ""))
-    .filter(Boolean)
-    .sort();
+    .filter(Boolean);
+  const normalizedInputIds = [
+    ...new Set(
+      inputIds.map((topicId) => {
+        const normalizedTopicId = normalizeQuestionTopicId(topicId);
+
+        if (!normalizedTopicId) {
+          throw new Error(`Unknown topic id "${topicId}" in topic catalog input.`);
+        }
+
+        return normalizedTopicId;
+      })
+    ),
+  ].sort();
   const configIds = [...QUESTION_TOPIC_CATALOG]
     .map((topic) => topic.id)
     .sort();
 
-  if (inputIds.length !== configIds.length) {
+  if (normalizedInputIds.length !== configIds.length) {
     throw new Error(
-      `Topic catalog count mismatch. Input has ${inputIds.length}, config has ${configIds.length}.`
+      `Topic catalog mismatch. Input resolves to ${normalizedInputIds.length} current topics, config has ${configIds.length}.`
     );
   }
 
   for (let index = 0; index < configIds.length; index += 1) {
-    if (inputIds[index] !== configIds[index]) {
+    if (normalizedInputIds[index] !== configIds[index]) {
       throw new Error(
-        `Topic catalog mismatch at index ${index}. Expected "${configIds[index]}", got "${inputIds[index]}".`
+        `Topic catalog mismatch at index ${index}. Expected "${configIds[index]}", got "${normalizedInputIds[index]}".`
       );
     }
   }
@@ -155,15 +174,57 @@ function toTopicAssignmentExportRow(
 function parseTopicAssignmentRow(
   row: Record<string, unknown>
 ): QuestionTopicAssignment {
+  const questionSourceId =
+    row.questionSourceId ?? row.question_source_id;
+  const sourceRowNumber =
+    row.sourceRowNumber ?? row.source_row_number;
+  const rawPrimaryTopicId =
+    row.primaryTopicId ?? row.primary_topic_id;
+  const rawTopicIds = row.topicIds ?? row.topic_ids;
+
+  if (typeof rawPrimaryTopicId !== "string") {
+    throw new Error(
+      `Missing primary topic id for question ${String(questionSourceId ?? "unknown")}.`
+    );
+  }
+
+  if (
+    !Array.isArray(rawTopicIds) ||
+    rawTopicIds.some((topicId) => typeof topicId !== "string")
+  ) {
+    throw new Error(
+      `Invalid topic ids for question ${String(questionSourceId ?? "unknown")}.`
+    );
+  }
+
+  const primaryTopicId = normalizeQuestionTopicId(rawPrimaryTopicId);
+
+  if (!primaryTopicId) {
+    throw new Error(
+      `Unknown primary topic "${rawPrimaryTopicId}" for question ${String(questionSourceId ?? "unknown")}.`
+    );
+  }
+
+  const unknownTopicId = rawTopicIds.find(
+    (topicId) => !normalizeQuestionTopicId(topicId)
+  );
+
+  if (unknownTopicId) {
+    throw new Error(
+      `Unknown topic "${unknownTopicId}" for question ${String(questionSourceId ?? "unknown")}.`
+    );
+  }
+
+  const normalizedTopicIds = normalizeQuestionTopicIds(rawTopicIds);
+
   return questionTopicAssignmentSchema.parse({
-    questionSourceId:
-      row.questionSourceId ?? row.question_source_id,
-    sourceRowNumber:
-      row.sourceRowNumber ?? row.source_row_number,
-    primaryTopicId:
-      row.primaryTopicId ?? row.primary_topic_id,
-    topicIds:
-      row.topicIds ?? row.topic_ids,
+    questionSourceId,
+    sourceRowNumber,
+    primaryTopicId,
+    topicIds: [
+      primaryTopicId,
+      ...normalizedTopicIds.filter((topicId) => topicId !== primaryTopicId),
+    ],
   });
 }
 

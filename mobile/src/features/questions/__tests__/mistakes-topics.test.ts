@@ -77,24 +77,24 @@ describe("catalog mistakes monitor", () => {
   beforeEach(() => {
     hydrateQuestionBankFromLocalQuestions([
       makeQuestion("warn-1", {
-        primaryTopicId: "warning_signs",
-        topicIds: ["warning_signs"],
+        primaryTopicId: "road_markings_and_warning_signs",
+        topicIds: ["road_markings_and_warning_signs"],
         topicBlock: "signs",
       }),
       makeQuestion("warn-2", {
-        primaryTopicId: "warning_signs",
-        topicIds: ["warning_signs"],
+        primaryTopicId: "road_markings_and_warning_signs",
+        topicIds: ["road_markings_and_warning_signs"],
         topicBlock: "signs",
       }),
       makeQuestion("overtake-1", {
-        primaryTopicId: "overtaking",
-        topicIds: ["overtaking"],
+        primaryTopicId: "overtaking_and_maneuvers",
+        topicIds: ["overtaking_and_maneuvers"],
         // Deliberately different legacy block than catalog topic.
         topicBlock: "safety",
       }),
       makeQuestion("priority-1", {
-        primaryTopicId: "right_of_way_entering_traffic_equal_intersections",
-        topicIds: ["right_of_way_entering_traffic_equal_intersections"],
+        primaryTopicId: "right_of_way_and_intersections",
+        topicIds: ["right_of_way_and_intersections"],
         topicBlock: "priority",
       }),
     ]);
@@ -106,12 +106,12 @@ describe("catalog mistakes monitor", () => {
 
   it("resolves primary catalog topic even when topicBlock differs", () => {
     const question = makeQuestion("x", {
-      primaryTopicId: "overtaking",
-      topicIds: ["overtaking"],
+      primaryTopicId: "overtaking_and_maneuvers",
+      topicIds: ["overtaking_and_maneuvers"],
       topicBlock: "safety",
     });
 
-    expect(getQuestionPrimaryTopicId(question)).toBe("overtaking");
+    expect(getQuestionPrimaryTopicId(question)).toBe("overtaking_and_maneuvers");
   });
 
   it("counts only unresolved wrongs overall and per catalog topic", () => {
@@ -129,11 +129,15 @@ describe("catalog mistakes monitor", () => {
     expect(overall.wrong).toBe(2);
     expect(overall.total).toBe(4);
 
-    expect(getTopicMistakeProgress("warning_signs", states).wrong).toBe(1);
-    expect(getTopicMistakeProgress("overtaking", states).wrong).toBe(1);
+    expect(
+      getTopicMistakeProgress("road_markings_and_warning_signs", states).wrong
+    ).toBe(1);
+    expect(getTopicMistakeProgress("overtaking_and_maneuvers", states).wrong).toBe(
+      1
+    );
     expect(
       getTopicMistakeProgress(
-        "right_of_way_entering_traffic_equal_intersections",
+        "right_of_way_and_intersections",
         states
       ).wrong
     ).toBe(0);
@@ -155,8 +159,8 @@ describe("catalog mistakes monitor", () => {
     const rows = listCatalogTopicsWithMistakes(states);
 
     expect(rows.map((row) => row.topicId)).toEqual([
-      "warning_signs",
-      "overtaking",
+      "road_markings_and_warning_signs",
+      "overtaking_and_maneuvers",
     ]);
     expect(rows[0]?.progress.wrong).toBe(2);
     expect(rows[1]?.progress.wrong).toBe(1);
@@ -175,18 +179,19 @@ describe("catalog mistakes monitor", () => {
     expect(listCatalogTopicsWithMistakes(states)).toEqual([]);
   });
 
-  it("matches dual-id topics like overtaking via catalog membership", () => {
+  it("matches catalog memberships instead of unrelated legacy blocks", () => {
     const states = {
       "overtake-1": unresolvedWrong("overtake-1"),
     };
 
-    // "overtaking" is both a legacy topic_block and a catalog topic id.
-    expect(getTopicMistakeProgress("overtaking", states)).toMatchObject({
+    expect(
+      getTopicMistakeProgress("overtaking_and_maneuvers", states)
+    ).toMatchObject({
       wrong: 1,
       total: 1,
     });
     expect(listCatalogTopicsWithMistakes(states).map((row) => row.topicId)).toEqual([
-      "overtaking",
+      "overtaking_and_maneuvers",
     ]);
   });
 });

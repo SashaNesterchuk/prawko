@@ -1,4 +1,8 @@
-import { isTopicBlockId } from "@prawko/config";
+import {
+  isQuestionTopicId,
+  isTopicBlockId,
+  normalizeQuestionTopicId,
+} from "@prawko/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppState } from "react-native";
 import { create } from "zustand";
@@ -531,21 +535,33 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             persisted,
             "topicQuestionProgressSeeded"
           );
+        const topicProgressNeedsReseed =
+          hasRetiredTopicProgress(persisted.topicQuestionProgress) ||
+          hasRetiredTopicProgress(persisted.topicQuestionContextProgress);
 
         return {
           ...currentState,
           ...persisted,
+          activeSession: normalizePersistedSessionTopic(
+            persisted.activeSession ?? currentState.activeSession
+          ),
           lastTrainingSessionPercents,
           questionUserState,
-          topicQuestionProgress: hasTopicProgressField
+          topicQuestionProgress:
+            hasTopicProgressField && !topicProgressNeedsReseed
             ? (persisted.topicQuestionProgress ?? {})
             : {},
           // Until this split, topicQuestionProgress held the same
           // topic-specific queue context. Preserve it for resumed learning.
           topicQuestionContextProgress:
-            persisted.topicQuestionContextProgress ??
-            (hasTopicProgressField ? persisted.topicQuestionProgress ?? {} : {}),
-          topicQuestionProgressSeeded: hasTopicProgressField
+            topicProgressNeedsReseed
+              ? {}
+              : (persisted.topicQuestionContextProgress ??
+                (hasTopicProgressField
+                  ? persisted.topicQuestionProgress ?? {}
+                  : {})),
+          topicQuestionProgressSeeded:
+            hasTopicProgressField && !topicProgressNeedsReseed
             ? (persisted.topicQuestionProgressSeeded ?? true)
             : false,
         };
@@ -620,6 +636,42 @@ function reconcileSessionWithCatalog(
     emptyReason: null,
     finishedAt,
     questionIds: filteredQuestionIds,
+  };
+}
+
+function hasRetiredTopicProgress(
+  topicProgress: TopicQuestionProgressMap | null | undefined
+) {
+  return Object.keys(topicProgress ?? {}).some((topicId) => {
+    const normalizedTopicId = normalizeQuestionTopicId(topicId);
+
+    return Boolean(
+      normalizedTopicId &&
+        !isQuestionTopicId(topicId) &&
+        !isTopicBlockId(topicId)
+    );
+  });
+}
+
+function normalizePersistedSessionTopic(
+  session: QuestionSession | null
+): QuestionSession | null {
+  const sessionTopic = session?.request.topic;
+  const normalizedTopicId =
+    typeof sessionTopic === "string"
+      ? normalizeQuestionTopicId(sessionTopic)
+      : null;
+
+  if (!session || !normalizedTopicId || normalizedTopicId === sessionTopic) {
+    return session;
+  }
+
+  return {
+    ...session,
+    request: {
+      ...session.request,
+      topic: normalizedTopicId,
+    },
   };
 }
 

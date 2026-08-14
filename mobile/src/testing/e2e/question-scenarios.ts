@@ -35,8 +35,11 @@ export function getE2EQuestionScenarioQuestions(
           points: 1,
           scope: "base",
           topicBlock: "signs",
-          primaryTopicId: "horizontal_road_markings",
-          topicIds: ["horizontal_road_markings", "warning_signs"],
+          primaryTopicId: "road_markings_and_warning_signs",
+          topicIds: [
+            "road_markings_and_warning_signs",
+            "road_signs_and_regulations",
+          ],
           difficultySeed: 1,
         },
       ];

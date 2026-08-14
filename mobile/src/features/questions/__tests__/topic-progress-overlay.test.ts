@@ -56,8 +56,8 @@ function seenCorrect(questionId: string): QuestionUserState {
 describe("getTopicProgress training coverage", () => {
   beforeEach(() => {
     hydrateQuestionBankFromLocalQuestions([
-      makeQuestion("warn-1", "warning_signs"),
-      makeQuestion("warn-2", "warning_signs"),
+      makeQuestion("warn-1", "road_markings_and_warning_signs"),
+      makeQuestion("warn-2", "road_markings_and_warning_signs"),
     ]);
   });
 
@@ -71,7 +71,10 @@ describe("getTopicProgress training coverage", () => {
       "warn-2": seenCorrect("warn-2"),
     };
 
-    const progress = getTopicProgress("warning_signs", userStates);
+    const progress = getTopicProgress(
+      "road_markings_and_warning_signs",
+      userStates
+    );
 
     expect(progress).toMatchObject({
       total: 2,
@@ -87,7 +90,7 @@ describe("getTopicProgress training coverage", () => {
       "warn-2": seenCorrect("warn-2"),
     };
     const topicProgress = {
-      warning_signs: {
+      road_markings_and_warning_signs: {
         "warn-1": {
           timesSeen: 1,
           timesCorrect: 1,
@@ -99,7 +102,7 @@ describe("getTopicProgress training coverage", () => {
     };
 
     const progress = getTopicProgress(
-      "warning_signs",
+      "road_markings_and_warning_signs",
       userStates,
       topicProgress
     );
@@ -115,7 +118,7 @@ describe("getTopicProgress training coverage", () => {
   it("attributes one training answer to every catalog topic on the question", () => {
     const progress = getNextTopicQuestionProgressMapAfterAttempt(
       {},
-      ["warning_signs", "overtaking"],
+      ["road_markings_and_warning_signs", "overtaking_and_maneuvers"],
       "shared-question",
       {
         answeredAt: "2026-08-12T12:00:00.000Z",
@@ -123,12 +126,14 @@ describe("getTopicProgress training coverage", () => {
       }
     );
 
-    expect(progress.warning_signs?.["shared-question"]).toMatchObject({
+    expect(
+      progress.road_markings_and_warning_signs?.["shared-question"]
+    ).toMatchObject({
       timesSeen: 1,
       timesCorrect: 1,
       timesWrong: 0,
     });
-    expect(progress.overtaking?.["shared-question"]).toMatchObject({
+    expect(progress.overtaking_and_maneuvers?.["shared-question"]).toMatchObject({
       timesSeen: 1,
       timesCorrect: 1,
       timesWrong: 0,

@@ -16,7 +16,7 @@ env:
   QUESTION_SCENARIO: ${QUESTION_SCENARIO || ""}
   REACHABILITY: ${REACHABILITY || ""}
   SIGN_CATEGORY_ID: ${SIGN_CATEGORY_ID || "A"}
-  TOPIC_ID: ${TOPIC_ID || "horizontal_road_markings"}
+  TOPIC_ID: ${TOPIC_ID || "road_markings_and_warning_signs"}
   TARGET_ID: ${TARGET_ID || "screen-home"}
 ---
 - launchApp:
