@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,6 +28,8 @@ import { pickLocalized } from "./content/localized";
 import { SignImage } from "./SignImage";
 import { useSignBookmarksStore } from "../../state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../state/sign-practice-progress";
+import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { useAnalytics } from "../../providers/AnalyticsProvider";
 
 type SignTestAnswer = {
   isCorrect: boolean;
@@ -47,6 +49,7 @@ export function SignTestSessionScreen({
   subtitle,
 }: SignTestSessionScreenProps) {
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
   const { accents, colors } = useTheme();
   const spacing = useResponsiveSpacing();
   const responsiveFont = useResponsiveFonts().responsiveFont;
@@ -64,6 +67,9 @@ export function SignTestSessionScreen({
   );
   const toggleSignBookmark = useSignBookmarksStore((state) => state.toggleSaved);
   const recordedQuestionIdsRef = useRef<Set<string>>(new Set());
+  const questionStartedAtRef = useRef(Date.now());
+  const didTrackStartRef = useRef(false);
+  const didTrackEndRef = useRef(false);
   const shouldAttemptPracticeAdRef = useRef(false);
 
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -99,6 +105,21 @@ export function SignTestSessionScreen({
           .map((option) => pickLocalized(option.label, i18n.language))
       : [];
 
+  useEffect(() => {
+    if (didTrackStartRef.current) {
+      return;
+    }
+
+    didTrackStartRef.current = true;
+    track(ANALYTICS_EVENTS.signTestStarted.key, {
+      question_total: questions.length,
+    });
+  }, [questions.length, track]);
+
+  useEffect(() => {
+    questionStartedAtRef.current = Date.now();
+  }, [questionIndex]);
+
   const handleSelectOption = (optionId: string) => {
     if (hasAnswered || !currentQuestion) {
       return;
@@ -123,9 +144,18 @@ export function SignTestSessionScreen({
 
     recordQuestionAnsweredForAds();
     shouldAttemptPracticeAdRef.current = true;
+    track(ANALYTICS_EVENTS.signTestQuestionAnswered.key, {
+      answer_duration_ms: Math.max(0, Date.now() - questionStartedAtRef.current),
+      is_correct: isCorrectAnswer,
+      question_id: currentQuestion.id,
+      question_index: questionIndex + 1,
+      question_total: questions.length,
+      sign_id: currentQuestion.signId,
+    });
   };
 
   const handleCloseSession = (input?: {
+    outcome?: "abandoned" | "completed";
     shouldAttemptPracticeInterstitial?: boolean;
   }) => {
     const answeredCount = recordedQuestionIdsRef.current.size;
@@ -133,6 +163,16 @@ export function SignTestSessionScreen({
       input?.shouldAttemptPracticeInterstitial ??
       shouldAttemptPracticeAdRef.current;
     shouldAttemptPracticeAdRef.current = false;
+    if (!didTrackEndRef.current) {
+      didTrackEndRef.current = true;
+      track(ANALYTICS_EVENTS.signTestEnded.key, {
+        answered_count: answeredCount,
+        correct_count: Object.values(answers).filter((answer) => answer.isCorrect)
+          .length,
+        outcome: input?.outcome ?? "abandoned",
+        question_total: questions.length,
+      });
+    }
 
     // Navigate first — never await AdMob on the outgoing screen (same as
     // question training exit / opposite of the old freeze on TestFlight).
@@ -159,11 +199,10 @@ export function SignTestSessionScreen({
     shouldAttemptPracticeAdRef.current = false;
 
     if (questionIndex >= questions.length - 1) {
-      if (shouldAttemptPracticeInterstitial) {
-        handleCloseSession({ shouldAttemptPracticeInterstitial });
-      } else {
-        router.back();
-      }
+      handleCloseSession({
+        outcome: "completed",
+        shouldAttemptPracticeInterstitial,
+      });
       return;
     }
 
@@ -182,6 +221,10 @@ export function SignTestSessionScreen({
       return;
     }
 
+    track(ANALYTICS_EVENTS.questionProblemReportRequested.key, {
+      question_id: currentQuestion.id,
+      source: "sign_test",
+    });
     const subject = t("signs.reportProblemSubject", {
       signId: currentQuestion.signId,
       defaultValue: `Problem with sign ${currentQuestion.signId}`,
@@ -196,7 +239,12 @@ export function SignTestSessionScreen({
       return;
     }
 
-    toggleSignBookmark(currentQuestion.signId);
+    const isBookmarkedNext = toggleSignBookmark(currentQuestion.signId);
+    track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+      is_bookmarked: isBookmarkedNext,
+      question_id: currentQuestion.id,
+      source: "sign_test",
+    });
   };
 
   if (questions.length === 0 || !currentQuestion || !currentSign) {

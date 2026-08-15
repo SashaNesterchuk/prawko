@@ -12,6 +12,7 @@
     "media:upload": "tsx src/cli.ts media:upload",
     "storage:clear": "tsx src/cli.ts storage:clear",
     "questions:sync": "tsx src/cli.ts questions:sync",
+    "question-topics:from-xlsx": "tsx src/cli.ts question-topics:from-xlsx",
     "question-topics:prepare": "tsx src/cli.ts question-topics:prepare",
     "question-topics:sync": "tsx src/cli.ts question-topics:sync",
     "typecheck": "tsc --noEmit -p tsconfig.json"

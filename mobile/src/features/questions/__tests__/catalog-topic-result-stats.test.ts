@@ -49,10 +49,10 @@ function makeQuestion(
 describe("result topic stats use catalog primaryTopicId", () => {
   beforeEach(() => {
     hydrateQuestionBankFromLocalQuestions([
-      makeQuestion("a1", "road_markings_and_warning_signs", "signs"),
-      makeQuestion("a2", "road_markings_and_warning_signs", "signs"),
-      makeQuestion("b1", "overtaking_and_maneuvers", "safety"),
-      makeQuestion("c1", "vehicle_lighting_and_visibility", "technical"),
+      makeQuestion("a1", "signs_signals", "signs"),
+      makeQuestion("a2", "signs_signals", "signs"),
+      makeQuestion("b1", "driving_maneuvers", "safety"),
+      makeQuestion("c1", "vehicle_equipment", "technical"),
     ]);
   });
 
@@ -104,12 +104,12 @@ describe("result topic stats use catalog primaryTopicId", () => {
     const stats = buildTrainingTopicStats(session);
 
     expect(stats.map((row) => row.topicId)).toEqual([
-      "road_markings_and_warning_signs",
-      "overtaking_and_maneuvers",
-      "vehicle_lighting_and_visibility",
+      "signs_signals",
+      "driving_maneuvers",
+      "vehicle_equipment",
     ]);
     expect(
-      stats.find((row) => row.topicId === "road_markings_and_warning_signs")
+      stats.find((row) => row.topicId === "signs_signals")
     ).toMatchObject({
       correctCount: 1,
       totalCount: 2,
@@ -118,7 +118,7 @@ describe("result topic stats use catalog primaryTopicId", () => {
     expect(stats.some((row) => (row as { topicBlock?: string }).topicBlock)).toBe(
       false
     );
-    expect(getWeakestTrainingTopic(stats)).toBe("overtaking_and_maneuvers");
+    expect(getWeakestTrainingTopic(stats)).toBe("driving_maneuvers");
   });
 
   it("buckets exam result stats by catalog topic", () => {
@@ -184,10 +184,10 @@ describe("result topic stats use catalog primaryTopicId", () => {
     const stats = buildExamTopicStats(snapshot);
 
     expect(stats.map((row) => row.topicId).sort()).toEqual([
-      "vehicle_lighting_and_visibility",
-      "overtaking_and_maneuvers",
-      "road_markings_and_warning_signs",
+      "vehicle_equipment",
+      "driving_maneuvers",
+      "signs_signals",
     ].sort());
-    expect(getWeakestTopic(stats)).toBe("overtaking_and_maneuvers");
+    expect(getWeakestTopic(stats)).toBe("driving_maneuvers");
   });
 });

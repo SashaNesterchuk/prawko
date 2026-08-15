@@ -74,11 +74,17 @@ import {
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 import { resetAppToFreshStart } from "../../src/state/reset-app";
+import {
+  ANALYTICS_EVENTS,
+  getAnalyticsErrorCode,
+} from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 const SUPPORT_EMAIL = "support@prawko.app";
 
 export default function ProfileTabScreen() {
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -249,6 +255,11 @@ export default function ProfileTabScreen() {
         schoolCode: studyPlanSetup.schoolCode,
       });
       setExamDatePickerVisible(false);
+      track(ANALYTICS_EVENTS.settingsChanged.key, {
+        days_until_exam: getDaysUntilExamFromDate(toIsoDate(date)),
+        setting: "exam_date",
+        value: "set",
+      });
     } catch (error) {
       console.warn("Failed to update exam date.", error);
     } finally {
@@ -275,7 +286,15 @@ export default function ProfileTabScreen() {
   const handleToggleNotifications = async (nextValue: boolean) => {
     try {
       if (nextValue) {
+        track(ANALYTICS_EVENTS.notificationPermissionRequested.key, {
+          source: "profile",
+        });
         const result = await enableStudyNotificationsAsync();
+        track(ANALYTICS_EVENTS.notificationPermissionResolved.key, {
+          can_ask_again: result.ok ? null : result.canAskAgain,
+          enabled: result.ok,
+          source: "profile",
+        });
         if (!result.ok) {
           openNotificationSettings();
         }
@@ -283,8 +302,17 @@ export default function ProfileTabScreen() {
       }
 
       await disableStudyNotificationsAsync();
+      track(ANALYTICS_EVENTS.settingsChanged.key, {
+        setting: "study_notifications",
+        value: "disabled",
+      });
     } catch (error) {
       console.warn("Failed to toggle study notifications.", error);
+      track(ANALYTICS_EVENTS.notificationPermissionResolved.key, {
+        enabled: false,
+        error_code: getAnalyticsErrorCode(error),
+        source: "profile",
+      });
     }
   };
 
@@ -300,6 +328,9 @@ export default function ProfileTabScreen() {
     setShowResetDialog(false);
     void (async () => {
       await resetAppToFreshStart();
+      track(ANALYTICS_EVENTS.progressResetConfirmed.key, {
+        source: "profile",
+      });
       router.replace("/(onboarding)/category");
     })();
   };
@@ -313,12 +344,18 @@ export default function ProfileTabScreen() {
       }
     }
 
+    track(ANALYTICS_EVENTS.signedOut.key, {
+      auth_mode: authMode,
+    });
     signOutLocal();
     resetProgress();
     router.replace("/(onboarding)/access");
   };
 
   const handleShare = async () => {
+    track(ANALYTICS_EVENTS.profileActionSelected.key, {
+      action: "share",
+    });
     try {
       await Share.share({
         message: t("profile.shareMessage"),
@@ -329,10 +366,16 @@ export default function ProfileTabScreen() {
   };
 
   const handleFeedback = () => {
+    track(ANALYTICS_EVENTS.profileActionSelected.key, {
+      action: "feedback",
+    });
     void Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t("profile.feedbackEmailSubject"))}`);
   };
 
   const handleSupport = () => {
+    track(ANALYTICS_EVENTS.profileActionSelected.key, {
+      action: "support",
+    });
     void Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
   };
 

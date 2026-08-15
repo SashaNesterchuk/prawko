@@ -31,6 +31,8 @@ import {
   withResponsiveFont,
 } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
+import { useAnalytics } from "../../../providers/AnalyticsProvider";
+import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import { type GreenWaveAccent } from "../../../theme/green-wave";
 import { useAppShellStore } from "../../../state/app-shell";
 import { useQuestionCatalogVersion } from "../../../state/question-catalog";
@@ -52,6 +54,7 @@ type TrainerModesViewProps = {
 
 export function TrainerModesView({ topic }: TrainerModesViewProps) {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
@@ -202,6 +205,11 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   ];
 
   const startMode = (mode: QuestionSessionMode, questionLimit: number | null) => {
+    track(ANALYTICS_EVENTS.trainingModeSelected.key, {
+      mode,
+      question_limit: questionLimit,
+      topic_id: topic ?? null,
+    });
     router.navigate({
       pathname: "/question",
       params: buildQuestionRouteParams({ mode, topic, questionLimit }),

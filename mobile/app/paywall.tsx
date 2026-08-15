@@ -38,6 +38,10 @@ import {
   useResponsiveStyles,
 } from "../src/portable-ui";
 import { useAnalytics } from "../src/providers/AnalyticsProvider";
+import {
+  ANALYTICS_EVENTS,
+  getAnalyticsErrorCode,
+} from "../src/analytics/catalog";
 import { useErrorLogger } from "../src/providers/ErrorLoggingProvider";
 import { useTheme } from "../src/providers/ThemeProvider";
 import {
@@ -224,7 +228,7 @@ export default function PaywallPage() {
     }
 
     didTrackViewRef.current = true;
-    track("paywall_viewed", {
+    track(ANALYTICS_EVENTS.paywallViewed.key, {
       auth_mode: authMode,
       feature: highlightedFeature ?? null,
       has_plus_access: hasPlusAccess,
@@ -283,17 +287,7 @@ export default function PaywallPage() {
         return;
       }
 
-      track("plus_purchase_started", {
-        feature: highlightedFeature ?? "premium_access",
-        offering_identifier: targetPackage.offeringIdentifier,
-        package_identifier: targetPackage.identifier,
-        package_type: targetPackage.packageType,
-        price: targetPackage.price,
-        product_identifier: targetPackage.productIdentifier,
-        source: paywallSource,
-        ui: "package",
-      });
-      track("purchase_started", {
+      track(ANALYTICS_EVENTS.purchaseStarted.key, {
         feature: highlightedFeature ?? "premium_access",
         offering_identifier: targetPackage.offeringIdentifier,
         package_identifier: targetPackage.identifier,
@@ -311,17 +305,7 @@ export default function PaywallPage() {
       });
 
       hydrateRevenueCatSnapshot(snapshot);
-      track("plus_purchase_success", {
-        active_entitlements_count:
-          snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
-        offering_identifier: targetPackage.offeringIdentifier,
-        package_identifier: targetPackage.identifier,
-        package_type: targetPackage.packageType,
-        product_identifier: targetPackage.productIdentifier,
-        source: paywallSource,
-        ui: "package",
-      });
-      track("purchase_succeeded", {
+      track(ANALYTICS_EVENTS.purchaseSucceeded.key, {
         active_entitlements_count:
           snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
         offering_identifier: targetPackage.offeringIdentifier,
@@ -340,7 +324,7 @@ export default function PaywallPage() {
       continueAfterUnlock();
     } catch (error) {
       if (isRevenueCatPurchaseCancelled(error)) {
-        track("purchase_cancelled", {
+        track(ANALYTICS_EVENTS.purchaseCancelled.key, {
           offering_identifier: selectedPackage?.offeringIdentifier ?? null,
           package_identifier: selectedPackage?.identifier ?? null,
           package_type: selectedPackage?.packageType ?? null,
@@ -370,16 +354,8 @@ export default function PaywallPage() {
           source: "paywall",
         },
       });
-      track("plus_purchase_fail", {
-        message,
-        offering_identifier: selectedPackage?.offeringIdentifier ?? null,
-        package_identifier: selectedPackage?.identifier ?? null,
-        package_type: selectedPackage?.packageType ?? null,
-        product_identifier: selectedPackage?.productIdentifier ?? null,
-        source: paywallSource,
-      });
-      track("purchase_failed", {
-        message,
+      track(ANALYTICS_EVENTS.purchaseFailed.key, {
+        error_code: getAnalyticsErrorCode(error),
         offering_identifier: selectedPackage?.offeringIdentifier ?? null,
         package_identifier: selectedPackage?.identifier ?? null,
         package_type: selectedPackage?.packageType ?? null,
@@ -400,7 +376,7 @@ export default function PaywallPage() {
 
     setIsRestoring(true);
     setPurchaseFeedback(null);
-    track("purchase_restore_started", {
+    track(ANALYTICS_EVENTS.purchaseRestoreStarted.key, {
       source: "paywall",
     });
 
@@ -413,14 +389,14 @@ export default function PaywallPage() {
         !snapshot.featureEntitlements.premium_access &&
         !snapshot.featureEntitlements.ai_question_chat
       ) {
-        track("purchase_restore_empty", {
+        track(ANALYTICS_EVENTS.purchaseRestoreEmpty.key, {
           source: "paywall",
         });
         showPurchaseError(t("paywall.restoreEmpty"));
         return;
       }
 
-      track("purchase_restore_succeeded", {
+      track(ANALYTICS_EVENTS.purchaseRestoreSucceeded.key, {
         active_entitlements_count:
           snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
         source: "paywall",
@@ -442,8 +418,8 @@ export default function PaywallPage() {
           source: "paywall",
         },
       });
-      track("purchase_restore_failed", {
-        message,
+      track(ANALYTICS_EVENTS.purchaseRestoreFailed.key, {
+        error_code: getAnalyticsErrorCode(error),
         source: "paywall",
       });
       showPurchaseError(message);
@@ -556,7 +532,16 @@ export default function PaywallPage() {
                     <Pressable
                       key={key}
                       accessibilityRole="button"
-                      onPress={() => setSelectedPackageKey(key)}
+                      onPress={() => {
+                        setSelectedPackageKey(key);
+                        track(ANALYTICS_EVENTS.paywallPackageSelected.key, {
+                          offering_identifier: item.offeringIdentifier,
+                          package_identifier: item.identifier,
+                          package_type: item.packageType,
+                          product_identifier: item.productIdentifier,
+                          source: paywallSource,
+                        });
+                      }}
                       style={({ pressed }) => [
                         styles.packageChip,
                         isSelected ? styles.packageChipSelected : null,

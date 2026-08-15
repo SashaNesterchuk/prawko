@@ -216,6 +216,8 @@ export const questionTopicCatalogEntrySchema = z.object({
   titleUa: z.string().min(1),
   titlePl: z.string().min(1),
   titleEn: z.string().min(1),
+  titleDe: z.string().min(1),
+  titleEs: z.string().min(1),
   sourceLabelUa: z.string().min(1),
   notesUa: z.string().min(1).nullable().optional(),
 });

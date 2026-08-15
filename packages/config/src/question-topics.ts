@@ -1,125 +1,130 @@
 import type { TopicBlockId } from "./index";
 
+/**
+ * The official categorized workbook provides one learner-facing category per
+ * question. Keep this catalog aligned with its category_legend worksheet.
+ */
 export const QUESTION_TOPIC_CATALOG = [
   {
-    id: "road_markings_and_warning_signs",
+    id: "signs_signals",
     sortOrder: 1,
-    titleUa: "Розмітка й попереджувальні знаки",
-    titlePl: "Oznakowanie i znaki ostrzegawcze",
-    titleEn: "Road markings and warning signs",
-    sourceLabelUa: "Горизонтальна розмітка та попереджувальні знаки",
+    titleUa: "Знаки та сигнали",
+    titlePl: "Znaki i sygnały drogowe",
+    titleEn: "Signs & Signals",
+    titleDe: "Verkehrszeichen und Signale",
+    titleEs: "Señalización vial",
+    sourceLabelUa:
+      "Дорожні знаки, таблички, дорожня розмітка, світлофори та сигнали регулювальника.",
   },
   {
-    id: "road_signs_and_regulations",
+    id: "intersections_priority",
     sortOrder: 2,
-    titleUa: "Знаки та дорожні обмеження",
-    titlePl: "Znaki drogowe i ograniczenia",
-    titleEn: "Road signs and restrictions",
-    sourceLabelUa: "Заборонні, наказові, інформаційні та напрямні знаки",
+    titleUa: "Перехрестя та пріоритет",
+    titlePl: "Skrzyżowania i pierwszeństwo",
+    titleEn: "Intersections & Right of Way",
+    titleDe: "Kreuzungen und Vorfahrt",
+    titleEs: "Intersecciones y prioridad",
+    sourceLabelUa:
+      "Черговість проїзду, рівнозначні й нерівнозначні перехрестя, круговий рух і правила пріоритету.",
   },
   {
-    id: "traffic_control_and_lights",
+    id: "driving_maneuvers",
     sortOrder: 3,
-    titleUa: "Сигнали та регулювання руху",
-    titlePl: "Sygnalizacja i kierowanie ruchem",
-    titleEn: "Traffic control and lights",
-    sourceLabelUa: "Світлові сигнали та сигнали особи, що керує рухом",
+    titleUa: "Керування та маневри",
+    titlePl: "Jazda i manewry",
+    titleEn: "Driving & Maneuvers",
+    titleDe: "Fahren und Manövrieren",
+    titleEs: "Conducción y maniobras",
+    sourceLabelUa:
+      "Розташування на дорозі, смуги, початок руху, повороти, розвороти, зміна смуги, обгін, об’їзд, рух заднім ходом, зупинка та стоянка.",
   },
   {
-    id: "right_of_way_and_intersections",
+    id: "speed_distance",
     sortOrder: 4,
-    titleUa: "Перевага та перехрестя",
-    titlePl: "Pierwszeństwo i skrzyżowania",
-    titleEn: "Right of way and intersections",
-    sourceLabelUa: "Перевага, смуги руху та перехрестя",
+    titleUa: "Швидкість і дистанція",
+    titlePl: "Prędkość i odstęp",
+    titleEn: "Speed & Distance",
+    titleDe: "Geschwindigkeit und Abstand",
+    titleEs: "Velocidad y distancia",
+    sourceLabelUa:
+      "Обмеження та вибір швидкості, інтервали, дистанція, шлях реакції, гальмівний і зупинний шлях.",
   },
   {
-    id: "road_position_lanes_and_parking",
+    id: "other_road_users",
     sortOrder: 5,
-    titleUa: "Смуги, положення та паркування",
-    titlePl: "Pasy, pozycja i parkowanie",
-    titleEn: "Lanes, road position and parking",
-    sourceLabelUa: "Положення автомобіля, зміна смуги, зупинка і стоянка",
+    titleUa: "Вразливі учасники руху",
+    titlePl: "Niechronieni uczestnicy ruchu",
+    titleEn: "Vulnerable Road Users",
+    titleDe: "Ungeschützte Verkehrsteilnehmer",
+    titleEs: "Usuarios vulnerables",
+    sourceLabelUa:
+      "Пішоходи, велосипедисти, електросамокати, діти, люди з інвалідністю та правила взаємодії з ними.",
   },
   {
-    id: "overtaking_and_maneuvers",
+    id: "roads_zones_crossings",
     sortOrder: 6,
-    titleUa: "Обгін і маневри",
-    titlePl: "Wyprzedzanie i manewry",
-    titleEn: "Overtaking and maneuvers",
-    sourceLabelUa: "Обгін, об'їзд, уникнення та рух заднім ходом",
+    titleUa: "Дороги, зони та переїзди",
+    titlePl: "Drogi, strefy i przejazdy",
+    titleEn: "Roads, Zones & Rail Crossings",
+    titleDe: "Straßen, Zonen und Bahnübergänge",
+    titleEs: "Vías, zonas y pasos a nivel",
+    sourceLabelUa:
+      "Автомагістралі, швидкісні дороги, тунелі, житлові та інші спеціальні зони, автобусні смуги, залізничні й трамвайні переїзди.",
   },
   {
-    id: "pedestrians_cyclists_and_children",
+    id: "vehicle_equipment",
     sortOrder: 7,
-    titleUa: "Пішоходи, велосипедисти й діти",
-    titlePl: "Piesi, rowerzyści i dzieci",
-    titleEn: "Pedestrians, cyclists and children",
-    sourceLabelUa: "Поведінка щодо пішоходів, велосипедистів, дітей і людей з інвалідністю",
+    titleUa: "Транспортний засіб і обладнання",
+    titlePl: "Pojazd i wyposażenie",
+    titleEn: "Vehicle & Equipment",
+    titleDe: "Fahrzeug und Ausstattung",
+    titleEs: "Vehículo y equipamiento",
+    sourceLabelUa:
+      "Будова, шини, гальма, рідини, системи безпеки, контрольні лампи, освітлення, сигнали та обов’язкове обладнання транспортного засобу.",
   },
   {
-    id: "railway_crossings_and_vehicle_security",
+    id: "attention_risks",
     sortOrder: 8,
-    titleUa: "Переїзди та безпека автомобіля",
-    titlePl: "Przejazdy kolejowe i zabezpieczenie pojazdu",
-    titleEn: "Rail crossings and vehicle security",
-    sourceLabelUa: "Висадка пасажирів, захист автомобіля та залізничні переїзди",
+    titleUa: "Уважність і ризики",
+    titlePl: "Uwaga i zagrożenia",
+    titleEn: "Awareness & Hazards",
+    titleDe: "Aufmerksamkeit und Gefahren",
+    titleEs: "Atención y riesgos",
+    sourceLabelUa:
+      "Погода, видимість, стан покриття, алкоголь, ліки, втома, відволікання, час реакції та розпізнавання небезпек.",
   },
   {
-    id: "vehicle_lighting_and_visibility",
+    id: "accidents_first_aid",
     sortOrder: 9,
-    titleUa: "Світло та оглядовість",
-    titlePl: "Oświetlenie i widoczność",
-    titleEn: "Vehicle lighting and visibility",
-    sourceLabelUa: "Зовнішнє освітлення та поле зору водія",
+    titleUa: "ДТП і перша допомога",
+    titlePl: "Wypadki i pierwsza pomoc",
+    titleEn: "Accidents & First Aid",
+    titleDe: "Unfälle und Erste Hilfe",
+    titleEs: "Accidentes y primeros auxilios",
+    sourceLabelUa:
+      "Дії при ДТП, поломці чи пожежі, захист місця події, виклик служб, евакуація та домедична допомога.",
   },
   {
-    id: "speed_distance_and_braking",
+    id: "transport",
     sortOrder: 10,
-    titleUa: "Швидкість, дистанція й гальмування",
-    titlePl: "Prędkość, odstęp i hamowanie",
-    titleEn: "Speed, distance and braking",
-    sourceLabelUa: "Обмеження швидкості, дистанція та гальмування",
+    titleUa: "Перевезення",
+    titlePl: "Przewóz i holowanie",
+    titleEn: "Passengers & Cargo",
+    titleDe: "Personen- und Gütertransport",
+    titleEs: "Pasajeros, carga y remolque",
+    sourceLabelUa:
+      "Пасажири, ремені, дитячі крісла, вантажі, причепи, буксирування, маси, габарити та правила професійних перевезень.",
   },
   {
-    id: "safe_driving_and_hazard_awareness",
+    id: "documents_responsibility",
     sortOrder: 11,
-    titleUa: "Безпечне водіння та ризики",
-    titlePl: "Bezpieczna jazda i zagrożenia",
-    titleEn: "Safe driving and hazards",
-    sourceLabelUa: "Особлива обережність, сприйняття, ризики й техніка водіння",
-  },
-  {
-    id: "occupant_and_cargo_safety",
-    sortOrder: 12,
-    titleUa: "Безпека пасажирів і вантажу",
-    titlePl: "Bezpieczeństwo pasażerów i ładunku",
-    titleEn: "Occupant and cargo safety",
-    sourceLabelUa: "Ремені, сидіння, вантаж і безпека пасажирів",
-  },
-  {
-    id: "vehicle_maintenance_and_tyres",
-    sortOrder: 13,
-    titleUa: "Технічний стан і шини",
-    titlePl: "Stan techniczny i opony",
-    titleEn: "Vehicle maintenance and tyres",
-    sourceLabelUa: "Механічна безпека, технічний стан і протектори шин",
-  },
-  {
-    id: "documents_insurance_and_owner_responsibilities",
-    sortOrder: 14,
-    titleUa: "Документи, страхування та обов'язки",
-    titlePl: "Dokumenty, ubezpieczenie i obowiązki właściciela",
-    titleEn: "Documents, insurance and owner responsibilities",
-    sourceLabelUa: "Обов'язки власника, страхування та необхідні документи",
-  },
-  {
-    id: "breakdowns_accidents_and_first_aid",
-    sortOrder: 15,
-    titleUa: "Аварії, поломки та допомога",
-    titlePl: "Awarie, wypadki i pomoc",
-    titleEn: "Breakdowns, accidents and first aid",
-    sourceLabelUa: "Дії у разі поломки, аварії та рятувальні роботи",
+    titleUa: "Документи та відповідальність",
+    titlePl: "Dokumenty i obowiązki",
+    titleEn: "Documents & Responsibility",
+    titleDe: "Dokumente und Pflichten",
+    titleEs: "Documentos y obligaciones",
+    sourceLabelUa:
+      "Посвідчення, право керування, реєстрація, страхування, техогляд, санкції, дозволи, тахограф і час роботи водія.",
   },
 ] as const;
 
@@ -132,49 +137,60 @@ export const QUESTION_TOPIC_IDS = QUESTION_TOPIC_CATALOG.map(
 
 export type LearningTopicId = TopicBlockId | QuestionTopicId;
 
+export function isQuestionTopicId(value: string): value is QuestionTopicId {
+  return QUESTION_TOPIC_IDS.includes(value as QuestionTopicId);
+}
+
 /**
- * Maps every ID from the retired 30-topic catalog into the compact catalog.
- * Keep this until all locally stored catalogs and historic exports are replaced.
+ * Historic topic IDs are retained solely to read old plans and local progress.
+ * New assignments must always use the official categorized workbook IDs above.
  */
 export const LEGACY_QUESTION_TOPIC_ID_MAP = {
-  horizontal_road_markings: "road_markings_and_warning_signs",
-  traffic_lights_and_controller_signals: "traffic_control_and_lights",
-  external_lighting: "vehicle_lighting_and_visibility",
-  warning_signs: "road_markings_and_warning_signs",
-  prohibition_and_mandatory_signs: "road_signs_and_regulations",
-  information_direction_and_auxiliary_signs: "road_signs_and_regulations",
-  right_of_way_entering_traffic_equal_intersections:
-    "right_of_way_and_intersections",
-  lane_use_and_priority_signed_intersections:
-    "right_of_way_and_intersections",
-  priority_at_signalized_intersections: "right_of_way_and_intersections",
-  regulated_intersections_and_public_transport_stops:
-    "right_of_way_and_intersections",
-  vehicle_position_entry_exit_stopping_parking:
-    "road_position_lanes_and_parking",
-  lane_changes_and_direction: "road_position_lanes_and_parking",
-  overtaking: "overtaking_and_maneuvers",
-  passing_avoiding_reversing: "overtaking_and_maneuvers",
-  special_caution: "safe_driving_and_hazard_awareness",
-  pedestrians_and_persons_with_disabilities:
-    "pedestrians_cyclists_and_children",
-  cyclists_and_children: "pedestrians_cyclists_and_children",
-  dropoff_vehicle_security_railway_crossings:
-    "railway_crossings_and_vehicle_security",
-  breakdown_and_accident_response: "breakdowns_accidents_and_first_aid",
-  perception_situation_assessment_reaction_time:
-    "safe_driving_and_hazard_awareness",
-  speed_limits: "speed_distance_and_braking",
-  occupant_restraints_and_seating: "occupant_and_cargo_safety",
-  following_distance_and_braking: "speed_distance_and_braking",
-  risk_factors_weather_time_road_type: "safe_driving_and_hazard_awareness",
-  driver_fields_of_view: "vehicle_lighting_and_visibility",
-  driving_technique: "safe_driving_and_hazard_awareness",
-  vehicle_cargo_and_passenger_safety: "occupant_and_cargo_safety",
-  owner_insurance_and_required_documents:
-    "documents_insurance_and_owner_responsibilities",
-  tyre_tread_and_mechanical_safety: "vehicle_maintenance_and_tyres",
-  rescue_operations: "breakdowns_accidents_and_first_aid",
+  road_markings_and_warning_signs: "signs_signals",
+  road_signs_and_regulations: "signs_signals",
+  traffic_control_and_lights: "signs_signals",
+  right_of_way_and_intersections: "intersections_priority",
+  road_position_lanes_and_parking: "driving_maneuvers",
+  overtaking_and_maneuvers: "driving_maneuvers",
+  pedestrians_cyclists_and_children: "other_road_users",
+  railway_crossings_and_vehicle_security: "roads_zones_crossings",
+  vehicle_lighting_and_visibility: "vehicle_equipment",
+  speed_distance_and_braking: "speed_distance",
+  safe_driving_and_hazard_awareness: "attention_risks",
+  occupant_and_cargo_safety: "transport",
+  vehicle_maintenance_and_tyres: "vehicle_equipment",
+  documents_insurance_and_owner_responsibilities: "documents_responsibility",
+  breakdowns_accidents_and_first_aid: "accidents_first_aid",
+  horizontal_road_markings: "signs_signals",
+  traffic_lights_and_controller_signals: "signs_signals",
+  external_lighting: "vehicle_equipment",
+  warning_signs: "signs_signals",
+  prohibition_and_mandatory_signs: "signs_signals",
+  information_direction_and_auxiliary_signs: "signs_signals",
+  right_of_way_entering_traffic_equal_intersections: "intersections_priority",
+  lane_use_and_priority_signed_intersections: "intersections_priority",
+  priority_at_signalized_intersections: "intersections_priority",
+  regulated_intersections_and_public_transport_stops: "intersections_priority",
+  vehicle_position_entry_exit_stopping_parking: "driving_maneuvers",
+  lane_changes_and_direction: "driving_maneuvers",
+  overtaking: "driving_maneuvers",
+  passing_avoiding_reversing: "driving_maneuvers",
+  special_caution: "attention_risks",
+  pedestrians_and_persons_with_disabilities: "other_road_users",
+  cyclists_and_children: "other_road_users",
+  dropoff_vehicle_security_railway_crossings: "roads_zones_crossings",
+  breakdown_and_accident_response: "accidents_first_aid",
+  perception_situation_assessment_reaction_time: "attention_risks",
+  speed_limits: "speed_distance",
+  occupant_restraints_and_seating: "transport",
+  following_distance_and_braking: "speed_distance",
+  risk_factors_weather_time_road_type: "attention_risks",
+  driver_fields_of_view: "attention_risks",
+  driving_technique: "attention_risks",
+  vehicle_cargo_and_passenger_safety: "transport",
+  owner_insurance_and_required_documents: "documents_responsibility",
+  tyre_tread_and_mechanical_safety: "vehicle_equipment",
+  rescue_operations: "accidents_first_aid",
 } as const satisfies Record<string, QuestionTopicId>;
 
 export const LEGACY_TOPIC_BLOCK_TOPIC_FALLBACKS: Record<
@@ -185,59 +201,41 @@ export const LEGACY_TOPIC_BLOCK_TOPIC_FALLBACKS: Record<
   }
 > = {
   signs: {
-    primaryTopicId: "road_markings_and_warning_signs",
-    topicIds: [
-      "road_markings_and_warning_signs",
-      "road_signs_and_regulations",
-      "traffic_control_and_lights",
-    ],
+    primaryTopicId: "signs_signals",
+    topicIds: ["signs_signals"],
   },
   intersections: {
-    primaryTopicId: "right_of_way_and_intersections",
-    topicIds: ["right_of_way_and_intersections"],
+    primaryTopicId: "intersections_priority",
+    topicIds: ["intersections_priority"],
   },
   overtaking: {
-    primaryTopicId: "overtaking_and_maneuvers",
-    topicIds: ["overtaking_and_maneuvers"],
+    primaryTopicId: "driving_maneuvers",
+    topicIds: ["driving_maneuvers"],
   },
   pedestrians: {
-    primaryTopicId: "pedestrians_cyclists_and_children",
-    topicIds: ["pedestrians_cyclists_and_children"],
+    primaryTopicId: "other_road_users",
+    topicIds: ["other_road_users"],
   },
   first_aid: {
-    primaryTopicId: "breakdowns_accidents_and_first_aid",
-    topicIds: ["breakdowns_accidents_and_first_aid"],
+    primaryTopicId: "accidents_first_aid",
+    topicIds: ["accidents_first_aid"],
   },
   priority: {
-    primaryTopicId: "right_of_way_and_intersections",
-    topicIds: ["right_of_way_and_intersections"],
+    primaryTopicId: "intersections_priority",
+    topicIds: ["intersections_priority"],
   },
   safety: {
-    primaryTopicId: "safe_driving_and_hazard_awareness",
-    topicIds: [
-      "safe_driving_and_hazard_awareness",
-      "speed_distance_and_braking",
-      "vehicle_lighting_and_visibility",
-    ],
+    primaryTopicId: "attention_risks",
+    topicIds: ["attention_risks"],
   },
   technical: {
-    primaryTopicId: "vehicle_maintenance_and_tyres",
-    topicIds: [
-      "vehicle_maintenance_and_tyres",
-      "occupant_and_cargo_safety",
-      "documents_insurance_and_owner_responsibilities",
-    ],
+    primaryTopicId: "vehicle_equipment",
+    topicIds: ["vehicle_equipment"],
   },
 };
 
-const QUESTION_TOPIC_ID_SET = new Set<string>(QUESTION_TOPIC_IDS);
-
-export function isQuestionTopicId(value: string): value is QuestionTopicId {
-  return QUESTION_TOPIC_ID_SET.has(value);
-}
-
 /**
- * Returns a current catalog ID for both current and retired topic identifiers.
+ * Returns a current catalog ID for official IDs and historic local values.
  */
 export function normalizeQuestionTopicId(
   value: string | null | undefined

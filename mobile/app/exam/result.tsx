@@ -40,6 +40,7 @@ import { getQuestionUserState } from "../../src/features/questions/question-engi
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
 import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefetchQuestionMedia";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
 import {
@@ -91,6 +92,7 @@ export default function ExamResultScreen() {
   const modalHideResolverRef = useRef<(() => void) | null>(null);
   const isReviewingRef = useRef(false);
   const didAttemptResultInterstitialRef = useRef(false);
+  const didTrackCompletionRef = useRef<string | null>(null);
 
   const canFetchRecent =
     authMode === "supabase" && isMobileSupabaseConfigured;
@@ -232,6 +234,28 @@ export default function ExamResultScreen() {
     () => (snapshot ? getExamResultOutcome(snapshot.session) : "failed"),
     [snapshot]
   );
+
+  useEffect(() => {
+    if (
+      !snapshot ||
+      snapshot.session.status !== "completed" ||
+      didTrackCompletionRef.current === snapshot.session.id
+    ) {
+      return;
+    }
+
+    didTrackCompletionRef.current = snapshot.session.id;
+    track(ANALYTICS_EVENTS.examSessionCompleted.key, {
+      correct_count: snapshot.session.correctAnswersCount,
+      duration_seconds: getExamDurationSeconds(snapshot.session),
+      mode: snapshot.session.mode,
+      passed: Boolean(snapshot.session.passed),
+      question_total: snapshot.session.totalQuestionsTarget,
+      score_points: snapshot.session.scorePoints,
+      total_points_target: snapshot.session.totalPointsTarget,
+      wrong_count: snapshot.session.wrongAnswersCount,
+    });
+  }, [snapshot, track]);
   const topicStats = useMemo(
     () => (snapshot ? buildExamTopicStats(snapshot) : []),
     [snapshot]
@@ -395,7 +419,7 @@ export default function ExamResultScreen() {
       return;
     }
 
-    track("exam_restart_gate_shown", {
+    track(ANALYTICS_EVENTS.examRestartGateShown.key, {
       source: "exam_result",
     });
     setIsRestartGateVisible(true);
@@ -417,15 +441,17 @@ export default function ExamResultScreen() {
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
-      track("exam_restart_via_ad", {
+      track(ANALYTICS_EVENTS.examRestartSelected.key, {
         ad_shown: shown,
+        choice: "watch_ad",
         source: "exam_result",
       });
       startNewExam();
     } catch (error) {
       console.warn("Exam restart ad failed.", error);
-      track("exam_restart_via_ad", {
+      track(ANALYTICS_EVENTS.examRestartSelected.key, {
         ad_shown: false,
+        choice: "watch_ad",
         source: "exam_result",
       });
       startNewExam();
@@ -436,7 +462,8 @@ export default function ExamResultScreen() {
 
   function handlePremium() {
     setIsRestartGateVisible(false);
-    track("exam_restart_via_plus", {
+    track(ANALYTICS_EVENTS.examRestartSelected.key, {
+      choice: "upgrade",
       source: "exam_result",
     });
     router.replace({
@@ -463,11 +490,21 @@ export default function ExamResultScreen() {
     }
 
     cacheExamSnapshot(loadedSnapshot);
+    track(ANALYTICS_EVENTS.examAnswersReviewOpened.key, {
+      mode: loadedSnapshot.session.mode,
+      question_total: sortedQuestions.length,
+    });
     setReviewIndex(0);
   }
 
   function handleToggleBookmark(questionSourceId: string) {
     const isBookmarked = toggleBookmark(questionSourceId);
+    track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+      is_bookmarked: isBookmarked,
+      mode: loadedSnapshot.session.mode,
+      question_id: questionSourceId,
+      source: "exam_review",
+    });
 
     if (authMode === "supabase" && isMobileSupabaseConfigured) {
       void syncQuestionBookmarkState({

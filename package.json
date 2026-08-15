@@ -15,6 +15,7 @@
     "data:media:upload": "corepack pnpm --filter @prawko/data-pipeline media:upload",
     "data:storage:clear": "corepack pnpm --filter @prawko/data-pipeline storage:clear",
     "data:questions:sync": "corepack pnpm --filter @prawko/data-pipeline questions:sync",
+    "data:question-topics:from-xlsx": "corepack pnpm --filter @prawko/data-pipeline question-topics:from-xlsx",
     "data:question-topics:prepare": "corepack pnpm --filter @prawko/data-pipeline question-topics:prepare",
     "data:question-topics:sync": "corepack pnpm --filter @prawko/data-pipeline question-topics:sync",
     "typecheck": "corepack pnpm -r typecheck",

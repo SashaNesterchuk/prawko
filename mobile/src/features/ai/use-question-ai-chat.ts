@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useAiConversation, useAiChatHydrated, useAiChatStore } from "../../state/ai-chat";
 import { useQuestionCatalogVersion } from "../../state/question-catalog";
 import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
+import { ANALYTICS_EVENTS, getAnalyticsErrorCode } from "../../analytics/catalog";
+import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { createAiMessageId } from "./create-ai-id";
 import { createIntroAiMessage } from "./mock-question-chat";
 import { PREGENERATED_EXPLANATION_MODEL } from "./pregenerated-question-explanation";
@@ -21,6 +23,7 @@ export function useQuestionAiChat(input: {
   selectedAnswer?: QuestionOptionValue;
   hasAiChatAccess: boolean;
 }) {
+  const { track } = useAnalytics();
   const aiChatHydrated = useAiChatHydrated();
   const conversation = useAiConversation(input.questionId);
   const { captureError, captureFallback } = useErrorLogger();
@@ -79,6 +82,10 @@ export function useQuestionAiChat(input: {
 
     if (!input.hasAiChatAccess) {
       setErrorCode("plus_required");
+      track(ANALYTICS_EVENTS.aiChatAccessBlocked.key, {
+        question_id: input.questionId,
+        source: "message_send",
+      });
       return;
     }
 
@@ -119,6 +126,10 @@ export function useQuestionAiChat(input: {
     setDraft("");
     setErrorCode(null);
     setIsSending(true);
+    track(ANALYTICS_EVENTS.aiChatMessageSent.key, {
+      message_source: nextPrompt ? "suggestion" : "custom",
+      question_id: questionContext.questionId,
+    });
 
     try {
       const response = await requestQuestionChat(request);
@@ -150,6 +161,11 @@ export function useQuestionAiChat(input: {
         message: response.message,
         questionId: questionContext.questionId,
       });
+      track(ANALYTICS_EVENTS.aiChatMessageResolved.key, {
+        fallback_used: response.fallbackUsed,
+        provider: response.provider,
+        question_id: questionContext.questionId,
+      });
     } catch (error) {
       if (!(error instanceof QuestionChatLimitError)) {
         captureError({
@@ -163,6 +179,13 @@ export function useQuestionAiChat(input: {
           },
         });
       }
+      track(ANALYTICS_EVENTS.aiChatMessageFailed.key, {
+        error_code:
+          error instanceof QuestionChatLimitError
+            ? "question_chat_limit"
+            : getAnalyticsErrorCode(error),
+        question_id: questionContext.questionId,
+      });
       setErrorCode(
         error instanceof QuestionChatLimitError ? "plus_required" : "send_failed"
       );

@@ -3,9 +3,11 @@ import { PostHogProvider, usePostHog } from "posthog-react-native";
 
 import { mobileEnv } from "../config/env";
 import { useAppShellStore, useCurrentUser } from "../state/app-shell";
+import { useHasPlusAccess } from "../state/entitlements";
 
 export {
   useAnalytics,
+  type AnalyticsTrack,
   type AnalyticsTrackPayload,
 } from "../hooks/useAnalytics";
 
@@ -33,38 +35,50 @@ export function AnalyticsProvider({ children }: PropsWithChildren) {
 function PostHogIdentitySync() {
   const posthog = usePostHog();
   const currentUser = useCurrentUser();
+  const isPlus = useHasPlusAccess();
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const previousSupabaseUserIdRef = useRef<string | null>(null);
+  const previousIdentitySignatureRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!posthog || mobileEnv.enableE2ETestMode) {
-      previousSupabaseUserIdRef.current = null;
+      previousIdentitySignatureRef.current = null;
       return;
     }
 
     const currentSupabaseUserId =
       currentUser?.provider === "supabase" ? currentUser.id : null;
+    const identitySignature = currentSupabaseUserId
+      ? [
+          currentSupabaseUserId,
+          currentUser?.email ?? "",
+          currentUser?.fullName ?? "",
+          preferredCategory,
+          preferredLocale,
+          String(isPlus),
+        ].join("|")
+      : null;
 
     if (
       currentSupabaseUserId &&
-      previousSupabaseUserIdRef.current !== currentSupabaseUserId
+      previousIdentitySignatureRef.current !== identitySignature
     ) {
       posthog.identify(currentSupabaseUserId, {
         auth_mode: currentUser?.provider ?? null,
         category: preferredCategory,
         email: currentUser?.email ?? null,
         full_name: currentUser?.fullName ?? null,
+        is_plus: isPlus,
         locale: preferredLocale,
       });
     }
 
-    if (!currentSupabaseUserId && previousSupabaseUserIdRef.current) {
+    if (!currentSupabaseUserId && previousIdentitySignatureRef.current) {
       posthog.reset();
     }
 
-    previousSupabaseUserIdRef.current = currentSupabaseUserId;
-  }, [currentUser, posthog, preferredCategory, preferredLocale]);
+    previousIdentitySignatureRef.current = identitySignature;
+  }, [currentUser, isPlus, posthog, preferredCategory, preferredLocale]);
 
   return null;
 }

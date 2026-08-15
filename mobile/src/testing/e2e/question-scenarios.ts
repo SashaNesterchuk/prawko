@@ -35,10 +35,10 @@ export function getE2EQuestionScenarioQuestions(
           points: 1,
           scope: "base",
           topicBlock: "signs",
-          primaryTopicId: "road_markings_and_warning_signs",
+          primaryTopicId: "signs_signals",
           topicIds: [
-            "road_markings_and_warning_signs",
-            "road_signs_and_regulations",
+            "signs_signals",
+            "driving_maneuvers",
           ],
           difficultySeed: 1,
         },

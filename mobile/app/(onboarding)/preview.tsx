@@ -20,9 +20,12 @@ import {
   useNextOnboardingRoute,
   useAppShellStore,
 } from "../../src/state/app-shell";
+import { ANALYTICS_EVENTS, getAnalyticsErrorCode } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function PreviewScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const currentUser = useCurrentUser();
   const currentStudyPlan = useCurrentStudyPlan();
@@ -83,6 +86,7 @@ export default function PreviewScreen() {
     }
 
     setIsStartingPlan(true);
+    let remoteSyncSucceeded = false;
 
     if (authMode === "supabase" && isMobileSupabaseConfigured) {
       try {
@@ -95,15 +99,27 @@ export default function PreviewScreen() {
         });
 
         setCurrentStudyPlanRemoteId(remotePlanId);
+        remoteSyncSucceeded = true;
       } catch (error) {
         setCurrentStudyPlanRemoteId(null);
         console.warn("Failed to sync study plan to Supabase.", error);
+        track(ANALYTICS_EVENTS.studyPlanCreateFailed.key, {
+          error_code: getAnalyticsErrorCode(error),
+          source: "onboarding",
+        });
       }
     } else {
       setCurrentStudyPlanRemoteId(null);
     }
 
     completeOnboarding();
+    track(ANALYTICS_EVENTS.studyPlanCreated.key, {
+      days_until_exam: studyPlanSetup.daysUntilExam,
+      has_exam_date: Boolean(studyPlanSetup.examDate),
+      level: generatedPlan.level,
+      minutes_per_day: generatedPlan.minutesPerDay,
+      remote_sync_succeeded: remoteSyncSucceeded,
+    });
     router.replace("/(tabs)");
   };
 

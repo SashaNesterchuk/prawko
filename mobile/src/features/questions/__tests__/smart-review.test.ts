@@ -36,8 +36,8 @@ function makeQuestion(
     points: 1,
     scope: "base",
     topicBlock: "signs",
-    primaryTopicId: "road_markings_and_warning_signs",
-    topicIds: ["road_markings_and_warning_signs"],
+    primaryTopicId: "signs_signals",
+    topicIds: ["signs_signals"],
     difficultySeed,
   };
 }

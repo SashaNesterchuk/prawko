@@ -48,6 +48,8 @@ import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefet
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
 import {
@@ -83,6 +85,7 @@ function ExamSessionShell({ children, styles }: ExamSessionShellProps) {
 
 export default function ExamSessionScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const { accents, colors } = useTheme();
   const navigation = useNavigation();
   const params = useLocalSearchParams<{
@@ -460,8 +463,12 @@ export default function ExamSessionScreen() {
     try {
       const answeredAt = new Date().toISOString();
       const isCorrect = currentQuestion.correctAnswer === answerGiven;
+      const answerDurationMs = Math.max(
+        0,
+        Date.now() - questionStartedAtRef.current
+      );
       const nextSnapshot = await submitExamAnswer({
-        answerDurationMs: Math.max(0, Date.now() - questionStartedAtRef.current),
+        answerDurationMs,
         answerGiven,
         locale: displayLocale,
         metadata: {
@@ -478,6 +485,20 @@ export default function ExamSessionScreen() {
         isCorrect,
       });
 
+      track(ANALYTICS_EVENTS.examQuestionAnswered.key, {
+        answer_duration_ms: answerDurationMs,
+        answer_type: currentQuestion.answerType,
+        is_correct: isCorrect,
+        media_type: currentQuestion.media?.type ?? "none",
+        mode: snapshot.session.mode,
+        points: currentQuestionRef.points,
+        question_id: currentQuestionRef.questionSourceId,
+        question_index: currentQuestionRef.order,
+        question_total: snapshot.session.totalQuestionsTarget,
+        scope: currentQuestionRef.scope,
+        timed_out: Boolean(options?.timedOut),
+        topic_block: currentQuestion.topicBlock,
+      });
       setSnapshot(nextSnapshot);
     } catch (error) {
       console.warn("Failed to submit exam answer.", error);
@@ -531,6 +552,16 @@ export default function ExamSessionScreen() {
         status,
       });
 
+      track(ANALYTICS_EVENTS.examSessionEnded.key, {
+        answered_count: nextSnapshot.session.totalQuestionsAnswered,
+        correct_count: nextSnapshot.session.correctAnswersCount,
+        end_reason:
+          typeof metadata.reason === "string" ? metadata.reason : "unknown",
+        mode: nextSnapshot.session.mode,
+        question_total: nextSnapshot.session.totalQuestionsTarget,
+        status,
+        wrong_count: nextSnapshot.session.wrongAnswersCount,
+      });
       navigateToResult(nextSnapshot.session.id, nextSnapshot);
     } catch (error) {
       console.warn("Failed to end exam session.", error);
@@ -611,6 +642,10 @@ export default function ExamSessionScreen() {
       return;
     }
 
+    track(ANALYTICS_EVENTS.questionProblemReportRequested.key, {
+      question_id: currentQuestionRef.questionSourceId,
+      source: "exam",
+    });
     const subject = t("question.reportProblemSubject", {
       questionId: currentQuestionRef.questionSourceId,
     });
@@ -626,6 +661,12 @@ export default function ExamSessionScreen() {
 
     const questionSourceId = currentQuestionRef.questionSourceId;
     const isBookmarked = toggleBookmark(questionSourceId);
+    track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+      is_bookmarked: isBookmarked,
+      mode: snapshot?.session.mode ?? null,
+      question_id: questionSourceId,
+      source: "exam",
+    });
 
     if (authMode === "supabase" && isMobileSupabaseConfigured) {
       void syncQuestionBookmarkState({
@@ -659,13 +700,22 @@ export default function ExamSessionScreen() {
     setErrorMessage(null);
 
     try {
-      await setExamSessionStatus({
+      const discardedSnapshot = await setExamSessionStatus({
         metadata: {
           source: "mobile_exam_session",
           reason: "miss_click_empty_exit",
         },
         sessionId,
         status: "abandoned",
+      });
+      track(ANALYTICS_EVENTS.examSessionEnded.key, {
+        answered_count: 0,
+        correct_count: 0,
+        end_reason: "miss_click_empty_exit",
+        mode: discardedSnapshot.session.mode,
+        question_total: discardedSnapshot.session.totalQuestionsTarget,
+        status: "abandoned",
+        wrong_count: 0,
       });
     } catch (error) {
       // Still leave — empty exit is a miss-click, not a result flow.

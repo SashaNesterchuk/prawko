@@ -214,7 +214,7 @@ describe("show-interstitial", () => {
         })
       );
       expect(track).toHaveBeenCalledWith(
-        "ad_interstitial_dismissed",
+        "ad_dismissed",
         expect.objectContaining({ trigger: "after_exam_complete" })
       );
     });
@@ -421,7 +421,7 @@ describe("show-interstitial", () => {
       });
 
       expect(track).toHaveBeenCalledWith(
-        "ad_opportunity",
+        "ad_requested",
         expect.objectContaining({ type: "practice_session_end" })
       );
 
@@ -434,7 +434,7 @@ describe("show-interstitial", () => {
       });
 
       expect(track).toHaveBeenCalledWith(
-        "ad_opportunity",
+        "ad_requested",
         expect.objectContaining({ type: "app_resume" })
       );
 
@@ -447,7 +447,7 @@ describe("show-interstitial", () => {
       });
 
       expect(track).toHaveBeenCalledWith(
-        "ad_opportunity",
+        "ad_requested",
         expect.objectContaining({ type: "practice_streak" })
       );
     });

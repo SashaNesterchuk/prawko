@@ -46,6 +46,8 @@ type TopicCatalogExportRow = {
   title_ua: string;
   title_pl: string;
   title_en: string;
+  title_de: string;
+  title_es: string;
   source_label_ua: string;
   notes_ua: string | null;
   is_active: boolean;
@@ -103,6 +105,8 @@ function buildTopicCatalogExportRows(): TopicCatalogExportRow[] {
     title_ua: topic.titleUa,
     title_pl: topic.titlePl,
     title_en: topic.titleEn,
+    title_de: topic.titleDe,
+    title_es: topic.titleEs,
     source_label_ua: topic.sourceLabelUa,
     notes_ua:
       "notesUa" in topic && typeof topic.notesUa === "string"

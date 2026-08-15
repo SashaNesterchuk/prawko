@@ -7,11 +7,14 @@ import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 const MINUTE_OPTIONS = [15, 25, 45, 60] as const;
 
 export default function MinutesScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const setMinutesPerDay = useAppShellStore((state) => state.setMinutesPerDay);
@@ -27,6 +30,10 @@ export default function MinutesScreen() {
             label={t("common.continue")}
             onPress={() => {
               setMinutesPerDay(selectedMinutes);
+              track(ANALYTICS_EVENTS.onboardingStepCompleted.key, {
+                minutes_per_day: selectedMinutes,
+                step: "minutes",
+              });
               router.navigate("/(onboarding)/level");
             }}
           />

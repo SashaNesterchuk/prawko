@@ -7,6 +7,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 
 import { configureFonts } from "../src/portable-ui";
+import { AnalyticsScreenTracker } from "../src/analytics/AnalyticsScreenTracker";
 import { AppProviders } from "../src/providers/AppProviders";
 import "../src/testing/e2e/setup";
 
@@ -51,6 +52,7 @@ export default function RootLayout() {
 
   return (
     <AppProviders>
+      <AnalyticsScreenTracker />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(onboarding)" />

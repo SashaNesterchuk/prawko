@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,11 +28,14 @@ import {
 import type { SignPractice } from "../../../src/features/road-signs/content/types";
 import { SignImage } from "../../../src/features/road-signs/SignImage";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
+import { ANALYTICS_EVENTS } from "../../../src/analytics/catalog";
+import { useAnalytics } from "../../../src/providers/AnalyticsProvider";
 
 type PracticePhase = "question" | "result";
 
 export default function SignPracticeScreen() {
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const { accents } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -67,6 +70,8 @@ export default function SignPracticeScreen() {
     (state) => state.recordAttempt
   );
   const hasRecordedCompletionRef = useRef(false);
+  const didTrackStartRef = useRef(false);
+  const questionStartedAtRef = useRef(Date.now());
 
   const currentQuestion: SignPractice | undefined = practices[questionIndex];
   const isLastQuestion = questionIndex >= practices.length - 1;
@@ -78,6 +83,23 @@ export default function SignPracticeScreen() {
     ? getSignDisplayName(sign.id, i18n.language, sign.code)
     : t("signs.title");
 
+  useEffect(() => {
+    if (!sign || didTrackStartRef.current) {
+      return;
+    }
+
+    didTrackStartRef.current = true;
+    track(ANALYTICS_EVENTS.signTestStarted.key, {
+      question_total: practices.length,
+      sign_id: sign.id,
+      test_type: "sign_practice",
+    });
+  }, [practices.length, sign, track]);
+
+  useEffect(() => {
+    questionStartedAtRef.current = Date.now();
+  }, [questionIndex]);
+
   const handleSelectOption = (optionId: string) => {
     if (hasAnswered || !currentQuestion) {
       return;
@@ -88,6 +110,16 @@ export default function SignPracticeScreen() {
     if (optionId === currentQuestion.correctOptionId) {
       setCorrectCount((value) => value + 1);
     }
+
+    track(ANALYTICS_EVENTS.signTestQuestionAnswered.key, {
+      answer_duration_ms: Math.max(0, Date.now() - questionStartedAtRef.current),
+      is_correct: optionId === currentQuestion.correctOptionId,
+      question_id: `${signId}:${questionIndex + 1}`,
+      question_index: questionIndex + 1,
+      question_total: practices.length,
+      sign_id: signId ?? null,
+      test_type: "sign_practice",
+    });
   };
 
   const handleContinue = () => {
@@ -103,6 +135,15 @@ export default function SignPracticeScreen() {
           totalQuestions: practices.length,
         });
         hasRecordedCompletionRef.current = true;
+        track(ANALYTICS_EVENTS.signTestEnded.key, {
+          answered_count: practices.length,
+          correct_count:
+            correctCount + (isCorrect ? 1 : 0),
+          outcome: "completed",
+          question_total: practices.length,
+          sign_id: sign.id,
+          test_type: "sign_practice",
+        });
       }
 
       setPhase("result");

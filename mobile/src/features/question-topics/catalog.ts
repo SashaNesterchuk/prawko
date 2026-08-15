@@ -3,7 +3,6 @@ import type { TFunction } from "i18next";
 import {
   QUESTION_TOPIC_CATALOG,
   QUESTION_TOPIC_IDS,
-  getContentLocale,
   getQuestionTopicCatalogEntry,
   isQuestionTopicId,
   isTopicBlockId,
@@ -25,13 +24,20 @@ export function getQuestionTopicTitle(
   locale: SupportedLocale
 ) {
   const topic = getQuestionTopicCatalogEntry(topicId);
-  const contentLocale = getContentLocale(locale);
 
-  if (contentLocale === "pl") {
+  if (locale === "pl") {
     return topic.titlePl;
   }
 
-  if (contentLocale === "en" || contentLocale === "de") {
+  if (locale === "de") {
+    return topic.titleDe;
+  }
+
+  if (locale === "es") {
+    return topic.titleEs;
+  }
+
+  if (locale === "en") {
     return topic.titleEn;
   }
 

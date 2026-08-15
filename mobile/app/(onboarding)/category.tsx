@@ -17,6 +17,8 @@ import {
 } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 type CategoryOption = {
   id: string;
@@ -48,6 +50,7 @@ function chunkPairs<T>(items: T[]): T[][] {
 
 export default function CategoryScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const { colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -75,6 +78,10 @@ export default function CategoryScreen() {
     setPreferredCategory(category);
 
     if (isSettingsMode) {
+      track(ANALYTICS_EVENTS.settingsChanged.key, {
+        setting: "category",
+        value: category,
+      });
       router.back();
     }
   };
@@ -187,6 +194,10 @@ export default function CategoryScreen() {
               accessibilityRole="button"
               onPress={() => {
                 completeCategoryStep();
+                track(ANALYTICS_EVENTS.onboardingStepCompleted.key, {
+                  category: preferredCategory,
+                  step: "category",
+                });
                 router.navigate("/(onboarding)/exam-schedule");
               }}
               style={({ pressed }) => [

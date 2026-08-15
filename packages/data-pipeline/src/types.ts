@@ -122,3 +122,14 @@ export interface QuestionTopicSyncResult {
   questionSync: QuestionSyncResult;
   syncReportPath: string;
 }
+
+export interface CategorizedWorkbookTopicPrepareResult {
+  baseQuestionExportPath: string;
+  workbookPath: string;
+  assignmentsPath: string;
+  reportPath: string;
+  questionCount: number;
+  workbookAssignmentCount: number;
+  manualFallbackAssignmentCount: number;
+  workbookOnlyQuestionIds: string[];
+}

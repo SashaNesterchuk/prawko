@@ -21,9 +21,12 @@ import { useQuestionAiChat } from "../../src/features/ai/use-question-ai-chat";
 import { getQuestionTopicTitleSafe } from "../../src/features/question-topics/catalog";
 import { useHasAiChatAccess } from "../../src/state/entitlements";
 import { useAppShellStore } from "../../src/state/app-shell";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function AiChatModalScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const params = useLocalSearchParams<{
     locale?: string | string[];
@@ -62,10 +65,25 @@ export default function AiChatModalScreen() {
   });
 
   useEffect(() => {
+    if (!questionId || !aiChatHydrated || !hasAiChatAccess) {
+      return;
+    }
+
+    track(ANALYTICS_EVENTS.aiChatOpened.key, {
+      question_id: questionId,
+      source: "modal",
+    });
+  }, [aiChatHydrated, hasAiChatAccess, questionId, track]);
+
+  useEffect(() => {
     if (!aiChatHydrated || hasAiChatAccess || !questionId) {
       return;
     }
 
+    track(ANALYTICS_EVENTS.aiChatAccessBlocked.key, {
+      question_id: questionId,
+      source: "modal",
+    });
     router.replace({
       pathname: "/paywall",
       params: {

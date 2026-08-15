@@ -66,8 +66,8 @@ describe("study plan and AI chat catalog topics", () => {
       points: 2,
       scope: "base",
       topicBlock: "safety",
-      primaryTopicId: "road_markings_and_warning_signs",
-      topicIds: ["road_markings_and_warning_signs"],
+      primaryTopicId: "signs_signals",
+      topicIds: ["signs_signals"],
       difficultySeed: 20,
     };
 
@@ -80,13 +80,13 @@ describe("study plan and AI chat catalog topics", () => {
     });
 
     expect(context).not.toBeNull();
-    expect(context?.topicId).toBe("road_markings_and_warning_signs");
+    expect(context?.topicId).toBe("signs_signals");
     expect(context?.topicBlock).toBeUndefined();
   });
 
-  it("maps every retired topic id into one of the 15 current topics", () => {
-    expect(QUESTION_TOPIC_IDS).toHaveLength(15);
-    expect(Object.keys(LEGACY_QUESTION_TOPIC_ID_MAP)).toHaveLength(30);
+  it("maps every retired topic id into one of the current workbook categories", () => {
+    expect(QUESTION_TOPIC_IDS).toHaveLength(11);
+    expect(Object.keys(LEGACY_QUESTION_TOPIC_ID_MAP)).toHaveLength(45);
 
     for (const legacyTopicId of Object.keys(LEGACY_QUESTION_TOPIC_ID_MAP)) {
       const normalized = normalizeQuestionTopicId(legacyTopicId);
@@ -101,9 +101,6 @@ describe("study plan and AI chat catalog topics", () => {
         "warning_signs",
         "prohibition_and_mandatory_signs",
       ])
-    ).toEqual([
-      "road_markings_and_warning_signs",
-      "road_signs_and_regulations",
-    ]);
+    ).toEqual(["signs_signals"]);
   });
 });

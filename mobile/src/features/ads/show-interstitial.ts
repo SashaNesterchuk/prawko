@@ -2,7 +2,9 @@ import { usePathname } from "expo-router";
 import { useCallback } from "react";
 import { FEATURE_FLAGS } from "@prawko/config";
 
+import { ANALYTICS_EVENTS, type AnalyticsProperties } from "../../analytics/catalog";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
+import type { AnalyticsTrack } from "../../providers/AnalyticsProvider";
 import { useHasPlusAccess } from "../../state/entitlements";
 import { isAdMobEnabled } from "./admob-config";
 import {
@@ -30,10 +32,7 @@ type ShowInterstitialInput = {
   hasPlusAccess: boolean;
   pathname?: string | null;
   practiceAnsweredCount?: number | null;
-  track: (
-    event: string,
-    payload?: Record<string, string | number | boolean | null>
-  ) => void;
+  track: AnalyticsTrack;
   trigger: AdInterstitialTrigger;
   /**
    * When true (session end / exam / unlock): wait and retry for a creative.
@@ -61,14 +60,10 @@ function getAdOpportunityType(trigger: AdInterstitialTrigger) {
 }
 
 function trackAdOpportunity(input: ShowInterstitialInput, adsEnabled: boolean) {
-  input.track("ad_opportunity", {
+  input.track(ANALYTICS_EVENTS.adRequested.key, {
     ads_enabled: adsEnabled,
     trigger: input.trigger,
     type: getAdOpportunityType(input.trigger),
-  });
-  input.track("ad_interstitial_requested", {
-    ads_enabled: adsEnabled,
-    trigger: input.trigger,
   });
 }
 
@@ -76,40 +71,42 @@ function trackAdSkipped(
   input: ShowInterstitialInput,
   reason: AdSkipReason
 ) {
-  input.track("ad_skipped", {
+  input.track(ANALYTICS_EVENTS.adSkipped.key, {
     reason,
     trigger: input.trigger,
     type: getAdOpportunityType(input.trigger),
-  });
-  input.track("ad_interstitial_skipped", {
-    reason,
-    trigger: input.trigger,
   });
 }
 
-function trackAdFailed(input: ShowInterstitialInput, message: string) {
-  input.track("ad_failed", {
-    reason: message,
+function trackAdFailed(input: ShowInterstitialInput, reason: string) {
+  input.track(ANALYTICS_EVENTS.adFailed.key, {
+    reason,
     trigger: input.trigger,
     type: getAdOpportunityType(input.trigger),
-  });
-  input.track("ad_interstitial_failed", {
-    message,
-    trigger: input.trigger,
   });
 }
 
 function trackAdShown(
   input: ShowInterstitialInput,
-  extra?: Record<string, string | number | boolean | null>
+  extra?: AnalyticsProperties
 ) {
   const payload = {
     trigger: input.trigger,
     type: getAdOpportunityType(input.trigger),
     ...extra,
   };
-  input.track("ad_shown", payload);
-  input.track("ad_interstitial_shown", payload);
+  input.track(ANALYTICS_EVENTS.adShown.key, payload);
+}
+
+function trackAdDismissed(
+  input: ShowInterstitialInput,
+  extra?: AnalyticsProperties
+) {
+  input.track(ANALYTICS_EVENTS.adDismissed.key, {
+    trigger: input.trigger,
+    type: getAdOpportunityType(input.trigger),
+    ...extra,
+  });
 }
 
 async function presentInterstitial(input: ShowInterstitialInput): Promise<boolean> {
@@ -133,10 +130,7 @@ async function presentInterstitial(input: ShowInterstitialInput): Promise<boolea
         trackAdShown(input, { retried: true });
         recordAdShown();
         clearAppBackgroundMark();
-        input.track("ad_interstitial_dismissed", {
-          trigger: input.trigger,
-          retried: true,
-        });
+        trackAdDismissed(input, { retried: true });
         return true;
       }
     }
@@ -148,9 +142,7 @@ async function presentInterstitial(input: ShowInterstitialInput): Promise<boolea
   trackAdShown(input);
   recordAdShown();
   clearAppBackgroundMark();
-  input.track("ad_interstitial_dismissed", {
-    trigger: input.trigger,
-  });
+  trackAdDismissed(input);
   return true;
 }
 
@@ -276,10 +268,7 @@ export async function showInterstitialForUnlockGate(
         });
         recordAdShown();
         clearAppBackgroundMark();
-        input.track("ad_interstitial_dismissed", {
-          trigger,
-          retried: true,
-        });
+        trackAdDismissed(normalizedInput, { retried: true });
         return true;
       }
     }
@@ -291,9 +280,7 @@ export async function showInterstitialForUnlockGate(
   trackAdShown(normalizedInput);
   recordAdShown();
   clearAppBackgroundMark();
-  input.track("ad_interstitial_dismissed", {
-    trigger,
-  });
+  trackAdDismissed(normalizedInput);
   return true;
 }
 
@@ -307,10 +294,14 @@ export function maybeShowInterstitial(
     waitForLoad: false,
   }).catch((error) => {
     console.warn("Failed to show interstitial ad.", error);
-    input.track("ad_interstitial_failed", {
-      message: error instanceof Error ? error.message : "unknown_error",
-      trigger,
-    });
+    trackAdFailed(
+      {
+        ...input,
+        trigger,
+        waitForLoad: false,
+      },
+      error instanceof Error ? error.name || "unknown_error" : "unknown_error"
+    );
   });
 }
 

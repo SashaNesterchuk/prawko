@@ -9,9 +9,12 @@ import { AppCard } from "../../src/components/shell/AppCard";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function LevelScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const setLevel = useAppShellStore((state) => state.setLevel);
@@ -27,6 +30,10 @@ export default function LevelScreen() {
             label={t("common.continue")}
             onPress={() => {
               setLevel(selectedLevel);
+              track(ANALYTICS_EVENTS.onboardingStepCompleted.key, {
+                level: selectedLevel,
+                step: "level",
+              });
               router.navigate("/(onboarding)/school-code");
             }}
           />

@@ -11,8 +11,9 @@ This package builds the local import pipeline for the official theory question d
 5. `pnpm data:media:build`
 6. `pnpm data:media:upload`
 7. `pnpm data:questions:sync`
-8. `pnpm data:question-topics:prepare`
-9. `pnpm data:question-topics:sync`
+8. `pnpm data:question-topics:from-xlsx`
+9. `pnpm data:question-topics:prepare`
+10. `pnpm data:question-topics:sync`
 
 ## Expected inputs
 
@@ -52,7 +53,17 @@ Important exports:
 
 ## Normalized Topic Commands
 
-1. Prepare export files with normalized topics:
+1. Read `category_id` from the categorized official workbook and build a
+   complete assignment set for the current Category B export. Existing
+   questions absent from the newer workbook are assigned through audited
+   manual fallbacks; no question rows are removed.
+
+```bash
+pnpm data:question-topics:from-xlsx \
+  --xlsx /absolute/path/to/KATALOG_dla_kandydatow_na_kierowcow_072026_@categorized.xlsx
+```
+
+2. Prepare export files with normalized topics:
 
 ```bash
 pnpm data:question-topics:prepare \
@@ -60,7 +71,7 @@ pnpm data:question-topics:prepare \
   --topic-catalog /absolute/path/to/topic_taxonomy/topic_catalog.ua.normalized.json
 ```
 
-2. Sync the prepared topic catalog and question assignments to Supabase:
+3. Sync the prepared topic catalog and question assignments to Supabase:
 
 ```bash
 pnpm data:question-topics:sync \

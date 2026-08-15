@@ -30,9 +30,12 @@ import {
 } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
 import { useQuestionCatalogResolved } from "../../src/state/question-catalog";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function ExamIntroScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const hasPlusAccess = useHasPlusAccess();
   const params = useLocalSearchParams<{
@@ -88,6 +91,12 @@ export default function ExamIntroScreen() {
     });
 
   const launchExam = async () => {
+    track(ANALYTICS_EVENTS.examStartRequested.key, {
+      mode,
+      question_total: totalQuestionsTarget,
+      source: studyPlanTaskId ? "study_plan" : "manual",
+    });
+
     try {
       const activeSnapshot = await fetchLatestActiveExamSession(mode, {
         useRemote: canUseRemoteExam,
@@ -101,6 +110,11 @@ export default function ExamIntroScreen() {
           activeSnapshot.session.currentCategory === preferredCategory
         ) {
           cacheExamSnapshot(activeSnapshot);
+          track(ANALYTICS_EVENTS.examSessionResumed.key, {
+            mode: activeSnapshot.session.mode,
+            question_total: activeSnapshot.session.totalQuestionsTarget,
+            resumed_at_question: activeSnapshot.session.currentQuestionIndex,
+          });
           openExamSession(activeSnapshot.session.id);
           return;
         }
@@ -136,6 +150,11 @@ export default function ExamIntroScreen() {
       );
 
       cacheExamSnapshot(snapshot);
+      track(ANALYTICS_EVENTS.examSessionStarted.key, {
+        mode: snapshot.session.mode,
+        question_total: snapshot.session.totalQuestionsTarget,
+        source: studyPlanTaskId ? "study_plan" : "manual",
+      });
       openExamSession(snapshot.session.id);
     } catch (error: unknown) {
       console.warn("Failed to launch exam session.", error);

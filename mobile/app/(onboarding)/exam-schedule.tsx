@@ -21,9 +21,12 @@ import {
   getDaysUntilExamFromDate,
 } from "../../src/features/study-plan/generate-local-study-plan";
 import { useAppShellStore } from "../../src/state/app-shell";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function ExamScheduleScreen() {
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const { colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -52,6 +55,13 @@ export default function ExamScheduleScreen() {
       });
     }
 
+    track(ANALYTICS_EVENTS.onboardingStepCompleted.key, {
+      days_until_exam: selectedDate
+        ? Math.max(1, getDaysUntilExamFromDate(toIsoDate(selectedDate)))
+        : STUDY_PLAN_LIMITS.recommendedDays,
+      exam_date_provided: Boolean(selectedDate),
+      step: "exam_schedule",
+    });
     router.navigate("/(onboarding)/notifications");
   };
 

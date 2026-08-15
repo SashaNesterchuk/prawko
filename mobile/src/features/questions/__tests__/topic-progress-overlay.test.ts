@@ -56,8 +56,8 @@ function seenCorrect(questionId: string): QuestionUserState {
 describe("getTopicProgress training coverage", () => {
   beforeEach(() => {
     hydrateQuestionBankFromLocalQuestions([
-      makeQuestion("warn-1", "road_markings_and_warning_signs"),
-      makeQuestion("warn-2", "road_markings_and_warning_signs"),
+      makeQuestion("warn-1", "signs_signals"),
+      makeQuestion("warn-2", "signs_signals"),
     ]);
   });
 
@@ -72,7 +72,7 @@ describe("getTopicProgress training coverage", () => {
     };
 
     const progress = getTopicProgress(
-      "road_markings_and_warning_signs",
+      "signs_signals",
       userStates
     );
 
@@ -90,7 +90,7 @@ describe("getTopicProgress training coverage", () => {
       "warn-2": seenCorrect("warn-2"),
     };
     const topicProgress = {
-      road_markings_and_warning_signs: {
+      signs_signals: {
         "warn-1": {
           timesSeen: 1,
           timesCorrect: 1,
@@ -102,7 +102,7 @@ describe("getTopicProgress training coverage", () => {
     };
 
     const progress = getTopicProgress(
-      "road_markings_and_warning_signs",
+      "signs_signals",
       userStates,
       topicProgress
     );
@@ -118,7 +118,7 @@ describe("getTopicProgress training coverage", () => {
   it("attributes one training answer to every catalog topic on the question", () => {
     const progress = getNextTopicQuestionProgressMapAfterAttempt(
       {},
-      ["road_markings_and_warning_signs", "overtaking_and_maneuvers"],
+      ["signs_signals", "driving_maneuvers"],
       "shared-question",
       {
         answeredAt: "2026-08-12T12:00:00.000Z",
@@ -127,13 +127,13 @@ describe("getTopicProgress training coverage", () => {
     );
 
     expect(
-      progress.road_markings_and_warning_signs?.["shared-question"]
+      progress.signs_signals?.["shared-question"]
     ).toMatchObject({
       timesSeen: 1,
       timesCorrect: 1,
       timesWrong: 0,
     });
-    expect(progress.overtaking_and_maneuvers?.["shared-question"]).toMatchObject({
+    expect(progress.driving_maneuvers?.["shared-question"]).toMatchObject({
       timesSeen: 1,
       timesCorrect: 1,
       timesWrong: 0,

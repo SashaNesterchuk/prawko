@@ -15,6 +15,10 @@ import {
 } from "../../src/features/entitlements/revenuecat";
 import { formatPlanDate } from "../../src/features/study-plan/generate-local-study-plan";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
+import {
+  ANALYTICS_EVENTS,
+  getAnalyticsErrorCode,
+} from "../../src/analytics/catalog";
 import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
 import {
   useEntitlementStore,
@@ -77,7 +81,7 @@ export default function AccessCenterModalScreen() {
     setIsRestoring(true);
     setRestoreFeedback(null);
     setRevenueCatStatus("loading");
-    track("purchase_restore_started", {
+    track(ANALYTICS_EVENTS.purchaseRestoreStarted.key, {
       source: "access_center",
     });
 
@@ -90,7 +94,7 @@ export default function AccessCenterModalScreen() {
         !snapshot.featureEntitlements.premium_access &&
         !snapshot.featureEntitlements.ai_question_chat
       ) {
-        track("purchase_restore_empty", {
+        track(ANALYTICS_EVENTS.purchaseRestoreEmpty.key, {
           source: "access_center",
         });
         setRestoreFeedback({
@@ -100,7 +104,7 @@ export default function AccessCenterModalScreen() {
         return;
       }
 
-      track("purchase_restore_succeeded", {
+      track(ANALYTICS_EVENTS.purchaseRestoreSucceeded.key, {
         active_entitlements_count:
           snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
         source: "access_center",
@@ -122,8 +126,8 @@ export default function AccessCenterModalScreen() {
         },
       });
       setRevenueCatStatus("ready");
-      track("purchase_restore_failed", {
-        message,
+      track(ANALYTICS_EVENTS.purchaseRestoreFailed.key, {
+        error_code: getAnalyticsErrorCode(error),
         source: "access_center",
       });
       setRestoreFeedback({
@@ -154,7 +158,7 @@ export default function AccessCenterModalScreen() {
 
     setIsOpeningCustomerCenter(true);
     setRestoreFeedback(null);
-    track("customer_center_opened", {
+    track(ANALYTICS_EVENTS.customerCenterOpened.key, {
       source: "access_center",
     });
 

@@ -22,11 +22,17 @@ import {
   useCurrentStudyPlan,
   useAppShellStore,
 } from "../../src/state/app-shell";
+import {
+  ANALYTICS_EVENTS,
+  getAnalyticsErrorCode,
+} from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 const DAY_PRESETS = [1, 3, 5, 7, 10, 14, 21, 30] as const;
 
 export default function PlanAdjustModalScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const params = useLocalSearchParams<{
     missedDays?: string | string[];
@@ -137,9 +143,21 @@ export default function PlanAdjustModalScreen() {
         remoteId: nextRemoteId,
       });
 
+      track(ANALYTICS_EVENTS.studyPlanAdjusted.key, {
+        days_until_exam: daysUntilExam,
+        minutes_per_day: normalizedMinutes,
+        missed_days: missedDays,
+        remote_sync_attempted:
+          authMode === "supabase" && isMobileSupabaseConfigured,
+        remote_sync_succeeded: nextRemoteId !== null,
+      });
       router.back();
     } catch (error) {
       console.warn("Failed to adjust study plan.", error);
+      track(ANALYTICS_EVENTS.studyPlanAdjustFailed.key, {
+        error_code: getAnalyticsErrorCode(error),
+        missed_days: missedDays,
+      });
       setFormError(t("modals.planAdjust.submitFailed"));
     } finally {
       setIsSubmitting(false);

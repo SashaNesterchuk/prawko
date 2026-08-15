@@ -11,6 +11,8 @@ import {
 } from "../../components/shell/QuestionCountDialog";
 import { useAppShellStore } from "../../state/app-shell";
 import { useQuestionProgressStore } from "../../state/question-progress";
+import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { getQuestionCountForMode } from "./question-engine";
 import { buildQuestionRouteParams } from "./question-routes";
 
@@ -26,6 +28,7 @@ type PendingMode = {
  */
 export function useQuestionModeCountDialog() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
@@ -64,6 +67,11 @@ export function useQuestionModeCountDialog() {
     questionLimit: number | null,
     topic?: LearningTopicId
   ) {
+    track(ANALYTICS_EVENTS.trainingModeSelected.key, {
+      mode,
+      question_limit: questionLimit,
+      topic_id: topic ?? null,
+    });
     router.navigate({
       pathname: "/question",
       params: buildQuestionRouteParams({ mode, topic, questionLimit }),

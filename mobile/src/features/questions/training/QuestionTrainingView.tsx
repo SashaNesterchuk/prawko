@@ -21,6 +21,8 @@ import { QuestionStepPill } from "./QuestionStepPill";
 import type { QuestionTrainingSession } from "./useQuestionTrainingSession";
 import { getQuestionStepState } from "./visible-steps";
 import { useHasAiChatAccess } from "../../../state/entitlements";
+import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
+import { useAnalytics } from "../../../providers/AnalyticsProvider";
 
 import { CText } from "../../../portable-ui";
 const SUPPORT_EMAIL = "support@prawko.app";
@@ -83,6 +85,7 @@ export function QuestionTrainingView({
   visibleSteps,
 }: QuestionTrainingViewProps) {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const hasAiChatAccess = useHasAiChatAccess();
   const insets = useSafeAreaInsets();
   const stepperRef = useRef<ScrollView>(null);
@@ -140,6 +143,10 @@ export function QuestionTrainingView({
       : [];
 
   const handleReportProblem = () => {
+    track(ANALYTICS_EVENTS.questionProblemReportRequested.key, {
+      question_id: currentQuestionId,
+      source: "training",
+    });
     const subject = t("question.reportProblemSubject", {
       questionId: currentQuestionId,
     });
@@ -163,6 +170,10 @@ export function QuestionTrainingView({
       return;
     }
 
+    track(ANALYTICS_EVENTS.aiChatAccessBlocked.key, {
+      question_id: currentQuestionId,
+      source: "training",
+    });
     router.navigate({
       pathname: "/paywall",
       params: {

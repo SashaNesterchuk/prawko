@@ -3,14 +3,21 @@ import { Platform } from "react-native";
 import Constants from "expo-constants";
 import { usePostHog } from "posthog-react-native";
 
+import {
+  sanitizeAnalyticsProperties,
+  type AnalyticsEventName,
+  type AnalyticsEventPayloads,
+  type AnalyticsProperties,
+} from "../analytics/catalog";
 import { mobileEnv } from "../config/env";
 import { useAppShellStore, useCurrentUser } from "../state/app-shell";
 import { useHasPlusAccess } from "../state/entitlements";
 
-export type AnalyticsTrackPayload = Record<
-  string,
-  string | number | boolean | null
->;
+export type AnalyticsTrackPayload = AnalyticsProperties;
+export type AnalyticsTrack = <EventName extends AnalyticsEventName>(
+  event: EventName,
+  payload?: AnalyticsEventPayloads[EventName]
+) => void;
 
 export function useAnalytics() {
   const posthog = usePostHog();
@@ -38,13 +45,19 @@ export function useAnalytics() {
     ]
   );
 
-  const capture = useCallback(
-    (event: string, payload?: AnalyticsTrackPayload) => {
+  const capture: AnalyticsTrack = useCallback(
+    <EventName extends AnalyticsEventName>(
+      event: EventName,
+      payload?: AnalyticsEventPayloads[EventName]
+    ) => {
       if (!posthog || !isConfigured) {
         return;
       }
 
-      posthog.capture(event, sanitizePayload({ ...baseProperties, ...payload }));
+      posthog.capture(
+        event,
+        sanitizeAnalyticsProperties({ ...baseProperties, ...payload })
+      );
     },
     [baseProperties, isConfigured, posthog]
   );
@@ -55,7 +68,10 @@ export function useAnalytics() {
         return;
       }
 
-      void posthog.screen(name, sanitizePayload({ ...baseProperties, ...payload }));
+      void posthog.screen(
+        name,
+        sanitizeAnalyticsProperties({ ...baseProperties, ...payload })
+      );
     },
     [baseProperties, isConfigured, posthog]
   );
@@ -66,7 +82,7 @@ export function useAnalytics() {
         return;
       }
 
-      posthog.identify(distinctId, sanitizePayload(payload));
+      posthog.identify(distinctId, sanitizeAnalyticsProperties(payload));
     },
     [isConfigured, posthog]
   );
@@ -87,14 +103,4 @@ export function useAnalytics() {
     screen,
     track: capture,
   };
-}
-
-function sanitizePayload(payload?: AnalyticsTrackPayload) {
-  if (!payload) {
-    return undefined;
-  }
-
-  return Object.fromEntries(
-    Object.entries(payload).filter((entry) => entry[1] !== undefined)
-  ) as AnalyticsTrackPayload;
 }

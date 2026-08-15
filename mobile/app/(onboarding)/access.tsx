@@ -24,6 +24,10 @@ import {
   signUpWithEmailPassword,
 } from "../../src/features/auth/email-password-auth";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
+import {
+  ANALYTICS_EVENTS,
+  getAnalyticsErrorCode,
+} from "../../src/analytics/catalog";
 import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
 import { useEntitlementStore } from "../../src/state/entitlements";
 import { useCurrentUser, useAppShellStore } from "../../src/state/app-shell";
@@ -83,6 +87,10 @@ export default function AccessScreen() {
 
     setAuthFeedback(null);
     signInMock();
+    track(ANALYTICS_EVENTS.authCompleted.key, {
+      auth_action: "mock_sign_in",
+      confirmation_pending: false,
+    });
   };
 
   const switchAuthMode = (nextMode: AccessAuthMode) => {
@@ -157,6 +165,9 @@ export default function AccessScreen() {
 
     setIsSubmitting(true);
     setAuthFeedback(null);
+    track(ANALYTICS_EVENTS.authStarted.key, {
+      auth_action: isSignUp ? "sign_up" : "sign_in",
+    });
 
     try {
       if (isSignUp) {
@@ -175,8 +186,16 @@ export default function AccessScreen() {
               email: normalizedEmail,
             }),
           });
+          track(ANALYTICS_EVENTS.authCompleted.key, {
+            auth_action: "sign_up",
+            confirmation_pending: true,
+          });
         } else {
           await redeemPendingSchoolCode();
+          track(ANALYTICS_EVENTS.authCompleted.key, {
+            auth_action: "sign_up",
+            confirmation_pending: false,
+          });
         }
       } else {
         await signInWithEmailPassword({
@@ -185,6 +204,10 @@ export default function AccessScreen() {
         });
 
         await redeemPendingSchoolCode();
+        track(ANALYTICS_EVENTS.authCompleted.key, {
+          auth_action: "sign_in",
+          confirmation_pending: false,
+        });
       }
     } catch (error) {
       const message = getEmailPasswordAuthErrorMessage(error);
@@ -199,6 +222,10 @@ export default function AccessScreen() {
         metadata: {
           auth_action: isSignUp ? "sign_up" : "sign_in",
         },
+      });
+      track(ANALYTICS_EVENTS.authFailed.key, {
+        auth_action: isSignUp ? "sign_up" : "sign_in",
+        error_code: getAnalyticsErrorCode(error),
       });
       setAuthFeedback({
         kind: "error",
@@ -217,7 +244,7 @@ export default function AccessScreen() {
     }
 
     setEntitlementStatus("loading");
-    track("school_code_redeem_started", {
+    track(ANALYTICS_EVENTS.schoolCodeRedeemStarted.key, {
       auth_mode: "supabase",
       code_length: pendingSchoolCode.length,
       source: "access_auto_redeem",
@@ -228,7 +255,7 @@ export default function AccessScreen() {
       const snapshot = await fetchRemoteEntitlementSnapshot();
 
       hydrateRemoteEntitlements(snapshot);
-      track("school_code_redeemed", {
+      track(ANALYTICS_EVENTS.schoolCodeRedeemed.key, {
         granted_features_count: redemption.grantedFeatures.length,
         source: "access_auto_redeem",
         was_already_member: redemption.wasAlreadyMember,
@@ -247,9 +274,9 @@ export default function AccessScreen() {
         },
       });
       setEntitlementStatus("ready");
-      track("school_code_redeem_failed", {
+      track(ANALYTICS_EVENTS.schoolCodeRedeemFailed.key, {
         auth_mode: "supabase",
-        message,
+        error_code: getAnalyticsErrorCode(error),
         source: "access_auto_redeem",
       });
     }

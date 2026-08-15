@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -29,9 +29,12 @@ import { SignImage } from "../../../src/features/road-signs/SignImage";
 import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
 import { useSignBookmarksStore } from "../../../src/state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
+import { ANALYTICS_EVENTS } from "../../../src/analytics/catalog";
+import { useAnalytics } from "../../../src/providers/AnalyticsProvider";
 
 export default function SignDetailScreen() {
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const spacing = useResponsiveSpacing();
   const styles = useStyles({ safeBottom });
@@ -85,6 +88,18 @@ export default function SignDetailScreen() {
         ? t("signs.statusWrong")
         : t("signs.statusNew");
 
+  useEffect(() => {
+    if (!sign) {
+      return;
+    }
+
+    track(ANALYTICS_EVENTS.signOpened.key, {
+      category_id: sign.categoryId,
+      sign_id: sign.id,
+      source: "detail",
+    });
+  }, [sign, track]);
+
   const goToSignAt = (index: number) => {
     const target = categorySigns[index];
 
@@ -131,7 +146,14 @@ export default function SignDetailScreen() {
           bookmarkLabel={
             isBookmarked ? t("signs.removeBookmark") : t("signs.bookmark")
           }
-          onToggleBookmark={() => toggleSaved(sign.id)}
+          onToggleBookmark={() => {
+            const isBookmarkedNext = toggleSaved(sign.id);
+            track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+              is_bookmarked: isBookmarkedNext,
+              question_id: sign.id,
+              source: "sign_detail",
+            });
+          }}
           closeLabel={t("common.close", { defaultValue: "Close" })}
           onClose={() => router.back()}
         />

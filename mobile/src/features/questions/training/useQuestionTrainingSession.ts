@@ -5,9 +5,11 @@ import type { SupportedLocale } from "@prawko/config";
 import { AD_POLICY, QUESTION_MASTERY_RULES } from "@prawko/config";
 
 import { isMobileSupabaseConfigured } from "../../../config/env";
+import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import { recordQuestionAnsweredForAds } from "../../ads/ad-session-policy";
 import { useAdInterstitialActions } from "../../ads/show-interstitial";
 import { useResponsiveFonts } from "../../../portable-ui";
+import { useAnalytics } from "../../../providers/AnalyticsProvider";
 import { useTheme } from "../../../providers/ThemeProvider";
 import { useAppShellStore } from "../../../state/app-shell";
 import { useQuestionCatalogVersion } from "../../../state/question-catalog";
@@ -43,6 +45,7 @@ import { getVisibleQuestionSteps } from "./visible-steps";
 
 export function useQuestionTrainingSession() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const routeParams = useQuestionRouteParams();
@@ -85,6 +88,9 @@ export function useQuestionTrainingSession() {
   const [showExitDialog, setShowExitDialog] = useState(false);
   const questionStartedAtRef = useRef(Date.now());
   const didShowSessionCompleteAdRef = useRef(false);
+  const trackedSessionIdRef = useRef<string | null>(null);
+  const trackedCompletedSessionIdRef = useRef<string | null>(null);
+  const trackedEmptySessionIdRef = useRef<string | null>(null);
   const shouldAttemptPracticeAdRef = useRef(false);
 
   useEffect(() => {
@@ -208,7 +214,78 @@ export function useQuestionTrainingSession() {
           topic: sessionTopic
             ? getLearningTopicTitle(sessionTopic, displayLocale, t)
             : t("question.generalPool"),
-        });
+          });
+
+  useEffect(() => {
+    if (
+      !activeSession ||
+      activeSession.request.sessionKey !== sessionKey ||
+      activeSession.request.currentCategory !== preferredCategory ||
+      trackedSessionIdRef.current === activeSession.id
+    ) {
+      return;
+    }
+
+    trackedSessionIdRef.current = activeSession.id;
+    track(
+      activeSession.answers && Object.keys(activeSession.answers).length > 0
+        ? ANALYTICS_EVENTS.trainingSessionResumed.key
+        : ANALYTICS_EVENTS.trainingSessionStarted.key,
+      {
+        mode: activeSession.request.mode,
+        question_limit: activeSession.request.questionLimit ?? null,
+        question_total: activeSession.questionIds.length,
+        topic_id: activeSession.request.topic ?? null,
+      }
+    );
+  }, [activeSession, preferredCategory, sessionKey, track]);
+
+  useEffect(() => {
+    if (!activeSession || !isCompleted) {
+      return;
+    }
+
+    if (trackedCompletedSessionIdRef.current === activeSession.id) {
+      return;
+    }
+
+    trackedCompletedSessionIdRef.current = activeSession.id;
+    track(ANALYTICS_EVENTS.trainingSessionCompleted.key, {
+      correct_count: summary.correct,
+      incorrect_count: summary.wrong,
+      mode: activeSession.request.mode,
+      passed: sessionPassed,
+      question_total: summary.total,
+      score_percent: sessionResultPercent,
+      topic_id: activeSession.request.topic ?? null,
+    });
+  }, [
+    activeSession,
+    isCompleted,
+    sessionPassed,
+    sessionResultPercent,
+    summary.correct,
+    summary.total,
+    summary.wrong,
+    track,
+  ]);
+
+  useEffect(() => {
+    if (!activeSession || !isEmptyState) {
+      return;
+    }
+
+    if (trackedEmptySessionIdRef.current === activeSession.id) {
+      return;
+    }
+
+    trackedEmptySessionIdRef.current = activeSession.id;
+    track(ANALYTICS_EVENTS.trainingSessionEmpty.key, {
+      empty_reason: activeSession.emptyReason ?? "general_empty",
+      mode: activeSession.request.mode,
+      topic_id: activeSession.request.topic ?? null,
+    });
+  }, [activeSession, isEmptyState, track]);
 
   const handleAnswer = (choiceId: QuestionOptionValue) => {
     if (!currentQuestion) {
@@ -230,15 +307,30 @@ export function useQuestionTrainingSession() {
 
     recordQuestionAnsweredForAds();
     shouldAttemptPracticeAdRef.current = true;
-
-    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
-      return;
-    }
-
     const answerDurationMs = Math.max(
       0,
       Date.now() - questionStartedAtRef.current
     );
+
+    track(ANALYTICS_EVENTS.trainingQuestionAnswered.key, {
+      answer_duration_ms: answerDurationMs,
+      answer_type: currentQuestion.answerType,
+      is_correct: answeredAttempt.isCorrect,
+      media_type: currentQuestion.media?.type ?? "none",
+      mode: sessionMode,
+      points: currentQuestion.points,
+      primary_topic_id: currentQuestion.primaryTopicId ?? null,
+      question_id: currentQuestion.id,
+      question_index: (activeSession?.currentIndex ?? 0) + 1,
+      question_total: summary.total,
+      scope: currentQuestion.scope,
+      topic_block: currentQuestion.topicBlock,
+      topic_id: sessionTopic ?? null,
+    });
+
+    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
+      return;
+    }
 
     void recordQuestionAttemptBySourceId({
       questionSourceId: currentQuestion.id,
@@ -272,6 +364,12 @@ export function useQuestionTrainingSession() {
 
   const handleToggleBookmark = (questionId: string) => {
     const isBookmarked = toggleBookmark(questionId);
+    track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+      is_bookmarked: isBookmarked,
+      mode: sessionMode,
+      question_id: questionId,
+      source: "training",
+    });
 
     if (authMode === "supabase" && isMobileSupabaseConfigured) {
       void syncQuestionBookmarkState({
@@ -332,6 +430,15 @@ export function useQuestionTrainingSession() {
       return;
     }
 
+    track(ANALYTICS_EVENTS.trainingSessionAbandoned.key, {
+      answered_count: answeredCount,
+      correct_count: summary.correct,
+      incorrect_count: summary.wrong,
+      mode: sessionMode,
+      question_total: summary.total,
+      topic_id: sessionTopic ?? null,
+    });
+
     // Caller navigates immediately after this returns. Schedule the ad after
     // the transition — awaiting AdMob load/show here freezes/glitches the stack
     // (exam result stays on a stable screen; exit must not).
@@ -356,6 +463,12 @@ export function useQuestionTrainingSession() {
     isEmptyState,
     showInterstitialForTrigger,
     summary.answered,
+    summary.correct,
+    summary.total,
+    summary.wrong,
+    sessionMode,
+    sessionTopic,
+    track,
   ]);
 
   const handleDismissExitDialog = () => {

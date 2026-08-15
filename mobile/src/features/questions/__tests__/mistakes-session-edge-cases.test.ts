@@ -64,27 +64,27 @@ describe("mistakes session edge cases", () => {
   beforeEach(() => {
     hydrateQuestionBankFromLocalQuestions([
       makeQuestion("warn-1", {
-        primaryTopicId: "road_markings_and_warning_signs",
-        topicIds: ["road_markings_and_warning_signs"],
+        primaryTopicId: "signs_signals",
+        topicIds: ["signs_signals"],
         topicBlock: "signs",
       }),
       makeQuestion("warn-2", {
-        primaryTopicId: "road_markings_and_warning_signs",
+        primaryTopicId: "signs_signals",
         topicIds: [
-          "road_markings_and_warning_signs",
-          "road_signs_and_regulations",
+          "signs_signals",
+          "driving_maneuvers",
         ],
         topicBlock: "signs",
       }),
       // Legacy block membership differs from the current catalog membership.
       makeQuestion("legacy-overtake-block", {
-        primaryTopicId: "road_markings_and_warning_signs",
-        topicIds: ["road_markings_and_warning_signs"],
+        primaryTopicId: "signs_signals",
+        topicIds: ["signs_signals"],
         topicBlock: "overtaking",
       }),
       makeQuestion("catalog-overtake", {
-        primaryTopicId: "overtaking_and_maneuvers",
-        topicIds: ["overtaking_and_maneuvers"],
+        primaryTopicId: "driving_maneuvers",
+        topicIds: ["driving_maneuvers"],
         topicBlock: "safety",
       }),
     ]);
@@ -103,7 +103,7 @@ describe("mistakes session edge cases", () => {
 
     expect(
       getTopicMistakeProgress(
-        "road_markings_and_warning_signs",
+        "signs_signals",
         states,
         topicProgress
       ).wrong
@@ -113,7 +113,7 @@ describe("mistakes session edge cases", () => {
       {
         currentCategory: "B",
         mode: "wrong_answers",
-        topic: "road_markings_and_warning_signs",
+        topic: "signs_signals",
       },
       states,
       topicProgress
@@ -125,7 +125,7 @@ describe("mistakes session edge cases", () => {
         currentCategory: "B",
         mode: "wrong_answers",
         sessionKey: "mistakes-warn",
-        topic: "road_markings_and_warning_signs",
+        topic: "signs_signals",
       },
       states,
       new Date("2026-08-08T12:00:00.000Z"),
@@ -138,7 +138,7 @@ describe("mistakes session edge cases", () => {
     expect(
       getTrainerModeStats(
         states,
-        "road_markings_and_warning_signs",
+        "signs_signals",
         topicProgress
       ).wrongAnswers
     ).toBe(1);
@@ -149,7 +149,7 @@ describe("mistakes session edge cases", () => {
       "warn-1": unresolvedWrong("warn-1"),
     };
     const topicProgress = {
-      road_markings_and_warning_signs: {
+      signs_signals: {
         "warn-1": {
           timesSeen: 1,
           timesCorrect: 1,
@@ -163,7 +163,7 @@ describe("mistakes session edge cases", () => {
     // Monitor still uses global unresolved wrong.
     expect(
       getTopicMistakeProgress(
-        "road_markings_and_warning_signs",
+        "signs_signals",
         states,
         topicProgress
       ).wrong
@@ -174,7 +174,7 @@ describe("mistakes session edge cases", () => {
         currentCategory: "B",
         mode: "wrong_answers",
         sessionKey: "mistakes-overlay-conflict",
-        topic: "road_markings_and_warning_signs",
+        topic: "signs_signals",
       },
       states,
       new Date("2026-08-08T12:00:00.000Z"),
@@ -190,7 +190,7 @@ describe("mistakes session edge cases", () => {
       "catalog-overtake": unresolvedWrong("catalog-overtake"),
     };
 
-    expect(getTopicMistakeProgress("overtaking_and_maneuvers", states).wrong).toBe(
+    expect(getTopicMistakeProgress("driving_maneuvers", states).wrong).toBe(
       1
     );
 
@@ -199,7 +199,7 @@ describe("mistakes session edge cases", () => {
         currentCategory: "B",
         mode: "wrong_answers",
         sessionKey: "mistakes-dual-id",
-        topic: "overtaking_and_maneuvers",
+        topic: "driving_maneuvers",
       },
       states,
       new Date("2026-08-08T12:00:00.000Z"),
@@ -216,10 +216,10 @@ describe("mistakes session edge cases", () => {
     };
 
     expect(
-      getTopicMistakeProgress("road_markings_and_warning_signs", states).wrong
+      getTopicMistakeProgress("signs_signals", states).wrong
     ).toBe(1);
     expect(
-      getTopicMistakeProgress("road_signs_and_regulations", states).wrong
+      getTopicMistakeProgress("driving_maneuvers", states).wrong
     ).toBe(1);
 
     const secondarySession = buildQuestionSession(
@@ -227,7 +227,7 @@ describe("mistakes session edge cases", () => {
         currentCategory: "B",
         mode: "wrong_answers",
         sessionKey: "mistakes-secondary",
-        topic: "road_signs_and_regulations",
+        topic: "driving_maneuvers",
       },
       states,
       new Date("2026-08-08T12:00:00.000Z"),

@@ -10,6 +10,7 @@ import {
   prepareNormalizedQuestionTopics,
   syncNormalizedQuestionTopicsToSupabase,
 } from "./question-topic-sync";
+import { prepareTopicsFromCategorizedWorkbook } from "./categorized-workbook-topics";
 import { syncQuestionsToSupabase } from "./question-sync";
 import { clearQuestionMediaStorage } from "./storage-clear";
 import { pathExists, readJsonFile, resolveRepoPath } from "./utils";
@@ -225,6 +226,12 @@ async function main() {
     return;
   }
 
+  if (command === "question-topics:from-xlsx") {
+    const result = await prepareTopicsFromCategorizedWorkbook(options);
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
   if (command === "question-topics:sync") {
     const result = await syncNormalizedQuestionTopicsToSupabase(options);
     console.log(JSON.stringify(result, null, 2));
@@ -232,7 +239,7 @@ async function main() {
   }
 
   throw new Error(
-    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, storage:clear, questions:sync, question-topics:prepare, question-topics:sync.`
+    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, storage:clear, questions:sync, question-topics:from-xlsx, question-topics:prepare, question-topics:sync.`
   );
 }
 

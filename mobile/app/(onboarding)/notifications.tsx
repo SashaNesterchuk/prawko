@@ -19,9 +19,12 @@ import {
   useResponsiveStyles,
 } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
+import { ANALYTICS_EVENTS, getAnalyticsErrorCode } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function NotificationsScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -38,10 +41,23 @@ export default function NotificationsScreen() {
     setIsFinishing(true);
 
     if (requestPermission) {
+      track(ANALYTICS_EVENTS.notificationPermissionRequested.key, {
+        source: "onboarding",
+      });
       try {
-        await enableStudyNotificationsAsync();
+        const result = await enableStudyNotificationsAsync();
+        track(ANALYTICS_EVENTS.notificationPermissionResolved.key, {
+          can_ask_again: result.ok ? null : result.canAskAgain,
+          enabled: result.ok,
+          source: "onboarding",
+        });
       } catch (error) {
         console.warn("Failed to enable study notifications.", error);
+        track(ANALYTICS_EVENTS.notificationPermissionResolved.key, {
+          enabled: false,
+          error_code: getAnalyticsErrorCode(error),
+          source: "onboarding",
+        });
       }
     } else {
       try {
@@ -52,6 +68,10 @@ export default function NotificationsScreen() {
     }
 
     finalizeLocalOnboarding();
+    track(ANALYTICS_EVENTS.onboardingStepCompleted.key, {
+      notifications_requested: requestPermission,
+      step: "notifications",
+    });
     router.replace("/(tabs)");
   };
 

@@ -14,9 +14,12 @@ import { LocaleFlag } from "../../src/components/shell/LocaleFlag";
 import { NavigationButton } from "../../src/components/shell/NavigationButton";
 import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function LanguageScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const params = useLocalSearchParams<{ mode?: string | string[] }>();
   const modeParam = Array.isArray(params.mode) ? params.mode[0] : params.mode;
@@ -36,6 +39,10 @@ export default function LanguageScreen() {
     setPreferredLocale(locale);
 
     if (isSettingsMode) {
+      track(ANALYTICS_EVENTS.settingsChanged.key, {
+        setting: "locale",
+        value: locale,
+      });
       router.back();
     }
   };
@@ -98,6 +105,10 @@ export default function LanguageScreen() {
           testID="onboarding-language-continue"
           onPress={() => {
             completeLanguageStep();
+            track(ANALYTICS_EVENTS.onboardingStepCompleted.key, {
+              locale: preferredLocale,
+              step: "language",
+            });
             router.navigate("/(onboarding)/category");
           }}
         />

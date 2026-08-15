@@ -13,13 +13,17 @@ import {
 } from "react-native";
 
 import {
+  ANALYTICS_EVENTS,
+  type AnalyticsProperties,
+} from "../analytics/catalog";
+import {
   type CaptureErrorInput,
   normalizeCapturedError,
   persistMobileErrorLog,
 } from "../features/errors/error-logging";
 import { CText, getFontFamily, useResponsiveStyles } from "../portable-ui";
 import { useCurrentUser, useAppShellStore } from "../state/app-shell";
-import { type AnalyticsTrackPayload, useAnalytics } from "./AnalyticsProvider";
+import { useAnalytics } from "./AnalyticsProvider";
 
 type ErrorLoggingContextValue = {
   captureError: (input: CaptureErrorInput) => void;
@@ -63,7 +67,10 @@ export function ErrorLoggingProvider({ children }: PropsWithChildren) {
         locale: preferredLocale ?? null,
       });
 
-      track("app_error_logged", normalized.analyticsPayload);
+      track(
+        ANALYTICS_EVENTS.clientErrorLogged.key,
+        toAnalyticsErrorPayload(normalized.analyticsPayload)
+      );
 
       if (__DEV__) {
         console.warn(
@@ -95,8 +102,10 @@ export function ErrorLoggingProvider({ children }: PropsWithChildren) {
           }
         );
 
-        track("app_fallback_used", {
-          ...(normalized.analyticsPayload as AnalyticsTrackPayload),
+        track(ANALYTICS_EVENTS.clientFallbackUsed.key, {
+          ...toAnalyticsErrorPayload(
+            normalized.analyticsPayload as AnalyticsProperties
+          ),
         });
 
         if (__DEV__) {
@@ -183,6 +192,16 @@ export function ErrorLoggingProvider({ children }: PropsWithChildren) {
 
 export function useErrorLogger() {
   return useContext(ErrorLoggingContext);
+}
+
+function toAnalyticsErrorPayload(payload: AnalyticsProperties) {
+  const {
+    component_stack: _componentStack,
+    message: _message,
+    ...safePayload
+  } = payload;
+
+  return safePayload;
 }
 
 class RootErrorBoundary extends Component<

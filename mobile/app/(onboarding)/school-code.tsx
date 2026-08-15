@@ -9,16 +9,25 @@ import { AppScreen } from "../../src/components/shell/AppScreen";
 import { AppTextInput } from "../../src/components/shell/AppTextInput";
 import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function SchoolCodeScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const existingCode = useAppShellStore((state) => state.studyPlanSetup.schoolCode);
   const setSchoolCode = useAppShellStore((state) => state.setSchoolCode);
   const [value, setValue] = useState(existingCode);
 
   const continueToAccess = (schoolCode: string) => {
-    setSchoolCode(schoolCode.trim().toUpperCase());
+    const normalizedSchoolCode = schoolCode.trim().toUpperCase();
+    setSchoolCode(normalizedSchoolCode);
+    track(ANALYTICS_EVENTS.onboardingStepCompleted.key, {
+      code_provided: Boolean(normalizedSchoolCode),
+      code_length: normalizedSchoolCode.length || null,
+      step: "school_code",
+    });
     router.navigate("/(onboarding)/access");
   };
 

@@ -43,6 +43,11 @@ import {
   useQuestionCatalogStatus,
   useQuestionCatalogVersion,
 } from "../src/state/question-catalog";
+import {
+  ANALYTICS_EVENTS,
+  getAnalyticsErrorCode,
+} from "../src/analytics/catalog";
+import { useAnalytics } from "../src/providers/AnalyticsProvider";
 
 type FeedbackState =
   | {
@@ -53,6 +58,7 @@ type FeedbackState =
 
 export default function OfflineModeScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const styles = useStyles();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -76,9 +82,12 @@ export default function OfflineModeScreen() {
 
   useEffect(() => {
     if (!hasPlusAccess) {
+      track(ANALYTICS_EVENTS.offlineAccessBlocked.key, {
+        source: "offline_mode",
+      });
       router.replace("/paywall");
     }
-  }, [hasPlusAccess]);
+  }, [hasPlusAccess, track]);
 
   const refreshSnapshot = useCallback(async () => {
     // Paint metadata first — never block the screen on catalog hashing.
@@ -177,6 +186,10 @@ export default function OfflineModeScreen() {
 
     setIsWorking(true);
     setFeedback(null);
+    track(ANALYTICS_EVENTS.offlinePackDownloadStarted.key, {
+      category: preferredCategory,
+      question_count: questionBank.length,
+    });
 
     try {
       await downloadOfflinePack({
@@ -194,9 +207,21 @@ export default function OfflineModeScreen() {
         },
       });
       await refreshSnapshot();
+      track(ANALYTICS_EVENTS.offlinePackDownloadCompleted.key, {
+        category: preferredCategory,
+        question_count: questionBank.length,
+      });
     } catch (error) {
       const offlineError = error as OfflinePackError;
-      if (offlineError?.code !== "cancelled") {
+      if (offlineError?.code === "cancelled") {
+        track(ANALYTICS_EVENTS.offlinePackDownloadCancelled.key, {
+          category: preferredCategory,
+        });
+      } else {
+        track(ANALYTICS_EVENTS.offlinePackDownloadFailed.key, {
+          category: preferredCategory,
+          error_code: getAnalyticsErrorCode(error),
+        });
         setFeedback({
           kind: "error",
           message: mapOfflineActionError(error, t),
@@ -210,6 +235,10 @@ export default function OfflineModeScreen() {
 
   const handleStopDownload = () => {
     cancelOfflinePackDownload();
+    track(ANALYTICS_EVENTS.offlinePackDownloadCancelled.key, {
+      category: preferredCategory,
+      source: "stop_button",
+    });
     if (!isWorking) {
       void refreshSnapshot().catch(() => {
         // Keep current UI if snapshot refresh fails after stop.
@@ -223,7 +252,15 @@ export default function OfflineModeScreen() {
 
     try {
       await clearOfflinePack();
+      track(ANALYTICS_EVENTS.offlinePackRemoved.key, {
+        category: preferredCategory,
+      });
     } catch (error) {
+      track(ANALYTICS_EVENTS.offlinePackDownloadFailed.key, {
+        category: preferredCategory,
+        error_code: getAnalyticsErrorCode(error),
+        operation: "remove",
+      });
       setFeedback({
         kind: "error",
         message: getOfflinePackErrorMessage(error),

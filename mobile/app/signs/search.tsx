@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,9 +19,12 @@ import {
   ROAD_SIGN_CATEGORIES,
   searchRoadSigns,
 } from "../../src/features/road-signs/catalog";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function SignsSearchScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
   const [query, setQuery] = useState("");
@@ -40,6 +43,23 @@ export default function SignsSearchScreen() {
 
   const hasQuery = query.trim().length > 0;
   const showEmptyState = hasQuery && results.length === 0;
+
+  useEffect(() => {
+    const normalizedQuery = query.trim();
+
+    if (!normalizedQuery) {
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      track(ANALYTICS_EVENTS.signSearchSubmitted.key, {
+        query_length: normalizedQuery.length,
+        result_count: results.length,
+      });
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [query, results.length, track]);
 
   return (
     <GreenWaveScreen>
