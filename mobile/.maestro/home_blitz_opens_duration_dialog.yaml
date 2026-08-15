@@ -1,0 +1,34 @@
+# Feature: Home
+# Scenario: Quick session opens the blitz duration picker before timed training
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+  - blitz
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      TARGET_ID: screen-home
+
+- tapOn:
+    id: "home-tile-blitz"
+
+- extendedWaitUntil:
+    visible:
+      id: "blitz-duration-dialog"
+    timeout: 10000
+
+- tapOn:
+    id: "question-count-start"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 20000
+
+- assertVisible:
+    id: "screen-question"
+- assertVisible:
+    id: "question-blitz-timer"

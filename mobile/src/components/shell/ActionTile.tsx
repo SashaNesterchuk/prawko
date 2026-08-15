@@ -4,10 +4,8 @@ import { Pressable, View } from "react-native";
 import { Icon } from "../icons";
 import {
   CText,
-  getTypographyStyle,
   useResponsiveFonts,
   useResponsiveStyles,
-  withResponsiveFont,
 } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { type GreenWaveAccent } from "../../theme/green-wave";
@@ -56,10 +54,10 @@ export function ActionTile({
       ) : null}
 
       <View style={styles.copy}>
-        <CText style={styles.title} numberOfLines={1}>
+        <CText style={styles.title} semiBold numberOfLines={1}>
           {title}
         </CText>
-        <CText style={styles.subtitle} numberOfLines={2}>
+        <CText style={styles.subtitle} regular numberOfLines={2}>
           {subtitle}
         </CText>
       </View>
@@ -172,12 +170,15 @@ function useStyles({
       gap: spacing.exact(0),
     },
     title: {
-      ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
+      fontSize: responsiveFont(16),
+      lineHeight: responsiveFont(24),
+      letterSpacing: -0.16,
       color: selected ? colors.white : colors.ink,
     },
     subtitle: {
       width: "100%" as const,
-      ...withResponsiveFont(getTypographyStyle("labelS"), responsiveFont),
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
       color: selected ? colors.paper : colors.ink3,
     },
     trailingWrap: {

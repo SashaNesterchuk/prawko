@@ -23,6 +23,18 @@ tags:
 - assertVisible:
     id: "screen-paywall"
 
+- assertVisible:
+    id: "paywall-comparison-table"
+
+- assertVisible:
+    id: "paywall-comparison-row-trainer"
+
+- assertVisible:
+    id: "paywall-comparison-row-exam"
+
+- assertVisible:
+    id: "paywall-comparison-row-offline"
+
 - tapOn:
     id: "paywall-activate-cta"
 

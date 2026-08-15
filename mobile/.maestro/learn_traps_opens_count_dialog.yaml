@@ -1,0 +1,20 @@
+# Feature: Learn personalized training
+# Scenario: Trap questions open the count picker before a high-points session
+appId: com.mindjar.prawko
+tags:
+  - learn
+  - traps
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: learn
+      TARGET_ID: screen-learn
+
+- tapOn:
+    id: "learn-tile-traps"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-question

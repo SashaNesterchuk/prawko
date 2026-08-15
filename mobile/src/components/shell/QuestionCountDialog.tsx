@@ -27,6 +27,12 @@ type QuestionCountDialogProps = {
   totalCount: number;
   selectedCount: QuestionCountSelection;
   visible: boolean;
+  options?: QuestionCountSelection[];
+  getOptionLabel?: (
+    option: QuestionCountSelection,
+    totalCount: number
+  ) => string;
+  testID?: string;
   onClose: () => void;
   onSelectCount: (count: QuestionCountSelection) => void;
   onStart: () => void;
@@ -40,13 +46,17 @@ export function QuestionCountDialog({
   totalCount,
   selectedCount,
   visible,
+  options: customOptions,
+  getOptionLabel,
+  testID = "question-count-dialog",
   onClose,
   onSelectCount,
   onStart,
 }: QuestionCountDialogProps) {
   const theme = useTheme();
   const styles = useStyles();
-  const options = getQuestionCountOptions(totalCount);
+  const options = customOptions ?? getQuestionCountOptions(totalCount);
+  const isSingleRow = options.length > 0 && options.length <= 3;
 
   return (
     <Modal
@@ -55,7 +65,7 @@ export function QuestionCountDialog({
       transparent
       visible={visible}
     >
-      <View style={styles.overlay} testID="question-count-dialog">
+      <View style={styles.overlay} testID={testID}>
         <View style={styles.card}>
           <Pressable
             accessibilityRole="button"
@@ -75,12 +85,15 @@ export function QuestionCountDialog({
           <View style={styles.grid}>
             {options.map((option) => {
               const isSelected = selectedCount === option;
-              const label =
+              const fallbackLabel =
                 option === "all"
                   ? allLabel.includes("{{count}}")
                     ? allLabel.replace("{{count}}", String(totalCount))
                     : `${allLabel} (${totalCount})`
                   : String(option);
+              const label = getOptionLabel
+                ? getOptionLabel(option, totalCount)
+                : fallbackLabel;
 
               return (
                 <Pressable
@@ -89,6 +102,7 @@ export function QuestionCountDialog({
                   onPress={() => onSelectCount(option)}
                   style={({ pressed }) => [
                     styles.option,
+                    isSingleRow ? styles.optionSingleRow : null,
                     isSelected ? styles.optionSelected : null,
                     pressed ? styles.pressed : null,
                   ]}
@@ -182,6 +196,10 @@ function useStyles() {
       borderWidth: 1.5,
       borderColor: colors.line,
       backgroundColor: colors.surface,
+    },
+    optionSingleRow: {
+      flexBasis: 0,
+      minWidth: 0,
     },
     optionSelected: {
       borderColor: theme.accents.green.fill,

@@ -17,7 +17,6 @@ import {
   getQuestionTopicIds,
   getQuestionTopicTitle,
 } from "../../src/features/question-topics/catalog";
-import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
 import {
   getQuestionDisplayStats,
   getTopicProgress,
@@ -76,7 +75,7 @@ export default function LearnTabScreen() {
   const isFocused = useIsFocused();
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
-  const { openMode, dialog: countDialog } = useQuestionModeCountDialog();
+  const { openMode, openExam, openBlitz, dialog: countDialog } = useQuestionModeCountDialog();
 
   useEffect(() => {
     if (!isFocused) {
@@ -158,6 +157,11 @@ export default function LearnTabScreen() {
       params: buildQuestionRouteParams({ mode }),
     });
 
+  const examTitle = t("learn.tileExamTitle", { defaultValue: "Іспит" });
+  const trapsTitle = t("learn.tileTrapsTitle", {
+    defaultValue: "Питання-пастки",
+  });
+
   const primaryTiles: ActionTileItem[] = [
     {
       key: "trainer",
@@ -172,7 +176,7 @@ export default function LearnTabScreen() {
     {
       key: "exam",
       accent: "green",
-      title: t("learn.tileExamTitle", { defaultValue: "Іспит" }),
+      title: examTitle,
       subtitle: recentExamPassed
         ? t("learn.tileExamSubtitlePassed", {
             defaultValue: "Симуляція: 1/1",
@@ -181,11 +185,7 @@ export default function LearnTabScreen() {
             defaultValue: "Симуляція: 0/1",
           }),
       icon: <LearnActionIcon accent="green" name="exam" />,
-      onPress: () =>
-        router.navigate({
-          pathname: "/exam",
-          params: buildExamRouteParams({ mode: "exam" }),
-        }),
+      onPress: () => openExam({ title: examTitle }),
     },
   ];
 
@@ -229,12 +229,16 @@ export default function LearnTabScreen() {
       key: "traps",
       accent: "amber",
       style: "faded",
-      title: t("learn.tileTrapsTitle", { defaultValue: "Питання-пастки" }),
+      title: trapsTitle,
       subtitle: t("learn.tileTrapsSubtitle", {
         defaultValue: "Найчастіше плутають",
       }),
       icon: <LearnActionIcon accent="amber" name="warning" />,
-      onPress: () => openQuestionMode("high_points"),
+      onPress: () =>
+        openMode({
+          mode: "high_points",
+          title: trapsTitle,
+        }),
     },
   ];
 
@@ -253,6 +257,26 @@ export default function LearnTabScreen() {
         >
           <View style={styles.stack}>
             <ActionTileGrid items={primaryTiles} />
+
+            <ActionTile
+              fullWidth
+              accent="amber"
+              title={t("learn.tileBlitzTitle", {
+                defaultValue: "Швидка сесія",
+              })}
+              subtitle={t("learn.tileBlitzSubtitle", {
+                defaultValue: "Максимум питань за відведений час",
+              })}
+              icon={<LearnActionIcon accent="amber" name="bolt" />}
+              onPress={() =>
+                openBlitz({
+                  title: t("trainerModes.randomTitle", {
+                    defaultValue: "Випадкові питання",
+                  }),
+                })
+              }
+              testID="learn-tile-blitz"
+            />
 
             <ActionTile
               title={t("learn.tileSavedTitle", {

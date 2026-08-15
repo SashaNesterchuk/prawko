@@ -1,0 +1,21 @@
+# Feature: Home
+# Scenario: Exam tile opens the question count picker before the simulator
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+  - exam
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      TARGET_ID: screen-home
+
+- tapOn:
+    id: "action-tile-exam"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-exam-session

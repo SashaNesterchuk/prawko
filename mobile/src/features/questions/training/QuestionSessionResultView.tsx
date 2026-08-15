@@ -15,13 +15,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { isMobileSupabaseConfigured } from "../../../config/env";
 import { Icon } from "../../../components/icons";
+import { AppButton } from "../../../components/shell/AppButton";
 import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../../components/shell/NavigationButton";
+import { ResultTopicProgressRow } from "../../../components/shell/ResultTopicProgressRow";
 import { CText, getFontFamily, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 import { useAppShellStore } from "../../../state/app-shell";
 import { useQuestionProgressStore } from "../../../state/question-progress";
-import type { AppThemeAccent } from "../../../theme";
 import { ExamAnswersReviewView } from "../../exam/ExamAnswersReviewView";
 import type {
   RemoteExamAnswer,
@@ -36,12 +37,10 @@ import {
   buildTrainingQuestionChips,
   buildTrainingTopicStats,
   createTrainingResultScoreKey,
-  getProgressBarAccent,
   getTrainingResultOutcome,
   getTrainingScoreDelta,
   getWeakestTrainingTopic,
   type TrainingResultQuestionChip,
-  type TrainingResultTopicStat,
   type TrainingScoreDelta,
 } from "./training-result-stats";
 import type { QuestionTrainingSession } from "./useQuestionTrainingSession";
@@ -347,7 +346,7 @@ export function QuestionSessionResultView({
             </View>
 
             {questionChips.length > 0 ? (
-              <View style={styles.card}>
+              <View style={[styles.card, styles.questionsCard]}>
                 <CText style={styles.questionsTitle}>
                   {t("question.questionsCardTitle")}
                 </CText>
@@ -363,14 +362,18 @@ export function QuestionSessionResultView({
             ) : null}
 
             {topicStats.length > 0 ? (
-              <View style={styles.card}>
+              <View style={styles.card} testID="question-result-topics">
                 {topicStats.map((stat) => (
-                  <TopicProgressRow key={stat.topicId} stat={stat} />
+                  <ResultTopicProgressRow
+                    key={stat.topicId}
+                    percent={stat.percent}
+                    title={getQuestionTopicTitle(stat.topicId, preferredLocale)}
+                  />
                 ))}
               </View>
             ) : null}
 
-            <View style={styles.card}>
+            <View style={[styles.card, styles.whatsNextCard]}>
               <CText style={styles.whatsNextTitle}>
                 {t("question.whatsNextTitle")}
               </CText>
@@ -401,17 +404,11 @@ export function QuestionSessionResultView({
             style={styles.footerFade}
           />
           <View style={styles.footer}>
-            <Pressable
-              accessibilityRole="button"
+            <AppButton
+              label={primaryLabel}
               onPress={handlePrimaryAction}
               testID="question-result-primary"
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <CText style={styles.primaryButtonText}>{primaryLabel}</CText>
-            </Pressable>
+            />
 
             <View style={styles.secondaryRow}>
               <Pressable
@@ -448,40 +445,6 @@ export function QuestionSessionResultView({
         </View>
       </SafeAreaView>
     </GreenWaveScreen>
-  );
-}
-
-function TopicProgressRow({
-  stat,
-}: {
-  stat: TrainingResultTopicStat;
-}) {
-  const { accents, colors } = useTheme();
-  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const styles = useStyles();
-  const accentKey = getProgressBarAccent(stat.percent);
-  const fillColor = accents[accentKey as AppThemeAccent].fill;
-
-  return (
-    <View style={styles.topicRow}>
-      <CText style={styles.topicLabel} numberOfLines={1}>
-        {getQuestionTopicTitle(stat.topicId, preferredLocale)}
-      </CText>
-      <View style={styles.topicMeter}>
-        <View style={styles.topicTrack}>
-          <View
-            style={[
-              styles.topicFill,
-              {
-                width: `${Math.max(0, Math.min(100, stat.percent))}%`,
-                backgroundColor: fillColor,
-              },
-            ]}
-          />
-        </View>
-        <CText style={styles.topicPercent}>{stat.percent}%</CText>
-      </View>
-    </View>
   );
 }
 
@@ -575,6 +538,7 @@ function useStyles({
         letterSpacing: -0.8,
         textAlign: "center",
         color: scoreColor ?? accents.green.fill,
+        marginBottom: spacing.exact(8),
       },
       deltaBadge: {
         borderRadius: radius.pill,
@@ -611,48 +575,17 @@ function useStyles({
         padding: spacing.exact(16),
         gap: spacing.exact(12),
       },
+      questionsCard: {
+        gap: spacing.exact(8),
+      },
+      whatsNextCard: {
+        gap: 0,
+      },
       questionsTitle: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
         fontFamily: getFontFamily("regular"),
         color: colors.ink2,
-      },
-      topicRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.exact(8),
-      },
-      topicLabel: {
-        flex: 1,
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        fontFamily: getFontFamily("regular"),
-        color: colors.ink,
-      },
-      topicMeter: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.exact(8),
-      },
-      topicTrack: {
-        flex: 1,
-        height: spacing.exact(4),
-        borderRadius: radius.pill,
-        backgroundColor: colors.surface2,
-        overflow: "hidden",
-      },
-      topicFill: {
-        height: "100%",
-        borderRadius: radius.pill,
-      },
-      topicPercent: {
-        width: spacing.exact(40),
-        textAlign: "right",
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        fontFamily: getFontFamily("regular"),
-        color: colors.ink,
       },
       chipGrid: {
         flexDirection: "row",
@@ -685,7 +618,7 @@ function useStyles({
       whatsNextTitle: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontFamily: getFontFamily("medium"),
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.16,
         color: colors.ink,
       },
@@ -714,24 +647,9 @@ function useStyles({
         gap: spacing.exact(8),
         backgroundColor: colors.background,
       },
-      primaryButton: {
-        height: spacing.exact(52),
-        borderRadius: radius.xxl,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: accents.green.fill,
-      },
-      primaryButtonText: {
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(24),
-        fontFamily: getFontFamily("medium"),
-        color: colors.white,
-      },
       secondaryRow: {
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
-        gap: spacing.exact(8),
         minHeight: spacing.exact(48),
       },
       secondaryButton: {
@@ -740,12 +658,13 @@ function useStyles({
         alignItems: "center",
         justifyContent: "center",
         gap: spacing.exact(8),
+        paddingHorizontal: spacing.exact(16),
         paddingVertical: spacing.exact(12),
       },
       secondaryButtonText: {
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        fontFamily: getFontFamily("medium"),
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontFamily: getFontFamily("regular"),
         color: colors.ink2,
       },
       pressed: {

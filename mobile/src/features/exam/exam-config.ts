@@ -48,6 +48,30 @@ export function isExamSimulatorMode(
   );
 }
 
+/**
+ * Map a count-picker choice onto an exam launch.
+ * Full pool ("all" or ≥ official size) stays the WORD simulator;
+ * smaller picks become a timed mini test so the 0/1 official slot is unchanged.
+ */
+export function resolveExamLaunchFromQuestionCount(
+  selectedCount: number | "all"
+): {
+  mode: ExamSimulatorMode;
+  questionLimit?: number;
+} {
+  if (
+    selectedCount === "all" ||
+    selectedCount >= EXAM_RULES.totalQuestions
+  ) {
+    return { mode: "exam" };
+  }
+
+  return {
+    mode: "mini_test",
+    questionLimit: selectedCount,
+  };
+}
+
 export function getExamQuestionTarget(
   mode: ExamSimulatorMode,
   requestedTotalQuestions?: number | null

@@ -24,5 +24,8 @@ tags:
 - assertVisible:
     id: "screen-paywall"
 
+- assertVisible:
+    id: "paywall-comparison-table"
+
 - assertNotVisible:
     id: "screen-offline-mode"

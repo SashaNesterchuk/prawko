@@ -1,7 +1,7 @@
 import type { QuestionSession } from "./types";
 import { getQuestionSessionSummary } from "./question-engine";
 
-/** Home «Оціни знання» — untimed training, larger than Quick Session (10). */
+/** Home «Оціни знання» — untimed training, larger than a timed blitz. */
 export const READINESS_ASSESSMENT_QUESTION_COUNT = 30;
 
 export type ReadinessAssessmentResult = {

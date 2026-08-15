@@ -6,6 +6,7 @@ import { StatusBar } from "expo-status-bar";
 
 import { Icon, type IconName } from "../icons";
 import { buildQuestionRouteParams } from "../../features/questions/question-routes";
+import { useQuestionModeCountDialog } from "../../features/questions/useQuestionModeCountDialog";
 import {
   CText,
   getFontFamily,
@@ -43,6 +44,11 @@ export function PracticeEmptyState({
   const styles = useStyles({ safeBottom });
   const iconSize = responsiveFont(24);
   const heroIconSize = responsiveFont(40);
+
+  const { openMode, dialog: countDialog } = useQuestionModeCountDialog();
+  const trapsTitle = t("learn.tileTrapsTitle", {
+    defaultValue: "Питання-пастки",
+  });
 
   const openQuestionMode = (
     mode: Parameters<typeof buildQuestionRouteParams>[0]["mode"]
@@ -88,9 +94,7 @@ export function PracticeEmptyState({
               style="faded"
               premium
               testID="practice-empty-tile-traps"
-              title={t("learn.tileTrapsTitle", {
-                defaultValue: "Питання-пастки",
-              })}
+              title={trapsTitle}
               subtitle={t("learn.tileTrapsSubtitle", {
                 defaultValue: "Найчастіше плутають",
               })}
@@ -101,7 +105,12 @@ export function PracticeEmptyState({
                   size={iconSize}
                 />
               }
-              onPress={() => openQuestionMode("high_points")}
+              onPress={() =>
+                openMode({
+                  mode: "high_points",
+                  title: trapsTitle,
+                })
+              }
             />
             <ActionTile
               accent="amber"
@@ -123,6 +132,7 @@ export function PracticeEmptyState({
           </View>
         </ScrollView>
       </SafeAreaView>
+      {countDialog}
     </GreenWaveScreen>
   );
 }

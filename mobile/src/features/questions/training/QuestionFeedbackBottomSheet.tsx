@@ -52,7 +52,7 @@ export function QuestionFeedbackBottomSheet({
   feedbackAccentInk,
   feedbackGradientColors,
   premiumIconSize,
-  showExplain = true,
+  showExplain = false,
   navigationMode = "next",
   canGoPrevious = false,
   canGoNext = true,

@@ -1,4 +1,5 @@
 import {
+  BLITZ_MAX_QUESTIONS,
   EXAM_RULES,
   QUESTION_MASTERY_RULES,
   QUESTION_SESSION_MODES,
@@ -618,12 +619,107 @@ export function getQuestionSessionSummary(
 ): QuestionSessionSummary {
   const answers = session ? Object.values(session.answers) : [];
   const correct = answers.filter((answer) => answer.isCorrect).length;
+  const timedFinished = Boolean(
+    session?.finishedAt && isTimedQuestionSession(session)
+  );
 
   return {
-    total: session?.questionIds.length ?? 0,
+    total: timedFinished ? answers.length : session?.questionIds.length ?? 0,
     answered: answers.length,
     correct,
     wrong: answers.length - correct,
+  };
+}
+
+export function isTimedQuestionSession(
+  session: Pick<QuestionSession, "request"> | null | undefined
+) {
+  return (session?.request.timeLimitSeconds ?? 0) > 0;
+}
+
+export function getQuestionSessionExpiresAt(
+  session: QuestionSession
+): string | null {
+  if (session.expiresAt) {
+    return session.expiresAt;
+  }
+
+  const timeLimitSeconds = session.request.timeLimitSeconds;
+
+  if (!timeLimitSeconds || timeLimitSeconds <= 0) {
+    return null;
+  }
+
+  const createdAt = Date.parse(session.createdAt);
+
+  if (!Number.isFinite(createdAt)) {
+    return null;
+  }
+
+  return new Date(createdAt + timeLimitSeconds * 1000).toISOString();
+}
+
+export function getRemainingSessionSeconds(
+  session: QuestionSession | null | undefined,
+  now: Date = new Date()
+): number | null {
+  if (!session) {
+    return null;
+  }
+
+  const expiresAt = getQuestionSessionExpiresAt(session);
+
+  if (!expiresAt) {
+    return null;
+  }
+
+  return Math.max(0, Math.floor((Date.parse(expiresAt) - now.getTime()) / 1000));
+}
+
+export function isQuestionSessionExpired(
+  session: QuestionSession,
+  now: Date = new Date()
+) {
+  const remaining = getRemainingSessionSeconds(session, now);
+  return remaining !== null && remaining <= 0;
+}
+
+export function formatSessionCountdown(totalSeconds: number) {
+  const normalized = Math.max(0, Math.floor(totalSeconds));
+  const minutes = Math.floor(normalized / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (normalized % 60).toString().padStart(2, "0");
+
+  return `${minutes}:${seconds}`;
+}
+
+/**
+ * Close a session. Timed runs drop unanswered items so the result screen
+ * scores only what the user actually reached.
+ */
+export function finishQuestionSession(
+  session: QuestionSession,
+  now: Date = new Date()
+): QuestionSession {
+  const finishedAt = session.finishedAt ?? now.toISOString();
+
+  if (!isTimedQuestionSession(session)) {
+    return {
+      ...session,
+      finishedAt,
+    };
+  }
+
+  const answeredIds = session.questionIds.filter(
+    (questionId) => session.answers[questionId]
+  );
+
+  return {
+    ...session,
+    currentIndex: Math.max(0, answeredIds.length - 1),
+    finishedAt,
+    questionIds: answeredIds,
   };
 }
 
@@ -1053,14 +1149,23 @@ export function buildQuestionSession(
   const questionIds = getQuestionIdsForMode(request, effectiveStates, now);
   const emptyReason = getEmptyReason(request, questionIds.length);
   const createdAt = now.toISOString();
+  const timeLimitSeconds = getNormalizedQuestionLimit(request.timeLimitSeconds);
+  const expiresAt =
+    timeLimitSeconds != null
+      ? new Date(now.getTime() + timeLimitSeconds * 1000).toISOString()
+      : null;
 
   return {
     id: `session-${request.sessionKey}`,
-    request,
+    request: {
+      ...request,
+      timeLimitSeconds,
+    },
     questionIds,
     currentIndex: 0,
     answers: {},
     createdAt,
+    expiresAt,
     finishedAt: questionIds.length === 0 ? createdAt : null,
     emptyReason,
   };
@@ -1076,6 +1181,7 @@ function isSameQuestionSessionRequest(
     left.mode === right.mode &&
     (left.topic ?? null) === (right.topic ?? null) &&
     (left.questionLimit ?? null) === (right.questionLimit ?? null) &&
+    (left.timeLimitSeconds ?? null) === (right.timeLimitSeconds ?? null) &&
     (left.studyPlanTaskId ?? null) === (right.studyPlanTaskId ?? null)
   );
 }
@@ -1141,13 +1247,18 @@ function getQuestionIdsForMode(
       );
 
       // Topic-less limited sessions are the app's "random" entry points
-      // (Quick session, trainer random). Shuffle so each run differs.
+      // (trainer random). Shuffle so each run differs.
       if (request.topic == null && questionLimit != null) {
         return takeRandomQuestionIds(learningIds, questionLimit);
       }
 
       return applyQuestionLimit(learningIds, questionLimit);
     }
+    case "blitz":
+      return applyQuestionLimit(
+        getBlitzQuestionIds(userStates, now),
+        questionLimit ?? BLITZ_MAX_QUESTIONS
+      );
     case "new_questions":
       return applyQuestionLimit(
         getNewQuestionIds(userStates, now, request.topic),
@@ -1229,6 +1340,36 @@ function getLearningQuestionIds(
     ...hard,
     ...sortQuestionsForLearning(topicQuestions, userStates, now),
   ]);
+}
+
+/**
+ * Blitz pool: shuffle within each bucket, then concatenate by priority
+ * unseen → mistakes → smart review → saved → remaining.
+ */
+function getBlitzQuestionIds(
+  userStates: QuestionUserStateMap,
+  now: Date
+) {
+  const questionBank = getQuestionBank();
+  const unseen = shuffleIds(
+    getUnseenQuestions(questionBank, userStates, now).map(
+      (question) => question.id
+    )
+  );
+  const wrong = shuffleIds(
+    getWrongQuestions(questionBank, userStates, now).map(
+      (question) => question.id
+    )
+  );
+  const reviewDue = shuffleIds(
+    getReviewDueQuestions(questionBank, userStates, now).map(
+      (question) => question.id
+    )
+  );
+  const saved = shuffleIds(getSavedQuestionIds(userStates, now));
+  const remaining = shuffleIds(questionBank.map((question) => question.id));
+
+  return uniqueIds([...unseen, ...wrong, ...reviewDue, ...saved, ...remaining]);
 }
 
 function getWeakSpotQuestionIds(
@@ -1719,18 +1860,20 @@ function getConsolidationPriorityScore(
 }
 
 function uniqueQuestionIds(questions: LocalQuestion[]) {
+  return uniqueIds(questions.map((question) => question.id));
+}
+
+function uniqueIds(ids: string[]) {
   const seen = new Set<string>();
 
-  return questions
-    .filter((question) => {
-      if (seen.has(question.id)) {
-        return false;
-      }
+  return ids.filter((id) => {
+    if (seen.has(id)) {
+      return false;
+    }
 
-      seen.add(question.id);
-      return true;
-    })
-    .map((question) => question.id);
+    seen.add(id);
+    return true;
+  });
 }
 
 function applyQuestionLimit(questionIds: string[], questionLimit: number | null) {
@@ -1741,12 +1884,8 @@ function applyQuestionLimit(questionIds: string[], questionLimit: number | null)
   return questionIds.slice(0, questionLimit);
 }
 
-function takeRandomQuestionIds(questionIds: string[], questionLimit: number) {
-  if (questionIds.length <= questionLimit) {
-    return questionIds;
-  }
-
-  const pool = [...questionIds];
+function shuffleIds(ids: string[]) {
+  const pool = [...ids];
 
   for (let index = pool.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(Math.random() * (index + 1));
@@ -1755,7 +1894,15 @@ function takeRandomQuestionIds(questionIds: string[], questionLimit: number) {
     pool[swapIndex] = current!;
   }
 
-  return pool.slice(0, questionLimit);
+  return pool;
+}
+
+function takeRandomQuestionIds(questionIds: string[], questionLimit: number) {
+  if (questionIds.length <= questionLimit) {
+    return questionIds;
+  }
+
+  return shuffleIds(questionIds).slice(0, questionLimit);
 }
 
 function getNormalizedQuestionLimit(questionLimit: number | null | undefined) {

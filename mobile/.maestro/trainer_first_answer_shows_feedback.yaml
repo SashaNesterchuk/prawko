@@ -31,6 +31,7 @@ tags:
       visible: "Неправильно"
     commands:
       - assertVisible: "Зрозуміло"
+      - assertNotVisible: "Пояснити мою помилку"
       - assertVisible:
           id: "question-feedback-next"
 
@@ -39,6 +40,7 @@ tags:
       visible: "Правильно"
     commands:
       - assertVisible: "Наступне питання"
+      - assertNotVisible: "Пояснити чому інші хибні?"
       - assertVisible:
           id: "question-feedback-next"
 

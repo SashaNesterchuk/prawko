@@ -276,6 +276,7 @@ function QuestionTrainingScreen() {
       masteryProgress={session.masteryProgress}
       premiumIconSize={session.premiumIconSize}
       questionChoices={session.questionChoices}
+      remainingSeconds={session.remainingSeconds}
       showExitDialog={session.showExitDialog}
       summary={session.summary}
       trainerStyles={session.trainerStyles}

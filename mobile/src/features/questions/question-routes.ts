@@ -17,6 +17,7 @@ export function buildQuestionRouteParams(input: {
   mode: QuestionSessionMode;
   questionLimit?: number | null;
   studyPlanTaskId?: string | null;
+  timeLimitSeconds?: number | null;
   topic?: LearningTopicId;
 }) {
   const params: Record<string, string> = {
@@ -30,6 +31,14 @@ export function buildQuestionRouteParams(input: {
     input.questionLimit > 0
   ) {
     params.questionLimit = Math.floor(input.questionLimit).toString();
+  }
+
+  if (
+    typeof input.timeLimitSeconds === "number" &&
+    Number.isFinite(input.timeLimitSeconds) &&
+    input.timeLimitSeconds > 0
+  ) {
+    params.timeLimitSeconds = Math.floor(input.timeLimitSeconds).toString();
   }
 
   if (isUuidString(input.studyPlanTaskId)) {

@@ -1,0 +1,33 @@
+# Feature: Learn
+# Scenario: Quick session on Learn opens the blitz duration picker before timed training
+appId: com.mindjar.prawko
+tags:
+  - learn
+  - blitz
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: learn
+      TARGET_ID: screen-learn
+
+- tapOn:
+    id: "learn-tile-blitz"
+
+- extendedWaitUntil:
+    visible:
+      id: "blitz-duration-dialog"
+    timeout: 10000
+
+- tapOn:
+    id: "question-count-start"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 20000
+
+- assertVisible:
+    id: "screen-question"
+- assertVisible:
+    id: "question-blitz-timer"

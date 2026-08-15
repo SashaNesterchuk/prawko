@@ -119,6 +119,8 @@ export type QuestionSessionRequest = {
   questionLimit?: number | null;
   sessionKey: string;
   studyPlanTaskId?: string | null;
+  /** Wall-clock budget for blitz; omitted for untimed modes. */
+  timeLimitSeconds?: number | null;
   topic?: LearningTopicId;
 };
 
@@ -129,6 +131,8 @@ export type QuestionSession = {
   currentIndex: number;
   answers: Record<string, QuestionSessionAnswer>;
   createdAt: string;
+  /** Absolute expiry for timed sessions; null when untimed. */
+  expiresAt?: string | null;
   finishedAt: string | null;
   emptyReason: QuestionSessionEmptyReason | null;
 };

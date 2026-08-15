@@ -35,6 +35,7 @@ export type QuestionRouteParams = {
   routeSessionKey?: string;
   sessionKey: string;
   studyPlanTaskId?: string;
+  timeLimitSeconds?: number;
   topic?: LearningTopicId;
 };
 
@@ -45,6 +46,7 @@ export function useQuestionRouteParams(): QuestionRouteParams {
     questionLimit?: string | string[];
     session?: string | string[];
     studyPlanTaskId?: string | string[];
+    timeLimitSeconds?: string | string[];
     topic?: string | string[];
   }>();
 
@@ -53,8 +55,10 @@ export function useQuestionRouteParams(): QuestionRouteParams {
   const rawTopic = getSingleParam(params.topic);
   const routeSessionKey = getSingleParam(params.session);
   const rawStudyPlanTaskId = getSingleParam(params.studyPlanTaskId);
+  const rawTimeLimitSeconds = getSingleParam(params.timeLimitSeconds);
   const mode = rawMode && isQuestionSessionMode(rawMode) ? rawMode : "learning";
   const questionLimit = parsePositiveInteger(rawQuestionLimit);
+  const timeLimitSeconds = parsePositiveInteger(rawTimeLimitSeconds);
   const studyPlanTaskId = isUuidString(rawStudyPlanTaskId)
     ? rawStudyPlanTaskId
     : undefined;
@@ -77,6 +81,7 @@ export function useQuestionRouteParams(): QuestionRouteParams {
     routeSessionKey,
     sessionKey,
     studyPlanTaskId,
+    timeLimitSeconds,
     topic,
   };
 }

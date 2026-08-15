@@ -16,7 +16,11 @@ export function QuestionStepPill({
   const styles = useQuestionStepPillStyles({ stepState });
 
   return (
-    <View style={styles.pill} onLayout={onLayout}>
+    <View
+      style={styles.pill}
+      onLayout={onLayout}
+      testID={`question-step-${index}-${stepState}`}
+    >
       <CText style={styles.label}>{index + 1}</CText>
     </View>
   );

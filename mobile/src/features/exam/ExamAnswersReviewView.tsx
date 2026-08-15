@@ -1,5 +1,4 @@
 import type { SupportedLocale } from "@prawko/config";
-import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Linking, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,7 +8,6 @@ import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
 import { CText, getFontFamily, useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
-import { useHasAiChatAccess } from "../../state/entitlements";
 import {
   getLocalizedText,
   getQuestionById,
@@ -62,7 +60,6 @@ export function ExamAnswersReviewView({
   const { t } = useTranslation();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
-  const hasAiChatAccess = useHasAiChatAccess();
   const insets = useSafeAreaInsets();
   const styles = useStyles();
   const reviewTitle = title ?? t("exam.answersReviewTitle");
@@ -103,31 +100,6 @@ export function ExamAnswersReviewView({
     void Linking.openURL(
       `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
     );
-  }
-
-  function handleExplainPress() {
-    const aiChatParams = {
-      questionId: questionRef.questionSourceId,
-      locale: displayLocale,
-      selectedAnswer: selectedAnswer ?? undefined,
-    };
-
-    if (hasAiChatAccess) {
-      router.navigate({
-        pathname: "/modals/ai-chat",
-        params: aiChatParams,
-      });
-      return;
-    }
-
-    router.navigate({
-      pathname: "/paywall",
-      params: {
-        feature: "ai_question_chat",
-        returnTo: "ai-chat",
-        ...aiChatParams,
-      },
-    });
   }
 
   if (!question) {
@@ -269,7 +241,6 @@ export function ExamAnswersReviewView({
                 premiumIconSize={premiumIconSize}
                 onReportProblem={handleReportProblem}
                 onToggleBookmark={onToggleBookmark}
-                onExplain={handleExplainPress}
                 onPrevious={onPrevious}
                 onNext={onNext}
               />

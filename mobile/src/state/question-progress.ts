@@ -11,11 +11,13 @@ import { persist, type PersistStorage, type StorageValue } from "zustand/middlew
 import {
   buildQuestionSession,
   canResumeQuestionSession,
+  finishQuestionSession,
   getQuestionById,
   getQuestionTopicIds,
   getNextQuestionUserStateAfterAttempt,
   getNextTopicQuestionProgressMapAfterAttempt,
   getQuestionUserState,
+  isQuestionSessionExpired,
   normalizeQuestionUserStateMap,
   resumeQuestionSession,
   seedTopicQuestionProgressFromUserState,
@@ -149,6 +151,7 @@ type QuestionProgressState = {
     }
   ) => void;
   advanceSession: () => void;
+  finishActiveSession: () => void;
   retreatSession: () => void;
   answerCurrentQuestion: (
     selectedAnswer: QuestionOptionValue
@@ -212,18 +215,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             state.activeSession.questionIds.length - 1;
 
           if (isLastQuestion || answeredCount >= state.activeSession.questionIds.length) {
-            const finishedSession: QuestionSession = {
-              ...state.activeSession,
-              finishedAt: new Date().toISOString(),
-            };
-            const readinessAssessment =
-              buildReadinessAssessmentResult(finishedSession) ??
-              state.readinessAssessment;
-
-            return {
-              activeSession: finishedSession,
-              readinessAssessment,
-            };
+            return completeActiveSessionState(state, state.activeSession);
           }
 
           return {
@@ -251,7 +243,11 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         const state = get();
         const activeSession = state.activeSession;
 
-        if (!activeSession || activeSession.finishedAt) {
+        if (
+          !activeSession ||
+          activeSession.finishedAt ||
+          isQuestionSessionExpired(activeSession)
+        ) {
           return null;
         }
 
@@ -389,6 +385,14 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         return attempt;
       },
       clearActiveSession: () => set({ activeSession: null }),
+      finishActiveSession: () =>
+        set((state) => {
+          if (!state.activeSession || state.activeSession.finishedAt) {
+            return state;
+          }
+
+          return completeActiveSessionState(state, state.activeSession);
+        }),
       ensureTopicQuestionProgressSeeded: () => {
         const state = get();
 
@@ -440,6 +444,19 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         const activeSession = get().activeSession;
 
         if (activeSession && canResumeQuestionSession(activeSession, request)) {
+          if (isQuestionSessionExpired(activeSession)) {
+            const finishedSession = finishQuestionSession(activeSession);
+            const readinessAssessment =
+              buildReadinessAssessmentResult(finishedSession) ??
+              get().readinessAssessment;
+
+            set({
+              activeSession: finishedSession,
+              readinessAssessment,
+            });
+            return finishedSession;
+          }
+
           const resumedSession = resumeQuestionSession(activeSession, request);
 
           if (resumedSession !== activeSession) {
@@ -688,4 +705,19 @@ function getFallbackSessionIndex(
   }
 
   return Math.max(0, questionIds.length - 1);
+}
+
+function completeActiveSessionState(
+  state: Pick<QuestionProgressState, "readinessAssessment">,
+  session: QuestionSession
+) {
+  const finishedSession = finishQuestionSession(session);
+  const readinessAssessment =
+    buildReadinessAssessmentResult(finishedSession) ??
+    state.readinessAssessment;
+
+  return {
+    activeSession: finishedSession,
+    readinessAssessment,
+  };
 }

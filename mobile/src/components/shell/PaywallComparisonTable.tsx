@@ -35,7 +35,7 @@ export function PaywallComparisonTable({
   const styles = useStyles();
 
   return (
-    <View style={styles.card}>
+    <View style={styles.card} testID="paywall-comparison-table">
       <View style={[styles.row, styles.headerRow]}>
         <View style={styles.featureColumn} />
         <CText style={styles.headerFree}>{freeLabel}</CText>
@@ -44,23 +44,31 @@ export function PaywallComparisonTable({
         </CText>
       </View>
 
-      {rows.map((row, index) => (
-        <View
-          key={row.key}
-          style={[styles.row, index < rows.length - 1 ? styles.rowBorder : null]}
-        >
-          <View style={styles.featureColumn}>
-            <CText medium style={styles.featureTitle}>
-              {row.title}
-            </CText>
-            {row.subtitle ? (
-              <CText style={styles.featureSubtitle}>{row.subtitle}</CText>
-            ) : null}
+      {rows.map((row, index) => {
+        const isLast = index === rows.length - 1;
+
+        return (
+          <View
+            key={row.key}
+            style={[
+              styles.row,
+              isLast ? styles.lastRow : styles.rowBorder,
+            ]}
+            testID={`paywall-comparison-row-${row.key}`}
+          >
+            <View style={styles.featureColumn}>
+              <CText medium style={styles.featureTitle}>
+                {row.title}
+              </CText>
+              {row.subtitle ? (
+                <CText style={styles.featureSubtitle}>{row.subtitle}</CText>
+              ) : null}
+            </View>
+            <ComparisonCell cell={row.free} />
+            <ComparisonCell cell={row.premium} />
           </View>
-          <ComparisonCell cell={row.free} />
-          <ComparisonCell cell={row.premium} />
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
@@ -74,7 +82,7 @@ function ComparisonCell({ cell }: { cell: PaywallComparisonCell }) {
     <View style={styles.cell}>
       {cell.kind === "check" ? (
         <Ionicons
-          color={theme.accents.green.fill}
+          color={theme.accents.green.ink}
           name="checkmark"
           size={responsiveFont(16)}
         />
@@ -107,7 +115,7 @@ function useStyles() {
     card: {
       width: "100%",
       alignSelf: "stretch",
-      borderRadius: radius.xl,
+      borderRadius: radius.xxl,
       backgroundColor: colors.white,
       overflow: "hidden",
       shadowColor: colors.shadow,
@@ -127,6 +135,9 @@ function useStyles() {
       borderBottomWidth: 1,
       borderBottomColor: colors.line,
     },
+    lastRow: {
+      paddingBottom: spacing.exact(16),
+    },
     headerRow: {
       justifyContent: "flex-end",
       paddingVertical: spacing.exact(12),
@@ -136,14 +147,14 @@ function useStyles() {
       minWidth: 0,
     },
     headerFree: {
-      width: spacing.exact(72),
+      width: spacing.exact(60),
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
       textAlign: "center",
       color: colors.inkSecondary,
     },
     headerPremium: {
-      width: spacing.exact(72),
+      width: spacing.exact(60),
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
       textAlign: "center",
@@ -160,14 +171,14 @@ function useStyles() {
       color: colors.inkMuted,
     },
     cell: {
-      width: spacing.exact(72),
+      width: spacing.exact(60),
       alignItems: "center",
       justifyContent: "center",
       minHeight: spacing.exact(20),
     },
     cellLabel: {
-      fontSize: responsiveFont(11),
-      lineHeight: responsiveFont(14),
+      fontSize: responsiveFont(12),
+      lineHeight: responsiveFont(16),
       textAlign: "center",
       color: colors.inkMuted,
     },

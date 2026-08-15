@@ -23,6 +23,12 @@ tags:
 - assertVisible:
     id: "question-result-new-attempt"
 
+- assertVisible:
+    id: "question-result-topics"
+
+- assertVisible:
+    id: "result-topic-progress-row"
+
 - tapOn:
     id: "question-result-answers"
 

@@ -155,57 +155,56 @@ export default function PaywallPage() {
 
   const comparisonRows = useMemo<PaywallComparisonRow[]>(
     () => {
-      const withAds = {
+      const included = { kind: "check" as const };
+      const examLimit = {
         kind: "label" as const,
-        text: t("paywall.adsCell"),
-        tone: "danger" as const,
+        text: t("paywall.freeExamLimit"),
       };
-      const noAds = {
+      const dailyLimit = {
         kind: "label" as const,
-        text: t("paywall.noAdsCell"),
-        tone: "emphasis" as const,
+        text: t("paywall.freeDailyLimit"),
       };
 
       return [
         {
           key: "trainer",
           title: t("paywall.rowTrainer"),
-          free: withAds,
-          premium: noAds,
+          free: included,
+          premium: included,
         },
         {
           key: "exam",
           title: t("paywall.rowExam"),
-          free: withAds,
-          premium: noAds,
+          free: examLimit,
+          premium: included,
         },
         {
           key: "mistakes",
           title: t("paywall.rowMistakes"),
           subtitle: t("paywall.rowMistakesSub"),
-          free: withAds,
-          premium: noAds,
+          free: dailyLimit,
+          premium: included,
         },
         {
           key: "traps",
           title: t("paywall.rowTraps"),
           subtitle: t("paywall.rowTrapsSub"),
-          free: withAds,
-          premium: noAds,
+          free: dailyLimit,
+          premium: included,
         },
         {
           key: "srs",
           title: t("paywall.rowSrs"),
           subtitle: t("paywall.rowSrsSub"),
-          free: withAds,
-          premium: noAds,
+          free: dailyLimit,
+          premium: included,
         },
         {
           key: "offline",
           title: t("paywall.rowOffline"),
           subtitle: t("paywall.rowOfflineSub"),
           free: { kind: "cross" },
-          premium: { kind: "check" },
+          premium: included,
         },
       ];
     },

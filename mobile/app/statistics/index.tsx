@@ -30,7 +30,8 @@ import { fetchRecentExamSessions } from "../../src/features/exam/supabase-exam";
 import type { RemoteExamSession } from "../../src/features/exam/types";
 import {
   buildWeekActivity,
-  getCoverageReadinessWeekChangePercent,
+  getReadinessPeriodChange,
+  resolveReadinessPeriodChangeLabelKey,
   getLearningDaysCount,
   getProfileStatMetrics,
 } from "../../src/features/profile/profile-stats";
@@ -275,7 +276,6 @@ export default function StatisticsScreen() {
     seen: stats.seen,
     total: stats.total,
   });
-  const usesLocalReadiness = readinessSummary == null;
   const examReadiness = Math.round(
     readinessSummary?.readinessScore ?? localReadiness
   );
@@ -317,34 +317,47 @@ export default function StatisticsScreen() {
   const daysUntilExam =
     examDate != null ? getDaysUntilExamFromDate(examDate) : null;
 
-  const readinessWeekChangePercent = useMemo(() => {
-    if (!usesLocalReadiness || stats.seen <= 0) {
+  const readinessPeriodChange = useMemo(() => {
+    if (stats.seen <= 0 && readinessAssessment == null) {
       return null;
     }
 
-    return getCoverageReadinessWeekChangePercent({
+    return getReadinessPeriodChange({
       attempts,
       seenQuestionIds: getSeenQuestionIds(questionUserState),
       totalQuestions: stats.total,
+      assessment: readinessAssessment,
+      currentReadiness: examReadiness,
     });
   }, [
     attempts,
+    examReadiness,
     questionCatalogVersion,
     questionUserState,
+    readinessAssessment,
     stats.seen,
     stats.total,
-    usesLocalReadiness,
   ]);
+  const readinessWeekChangePercent = readinessPeriodChange?.deltaPercent ?? null;
 
   const showWeekChangeBadge =
-    activeTab === "exam" && readinessWeekChangePercent != null;
+    activeTab === "exam" &&
+    readinessWeekChangePercent != null &&
+    readinessWeekChangePercent !== 0;
   const isWeekChangeUp = (readinessWeekChangePercent ?? 0) > 0;
   const isWeekChangeFlat = readinessWeekChangePercent === 0;
-  const readinessWeekChangeLabel = isWeekChangeFlat
-    ? t("statistics.readinessWeekChangeNone")
-    : t("statistics.readinessWeekChange", {
-        value: Math.abs(readinessWeekChangePercent ?? 0),
-      });
+  const readinessWeekChangeLabel =
+    readinessPeriodChange == null
+      ? ""
+      : t(
+          `statistics.${resolveReadinessPeriodChangeLabelKey(
+            readinessPeriodChange.periodDays
+          )}`,
+          {
+            days: readinessPeriodChange.periodDays,
+            value: Math.abs(readinessPeriodChange.deltaPercent),
+          }
+        );
 
   const weakTopics = useMemo(
     () =>

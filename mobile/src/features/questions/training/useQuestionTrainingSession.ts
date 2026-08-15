@@ -26,6 +26,7 @@ import {
   getQuestionChoices,
   getQuestionSessionSummary,
   getQuestionUserState,
+  getRemainingSessionSeconds,
 } from "../question-engine";
 import type {
   LocalQuestion,
@@ -49,7 +50,7 @@ export function useQuestionTrainingSession() {
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const routeParams = useQuestionRouteParams();
-  const { mode, questionLimit, sessionKey, studyPlanTaskId, topic } =
+  const { mode, questionLimit, sessionKey, studyPlanTaskId, timeLimitSeconds, topic } =
     routeParams;
 
   const authMode = useAppShellStore((state) => state.authMode);
@@ -77,6 +78,9 @@ export function useQuestionTrainingSession() {
   const clearActiveSession = useQuestionProgressStore(
     (state) => state.clearActiveSession
   );
+  const finishActiveSession = useQuestionProgressStore(
+    (state) => state.finishActiveSession
+  );
   const toggleBookmark = useQuestionProgressStore((state) => state.toggleBookmark);
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
@@ -86,6 +90,7 @@ export function useQuestionTrainingSession() {
     useState<SupportedLocale>(preferredLocale);
   const [hasAnsweredThisEntry, setHasAnsweredThisEntry] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const questionStartedAtRef = useRef(Date.now());
   const didShowSessionCompleteAdRef = useRef(false);
   const trackedSessionIdRef = useRef<string | null>(null);
@@ -106,12 +111,15 @@ export function useQuestionTrainingSession() {
       return;
     }
 
-    // A resumed session adopts the route key, so this entry is already
-    // resolved and later state changes (an answer, the summary) must not
-    // rebuild it.
+    // Read the store snapshot instead of subscribing to `activeSession`.
+    // Answering, finishing, or abandoning must not rebuild this entry; a
+    // stale screen that is still mounted after exit must not overwrite a
+    // newer session either.
+    const currentSession = useQuestionProgressStore.getState().activeSession;
+
     if (
-      activeSession?.request.sessionKey === sessionKey &&
-      activeSession.request.currentCategory === preferredCategory
+      currentSession?.request.sessionKey === sessionKey &&
+      currentSession.request.currentCategory === preferredCategory
     ) {
       return;
     }
@@ -120,12 +128,12 @@ export function useQuestionTrainingSession() {
       currentCategory: preferredCategory,
       mode,
       questionLimit,
+      timeLimitSeconds,
       topic,
       sessionKey,
       studyPlanTaskId,
     });
   }, [
-    activeSession,
     mode,
     preferredCategory,
     questionLimit,
@@ -133,6 +141,7 @@ export function useQuestionTrainingSession() {
     sessionKey,
     startOrResumeSession,
     studyPlanTaskId,
+    timeLimitSeconds,
     topic,
   ]);
 
@@ -171,6 +180,36 @@ export function useQuestionTrainingSession() {
     : [];
   const isCompleted = Boolean(activeSession?.finishedAt && !activeSession.emptyReason);
   const isEmptyState = Boolean(activeSession?.emptyReason);
+  const remainingSeconds = getRemainingSessionSeconds(
+    activeSession,
+    new Date(nowMs)
+  );
+  const isTimedSession = remainingSeconds !== null;
+
+  useEffect(() => {
+    if (!activeSession || activeSession.finishedAt || !isTimedSession) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setNowMs(Date.now());
+    }, 250);
+
+    return () => clearInterval(timer);
+  }, [activeSession, isTimedSession]);
+
+  useEffect(() => {
+    if (
+      !activeSession ||
+      activeSession.finishedAt ||
+      remainingSeconds === null ||
+      remainingSeconds > 0
+    ) {
+      return;
+    }
+
+    finishActiveSession();
+  }, [activeSession, finishActiveSession, remainingSeconds]);
   const sessionResultTotal = summary.total || 1;
   const sessionResultPercent = Math.round(
     (summary.correct / sessionResultTotal) * 100
@@ -235,6 +274,7 @@ export function useQuestionTrainingSession() {
         mode: activeSession.request.mode,
         question_limit: activeSession.request.questionLimit ?? null,
         question_total: activeSession.questionIds.length,
+        time_limit_seconds: activeSession.request.timeLimitSeconds ?? null,
         topic_id: activeSession.request.topic ?? null,
       }
     );
@@ -419,12 +459,11 @@ export function useQuestionTrainingSession() {
     const answeredCount = summary.answered;
     const wasCompleted = isCompleted;
 
-    // An unfinished session is kept so the next entry into the same mode
-    // resumes at the first unanswered question; a finished one has nothing
-    // left to resume and would only linger in storage.
-    if (wasCompleted || isEmptyState) {
-      clearActiveSession();
-    }
+    // Explicit leave always drops the in-memory session. The next "start"
+    // must draw a fresh queue; resume is only for a process that never
+    // confirmed exit (app kill). Clearing here also stops a still-mounted
+    // question screen from rebuilding the abandoned session.
+    clearActiveSession();
 
     if (wasCompleted) {
       return;
@@ -460,7 +499,6 @@ export function useQuestionTrainingSession() {
   }, [
     clearActiveSession,
     isCompleted,
-    isEmptyState,
     showInterstitialForTrigger,
     summary.answered,
     summary.correct,
@@ -535,6 +573,7 @@ export function useQuestionTrainingSession() {
     masteryProgress,
     premiumIconSize,
     questionChoices,
+    remainingSeconds,
     resultIconSize,
     retreatSession,
     routeParams,

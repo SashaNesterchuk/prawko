@@ -1,10 +1,12 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppButton } from "../../../src/components/shell/AppButton";
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
 import { SignCatalogCard } from "../../../src/components/shell/SignCatalogCard";
 import {
@@ -13,11 +15,8 @@ import {
   type QuestionCountSelection,
 } from "../../../src/components/shell/QuestionCountDialog";
 import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
-import {
-  CText,
-  getFontFamily,
-  useResponsiveStyles,
-} from "../../../src/portable-ui";
+import { useResponsiveStyles } from "../../../src/portable-ui";
+import { useTheme } from "../../../src/providers/ThemeProvider";
 import {
   getRoadSignCategory,
   getRoadSignsByCategory,
@@ -30,6 +29,7 @@ import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-p
 
 export default function SignsCategoryScreen() {
   const { t } = useTranslation();
+  const { background } = useTheme();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
   const { categoryId } = useLocalSearchParams<{ categoryId: string }>();
@@ -132,20 +132,20 @@ export default function SignsCategoryScreen() {
           </View>
         </ScrollView>
 
-        <View style={styles.footer}>
-          <Pressable
-            accessibilityRole="button"
+        <View pointerEvents="box-none" style={styles.footer}>
+          <LinearGradient
+            colors={[background.transparent, background.start]}
+            end={{ x: 0.5, y: 1 }}
+            pointerEvents="none"
+            start={{ x: 0.5, y: 0 }}
+            style={styles.footerFade}
+          />
+          <AppButton
             disabled={!hasCategoryTestQuestions}
+            label={t("signs.trainCategory")}
             onPress={openCategoryTest}
-            style={({ pressed }) => [
-              styles.trainButton,
-              !hasCategoryTestQuestions ? styles.trainButtonDisabled : null,
-              pressed ? styles.pressed : null,
-            ]}
             testID="signs-train-category"
-          >
-            <CText style={styles.trainButtonLabel}>{t("signs.trainCategory")}</CText>
-          </Pressable>
+          />
         </View>
 
         <QuestionCountDialog
@@ -170,7 +170,7 @@ export default function SignsCategoryScreen() {
 }
 
 function useStyles({ safeBottom }: { safeBottom: number }) {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+  return useResponsiveStyles(({ spacing }) => ({
     safeArea: {
       flex: 1,
     },
@@ -179,7 +179,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
     },
     content: {
       padding: spacing.xl,
-      paddingBottom: spacing.exact(88) + safeBottom,
+      paddingBottom: spacing.exact(100) + safeBottom,
     },
     list: {
       gap: spacing.md,
@@ -189,29 +189,13 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       left: 0,
       right: 0,
       bottom: 0,
-      paddingHorizontal: spacing.xl,
-      paddingTop: spacing.md,
-      paddingBottom: spacing.lg + safeBottom,
-      backgroundColor: colors.transparent,
+      paddingHorizontal: spacing.xxl,
+      paddingTop: spacing.xxl,
+      paddingBottom: spacing.xxl + safeBottom,
+      overflow: "visible",
     },
-    trainButton: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: spacing.md,
-      borderRadius: radius.pill,
-      backgroundColor: theme.accents.green.fill,
-    },
-    trainButtonDisabled: {
-      opacity: 0.5,
-    },
-    trainButtonLabel: {
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
-      fontFamily: getFontFamily("semiBold"),
-      color: colors.onAccent,
-    },
-    pressed: {
-      opacity: 0.92,
+    footerFade: {
+      ...StyleSheet.absoluteFillObject,
     },
   }));
 }

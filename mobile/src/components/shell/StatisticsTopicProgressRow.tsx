@@ -36,14 +36,20 @@ export function StatisticsTopicProgressRow({
   return (
     <View style={styles.row}>
       <View style={styles.copy}>
-        <CText style={styles.title} numberOfLines={1}>
-          {title}
-        </CText>
+        <CText style={styles.title}>{title}</CText>
         <CText style={styles.meta}>{`${seen} / ${total}`}</CText>
       </View>
 
       <View style={styles.barGroup}>
-        <View style={styles.track}>
+        <View
+          accessibilityRole="progressbar"
+          accessibilityValue={{
+            min: 0,
+            max: 100,
+            now: normalized,
+          }}
+          style={styles.track}
+        >
           {seen > 0 ? <View style={styles.fill} /> : null}
         </View>
         <CText style={styles.percent}>{`${normalized}%`}</CText>
@@ -62,13 +68,15 @@ function useStyles({
   return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     row: {
       flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.sm,
+      alignItems: "flex-start",
+      gap: spacing.exact(4),
     },
     copy: {
-      flex: 1,
-      minWidth: spacing.exact(96),
-      gap: spacing.xs,
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 0,
+      minWidth: 0,
+      gap: 0,
     },
     title: {
       fontSize: responsiveFont(14),
@@ -79,19 +87,21 @@ function useStyles({
     meta: {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
-      color: colors.inkMuted,
+      fontFamily: getFontFamily("regular"),
+      color: colors.ink3,
     },
     barGroup: {
-      flex: 1,
+      width: spacing.exact(98),
+      flexShrink: 0,
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing.sm,
+      gap: spacing.exact(4),
     },
     track: {
       flex: 1,
       height: spacing.exact(4),
       borderRadius: radius.pill,
-      backgroundColor: colors.track,
+      backgroundColor: colors.surface2,
       overflow: "hidden",
     },
     fill: {
@@ -101,9 +111,10 @@ function useStyles({
       backgroundColor: fillColor,
     },
     percent: {
-      width: spacing.exact(40),
+      width: spacing.exact(34),
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
+      fontFamily: getFontFamily("regular"),
       textAlign: "right",
       color: colors.ink,
     },

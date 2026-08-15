@@ -12,17 +12,17 @@ import Animated, {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Icon } from "../../components/icons";
+import { AppButton } from "../../components/shell/AppButton";
 import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
+import { ResultTopicProgressRow } from "../../components/shell/ResultTopicProgressRow";
 import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { useAppShellStore } from "../../state/app-shell";
-import type { AppThemeAccent } from "../../theme";
 import { getQuestionTopicTitle } from "../question-topics/catalog";
 
 import {
   formatExamDurationParts,
-  getProgressBarAccent,
   type ExamResultOutcome,
   type ExamResultQuestionChip,
   type ExamResultScopeSection,
@@ -72,6 +72,7 @@ export function ExamResultView({
 }: ExamResultViewProps) {
   const { t } = useTranslation();
   const { accents, background, colors } = useTheme();
+  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const passed = outcome === "passed";
   const isPositiveResult = passed;
   const resultAccent = isPositiveResult ? accents.green : accents.red;
@@ -203,9 +204,13 @@ export function ExamResultView({
             </View>
 
             {topicStats.length > 0 ? (
-              <View style={styles.card}>
+              <View style={styles.card} testID="exam-result-topics">
                 {topicStats.map((stat) => (
-                  <TopicProgressRow key={stat.topicId} stat={stat} />
+                  <ResultTopicProgressRow
+                    key={stat.topicId}
+                    percent={stat.percent}
+                    title={getQuestionTopicTitle(stat.topicId, preferredLocale)}
+                  />
                 ))}
               </View>
             ) : null}
@@ -226,7 +231,7 @@ export function ExamResultView({
               </View>
             ) : null}
 
-            <View style={styles.card}>
+            <View style={[styles.card, styles.whatsNextCard]}>
               <CText style={styles.whatsNextTitle}>
                 {t("exam.whatsNextTitle")}
               </CText>
@@ -257,16 +262,7 @@ export function ExamResultView({
             style={styles.footerFade}
           />
           <View style={styles.footer}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onPrimaryAction}
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <CText style={styles.primaryButtonText}>{primaryLabel}</CText>
-            </Pressable>
+            <AppButton label={primaryLabel} onPress={onPrimaryAction} />
 
             <View style={styles.secondaryRow}>
               <Pressable
@@ -301,40 +297,6 @@ export function ExamResultView({
         </View>
       </SafeAreaView>
     </GreenWaveScreen>
-  );
-}
-
-function TopicProgressRow({
-  stat,
-}: {
-  stat: ExamResultTopicStat;
-}) {
-  const { accents, colors } = useTheme();
-  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const styles = useStyles();
-  const accentKey = getProgressBarAccent(stat.percent);
-  const fillColor = accents[accentKey as AppThemeAccent].fill;
-
-  return (
-    <View style={styles.topicRow}>
-      <CText style={styles.topicLabel} numberOfLines={1}>
-        {getQuestionTopicTitle(stat.topicId, preferredLocale)}
-      </CText>
-      <View style={styles.topicMeter}>
-        <View style={styles.topicTrack}>
-          <View
-            style={[
-              styles.topicFill,
-              {
-                width: `${Math.max(0, Math.min(100, stat.percent))}%`,
-                backgroundColor: fillColor,
-              },
-            ]}
-          />
-        </View>
-        <CText style={styles.topicPercent}>{stat.percent}%</CText>
-      </View>
-    </View>
   );
 }
 
@@ -559,42 +521,8 @@ function useStyles({
         padding: spacing.exact(16),
         gap: spacing.exact(12),
       },
-      topicRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.exact(8),
-      },
-      topicLabel: {
-        flex: 1,
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        fontFamily: getFontFamily("regular"),
-        color: colors.ink,
-      },
-      topicMeter: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.exact(8),
-      },
-      topicTrack: {
-        flex: 1,
-        height: spacing.exact(4),
-        borderRadius: radius.pill,
-        backgroundColor: colors.surface2,
-        overflow: "hidden",
-      },
-      topicFill: {
-        height: "100%",
-        borderRadius: radius.pill,
-      },
-      topicPercent: {
-        width: spacing.exact(40),
-        textAlign: "right",
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        fontFamily: getFontFamily("regular"),
-        color: colors.ink,
+      whatsNextCard: {
+        gap: 0,
       },
       scopeBlock: {
         gap: spacing.exact(8),
@@ -648,7 +576,7 @@ function useStyles({
       whatsNextTitle: {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
-        fontFamily: getFontFamily("medium"),
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.16,
         color: colors.ink,
       },
@@ -694,7 +622,7 @@ function useStyles({
       primaryButtonText: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
-        fontFamily: getFontFamily("medium"),
+        fontFamily: getFontFamily("semiBold"),
         letterSpacing: -0.2,
         color: colors.onAccent,
       },

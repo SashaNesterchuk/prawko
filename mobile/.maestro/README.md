@@ -31,12 +31,17 @@ pnpm test:e2e:studio
 | `onboarding_completes_and_lands_on_home.yaml` | Category → exam date → skip notifications → Home |
 | `onboarding_skip_exam_date_leaves_date_unset.yaml` | Skip exam date on onboarding → Profile shows unset date |
 | `home_opens_trainer_modes.yaml` | Home → Trainer tile |
-| `home_readiness_assessment_starts_training.yaml` | Empty readiness CTA → untimed mini_test training (not exam) |
+| `home_blitz_opens_duration_dialog.yaml` | Home → Quick session → duration picker → timed blitz training |
+| `home_readiness_assessment_starts_training.yaml` | Empty readiness CTA (no period-change badge) → untimed mini_test training (not exam) |
+| `home_traps_opens_count_dialog.yaml` | Home → Traps tile → count picker → training |
+| `home_exam_opens_count_dialog.yaml` | Home → Exam tile → count picker → exam session |
 | `tabs_are_navigable.yaml` | Tab bar: Home / Learn / Signs / Profile |
 | `learn_first_topic_opens_trainer_modes.yaml` | Learn tab → first topic card → trainer modes |
+| `learn_blitz_opens_duration_dialog.yaml` | Learn → Quick session → duration picker → timed blitz training |
 | `statistics_topics_list_visible.yaml` | Statistics → readiness-by-topic card with topic rows |
 | `learn_mistakes_opens_session.yaml` | Learn → Fix mistakes → mistakes monitor empty state (hero + traps/SRS tiles) |
 | `learn_srs_opens_session.yaml` | Learn → Smart reviews → session (count dialog when eligible) |
+| `learn_traps_opens_count_dialog.yaml` | Learn → Trap questions → count picker → training |
 | `learn_topic_mistakes_mode_available.yaml` | Learn → topic → category-scoped Fix mistakes mode tile |
 | `practice_exam_starts_session.yaml` | Practice screen → exam card → exam session |
 | `profile_offline_mode_screen_opens.yaml` | Profile → Offline mode screen (Plus) |
@@ -58,11 +63,13 @@ pnpm test:e2e:studio
 | `exam_answers_category_mismatch_switches_category.yaml` | Direct exam answer review → category mismatch → switch and load review |
 | `trainer_random_mode_starts_questions.yaml` | Trainer modes → count picker → first question |
 | `trainer_first_answer_shows_feedback.yaml` | Trainer question → first answer → feedback sheet (wrong → Зрозуміло / correct → Наступне питання) |
+| `trainer_exit_then_start_is_fresh.yaml` | Answer → finish training → start again → first unanswered question (not resumed) |
 | `trainer_random_answer_covers_all_question_topics.yaml` | Random training answer closes every assigned topic card |
 | `topic_training_answer_covers_all_question_topics.yaml` | Topic training closes every assigned card while the question remains new in another topic queue |
 | `signs_training_starts_from_tab.yaml` | Signs tab → train all → sign test session |
 | `signs_category_training_starts.yaml` | Direct sign category bootstrap → category training |
 | `signs_first_answer_shows_feedback.yaml` | Sign test → first answer → feedback sheet (wrong → Зрозуміло / correct → Наступне питання) |
+| `signs_detail_forward_keeps_chrome.yaml` | Sign detail → Forward pages content only; header and bottom nav stay |
 
 Shared steps live in:
 

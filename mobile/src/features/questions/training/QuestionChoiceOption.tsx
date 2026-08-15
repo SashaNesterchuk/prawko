@@ -99,7 +99,7 @@ function useQuestionChoiceStyles({
                 alignItems: "center",
                 justifyContent: "center",
                 paddingHorizontal: spacing.exact(12),
-                paddingVertical: spacing.exact(24),
+                paddingVertical: spacing.exact(20),
               }
             : {
                 flexDirection: "row",

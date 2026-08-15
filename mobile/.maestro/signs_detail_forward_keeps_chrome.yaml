@@ -1,0 +1,53 @@
+# Feature: Signs
+# Scenario: Forward on a sign pages only the inner content; header and nav stay
+appId: com.mindjar.prawko
+tags:
+  - signs
+  - detail
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: signs-category
+      SIGN_CATEGORY_ID: A
+      TARGET_ID: screen-signs-category-A
+
+- tapOn:
+    id: "sign-card-A-1"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-sign-detail"
+    timeout: 15000
+
+- assertVisible:
+    id: "sign-detail-toolbar"
+
+- assertVisible:
+    id: "sign-detail-nav"
+
+- assertVisible:
+    id: "sign-detail-page-A-1"
+
+- tapOn:
+    id: "sign-detail-forward"
+
+- extendedWaitUntil:
+    visible:
+      id: "sign-detail-page-A-2"
+    timeout: 5000
+
+- assertVisible:
+    id: "screen-sign-detail"
+
+- assertVisible:
+    id: "sign-detail-toolbar"
+
+- assertVisible:
+    id: "sign-detail-nav"
+
+- assertVisible:
+    id: "sign-detail-back"
+
+- assertVisible:
+    id: "sign-detail-code"

@@ -22,9 +22,8 @@ type ReadinessIndexCardProps = {
   coveredCaption?: string;
   detailsLabel?: string;
   /**
-   * Signed 7-day readiness change in percentage points.
-   * Hidden when null/undefined. Zero shows a flat (neutral) badge when a label
-   * is provided.
+   * Signed readiness change in percentage points over the adaptive period.
+   * Hidden when null/undefined or zero.
    */
   weekChangePercent?: number | null;
   weekChangeLabel?: string;
@@ -84,7 +83,10 @@ export function ReadinessIndexCard({
     : resolveReadinessRingColor(clamped, theme.accents);
   const styles = useStyles({ ringColor });
   const showWeekChange =
-    !empty && weekChangePercent != null && Boolean(weekChangeLabel);
+    !empty &&
+    weekChangePercent != null &&
+    weekChangePercent !== 0 &&
+    Boolean(weekChangeLabel);
   const isWeekFlat = weekChangePercent === 0;
   const isWeekUp = (weekChangePercent ?? 0) > 0;
 
@@ -141,6 +143,7 @@ export function ReadinessIndexCard({
 
             {showWeekChange ? (
               <View
+                testID={testID ? `${testID}-week-change` : undefined}
                 style={[
                   styles.weekBadge,
                   isWeekFlat

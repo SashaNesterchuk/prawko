@@ -26,12 +26,13 @@ export function SignDetailNav({
   const forwardLabelText = forwardLabel.replace(/\s*>\s*$/, "");
 
   return (
-    <View style={styles.row}>
+    <View style={styles.row} testID="sign-detail-nav">
       {canGoBack ? (
         <Pressable
           accessibilityRole="button"
           onPress={onBack}
           style={({ pressed }) => [styles.button, pressed ? styles.pressed : null]}
+          testID="sign-detail-back"
         >
           <Icon color={theme.colors.ink2} name="back" size={20} />
           <CText style={styles.buttonLabel}>{backLabel}</CText>
@@ -45,6 +46,7 @@ export function SignDetailNav({
           accessibilityRole="button"
           onPress={onForward}
           style={({ pressed }) => [styles.button, pressed ? styles.pressed : null]}
+          testID="sign-detail-forward"
         >
           <CText style={styles.buttonLabel}>{forwardLabelText}</CText>
           <Icon color={theme.colors.ink2} name="chevron" size={20} />

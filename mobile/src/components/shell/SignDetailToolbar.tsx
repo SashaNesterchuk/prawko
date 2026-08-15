@@ -35,7 +35,7 @@ export function SignDetailToolbar({
   const styles = useStyles();
 
   return (
-    <View style={styles.header}>
+    <View style={styles.header} testID="sign-detail-toolbar">
       {onClose ? (
         <NavigationButton
           accessibilityLabel={closeLabel}
@@ -48,7 +48,9 @@ export function SignDetailToolbar({
       )}
 
       <View style={styles.titleBlock}>
-        <CText style={styles.code}>{code}</CText>
+        <CText style={styles.code} testID="sign-detail-code">
+          {code}
+        </CText>
         <CText style={styles.category} numberOfLines={1}>
           {categoryLabel}
         </CText>

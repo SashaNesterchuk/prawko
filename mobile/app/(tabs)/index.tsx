@@ -23,8 +23,10 @@ import {
   useResponsiveStyles,
 } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
-import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
-import { getCoverageReadinessWeekChangePercent } from "../../src/features/profile/profile-stats";
+import {
+  getReadinessPeriodChange,
+  resolveReadinessPeriodChangeLabelKey,
+} from "../../src/features/profile/profile-stats";
 import {
   getQuestionDisplayStats,
   getSeenQuestionIds,
@@ -34,6 +36,7 @@ import {
   resolveLocalReadinessPercent,
 } from "../../src/features/questions/readiness-assessment";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
 import {
   fetchRemoteHomeProgress,
   getWarsawIsoDate,
@@ -87,6 +90,8 @@ export default function HomeTabScreen() {
   );
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
+  const { openMode, openExam, openBlitz, dialog: countDialog } =
+    useQuestionModeCountDialog();
 
   useEffect(() => {
     if (!isFocused) {
@@ -140,15 +145,17 @@ export default function HomeTabScreen() {
   const isReadinessEmpty =
     stats.seen <= 0 && readinessAssessment == null;
   const readinessLevel = resolveReadinessLevel(readiness);
-  const readinessWeekChangePercent = useMemo(() => {
+  const readinessPeriodChange = useMemo(() => {
     if (!isFocused || isReadinessEmpty) {
       return null;
     }
 
-    return getCoverageReadinessWeekChangePercent({
+    return getReadinessPeriodChange({
       attempts,
       seenQuestionIds: getSeenQuestionIds(questionUserState),
       totalQuestions: stats.total,
+      assessment: readinessAssessment,
+      currentReadiness: readiness,
     });
   }, [
     attempts,
@@ -156,19 +163,23 @@ export default function HomeTabScreen() {
     isReadinessEmpty,
     questionCatalogVersion,
     questionUserState,
+    readiness,
+    readinessAssessment,
     stats.total,
   ]);
+  const readinessWeekChangePercent = readinessPeriodChange?.deltaPercent ?? null;
   const readinessWeekChangeLabel =
-    readinessWeekChangePercent == null
+    readinessPeriodChange == null
       ? undefined
-      : readinessWeekChangePercent === 0
-        ? t("dash.readinessWeekChangeNone", {
-            defaultValue: "Без змін за 7 днів",
-          })
-        : t("dash.readinessWeekChange", {
-            defaultValue: "{{value}}% за 7 днів",
-            value: Math.abs(readinessWeekChangePercent),
-          });
+      : t(
+          `dash.${resolveReadinessPeriodChangeLabelKey(
+            readinessPeriodChange.periodDays
+          )}`,
+          {
+            days: readinessPeriodChange.periodDays,
+            value: Math.abs(readinessPeriodChange.deltaPercent),
+          }
+        );
   const wrongAnswers = stats.wrongAnswers;
   const examPassed =
     readinessSummary != null && readinessSummary.daysUntilExam <= 0;
@@ -184,6 +195,9 @@ export default function HomeTabScreen() {
           : "Низький",
   });
 
+  const examTitle = t("dash.tileExamTitle", { defaultValue: "Іспит" });
+  const trapsTitle = t("dash.tileTrapsTitle", { defaultValue: "Пастки" });
+
   const tiles: ActionTileItem[] = [
     {
       key: "trainer",
@@ -197,8 +211,8 @@ export default function HomeTabScreen() {
     },
     {
       key: "exam",
-      accent: "blue",
-      title: t("dash.tileExamTitle", { defaultValue: "Іспит" }),
+      accent: "green",
+      title: examTitle,
       subtitle: recentExamPassed
         ? t("dash.tileExamSubtitlePassed", {
           defaultValue: "Симуляція 1/1",
@@ -206,12 +220,8 @@ export default function HomeTabScreen() {
         : t("dash.tileExamSubtitlePending", {
           defaultValue: "Симуляція 0/1",
         }),
-      icon: <HomeActionIcon accent="blue" name="exam" />,
-      onPress: () =>
-        router.navigate({
-          pathname: "/exam",
-          params: buildExamRouteParams({ mode: "exam" }),
-        }),
+      icon: <HomeActionIcon accent="green" name="exam" />,
+      onPress: () => openExam({ title: examTitle }),
     },
     {
       key: "mistakes",
@@ -227,15 +237,15 @@ export default function HomeTabScreen() {
     {
       key: "traps",
       accent: "amber",
-      title: t("dash.tileTrapsTitle", { defaultValue: "Пастки" }),
+      title: trapsTitle,
       subtitle: t("dash.tileTrapsSubtitle", {
         defaultValue: "Часто плутають",
       }),
       icon: <HomeActionIcon accent="amber" name="warning" />,
       onPress: () =>
-        router.navigate({
-          pathname: "/question",
-          params: buildQuestionRouteParams({ mode: "high_points" }),
+        openMode({
+          mode: "high_points",
+          title: trapsTitle,
         }),
     },
   ];
@@ -292,7 +302,7 @@ export default function HomeTabScreen() {
             weekChangeLabel={readinessWeekChangeLabel}
             onPress={() => {
               if (isReadinessEmpty) {
-                // Untimed training assessment (not exam simulator) — larger than Quick Session.
+                // Untimed training assessment (not exam simulator) — larger than Blitz.
                 router.navigate({
                   pathname: "/question",
                   params: buildQuestionRouteParams({
@@ -315,18 +325,17 @@ export default function HomeTabScreen() {
                 defaultValue: "Швидка сесія",
               })}
               subtitle={t("dash.warmupDescription", {
-                defaultValue: "10 випадкових питань",
+                defaultValue: "Максимум питань за відведений час",
               })}
               icon={<HomeActionIcon accent="amber" name="bolt" />}
               onPress={() =>
-                router.navigate({
-                  pathname: "/question",
-                  params: buildQuestionRouteParams({
-                    mode: "learning",
-                    questionLimit: 10,
+                openBlitz({
+                  title: t("trainerModes.randomTitle", {
+                    defaultValue: "Випадкові питання",
                   }),
                 })
               }
+              testID="home-tile-blitz"
             />
 
             <ActionTileGrid items={tiles} />
@@ -363,6 +372,7 @@ export default function HomeTabScreen() {
           ) : null}
         </ScrollView>
       </SafeAreaView>
+      {countDialog}
     </GreenWaveScreen>
   );
 }

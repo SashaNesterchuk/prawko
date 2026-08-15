@@ -1,4 +1,3 @@
-import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef } from "react";
 import { Linking, ScrollView, View } from "react-native";
@@ -9,6 +8,7 @@ import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../../components/shell/NavigationButton";
 import { TrainingExitDialog } from "../../../components/shell/TrainingExitDialog";
 import {
+  formatSessionCountdown,
   getLocalizedText,
   isQuestionMastered,
 } from "../question-engine";
@@ -20,7 +20,6 @@ import { QuestionFeedbackPushStage } from "./QuestionFeedbackPushStage";
 import { QuestionStepPill } from "./QuestionStepPill";
 import type { QuestionTrainingSession } from "./useQuestionTrainingSession";
 import { getQuestionStepState } from "./visible-steps";
-import { useHasAiChatAccess } from "../../../state/entitlements";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
 
@@ -47,6 +46,7 @@ type QuestionTrainingViewProps = Pick<
   | "masteryProgress"
   | "premiumIconSize"
   | "questionChoices"
+  | "remainingSeconds"
   | "showExitDialog"
   | "summary"
   | "trainerStyles"
@@ -79,6 +79,7 @@ export function QuestionTrainingView({
   masteryProgress,
   premiumIconSize,
   questionChoices,
+  remainingSeconds,
   showExitDialog,
   summary,
   trainerStyles,
@@ -86,7 +87,6 @@ export function QuestionTrainingView({
 }: QuestionTrainingViewProps) {
   const { t } = useTranslation();
   const { track } = useAnalytics();
-  const hasAiChatAccess = useHasAiChatAccess();
   const insets = useSafeAreaInsets();
   const stepperRef = useRef<ScrollView>(null);
   const stepperWidthRef = useRef(0);
@@ -122,6 +122,12 @@ export function QuestionTrainingView({
   const isBooleanQuestion = currentQuestion.answerType === "boolean";
   const totalQuestions = summary.total || activeSession!.questionIds.length;
   const currentStep = activeSession!.currentIndex + 1;
+  const isTimedSession = remainingSeconds !== null;
+  const isTimerUrgent =
+    isTimedSession && remainingSeconds <= 30;
+  const headerCounter = isTimedSession
+    ? formatSessionCountdown(remainingSeconds)
+    : `${currentStep} / ${totalQuestions}`;
   const explanationText = getLocalizedText(
     currentQuestion.explanation,
     displayLocale
@@ -153,35 +159,6 @@ export function QuestionTrainingView({
     void Linking.openURL(
       `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
     );
-  };
-
-  const handleExplainPress = () => {
-    const aiChatParams = {
-      questionId: currentQuestionId,
-      locale: displayLocale,
-      selectedAnswer: currentAnswer?.selectedAnswer,
-    };
-
-    if (hasAiChatAccess) {
-      router.navigate({
-        pathname: "/modals/ai-chat",
-        params: aiChatParams,
-      });
-      return;
-    }
-
-    track(ANALYTICS_EVENTS.aiChatAccessBlocked.key, {
-      question_id: currentQuestionId,
-      source: "training",
-    });
-    router.navigate({
-      pathname: "/paywall",
-      params: {
-        feature: "ai_question_chat",
-        returnTo: "ai-chat",
-        ...aiChatParams,
-      },
-    });
   };
 
   const questionBlock = (
@@ -249,8 +226,16 @@ export function QuestionTrainingView({
                 <CText style={trainerStyles.headerTitle}>
                   {t("question.trainerTitle")}
                 </CText>
-                <CText style={trainerStyles.headerCounter}>
-                  {currentStep} / {totalQuestions}
+                <CText
+                  style={[
+                    trainerStyles.headerCounter,
+                    isTimerUrgent ? trainerStyles.headerCounterUrgent : null,
+                  ]}
+                  testID={
+                    isTimedSession ? "question-blitz-timer" : "question-counter"
+                  }
+                >
+                  {headerCounter}
                 </CText>
               </View>
             </View>
@@ -323,7 +308,6 @@ export function QuestionTrainingView({
                 onToggleBookmark={() =>
                   handleToggleBookmark(currentQuestionId)
                 }
-                onExplain={handleExplainPress}
                 onNext={handleContinueAfterFeedback}
               />
             }

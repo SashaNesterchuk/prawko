@@ -41,6 +41,10 @@ export function useTrainerStyles({
         fontSize: responsiveFont(12),
         lineHeight: responsiveFont(16),
         color: colors.textSecondary,
+        fontVariant: ["tabular-nums"],
+      },
+      headerCounterUrgent: {
+        color: accents.red.ink,
       },
       stepperScroll: {
         flexGrow: 0,
