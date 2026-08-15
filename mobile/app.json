@@ -3,7 +3,7 @@
     "name": "Prawko",
     "slug": "prawko",
     "scheme": "prawko",
-    "version": "1.0.12",
+    "version": "1.0.13",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
@@ -30,8 +30,7 @@
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-3940256099942544~3347511713",
-          "iosAppId": "ca-app-pub-4994877133367352~1533006266",
-          "userTrackingUsageDescription": "This identifier may be used to deliver more relevant ads."
+          "iosAppId": "ca-app-pub-4994877133367352~1533006266"
         }
       ]
     ],
@@ -55,8 +54,7 @@
       "infoPlist": {
         "CFBundleDisplayName": "Prawko",
         "GADApplicationIdentifier": "ca-app-pub-4994877133367352~1533006266",
-        "NSUserNotificationUsageDescription": "This app uses notifications to remind you about study sessions.",
-        "NSUserTrackingUsageDescription": "This identifier may be used to deliver more relevant ads."
+        "NSUserNotificationUsageDescription": "This app uses notifications to remind you about study sessions."
       }
     },
     "extra": {
@@ -71,7 +69,6 @@
   },
   "react-native-google-mobile-ads": {
     "android_app_id": "ca-app-pub-3940256099942544~3347511713",
-    "ios_app_id": "ca-app-pub-4994877133367352~1533006266",
-    "user_tracking_usage_description": "This identifier may be used to deliver more relevant ads."
+    "ios_app_id": "ca-app-pub-4994877133367352~1533006266"
   }
 }

@@ -7,16 +7,28 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "environment": "development"
+      "environment": "development",
+      "env": {
+        "EXPO_PUBLIC_POSTHOG_KEY": "phc_ksus5JCVVcb52pcjPHCBurMmXHc9nijfpYhVfAifGenR",
+        "EXPO_PUBLIC_POSTHOG_HOST": "https://eu.i.posthog.com"
+      }
     },
     "preview": {
       "distribution": "internal",
-      "environment": "preview"
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_POSTHOG_KEY": "phc_ksus5JCVVcb52pcjPHCBurMmXHc9nijfpYhVfAifGenR",
+        "EXPO_PUBLIC_POSTHOG_HOST": "https://eu.i.posthog.com"
+      }
     },
     "production": {
       "autoIncrement": true,
       "credentialsSource": "local",
-      "environment": "production"
+      "environment": "production",
+      "env": {
+        "EXPO_PUBLIC_POSTHOG_KEY": "phc_ksus5JCVVcb52pcjPHCBurMmXHc9nijfpYhVfAifGenR",
+        "EXPO_PUBLIC_POSTHOG_HOST": "https://eu.i.posthog.com"
+      }
     },
     "e2e-test": {
       "env": {

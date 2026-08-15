@@ -24,9 +24,11 @@ export const mobileEnv = {
     process.env.EXPO_PUBLIC_E2E_TEST_MODE,
     false
   ),
-  posthogKey: process.env.EXPO_PUBLIC_POSTHOG_KEY ?? "",
+  posthogKey:
+    process.env.EXPO_PUBLIC_POSTHOG_KEY ||
+    "phc_ksus5JCVVcb52pcjPHCBurMmXHc9nijfpYhVfAifGenR",
   posthogHost:
-    process.env.EXPO_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
+    process.env.EXPO_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
   revenueCatAppleApiKey:
     process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY ?? "",
   revenueCatGoogleApiKey:

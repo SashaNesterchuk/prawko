@@ -19,7 +19,7 @@
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0.12</string>
+    <string>1.0.13</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleURLTypes</key>
@@ -59,8 +59,6 @@
     </array>
     <key>NSUserNotificationUsageDescription</key>
     <string>This app uses notifications to remind you about study sessions.</string>
-    <key>NSUserTrackingUsageDescription</key>
-    <string>This identifier may be used to deliver more relevant ads.</string>
     <key>RCTNewArchEnabled</key>
     <true/>
     <key>UILaunchStoryboardName</key>
