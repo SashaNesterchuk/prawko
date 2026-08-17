@@ -51,6 +51,10 @@ type SetLocalExamSessionStatusInput = {
 
 const sessions = new Map<string, RemoteExamSnapshot>();
 
+export function resetLocalExamSessionsForTests() {
+  sessions.clear();
+}
+
 export function startLocalExamSession(
   input: StartLocalExamInput
 ): RemoteExamSnapshot {

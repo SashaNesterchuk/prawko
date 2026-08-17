@@ -84,7 +84,7 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
     : null;
   const activeVideoPosterUrl = activeVideoAsset
     ? getQuestionDeliveryPosterUrl(activeVideoAsset) ??
-      (activeVideoAsset.mediaKey === media.asset.mediaKey ? previewUrl : null)
+    (activeVideoAsset.mediaKey === media.asset.mediaKey ? previewUrl : null)
     : null;
 
   const playVideoAsset = (asset: QuestionDeliveryAsset) => {
@@ -624,7 +624,6 @@ function useStyles() {
       lineHeight: responsiveFont(16),
       fontFamily: getFontFamily("bold"),
       color: colors.onAccent,
-      letterSpacing: 0.4,
     },
     pjmOverlay: {
       position: "absolute",

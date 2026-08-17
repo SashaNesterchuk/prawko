@@ -26,6 +26,12 @@ env:
 - openLink:
     link: "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}"
 
+- runFlow:
+    when:
+      visible: "Close Advertisement"
+    commands:
+      - tapOn: "Close Advertisement"
+
 - extendedWaitUntil:
     visible:
       id: "${TARGET_ID}"

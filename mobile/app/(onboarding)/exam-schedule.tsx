@@ -180,7 +180,6 @@ function useStyles() {
         fontSize: responsiveFont(32),
         lineHeight: responsiveFont(32),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -0.64,
         color: colors.textPrimary,
       },
       field: {
@@ -254,7 +253,6 @@ function useStyles() {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
         color: colors.onAccent,
       },
     })

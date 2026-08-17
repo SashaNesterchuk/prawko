@@ -202,7 +202,6 @@ function useStyles() {
         fontSize: responsiveFont(32),
         lineHeight: responsiveFont(32),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -0.64,
         color: colors.textPrimary,
       },
       subtitle: {
@@ -280,7 +279,6 @@ function useStyles() {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("medium"),
-        letterSpacing: -0.2,
         color: colors.onAccent,
       },
     })

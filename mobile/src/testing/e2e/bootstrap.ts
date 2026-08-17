@@ -120,6 +120,7 @@ export async function prepareE2EAppState(
   finalizeLocalOnboarding();
 
   await waitForQuestionProgressHydrated();
+  await waitForQuestionCatalogResolved();
 
   if (input.questionScenario) {
     const questionIds = getQuestionBank().map((question) => question.id);
@@ -304,6 +305,29 @@ function waitForQuestionProgressHydrated(timeoutMs = 5000) {
   });
 }
 
+function waitForQuestionCatalogResolved(timeoutMs = 15000) {
+  if (useQuestionCatalogStore.getState().resolved) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      unsubscribe();
+      reject(new Error("Timed out waiting for question catalog."));
+    }, timeoutMs);
+
+    const unsubscribe = useQuestionCatalogStore.subscribe((state) => {
+      if (!state.resolved) {
+        return;
+      }
+
+      clearTimeout(timeoutId);
+      unsubscribe();
+      resolve();
+    });
+  });
+}
+
 async function seedE2EExamSnapshot(input: {
   category: DrivingCategory;
   locale: SupportedLocale;
@@ -420,7 +444,9 @@ function pickWrongAnswer(correctAnswer: QuestionOptionValue): QuestionOptionValu
 function seedE2EFinishedQuestionSession(input: {
   category: DrivingCategory;
 }) {
-  const sessionKey = `e2e-question-result-${Date.now().toString(36)}`;
+  const routeSessionKey = `e2e-question-result-${Date.now().toString(36)}`;
+  // `useQuestionRouteParams` prefixes the `session` query with the category.
+  const sessionKey = `${input.category}:${routeSessionKey}`;
   const sourceQuestions = getQuestionBank().slice(0, 5);
 
   if (sourceQuestions.length === 0) {
@@ -472,5 +498,5 @@ function seedE2EFinishedQuestionSession(input: {
     },
   });
 
-  return sessionKey;
+  return routeSessionKey;
 }

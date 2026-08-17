@@ -135,6 +135,71 @@ describe("question session resume", () => {
       })
     ).toBe(false);
   });
+
+  it("does not resume when the mode changed", () => {
+    expect(
+      canResumeQuestionSession(makeSession({ answers: answeredFirstWrong }), {
+        ...baseRequest,
+        mode: "blitz",
+        sessionKey: "session-b",
+        timeLimitSeconds: 300,
+      })
+    ).toBe(false);
+  });
+
+  it("does not resume when the topic changed", () => {
+    expect(
+      canResumeQuestionSession(
+        makeSession({
+          answers: answeredFirstWrong,
+          request: { topic: "signs_signals" },
+        }),
+        {
+          ...baseRequest,
+          sessionKey: "session-b",
+          topic: "road_markings_and_warning_signs",
+        }
+      )
+    ).toBe(false);
+  });
+
+  it("does not resume when the category changed", () => {
+    expect(
+      canResumeQuestionSession(makeSession({ answers: answeredFirstWrong }), {
+        ...baseRequest,
+        currentCategory: "A",
+        sessionKey: "session-b",
+      })
+    ).toBe(false);
+  });
+
+  it("does not resume when every question already has an answer", () => {
+    expect(
+      canResumeQuestionSession(
+        makeSession({
+          answers: {
+            q1: answeredFirstWrong.q1!,
+            q2: {
+              questionId: "q2",
+              selectedAnswer: "A",
+              isCorrect: true,
+              answeredAt: "2026-08-15T12:02:00.000Z",
+            },
+            q3: {
+              questionId: "q3",
+              selectedAnswer: "A",
+              isCorrect: true,
+              answeredAt: "2026-08-15T12:03:00.000Z",
+            },
+          },
+        }),
+        {
+          ...baseRequest,
+          sessionKey: "session-b",
+        }
+      )
+    ).toBe(false);
+  });
 });
 
 const txt = {
@@ -219,5 +284,97 @@ describe("startOrResumeSession after exit", () => {
     expect(next.currentIndex).toBe(0);
     expect(next.answers).toEqual({});
     expect(next.request.sessionKey).toBe("session-b");
+  });
+
+  it("starts at Q1 unanswered after the previous session was finished early", () => {
+    const store = useQuestionProgressStore.getState();
+    store.startOrResumeSession({
+      ...baseRequest,
+      questionLimit: 3,
+      sessionKey: "session-a",
+    });
+    store.answerCurrentQuestion("B");
+    store.finishActiveSession();
+
+    const next = store.startOrResumeSession({
+      ...baseRequest,
+      questionLimit: 3,
+      sessionKey: "session-b",
+    });
+
+    expect(next.currentIndex).toBe(0);
+    expect(next.answers).toEqual({});
+    expect(next.finishedAt).toBeNull();
+    expect(next.request.sessionKey).toBe("session-b");
+  });
+
+  it("starts at Q1 unanswered after every question in the previous session was answered", () => {
+    const store = useQuestionProgressStore.getState();
+    const started = store.startOrResumeSession({
+      ...baseRequest,
+      questionLimit: 3,
+      sessionKey: "session-a",
+    });
+
+    for (let index = 0; index < started.questionIds.length; index += 1) {
+      store.answerCurrentQuestion("A");
+      store.advanceSession();
+    }
+
+    const finished = useQuestionProgressStore.getState().activeSession;
+    expect(finished?.finishedAt).not.toBeNull();
+    expect(Object.keys(finished?.answers ?? {})).toHaveLength(3);
+
+    const next = store.startOrResumeSession({
+      ...baseRequest,
+      questionLimit: 3,
+      sessionKey: "session-b",
+    });
+
+    expect(next.currentIndex).toBe(0);
+    expect(next.answers).toEqual({});
+    expect(next.finishedAt).toBeNull();
+    expect(next.id).not.toBe(finished?.id);
+  });
+
+  it("starts a new queue when the previous session had no answers", () => {
+    const store = useQuestionProgressStore.getState();
+    const first = store.startOrResumeSession({
+      ...baseRequest,
+      questionLimit: 3,
+      sessionKey: "session-a",
+    });
+
+    const next = store.startOrResumeSession({
+      ...baseRequest,
+      questionLimit: 3,
+      sessionKey: "session-b",
+    });
+
+    expect(next.currentIndex).toBe(0);
+    expect(next.answers).toEqual({});
+    expect(next.request.sessionKey).toBe("session-b");
+    expect(next.id).not.toBe(first.id);
+  });
+
+  it("does not resume learning into a blitz run", () => {
+    const store = useQuestionProgressStore.getState();
+    store.startOrResumeSession({
+      ...baseRequest,
+      questionLimit: 3,
+      sessionKey: "session-a",
+    });
+    store.answerCurrentQuestion("B");
+
+    const next = store.startOrResumeSession({
+      currentCategory: "B",
+      mode: "blitz",
+      sessionKey: "session-b",
+      timeLimitSeconds: 300,
+    });
+
+    expect(next.request.mode).toBe("blitz");
+    expect(next.currentIndex).toBe(0);
+    expect(next.answers).toEqual({});
   });
 });

@@ -71,274 +71,372 @@ import PlRoadSignAsset63 from "../../../../assets/pl-road-signs-wikimedia/PL_roa
 import PlRoadSignAsset64 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-13-14.svg";
 import PlRoadSignAsset65 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-13a.svg";
 import PlRoadSignAsset66 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-14.svg";
-import PlRoadSignAsset67 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-15-2.0m.svg";
-import PlRoadSignAsset68 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-16-3.1m.svg";
-import PlRoadSignAsset69 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-16-3.2m.svg";
-import PlRoadSignAsset70 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-16-3.4m.svg";
-import PlRoadSignAsset71 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-16-3.5m.svg";
-import PlRoadSignAsset72 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-17-6m.svg";
-import PlRoadSignAsset73 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-18-3.5t.svg";
-import PlRoadSignAsset74 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-18-7t.svg";
-import PlRoadSignAsset75 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-19-10t.svg";
-import PlRoadSignAsset76 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-20.svg";
-import PlRoadSignAsset77 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-21.svg";
-import PlRoadSignAsset78 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-22.svg";
-import PlRoadSignAsset79 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-23.svg";
-import PlRoadSignAsset80 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-24.svg";
-import PlRoadSignAsset81 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-25.svg";
-import PlRoadSignAsset82 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-26.svg";
-import PlRoadSignAsset83 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-27.svg";
-import PlRoadSignAsset84 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-28.svg";
-import PlRoadSignAsset85 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-29.svg";
-import PlRoadSignAsset86 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-30.svg";
-import PlRoadSignAsset87 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-31.svg";
-import PlRoadSignAsset88 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32.svg";
-import PlRoadSignAsset89 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32a.svg";
-import PlRoadSignAsset90 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32b.svg";
-import PlRoadSignAsset91 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32c.svg";
-import PlRoadSignAsset92 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32d.svg";
-import PlRoadSignAsset93 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32e.svg";
-import PlRoadSignAsset94 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32f.svg";
-import PlRoadSignAsset95 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-33-50.svg";
-import PlRoadSignAsset96 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-34-50.svg";
-import PlRoadSignAsset97 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-35.svg";
-import PlRoadSignAsset98 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-35a.svg";
-import PlRoadSignAsset99 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-35b.svg";
-import PlRoadSignAsset100 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-35c.svg";
-import PlRoadSignAsset101 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-36.svg";
-import PlRoadSignAsset102 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-37.svg";
-import PlRoadSignAsset103 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-38.svg";
-import PlRoadSignAsset104 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-39.svg";
-import PlRoadSignAsset105 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-40.svg";
-import PlRoadSignAsset106 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-41.svg";
-import PlRoadSignAsset107 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-42.svg";
-import PlRoadSignAsset108 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-43-30.svg";
-import PlRoadSignAsset109 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-44-30.svg";
-import PlRoadSignAsset110 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-1.svg";
-import PlRoadSignAsset111 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-2.svg";
-import PlRoadSignAsset112 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-3.svg";
-import PlRoadSignAsset113 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-4.svg";
-import PlRoadSignAsset114 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-5.svg";
-import PlRoadSignAsset115 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-6.svg";
-import PlRoadSignAsset116 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-7.svg";
-import PlRoadSignAsset117 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-8.svg";
-import PlRoadSignAsset118 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-9.svg";
-import PlRoadSignAsset119 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-10.svg";
-import PlRoadSignAsset120 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-11.svg";
-import PlRoadSignAsset121 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-12.svg";
-import PlRoadSignAsset122 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-13.svg";
-import PlRoadSignAsset123 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-13-16.svg";
-import PlRoadSignAsset124 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-13-16a.svg";
-import PlRoadSignAsset125 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-13-16b.svg";
-import PlRoadSignAsset126 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-13a.svg";
-import PlRoadSignAsset127 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-14-30.svg";
-import PlRoadSignAsset128 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-15-30.svg";
-import PlRoadSignAsset129 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-16.svg";
-import PlRoadSignAsset130 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-16a.svg";
-import PlRoadSignAsset131 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-17-2.svg";
-import PlRoadSignAsset132 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-18.svg";
-import PlRoadSignAsset133 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-19.svg";
-import PlRoadSignAsset134 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-1.svg";
-import PlRoadSignAsset135 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-2.svg";
-import PlRoadSignAsset136 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-3.svg";
-import PlRoadSignAsset137 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-4a.svg";
-import PlRoadSignAsset138 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-4b.svg";
-import PlRoadSignAsset139 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-4c.svg";
-import PlRoadSignAsset140 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-5.svg";
-import PlRoadSignAsset141 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-6.svg";
-import PlRoadSignAsset142 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-6a.svg";
-import PlRoadSignAsset143 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-6b.svg";
-import PlRoadSignAsset144 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-7.svg";
-import PlRoadSignAsset145 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-8.svg";
-import PlRoadSignAsset146 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-9.svg";
-import PlRoadSignAsset147 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-10.svg";
-import PlRoadSignAsset148 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-11.svg";
-import PlRoadSignAsset149 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-12.svg";
-import PlRoadSignAsset150 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-13.svg";
-import PlRoadSignAsset151 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-13a.svg";
-import PlRoadSignAsset152 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-13b.svg";
-import PlRoadSignAsset153 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-14.svg";
-import PlRoadSignAsset154 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-15.svg";
-import PlRoadSignAsset155 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-16.svg";
-import PlRoadSignAsset156 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-17.svg";
-import PlRoadSignAsset157 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-18.svg";
-import PlRoadSignAsset158 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-18a.svg";
-import PlRoadSignAsset159 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-18b.svg";
-import PlRoadSignAsset160 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-19.svg";
-import PlRoadSignAsset161 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-19a.svg";
-import PlRoadSignAsset162 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-20.svg";
-import PlRoadSignAsset163 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-20a.svg";
-import PlRoadSignAsset164 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-21.svg";
-import PlRoadSignAsset165 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-21a.svg";
-import PlRoadSignAsset166 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-22.svg";
-import PlRoadSignAsset167 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-23.svg";
-import PlRoadSignAsset168 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-23a.svg";
-import PlRoadSignAsset169 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-23b.svg";
-import PlRoadSignAsset170 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-23c.svg";
-import PlRoadSignAsset171 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-24.svg";
-import PlRoadSignAsset172 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-25.svg";
-import PlRoadSignAsset173 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-26.svg";
-import PlRoadSignAsset174 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-26a.svg";
-import PlRoadSignAsset175 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-26b.svg";
-import PlRoadSignAsset176 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-26c.svg";
-import PlRoadSignAsset177 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-26d.svg";
-import PlRoadSignAsset178 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-27.svg";
-import PlRoadSignAsset179 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-28.svg";
-import PlRoadSignAsset180 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-29.svg";
-import PlRoadSignAsset181 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-30.svg";
-import PlRoadSignAsset182 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-31.svg";
-import PlRoadSignAsset183 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-32.svg";
-import PlRoadSignAsset184 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-33.svg";
-import PlRoadSignAsset185 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-34.svg";
-import PlRoadSignAsset186 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-34a.svg";
-import PlRoadSignAsset187 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-34b.svg";
-import PlRoadSignAsset188 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-34b_(alternative).svg";
-import PlRoadSignAsset189 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-35.svg";
-import PlRoadSignAsset190 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-35a.svg";
-import PlRoadSignAsset191 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-36.svg";
-import PlRoadSignAsset192 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-36a.svg";
-import PlRoadSignAsset193 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-37.svg";
-import PlRoadSignAsset194 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-38.svg";
-import PlRoadSignAsset195 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-39a.svg";
-import PlRoadSignAsset196 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-40.svg";
-import PlRoadSignAsset197 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-41.svg";
-import PlRoadSignAsset198 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-42.svg";
-import PlRoadSignAsset199 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-43.svg";
-import PlRoadSignAsset200 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-44.svg";
-import PlRoadSignAsset201 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-45.svg";
-import PlRoadSignAsset202 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-46.svg";
-import PlRoadSignAsset203 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-47.svg";
-import PlRoadSignAsset204 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-48.svg";
-import PlRoadSignAsset205 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-48a.svg";
-import PlRoadSignAsset206 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-49.svg";
-import PlRoadSignAsset207 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-50.svg";
-import PlRoadSignAsset208 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-51.svg";
-import PlRoadSignAsset209 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-51aa.svg";
-import PlRoadSignAsset210 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-51ab.svg";
-import PlRoadSignAsset211 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-51b.svg";
-import PlRoadSignAsset212 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-52.svg";
-import PlRoadSignAsset213 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-53.svg";
-import PlRoadSignAsset214 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-54.svg";
-import PlRoadSignAsset215 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-55.svg";
-import PlRoadSignAsset216 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-1.svg";
-import PlRoadSignAsset217 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-2.svg";
-import PlRoadSignAsset218 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-2a.svg";
-import PlRoadSignAsset219 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-3.svg";
-import PlRoadSignAsset220 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-3a.svg";
-import PlRoadSignAsset221 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-3b.svg";
-import PlRoadSignAsset222 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-3c.svg";
-import PlRoadSignAsset223 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-4.svg";
-import PlRoadSignAsset224 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-5.svg";
-import PlRoadSignAsset225 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-6.svg";
-import PlRoadSignAsset226 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-6a.svg";
-import PlRoadSignAsset227 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-7.svg";
-import PlRoadSignAsset228 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-8.svg";
-import PlRoadSignAsset229 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-9.svg";
-import PlRoadSignAsset230 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-10.svg";
-import PlRoadSignAsset231 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-11d.svg";
-import PlRoadSignAsset232 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-12a.svg";
-import PlRoadSignAsset233 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-13a.svg";
-import PlRoadSignAsset234 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14a.svg";
-import PlRoadSignAsset235 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14b.svg";
-import PlRoadSignAsset236 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14c.svg";
-import PlRoadSignAsset237 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14d.svg";
-import PlRoadSignAsset238 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14e.svg";
-import PlRoadSignAsset239 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14f.svg";
-import PlRoadSignAsset240 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-15a.svg";
-import PlRoadSignAsset241 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-16.svg";
-import PlRoadSignAsset242 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-17.svg";
-import PlRoadSignAsset243 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-18.svg";
-import PlRoadSignAsset244 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-19.svg";
-import PlRoadSignAsset245 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-20.svg";
-import PlRoadSignAsset246 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-21.svg";
-import PlRoadSignAsset247 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-22.svg";
-import PlRoadSignAsset248 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1a.svg";
-import PlRoadSignAsset249 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1b.svg";
-import PlRoadSignAsset250 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1c.svg";
-import PlRoadSignAsset251 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1d.svg";
-import PlRoadSignAsset252 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1e.svg";
-import PlRoadSignAsset253 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1f.svg";
-import PlRoadSignAsset254 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-2.svg";
-import PlRoadSignAsset255 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-3.svg";
-import PlRoadSignAsset256 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-4.svg";
-import PlRoadSignAsset257 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-1.svg";
-import PlRoadSignAsset258 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-1a.svg";
-import PlRoadSignAsset259 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-1b.svg";
-import PlRoadSignAsset260 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-2.svg";
-import PlRoadSignAsset261 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-3.svg";
-import PlRoadSignAsset262 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-3a.svg";
-import PlRoadSignAsset263 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-4.svg";
-import PlRoadSignAsset264 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-5.svg";
-import PlRoadSignAsset265 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-6a.svg";
-import PlRoadSignAsset266 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-6b.svg";
-import PlRoadSignAsset267 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-6c.svg";
-import PlRoadSignAsset268 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-6d.svg";
-import PlRoadSignAsset269 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-7.svg";
-import PlRoadSignAsset270 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-8.svg";
-import PlRoadSignAsset271 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-9.svg";
-import PlRoadSignAsset272 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-10.svg";
-import PlRoadSignAsset273 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-11.svg";
-import PlRoadSignAsset274 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-12.svg";
-import PlRoadSignAsset275 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-13.svg";
-import PlRoadSignAsset276 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-14.svg";
-import PlRoadSignAsset277 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-14a.svg";
-import PlRoadSignAsset278 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-14b.svg";
-import PlRoadSignAsset279 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-14c.svg";
-import PlRoadSignAsset280 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-14d.svg";
-import PlRoadSignAsset281 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-15.svg";
-import PlRoadSignAsset282 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-16.svg";
-import PlRoadSignAsset283 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-16a.svg";
-import PlRoadSignAsset284 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-17.svg";
-import PlRoadSignAsset285 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-18.svg";
-import PlRoadSignAsset286 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-18a.svg";
-import PlRoadSignAsset287 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-18b.svg";
-import PlRoadSignAsset288 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-18c.svg";
-import PlRoadSignAsset289 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-19.svg";
-import PlRoadSignAsset290 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-20.svg";
-import PlRoadSignAsset291 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-21.svg";
-import PlRoadSignAsset292 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-22.svg";
-import PlRoadSignAsset293 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23a.svg";
-import PlRoadSignAsset294 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23b.svg";
-import PlRoadSignAsset295 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23c.svg";
-import PlRoadSignAsset296 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23d.svg";
-import PlRoadSignAsset297 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23e.svg";
-import PlRoadSignAsset298 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23f.svg";
-import PlRoadSignAsset299 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23g.svg";
-import PlRoadSignAsset300 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23h.svg";
-import PlRoadSignAsset301 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23i.svg";
-import PlRoadSignAsset302 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23j.svg";
-import PlRoadSignAsset303 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-24.svg";
-import PlRoadSignAsset304 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-25b.svg";
-import PlRoadSignAsset305 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-25c.svg";
-import PlRoadSignAsset306 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-26.svg";
-import PlRoadSignAsset307 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-27.svg";
-import PlRoadSignAsset308 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-28.svg";
-import PlRoadSignAsset309 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-28a.svg";
-import PlRoadSignAsset310 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-29.svg";
-import PlRoadSignAsset311 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30a.svg";
-import PlRoadSignAsset312 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30b.svg";
-import PlRoadSignAsset313 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30c.svg";
-import PlRoadSignAsset314 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30d.svg";
-import PlRoadSignAsset315 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30e.svg";
-import PlRoadSignAsset316 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30f.svg";
-import PlRoadSignAsset317 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30g.svg";
-import PlRoadSignAsset318 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30h.svg";
-import PlRoadSignAsset319 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30i.svg";
-import PlRoadSignAsset320 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31a.svg";
-import PlRoadSignAsset321 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31b.svg";
-import PlRoadSignAsset322 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31c.svg";
-import PlRoadSignAsset323 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31d.svg";
-import PlRoadSignAsset324 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31e.svg";
-import PlRoadSignAsset325 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-32.svg";
-import PlRoadSignAsset326 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-33.svg";
-import PlRoadSignAsset327 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-34.svg";
-import PlRoadSignAsset328 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-1.svg";
-import PlRoadSignAsset329 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-2.svg";
-import PlRoadSignAsset330 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-3.svg";
-import PlRoadSignAsset331 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-4.svg";
-import PlRoadSignAsset332 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-5.svg";
-import PlRoadSignAsset333 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-6.svg";
-import PlRoadSignAsset334 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-7.svg";
+import PlRoadSignAsset67 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-15.svg";
+import PlRoadSignAsset68 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-15-2.0m.svg";
+import PlRoadSignAsset69 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-16.svg";
+import PlRoadSignAsset70 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-16-3.1m.svg";
+import PlRoadSignAsset71 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-16-3.2m.svg";
+import PlRoadSignAsset72 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-16-3.4m.svg";
+import PlRoadSignAsset73 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-16-3.5m.svg";
+import PlRoadSignAsset74 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-17.svg";
+import PlRoadSignAsset75 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-17-6m.svg";
+import PlRoadSignAsset76 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-18.svg";
+import PlRoadSignAsset77 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-18-3.5t.svg";
+import PlRoadSignAsset78 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-18-7t.svg";
+import PlRoadSignAsset79 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-19.svg";
+import PlRoadSignAsset80 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-19-10t.svg";
+import PlRoadSignAsset81 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-20.svg";
+import PlRoadSignAsset82 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-21.svg";
+import PlRoadSignAsset83 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-22.svg";
+import PlRoadSignAsset84 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-23.svg";
+import PlRoadSignAsset85 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-24.svg";
+import PlRoadSignAsset86 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-25.svg";
+import PlRoadSignAsset87 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-26.svg";
+import PlRoadSignAsset88 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-27.svg";
+import PlRoadSignAsset89 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-28.svg";
+import PlRoadSignAsset90 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-29.svg";
+import PlRoadSignAsset91 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-30.svg";
+import PlRoadSignAsset92 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-31.svg";
+import PlRoadSignAsset93 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32.svg";
+import PlRoadSignAsset94 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32a.svg";
+import PlRoadSignAsset95 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32b.svg";
+import PlRoadSignAsset96 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32c.svg";
+import PlRoadSignAsset97 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32d.svg";
+import PlRoadSignAsset98 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32e.svg";
+import PlRoadSignAsset99 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-32f.svg";
+import PlRoadSignAsset100 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-33.svg";
+import PlRoadSignAsset101 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-33-50.svg";
+import PlRoadSignAsset102 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-34.svg";
+import PlRoadSignAsset103 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-34-50.svg";
+import PlRoadSignAsset104 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-35.svg";
+import PlRoadSignAsset105 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-35a.svg";
+import PlRoadSignAsset106 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-35b.svg";
+import PlRoadSignAsset107 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-35c.svg";
+import PlRoadSignAsset108 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-36.svg";
+import PlRoadSignAsset109 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-37.svg";
+import PlRoadSignAsset110 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-38.svg";
+import PlRoadSignAsset111 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-39.svg";
+import PlRoadSignAsset112 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-40.svg";
+import PlRoadSignAsset113 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-41.svg";
+import PlRoadSignAsset114 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-42.svg";
+import PlRoadSignAsset115 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-43.svg";
+import PlRoadSignAsset116 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-43-30.svg";
+import PlRoadSignAsset117 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-44.svg";
+import PlRoadSignAsset118 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_B-44-30.svg";
+import PlRoadSignAsset119 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-1.svg";
+import PlRoadSignAsset120 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-2.svg";
+import PlRoadSignAsset121 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-3.svg";
+import PlRoadSignAsset122 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-4.svg";
+import PlRoadSignAsset123 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-5.svg";
+import PlRoadSignAsset124 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-6.svg";
+import PlRoadSignAsset125 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-7.svg";
+import PlRoadSignAsset126 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-8.svg";
+import PlRoadSignAsset127 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-9.svg";
+import PlRoadSignAsset128 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-10.svg";
+import PlRoadSignAsset129 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-11.svg";
+import PlRoadSignAsset130 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-12.svg";
+import PlRoadSignAsset131 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-13.svg";
+import PlRoadSignAsset132 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-13-16.svg";
+import PlRoadSignAsset133 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-13-16a.svg";
+import PlRoadSignAsset134 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-13-16b.svg";
+import PlRoadSignAsset135 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-13a.svg";
+import PlRoadSignAsset136 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-14.svg";
+import PlRoadSignAsset137 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-14-30.svg";
+import PlRoadSignAsset138 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-15.svg";
+import PlRoadSignAsset139 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-15-30.svg";
+import PlRoadSignAsset140 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-16.svg";
+import PlRoadSignAsset141 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-16a.svg";
+import PlRoadSignAsset142 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-17.svg";
+import PlRoadSignAsset143 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-17-2.svg";
+import PlRoadSignAsset144 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-18.svg";
+import PlRoadSignAsset145 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_C-19.svg";
+import PlRoadSignAsset146 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-1.svg";
+import PlRoadSignAsset147 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-2.svg";
+import PlRoadSignAsset148 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-3.svg";
+import PlRoadSignAsset149 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-4a.svg";
+import PlRoadSignAsset150 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-4b.svg";
+import PlRoadSignAsset151 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-4c.svg";
+import PlRoadSignAsset152 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-5.svg";
+import PlRoadSignAsset153 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-6.svg";
+import PlRoadSignAsset154 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-6a.svg";
+import PlRoadSignAsset155 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-6b.svg";
+import PlRoadSignAsset156 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-7.svg";
+import PlRoadSignAsset157 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-8.svg";
+import PlRoadSignAsset158 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-9.svg";
+import PlRoadSignAsset159 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-10.svg";
+import PlRoadSignAsset160 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-11.svg";
+import PlRoadSignAsset161 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-12.svg";
+import PlRoadSignAsset162 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-13.svg";
+import PlRoadSignAsset163 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-13a.svg";
+import PlRoadSignAsset164 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-13b.svg";
+import PlRoadSignAsset165 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-14.svg";
+import PlRoadSignAsset166 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-15.svg";
+import PlRoadSignAsset167 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-16.svg";
+import PlRoadSignAsset168 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-17.svg";
+import PlRoadSignAsset169 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-18.svg";
+import PlRoadSignAsset170 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-18a.svg";
+import PlRoadSignAsset171 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-18b.svg";
+import PlRoadSignAsset172 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-19.svg";
+import PlRoadSignAsset173 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-19a.svg";
+import PlRoadSignAsset174 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-20.svg";
+import PlRoadSignAsset175 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-20a.svg";
+import PlRoadSignAsset176 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-21.svg";
+import PlRoadSignAsset177 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-21a.svg";
+import PlRoadSignAsset178 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-22.svg";
+import PlRoadSignAsset179 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-23.svg";
+import PlRoadSignAsset180 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-23a.svg";
+import PlRoadSignAsset181 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-23b.svg";
+import PlRoadSignAsset182 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-23c.svg";
+import PlRoadSignAsset183 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-24.svg";
+import PlRoadSignAsset184 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-25.svg";
+import PlRoadSignAsset185 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-26.svg";
+import PlRoadSignAsset186 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-26a.svg";
+import PlRoadSignAsset187 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-26b.svg";
+import PlRoadSignAsset188 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-26c.svg";
+import PlRoadSignAsset189 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-26d.svg";
+import PlRoadSignAsset190 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-27.svg";
+import PlRoadSignAsset191 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-28.svg";
+import PlRoadSignAsset192 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-29.svg";
+import PlRoadSignAsset193 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-30.svg";
+import PlRoadSignAsset194 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-31.svg";
+import PlRoadSignAsset195 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-32.svg";
+import PlRoadSignAsset196 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-33.svg";
+import PlRoadSignAsset197 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-34.svg";
+import PlRoadSignAsset198 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-34a.svg";
+import PlRoadSignAsset199 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-34b.svg";
+import PlRoadSignAsset200 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-34b_(alternative).svg";
+import PlRoadSignAsset201 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-35.svg";
+import PlRoadSignAsset202 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-35a.svg";
+import PlRoadSignAsset203 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-36.svg";
+import PlRoadSignAsset204 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-36a.svg";
+import PlRoadSignAsset205 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-37.svg";
+import PlRoadSignAsset206 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-38.svg";
+import PlRoadSignAsset207 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-39.svg";
+import PlRoadSignAsset208 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-39a.svg";
+import PlRoadSignAsset209 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-40.svg";
+import PlRoadSignAsset210 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-41.svg";
+import PlRoadSignAsset211 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-42.svg";
+import PlRoadSignAsset212 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-43.svg";
+import PlRoadSignAsset213 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-44.svg";
+import PlRoadSignAsset214 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-45.svg";
+import PlRoadSignAsset215 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-46.svg";
+import PlRoadSignAsset216 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-47.svg";
+import PlRoadSignAsset217 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-48.svg";
+import PlRoadSignAsset218 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-48a.svg";
+import PlRoadSignAsset219 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-49.svg";
+import PlRoadSignAsset220 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-50.svg";
+import PlRoadSignAsset221 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-51.svg";
+import PlRoadSignAsset222 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-51aa.svg";
+import PlRoadSignAsset223 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-51ab.svg";
+import PlRoadSignAsset224 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-51b.svg";
+import PlRoadSignAsset225 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-52.svg";
+import PlRoadSignAsset226 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-53.svg";
+import PlRoadSignAsset227 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-54.svg";
+import PlRoadSignAsset228 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_D-55.svg";
+import PlRoadSignAsset229 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-1.svg";
+import PlRoadSignAsset230 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-1a.svg";
+import PlRoadSignAsset231 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-1b.svg";
+import PlRoadSignAsset232 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-2a.svg";
+import PlRoadSignAsset233 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-2b.svg";
+import PlRoadSignAsset234 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-2c.svg";
+import PlRoadSignAsset235 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-2d.svg";
+import PlRoadSignAsset236 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-2e.svg";
+import PlRoadSignAsset237 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-2f.svg";
+import PlRoadSignAsset238 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-3.svg";
+import PlRoadSignAsset239 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-4.svg";
+import PlRoadSignAsset240 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-5.svg";
+import PlRoadSignAsset241 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-6.svg";
+import PlRoadSignAsset242 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-6a.svg";
+import PlRoadSignAsset243 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-6b.svg";
+import PlRoadSignAsset244 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-6c.svg";
+import PlRoadSignAsset245 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-7.svg";
+import PlRoadSignAsset246 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-8.svg";
+import PlRoadSignAsset247 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-9.svg";
+import PlRoadSignAsset248 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-10.svg";
+import PlRoadSignAsset249 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-11.svg";
+import PlRoadSignAsset250 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-12.svg";
+import PlRoadSignAsset251 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-12a.svg";
+import PlRoadSignAsset252 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-13.svg";
+import PlRoadSignAsset253 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-14.svg";
+import PlRoadSignAsset254 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-14a.svg";
+import PlRoadSignAsset255 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-15a.svg";
+import PlRoadSignAsset256 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-15b.svg";
+import PlRoadSignAsset257 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-15c.svg";
+import PlRoadSignAsset258 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-15d.svg";
+import PlRoadSignAsset259 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-15e.svg";
+import PlRoadSignAsset260 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-16.svg";
+import PlRoadSignAsset261 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-17a.svg";
+import PlRoadSignAsset262 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-18a.svg";
+import PlRoadSignAsset263 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-19.svg";
+import PlRoadSignAsset264 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-20.svg";
+import PlRoadSignAsset265 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-21.svg";
+import PlRoadSignAsset266 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-22a.svg";
+import PlRoadSignAsset267 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-22b.svg";
+import PlRoadSignAsset268 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_E-22c.svg";
+import PlRoadSignAsset269 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-1.svg";
+import PlRoadSignAsset270 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-2.svg";
+import PlRoadSignAsset271 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-2a.svg";
+import PlRoadSignAsset272 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-3.svg";
+import PlRoadSignAsset273 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-3a.svg";
+import PlRoadSignAsset274 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-3b.svg";
+import PlRoadSignAsset275 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-3c.svg";
+import PlRoadSignAsset276 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-4.svg";
+import PlRoadSignAsset277 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-5.svg";
+import PlRoadSignAsset278 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-6.svg";
+import PlRoadSignAsset279 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-6a.svg";
+import PlRoadSignAsset280 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-7.svg";
+import PlRoadSignAsset281 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-8.svg";
+import PlRoadSignAsset282 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-9.svg";
+import PlRoadSignAsset283 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-10.svg";
+import PlRoadSignAsset284 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-11.svg";
+import PlRoadSignAsset285 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-11d.svg";
+import PlRoadSignAsset286 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-12.svg";
+import PlRoadSignAsset287 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-12a.svg";
+import PlRoadSignAsset288 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-13.svg";
+import PlRoadSignAsset289 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-13a.svg";
+import PlRoadSignAsset290 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14a.svg";
+import PlRoadSignAsset291 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14b.svg";
+import PlRoadSignAsset292 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14c.svg";
+import PlRoadSignAsset293 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14d.svg";
+import PlRoadSignAsset294 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14e.svg";
+import PlRoadSignAsset295 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-14f.svg";
+import PlRoadSignAsset296 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-15.svg";
+import PlRoadSignAsset297 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-15a.svg";
+import PlRoadSignAsset298 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-16.svg";
+import PlRoadSignAsset299 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-17.svg";
+import PlRoadSignAsset300 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-18.svg";
+import PlRoadSignAsset301 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-19.svg";
+import PlRoadSignAsset302 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-20.svg";
+import PlRoadSignAsset303 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-21.svg";
+import PlRoadSignAsset304 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-22.svg";
+import PlRoadSignAsset305 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-23.svg";
+import PlRoadSignAsset306 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_F-24.svg";
+import PlRoadSignAsset307 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1a.svg";
+import PlRoadSignAsset308 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1b.svg";
+import PlRoadSignAsset309 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1c.svg";
+import PlRoadSignAsset310 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1d.svg";
+import PlRoadSignAsset311 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1e.svg";
+import PlRoadSignAsset312 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-1f.svg";
+import PlRoadSignAsset313 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-2.svg";
+import PlRoadSignAsset314 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-3.svg";
+import PlRoadSignAsset315 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_G-4.svg";
+import PlRoadSignAsset316 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-1.svg";
+import PlRoadSignAsset317 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-2.svg";
+import PlRoadSignAsset318 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-3.svg";
+import PlRoadSignAsset319 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-4.svg";
+import PlRoadSignAsset320 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-5.svg";
+import PlRoadSignAsset321 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-6.svg";
+import PlRoadSignAsset322 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-7a.svg";
+import PlRoadSignAsset323 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-7b.svg";
+import PlRoadSignAsset324 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-8a.svg";
+import PlRoadSignAsset325 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-8b.svg";
+import PlRoadSignAsset326 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-8c.svg";
+import PlRoadSignAsset327 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-9.svg";
+import PlRoadSignAsset328 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-10.svg";
+import PlRoadSignAsset329 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-11.svg";
+import PlRoadSignAsset330 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-12.svg";
+import PlRoadSignAsset331 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-13.svg";
+import PlRoadSignAsset332 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-14.svg";
+import PlRoadSignAsset333 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-15.svg";
+import PlRoadSignAsset334 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-16.svg";
+import PlRoadSignAsset335 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-17.svg";
+import PlRoadSignAsset336 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-18.svg";
+import PlRoadSignAsset337 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-19.svg";
+import PlRoadSignAsset338 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-20.svg";
+import PlRoadSignAsset339 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-21.svg";
+import PlRoadSignAsset340 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-22.svg";
+import PlRoadSignAsset341 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-23.svg";
+import PlRoadSignAsset342 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-24.svg";
+import PlRoadSignAsset343 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-25.svg";
+import PlRoadSignAsset344 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_P-27.svg";
+import PlRoadSignAsset345 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_S-1.svg";
+import PlRoadSignAsset346 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_S-2.svg";
+import PlRoadSignAsset347 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_S-3.svg";
+import PlRoadSignAsset348 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_S-4.svg";
+import PlRoadSignAsset349 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_S-5.svg";
+import PlRoadSignAsset350 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_S-6.svg";
+import PlRoadSignAsset351 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_S-7.svg";
+import PlRoadSignAsset352 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-1.svg";
+import PlRoadSignAsset353 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-1a.svg";
+import PlRoadSignAsset354 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-1b.svg";
+import PlRoadSignAsset355 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-2.svg";
+import PlRoadSignAsset356 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-3.svg";
+import PlRoadSignAsset357 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-3a.svg";
+import PlRoadSignAsset358 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-4.svg";
+import PlRoadSignAsset359 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-5.svg";
+import PlRoadSignAsset360 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-6a.svg";
+import PlRoadSignAsset361 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-6b.svg";
+import PlRoadSignAsset362 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-6c.svg";
+import PlRoadSignAsset363 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-6d.svg";
+import PlRoadSignAsset364 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-7.svg";
+import PlRoadSignAsset365 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-8.svg";
+import PlRoadSignAsset366 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-9.svg";
+import PlRoadSignAsset367 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-10.svg";
+import PlRoadSignAsset368 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-11.svg";
+import PlRoadSignAsset369 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-12.svg";
+import PlRoadSignAsset370 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-13.svg";
+import PlRoadSignAsset371 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-14.svg";
+import PlRoadSignAsset372 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-14a.svg";
+import PlRoadSignAsset373 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-14b.svg";
+import PlRoadSignAsset374 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-14c.svg";
+import PlRoadSignAsset375 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-14d.svg";
+import PlRoadSignAsset376 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-15.svg";
+import PlRoadSignAsset377 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-16.svg";
+import PlRoadSignAsset378 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-16a.svg";
+import PlRoadSignAsset379 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-17.svg";
+import PlRoadSignAsset380 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-18.svg";
+import PlRoadSignAsset381 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-18a.svg";
+import PlRoadSignAsset382 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-18b.svg";
+import PlRoadSignAsset383 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-18c.svg";
+import PlRoadSignAsset384 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-19.svg";
+import PlRoadSignAsset385 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-20.svg";
+import PlRoadSignAsset386 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-21.svg";
+import PlRoadSignAsset387 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-22.svg";
+import PlRoadSignAsset388 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23a.svg";
+import PlRoadSignAsset389 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23b.svg";
+import PlRoadSignAsset390 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23c.svg";
+import PlRoadSignAsset391 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23d.svg";
+import PlRoadSignAsset392 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23e.svg";
+import PlRoadSignAsset393 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23f.svg";
+import PlRoadSignAsset394 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23g.svg";
+import PlRoadSignAsset395 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23h.svg";
+import PlRoadSignAsset396 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23i.svg";
+import PlRoadSignAsset397 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-23j.svg";
+import PlRoadSignAsset398 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-24.svg";
+import PlRoadSignAsset399 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-25a.svg";
+import PlRoadSignAsset400 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-25b.svg";
+import PlRoadSignAsset401 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-25c.svg";
+import PlRoadSignAsset402 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-26.svg";
+import PlRoadSignAsset403 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-27.svg";
+import PlRoadSignAsset404 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-28.svg";
+import PlRoadSignAsset405 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-28a.svg";
+import PlRoadSignAsset406 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-29.svg";
+import PlRoadSignAsset407 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30.svg";
+import PlRoadSignAsset408 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30a.svg";
+import PlRoadSignAsset409 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30b.svg";
+import PlRoadSignAsset410 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30c.svg";
+import PlRoadSignAsset411 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30d.svg";
+import PlRoadSignAsset412 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30e.svg";
+import PlRoadSignAsset413 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30f.svg";
+import PlRoadSignAsset414 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30g.svg";
+import PlRoadSignAsset415 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30h.svg";
+import PlRoadSignAsset416 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-30i.svg";
+import PlRoadSignAsset417 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31.svg";
+import PlRoadSignAsset418 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31a.svg";
+import PlRoadSignAsset419 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31b.svg";
+import PlRoadSignAsset420 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31c.svg";
+import PlRoadSignAsset421 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31d.svg";
+import PlRoadSignAsset422 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-31e.svg";
+import PlRoadSignAsset423 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-32.svg";
+import PlRoadSignAsset424 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-33.svg";
+import PlRoadSignAsset425 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_T-34.svg";
+import PlRoadSignAsset426 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-1.svg";
+import PlRoadSignAsset427 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-2.svg";
+import PlRoadSignAsset428 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-3.svg";
+import PlRoadSignAsset429 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-4.svg";
+import PlRoadSignAsset430 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-5.svg";
+import PlRoadSignAsset431 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-6.svg";
+import PlRoadSignAsset432 from "../../../../assets/pl-road-signs-wikimedia/PL_road_sign_W-7.svg";
 
 export type SignAssetKey =
   | "A-1"
@@ -408,14 +506,19 @@ export type SignAssetKey =
   | "B-13-14"
   | "B-13a"
   | "B-14"
+  | "B-15"
   | "B-15-2.0m"
+  | "B-16"
   | "B-16-3.1m"
   | "B-16-3.2m"
   | "B-16-3.4m"
   | "B-16-3.5m"
+  | "B-17"
   | "B-17-6m"
+  | "B-18"
   | "B-18-3.5t"
   | "B-18-7t"
+  | "B-19"
   | "B-19-10t"
   | "B-20"
   | "B-21"
@@ -436,7 +539,9 @@ export type SignAssetKey =
   | "B-32d"
   | "B-32e"
   | "B-32f"
+  | "B-33"
   | "B-33-50"
+  | "B-34"
   | "B-34-50"
   | "B-35"
   | "B-35a"
@@ -449,7 +554,9 @@ export type SignAssetKey =
   | "B-40"
   | "B-41"
   | "B-42"
+  | "B-43"
   | "B-43-30"
+  | "B-44"
   | "B-44-30"
   | "C-1"
   | "C-2"
@@ -468,10 +575,13 @@ export type SignAssetKey =
   | "C-13-16a"
   | "C-13-16b"
   | "C-13a"
+  | "C-14"
   | "C-14-30"
+  | "C-15"
   | "C-15-30"
   | "C-16"
   | "C-16a"
+  | "C-17"
   | "C-17-2"
   | "C-18"
   | "C-19"
@@ -536,6 +646,7 @@ export type SignAssetKey =
   | "D-36a"
   | "D-37"
   | "D-38"
+  | "D-39"
   | "D-39a"
   | "D-40"
   | "D-41"
@@ -557,6 +668,46 @@ export type SignAssetKey =
   | "D-53"
   | "D-54"
   | "D-55"
+  | "E-1"
+  | "E-1a"
+  | "E-1b"
+  | "E-2a"
+  | "E-2b"
+  | "E-2c"
+  | "E-2d"
+  | "E-2e"
+  | "E-2f"
+  | "E-3"
+  | "E-4"
+  | "E-5"
+  | "E-6"
+  | "E-6a"
+  | "E-6b"
+  | "E-6c"
+  | "E-7"
+  | "E-8"
+  | "E-9"
+  | "E-10"
+  | "E-11"
+  | "E-12"
+  | "E-12a"
+  | "E-13"
+  | "E-14"
+  | "E-14a"
+  | "E-15a"
+  | "E-15b"
+  | "E-15c"
+  | "E-15d"
+  | "E-15e"
+  | "E-16"
+  | "E-17a"
+  | "E-18a"
+  | "E-19"
+  | "E-20"
+  | "E-21"
+  | "E-22a"
+  | "E-22b"
+  | "E-22c"
   | "F-1"
   | "F-2"
   | "F-2a"
@@ -572,8 +723,11 @@ export type SignAssetKey =
   | "F-8"
   | "F-9"
   | "F-10"
+  | "F-11"
   | "F-11d"
+  | "F-12"
   | "F-12a"
+  | "F-13"
   | "F-13a"
   | "F-14a"
   | "F-14b"
@@ -581,6 +735,7 @@ export type SignAssetKey =
   | "F-14d"
   | "F-14e"
   | "F-14f"
+  | "F-15"
   | "F-15a"
   | "F-16"
   | "F-17"
@@ -589,6 +744,8 @@ export type SignAssetKey =
   | "F-20"
   | "F-21"
   | "F-22"
+  | "F-23"
+  | "F-24"
   | "G-1a"
   | "G-1b"
   | "G-1c"
@@ -598,6 +755,42 @@ export type SignAssetKey =
   | "G-2"
   | "G-3"
   | "G-4"
+  | "P-1"
+  | "P-2"
+  | "P-3"
+  | "P-4"
+  | "P-5"
+  | "P-6"
+  | "P-7a"
+  | "P-7b"
+  | "P-8a"
+  | "P-8b"
+  | "P-8c"
+  | "P-9"
+  | "P-10"
+  | "P-11"
+  | "P-12"
+  | "P-13"
+  | "P-14"
+  | "P-15"
+  | "P-16"
+  | "P-17"
+  | "P-18"
+  | "P-19"
+  | "P-20"
+  | "P-21"
+  | "P-22"
+  | "P-23"
+  | "P-24"
+  | "P-25"
+  | "P-27"
+  | "S-1"
+  | "S-2"
+  | "S-3"
+  | "S-4"
+  | "S-5"
+  | "S-6"
+  | "S-7"
   | "T-1"
   | "T-1a"
   | "T-1b"
@@ -645,6 +838,7 @@ export type SignAssetKey =
   | "T-23i"
   | "T-23j"
   | "T-24"
+  | "T-25a"
   | "T-25b"
   | "T-25c"
   | "T-26"
@@ -652,6 +846,7 @@ export type SignAssetKey =
   | "T-28"
   | "T-28a"
   | "T-29"
+  | "T-30"
   | "T-30a"
   | "T-30b"
   | "T-30c"
@@ -661,6 +856,7 @@ export type SignAssetKey =
   | "T-30g"
   | "T-30h"
   | "T-30i"
+  | "T-31"
   | "T-31a"
   | "T-31b"
   | "T-31c"
@@ -745,272 +941,370 @@ export const generatedSignAssets: Record<SignAssetKey, ComponentType<SvgProps>> 
   "B-13-14": PlRoadSignAsset64,
   "B-13a": PlRoadSignAsset65,
   "B-14": PlRoadSignAsset66,
-  "B-15-2.0m": PlRoadSignAsset67,
-  "B-16-3.1m": PlRoadSignAsset68,
-  "B-16-3.2m": PlRoadSignAsset69,
-  "B-16-3.4m": PlRoadSignAsset70,
-  "B-16-3.5m": PlRoadSignAsset71,
-  "B-17-6m": PlRoadSignAsset72,
-  "B-18-3.5t": PlRoadSignAsset73,
-  "B-18-7t": PlRoadSignAsset74,
-  "B-19-10t": PlRoadSignAsset75,
-  "B-20": PlRoadSignAsset76,
-  "B-21": PlRoadSignAsset77,
-  "B-22": PlRoadSignAsset78,
-  "B-23": PlRoadSignAsset79,
-  "B-24": PlRoadSignAsset80,
-  "B-25": PlRoadSignAsset81,
-  "B-26": PlRoadSignAsset82,
-  "B-27": PlRoadSignAsset83,
-  "B-28": PlRoadSignAsset84,
-  "B-29": PlRoadSignAsset85,
-  "B-30": PlRoadSignAsset86,
-  "B-31": PlRoadSignAsset87,
-  "B-32": PlRoadSignAsset88,
-  "B-32a": PlRoadSignAsset89,
-  "B-32b": PlRoadSignAsset90,
-  "B-32c": PlRoadSignAsset91,
-  "B-32d": PlRoadSignAsset92,
-  "B-32e": PlRoadSignAsset93,
-  "B-32f": PlRoadSignAsset94,
-  "B-33-50": PlRoadSignAsset95,
-  "B-34-50": PlRoadSignAsset96,
-  "B-35": PlRoadSignAsset97,
-  "B-35a": PlRoadSignAsset98,
-  "B-35b": PlRoadSignAsset99,
-  "B-35c": PlRoadSignAsset100,
-  "B-36": PlRoadSignAsset101,
-  "B-37": PlRoadSignAsset102,
-  "B-38": PlRoadSignAsset103,
-  "B-39": PlRoadSignAsset104,
-  "B-40": PlRoadSignAsset105,
-  "B-41": PlRoadSignAsset106,
-  "B-42": PlRoadSignAsset107,
-  "B-43-30": PlRoadSignAsset108,
-  "B-44-30": PlRoadSignAsset109,
-  "C-1": PlRoadSignAsset110,
-  "C-2": PlRoadSignAsset111,
-  "C-3": PlRoadSignAsset112,
-  "C-4": PlRoadSignAsset113,
-  "C-5": PlRoadSignAsset114,
-  "C-6": PlRoadSignAsset115,
-  "C-7": PlRoadSignAsset116,
-  "C-8": PlRoadSignAsset117,
-  "C-9": PlRoadSignAsset118,
-  "C-10": PlRoadSignAsset119,
-  "C-11": PlRoadSignAsset120,
-  "C-12": PlRoadSignAsset121,
-  "C-13": PlRoadSignAsset122,
-  "C-13-16": PlRoadSignAsset123,
-  "C-13-16a": PlRoadSignAsset124,
-  "C-13-16b": PlRoadSignAsset125,
-  "C-13a": PlRoadSignAsset126,
-  "C-14-30": PlRoadSignAsset127,
-  "C-15-30": PlRoadSignAsset128,
-  "C-16": PlRoadSignAsset129,
-  "C-16a": PlRoadSignAsset130,
-  "C-17-2": PlRoadSignAsset131,
-  "C-18": PlRoadSignAsset132,
-  "C-19": PlRoadSignAsset133,
-  "D-1": PlRoadSignAsset134,
-  "D-2": PlRoadSignAsset135,
-  "D-3": PlRoadSignAsset136,
-  "D-4a": PlRoadSignAsset137,
-  "D-4b": PlRoadSignAsset138,
-  "D-4c": PlRoadSignAsset139,
-  "D-5": PlRoadSignAsset140,
-  "D-6": PlRoadSignAsset141,
-  "D-6a": PlRoadSignAsset142,
-  "D-6b": PlRoadSignAsset143,
-  "D-7": PlRoadSignAsset144,
-  "D-8": PlRoadSignAsset145,
-  "D-9": PlRoadSignAsset146,
-  "D-10": PlRoadSignAsset147,
-  "D-11": PlRoadSignAsset148,
-  "D-12": PlRoadSignAsset149,
-  "D-13": PlRoadSignAsset150,
-  "D-13a": PlRoadSignAsset151,
-  "D-13b": PlRoadSignAsset152,
-  "D-14": PlRoadSignAsset153,
-  "D-15": PlRoadSignAsset154,
-  "D-16": PlRoadSignAsset155,
-  "D-17": PlRoadSignAsset156,
-  "D-18": PlRoadSignAsset157,
-  "D-18a": PlRoadSignAsset158,
-  "D-18b": PlRoadSignAsset159,
-  "D-19": PlRoadSignAsset160,
-  "D-19a": PlRoadSignAsset161,
-  "D-20": PlRoadSignAsset162,
-  "D-20a": PlRoadSignAsset163,
-  "D-21": PlRoadSignAsset164,
-  "D-21a": PlRoadSignAsset165,
-  "D-22": PlRoadSignAsset166,
-  "D-23": PlRoadSignAsset167,
-  "D-23a": PlRoadSignAsset168,
-  "D-23b": PlRoadSignAsset169,
-  "D-23c": PlRoadSignAsset170,
-  "D-24": PlRoadSignAsset171,
-  "D-25": PlRoadSignAsset172,
-  "D-26": PlRoadSignAsset173,
-  "D-26a": PlRoadSignAsset174,
-  "D-26b": PlRoadSignAsset175,
-  "D-26c": PlRoadSignAsset176,
-  "D-26d": PlRoadSignAsset177,
-  "D-27": PlRoadSignAsset178,
-  "D-28": PlRoadSignAsset179,
-  "D-29": PlRoadSignAsset180,
-  "D-30": PlRoadSignAsset181,
-  "D-31": PlRoadSignAsset182,
-  "D-32": PlRoadSignAsset183,
-  "D-33": PlRoadSignAsset184,
-  "D-34": PlRoadSignAsset185,
-  "D-34a": PlRoadSignAsset186,
-  "D-34b": PlRoadSignAsset187,
-  "D-34b_(alternative)": PlRoadSignAsset188,
-  "D-35": PlRoadSignAsset189,
-  "D-35a": PlRoadSignAsset190,
-  "D-36": PlRoadSignAsset191,
-  "D-36a": PlRoadSignAsset192,
-  "D-37": PlRoadSignAsset193,
-  "D-38": PlRoadSignAsset194,
-  "D-39a": PlRoadSignAsset195,
-  "D-40": PlRoadSignAsset196,
-  "D-41": PlRoadSignAsset197,
-  "D-42": PlRoadSignAsset198,
-  "D-43": PlRoadSignAsset199,
-  "D-44": PlRoadSignAsset200,
-  "D-45": PlRoadSignAsset201,
-  "D-46": PlRoadSignAsset202,
-  "D-47": PlRoadSignAsset203,
-  "D-48": PlRoadSignAsset204,
-  "D-48a": PlRoadSignAsset205,
-  "D-49": PlRoadSignAsset206,
-  "D-50": PlRoadSignAsset207,
-  "D-51": PlRoadSignAsset208,
-  "D-51aa": PlRoadSignAsset209,
-  "D-51ab": PlRoadSignAsset210,
-  "D-51b": PlRoadSignAsset211,
-  "D-52": PlRoadSignAsset212,
-  "D-53": PlRoadSignAsset213,
-  "D-54": PlRoadSignAsset214,
-  "D-55": PlRoadSignAsset215,
-  "F-1": PlRoadSignAsset216,
-  "F-2": PlRoadSignAsset217,
-  "F-2a": PlRoadSignAsset218,
-  "F-3": PlRoadSignAsset219,
-  "F-3a": PlRoadSignAsset220,
-  "F-3b": PlRoadSignAsset221,
-  "F-3c": PlRoadSignAsset222,
-  "F-4": PlRoadSignAsset223,
-  "F-5": PlRoadSignAsset224,
-  "F-6": PlRoadSignAsset225,
-  "F-6a": PlRoadSignAsset226,
-  "F-7": PlRoadSignAsset227,
-  "F-8": PlRoadSignAsset228,
-  "F-9": PlRoadSignAsset229,
-  "F-10": PlRoadSignAsset230,
-  "F-11d": PlRoadSignAsset231,
-  "F-12a": PlRoadSignAsset232,
-  "F-13a": PlRoadSignAsset233,
-  "F-14a": PlRoadSignAsset234,
-  "F-14b": PlRoadSignAsset235,
-  "F-14c": PlRoadSignAsset236,
-  "F-14d": PlRoadSignAsset237,
-  "F-14e": PlRoadSignAsset238,
-  "F-14f": PlRoadSignAsset239,
-  "F-15a": PlRoadSignAsset240,
-  "F-16": PlRoadSignAsset241,
-  "F-17": PlRoadSignAsset242,
-  "F-18": PlRoadSignAsset243,
-  "F-19": PlRoadSignAsset244,
-  "F-20": PlRoadSignAsset245,
-  "F-21": PlRoadSignAsset246,
-  "F-22": PlRoadSignAsset247,
-  "G-1a": PlRoadSignAsset248,
-  "G-1b": PlRoadSignAsset249,
-  "G-1c": PlRoadSignAsset250,
-  "G-1d": PlRoadSignAsset251,
-  "G-1e": PlRoadSignAsset252,
-  "G-1f": PlRoadSignAsset253,
-  "G-2": PlRoadSignAsset254,
-  "G-3": PlRoadSignAsset255,
-  "G-4": PlRoadSignAsset256,
-  "T-1": PlRoadSignAsset257,
-  "T-1a": PlRoadSignAsset258,
-  "T-1b": PlRoadSignAsset259,
-  "T-2": PlRoadSignAsset260,
-  "T-3": PlRoadSignAsset261,
-  "T-3a": PlRoadSignAsset262,
-  "T-4": PlRoadSignAsset263,
-  "T-5": PlRoadSignAsset264,
-  "T-6a": PlRoadSignAsset265,
-  "T-6b": PlRoadSignAsset266,
-  "T-6c": PlRoadSignAsset267,
-  "T-6d": PlRoadSignAsset268,
-  "T-7": PlRoadSignAsset269,
-  "T-8": PlRoadSignAsset270,
-  "T-9": PlRoadSignAsset271,
-  "T-10": PlRoadSignAsset272,
-  "T-11": PlRoadSignAsset273,
-  "T-12": PlRoadSignAsset274,
-  "T-13": PlRoadSignAsset275,
-  "T-14": PlRoadSignAsset276,
-  "T-14a": PlRoadSignAsset277,
-  "T-14b": PlRoadSignAsset278,
-  "T-14c": PlRoadSignAsset279,
-  "T-14d": PlRoadSignAsset280,
-  "T-15": PlRoadSignAsset281,
-  "T-16": PlRoadSignAsset282,
-  "T-16a": PlRoadSignAsset283,
-  "T-17": PlRoadSignAsset284,
-  "T-18": PlRoadSignAsset285,
-  "T-18a": PlRoadSignAsset286,
-  "T-18b": PlRoadSignAsset287,
-  "T-18c": PlRoadSignAsset288,
-  "T-19": PlRoadSignAsset289,
-  "T-20": PlRoadSignAsset290,
-  "T-21": PlRoadSignAsset291,
-  "T-22": PlRoadSignAsset292,
-  "T-23a": PlRoadSignAsset293,
-  "T-23b": PlRoadSignAsset294,
-  "T-23c": PlRoadSignAsset295,
-  "T-23d": PlRoadSignAsset296,
-  "T-23e": PlRoadSignAsset297,
-  "T-23f": PlRoadSignAsset298,
-  "T-23g": PlRoadSignAsset299,
-  "T-23h": PlRoadSignAsset300,
-  "T-23i": PlRoadSignAsset301,
-  "T-23j": PlRoadSignAsset302,
-  "T-24": PlRoadSignAsset303,
-  "T-25b": PlRoadSignAsset304,
-  "T-25c": PlRoadSignAsset305,
-  "T-26": PlRoadSignAsset306,
-  "T-27": PlRoadSignAsset307,
-  "T-28": PlRoadSignAsset308,
-  "T-28a": PlRoadSignAsset309,
-  "T-29": PlRoadSignAsset310,
-  "T-30a": PlRoadSignAsset311,
-  "T-30b": PlRoadSignAsset312,
-  "T-30c": PlRoadSignAsset313,
-  "T-30d": PlRoadSignAsset314,
-  "T-30e": PlRoadSignAsset315,
-  "T-30f": PlRoadSignAsset316,
-  "T-30g": PlRoadSignAsset317,
-  "T-30h": PlRoadSignAsset318,
-  "T-30i": PlRoadSignAsset319,
-  "T-31a": PlRoadSignAsset320,
-  "T-31b": PlRoadSignAsset321,
-  "T-31c": PlRoadSignAsset322,
-  "T-31d": PlRoadSignAsset323,
-  "T-31e": PlRoadSignAsset324,
-  "T-32": PlRoadSignAsset325,
-  "T-33": PlRoadSignAsset326,
-  "T-34": PlRoadSignAsset327,
-  "W-1": PlRoadSignAsset328,
-  "W-2": PlRoadSignAsset329,
-  "W-3": PlRoadSignAsset330,
-  "W-4": PlRoadSignAsset331,
-  "W-5": PlRoadSignAsset332,
-  "W-6": PlRoadSignAsset333,
-  "W-7": PlRoadSignAsset334,
+  "B-15": PlRoadSignAsset67,
+  "B-15-2.0m": PlRoadSignAsset68,
+  "B-16": PlRoadSignAsset69,
+  "B-16-3.1m": PlRoadSignAsset70,
+  "B-16-3.2m": PlRoadSignAsset71,
+  "B-16-3.4m": PlRoadSignAsset72,
+  "B-16-3.5m": PlRoadSignAsset73,
+  "B-17": PlRoadSignAsset74,
+  "B-17-6m": PlRoadSignAsset75,
+  "B-18": PlRoadSignAsset76,
+  "B-18-3.5t": PlRoadSignAsset77,
+  "B-18-7t": PlRoadSignAsset78,
+  "B-19": PlRoadSignAsset79,
+  "B-19-10t": PlRoadSignAsset80,
+  "B-20": PlRoadSignAsset81,
+  "B-21": PlRoadSignAsset82,
+  "B-22": PlRoadSignAsset83,
+  "B-23": PlRoadSignAsset84,
+  "B-24": PlRoadSignAsset85,
+  "B-25": PlRoadSignAsset86,
+  "B-26": PlRoadSignAsset87,
+  "B-27": PlRoadSignAsset88,
+  "B-28": PlRoadSignAsset89,
+  "B-29": PlRoadSignAsset90,
+  "B-30": PlRoadSignAsset91,
+  "B-31": PlRoadSignAsset92,
+  "B-32": PlRoadSignAsset93,
+  "B-32a": PlRoadSignAsset94,
+  "B-32b": PlRoadSignAsset95,
+  "B-32c": PlRoadSignAsset96,
+  "B-32d": PlRoadSignAsset97,
+  "B-32e": PlRoadSignAsset98,
+  "B-32f": PlRoadSignAsset99,
+  "B-33": PlRoadSignAsset100,
+  "B-33-50": PlRoadSignAsset101,
+  "B-34": PlRoadSignAsset102,
+  "B-34-50": PlRoadSignAsset103,
+  "B-35": PlRoadSignAsset104,
+  "B-35a": PlRoadSignAsset105,
+  "B-35b": PlRoadSignAsset106,
+  "B-35c": PlRoadSignAsset107,
+  "B-36": PlRoadSignAsset108,
+  "B-37": PlRoadSignAsset109,
+  "B-38": PlRoadSignAsset110,
+  "B-39": PlRoadSignAsset111,
+  "B-40": PlRoadSignAsset112,
+  "B-41": PlRoadSignAsset113,
+  "B-42": PlRoadSignAsset114,
+  "B-43": PlRoadSignAsset115,
+  "B-43-30": PlRoadSignAsset116,
+  "B-44": PlRoadSignAsset117,
+  "B-44-30": PlRoadSignAsset118,
+  "C-1": PlRoadSignAsset119,
+  "C-2": PlRoadSignAsset120,
+  "C-3": PlRoadSignAsset121,
+  "C-4": PlRoadSignAsset122,
+  "C-5": PlRoadSignAsset123,
+  "C-6": PlRoadSignAsset124,
+  "C-7": PlRoadSignAsset125,
+  "C-8": PlRoadSignAsset126,
+  "C-9": PlRoadSignAsset127,
+  "C-10": PlRoadSignAsset128,
+  "C-11": PlRoadSignAsset129,
+  "C-12": PlRoadSignAsset130,
+  "C-13": PlRoadSignAsset131,
+  "C-13-16": PlRoadSignAsset132,
+  "C-13-16a": PlRoadSignAsset133,
+  "C-13-16b": PlRoadSignAsset134,
+  "C-13a": PlRoadSignAsset135,
+  "C-14": PlRoadSignAsset136,
+  "C-14-30": PlRoadSignAsset137,
+  "C-15": PlRoadSignAsset138,
+  "C-15-30": PlRoadSignAsset139,
+  "C-16": PlRoadSignAsset140,
+  "C-16a": PlRoadSignAsset141,
+  "C-17": PlRoadSignAsset142,
+  "C-17-2": PlRoadSignAsset143,
+  "C-18": PlRoadSignAsset144,
+  "C-19": PlRoadSignAsset145,
+  "D-1": PlRoadSignAsset146,
+  "D-2": PlRoadSignAsset147,
+  "D-3": PlRoadSignAsset148,
+  "D-4a": PlRoadSignAsset149,
+  "D-4b": PlRoadSignAsset150,
+  "D-4c": PlRoadSignAsset151,
+  "D-5": PlRoadSignAsset152,
+  "D-6": PlRoadSignAsset153,
+  "D-6a": PlRoadSignAsset154,
+  "D-6b": PlRoadSignAsset155,
+  "D-7": PlRoadSignAsset156,
+  "D-8": PlRoadSignAsset157,
+  "D-9": PlRoadSignAsset158,
+  "D-10": PlRoadSignAsset159,
+  "D-11": PlRoadSignAsset160,
+  "D-12": PlRoadSignAsset161,
+  "D-13": PlRoadSignAsset162,
+  "D-13a": PlRoadSignAsset163,
+  "D-13b": PlRoadSignAsset164,
+  "D-14": PlRoadSignAsset165,
+  "D-15": PlRoadSignAsset166,
+  "D-16": PlRoadSignAsset167,
+  "D-17": PlRoadSignAsset168,
+  "D-18": PlRoadSignAsset169,
+  "D-18a": PlRoadSignAsset170,
+  "D-18b": PlRoadSignAsset171,
+  "D-19": PlRoadSignAsset172,
+  "D-19a": PlRoadSignAsset173,
+  "D-20": PlRoadSignAsset174,
+  "D-20a": PlRoadSignAsset175,
+  "D-21": PlRoadSignAsset176,
+  "D-21a": PlRoadSignAsset177,
+  "D-22": PlRoadSignAsset178,
+  "D-23": PlRoadSignAsset179,
+  "D-23a": PlRoadSignAsset180,
+  "D-23b": PlRoadSignAsset181,
+  "D-23c": PlRoadSignAsset182,
+  "D-24": PlRoadSignAsset183,
+  "D-25": PlRoadSignAsset184,
+  "D-26": PlRoadSignAsset185,
+  "D-26a": PlRoadSignAsset186,
+  "D-26b": PlRoadSignAsset187,
+  "D-26c": PlRoadSignAsset188,
+  "D-26d": PlRoadSignAsset189,
+  "D-27": PlRoadSignAsset190,
+  "D-28": PlRoadSignAsset191,
+  "D-29": PlRoadSignAsset192,
+  "D-30": PlRoadSignAsset193,
+  "D-31": PlRoadSignAsset194,
+  "D-32": PlRoadSignAsset195,
+  "D-33": PlRoadSignAsset196,
+  "D-34": PlRoadSignAsset197,
+  "D-34a": PlRoadSignAsset198,
+  "D-34b": PlRoadSignAsset199,
+  "D-34b_(alternative)": PlRoadSignAsset200,
+  "D-35": PlRoadSignAsset201,
+  "D-35a": PlRoadSignAsset202,
+  "D-36": PlRoadSignAsset203,
+  "D-36a": PlRoadSignAsset204,
+  "D-37": PlRoadSignAsset205,
+  "D-38": PlRoadSignAsset206,
+  "D-39": PlRoadSignAsset207,
+  "D-39a": PlRoadSignAsset208,
+  "D-40": PlRoadSignAsset209,
+  "D-41": PlRoadSignAsset210,
+  "D-42": PlRoadSignAsset211,
+  "D-43": PlRoadSignAsset212,
+  "D-44": PlRoadSignAsset213,
+  "D-45": PlRoadSignAsset214,
+  "D-46": PlRoadSignAsset215,
+  "D-47": PlRoadSignAsset216,
+  "D-48": PlRoadSignAsset217,
+  "D-48a": PlRoadSignAsset218,
+  "D-49": PlRoadSignAsset219,
+  "D-50": PlRoadSignAsset220,
+  "D-51": PlRoadSignAsset221,
+  "D-51aa": PlRoadSignAsset222,
+  "D-51ab": PlRoadSignAsset223,
+  "D-51b": PlRoadSignAsset224,
+  "D-52": PlRoadSignAsset225,
+  "D-53": PlRoadSignAsset226,
+  "D-54": PlRoadSignAsset227,
+  "D-55": PlRoadSignAsset228,
+  "E-1": PlRoadSignAsset229,
+  "E-1a": PlRoadSignAsset230,
+  "E-1b": PlRoadSignAsset231,
+  "E-2a": PlRoadSignAsset232,
+  "E-2b": PlRoadSignAsset233,
+  "E-2c": PlRoadSignAsset234,
+  "E-2d": PlRoadSignAsset235,
+  "E-2e": PlRoadSignAsset236,
+  "E-2f": PlRoadSignAsset237,
+  "E-3": PlRoadSignAsset238,
+  "E-4": PlRoadSignAsset239,
+  "E-5": PlRoadSignAsset240,
+  "E-6": PlRoadSignAsset241,
+  "E-6a": PlRoadSignAsset242,
+  "E-6b": PlRoadSignAsset243,
+  "E-6c": PlRoadSignAsset244,
+  "E-7": PlRoadSignAsset245,
+  "E-8": PlRoadSignAsset246,
+  "E-9": PlRoadSignAsset247,
+  "E-10": PlRoadSignAsset248,
+  "E-11": PlRoadSignAsset249,
+  "E-12": PlRoadSignAsset250,
+  "E-12a": PlRoadSignAsset251,
+  "E-13": PlRoadSignAsset252,
+  "E-14": PlRoadSignAsset253,
+  "E-14a": PlRoadSignAsset254,
+  "E-15a": PlRoadSignAsset255,
+  "E-15b": PlRoadSignAsset256,
+  "E-15c": PlRoadSignAsset257,
+  "E-15d": PlRoadSignAsset258,
+  "E-15e": PlRoadSignAsset259,
+  "E-16": PlRoadSignAsset260,
+  "E-17a": PlRoadSignAsset261,
+  "E-18a": PlRoadSignAsset262,
+  "E-19": PlRoadSignAsset263,
+  "E-20": PlRoadSignAsset264,
+  "E-21": PlRoadSignAsset265,
+  "E-22a": PlRoadSignAsset266,
+  "E-22b": PlRoadSignAsset267,
+  "E-22c": PlRoadSignAsset268,
+  "F-1": PlRoadSignAsset269,
+  "F-2": PlRoadSignAsset270,
+  "F-2a": PlRoadSignAsset271,
+  "F-3": PlRoadSignAsset272,
+  "F-3a": PlRoadSignAsset273,
+  "F-3b": PlRoadSignAsset274,
+  "F-3c": PlRoadSignAsset275,
+  "F-4": PlRoadSignAsset276,
+  "F-5": PlRoadSignAsset277,
+  "F-6": PlRoadSignAsset278,
+  "F-6a": PlRoadSignAsset279,
+  "F-7": PlRoadSignAsset280,
+  "F-8": PlRoadSignAsset281,
+  "F-9": PlRoadSignAsset282,
+  "F-10": PlRoadSignAsset283,
+  "F-11": PlRoadSignAsset284,
+  "F-11d": PlRoadSignAsset285,
+  "F-12": PlRoadSignAsset286,
+  "F-12a": PlRoadSignAsset287,
+  "F-13": PlRoadSignAsset288,
+  "F-13a": PlRoadSignAsset289,
+  "F-14a": PlRoadSignAsset290,
+  "F-14b": PlRoadSignAsset291,
+  "F-14c": PlRoadSignAsset292,
+  "F-14d": PlRoadSignAsset293,
+  "F-14e": PlRoadSignAsset294,
+  "F-14f": PlRoadSignAsset295,
+  "F-15": PlRoadSignAsset296,
+  "F-15a": PlRoadSignAsset297,
+  "F-16": PlRoadSignAsset298,
+  "F-17": PlRoadSignAsset299,
+  "F-18": PlRoadSignAsset300,
+  "F-19": PlRoadSignAsset301,
+  "F-20": PlRoadSignAsset302,
+  "F-21": PlRoadSignAsset303,
+  "F-22": PlRoadSignAsset304,
+  "F-23": PlRoadSignAsset305,
+  "F-24": PlRoadSignAsset306,
+  "G-1a": PlRoadSignAsset307,
+  "G-1b": PlRoadSignAsset308,
+  "G-1c": PlRoadSignAsset309,
+  "G-1d": PlRoadSignAsset310,
+  "G-1e": PlRoadSignAsset311,
+  "G-1f": PlRoadSignAsset312,
+  "G-2": PlRoadSignAsset313,
+  "G-3": PlRoadSignAsset314,
+  "G-4": PlRoadSignAsset315,
+  "P-1": PlRoadSignAsset316,
+  "P-2": PlRoadSignAsset317,
+  "P-3": PlRoadSignAsset318,
+  "P-4": PlRoadSignAsset319,
+  "P-5": PlRoadSignAsset320,
+  "P-6": PlRoadSignAsset321,
+  "P-7a": PlRoadSignAsset322,
+  "P-7b": PlRoadSignAsset323,
+  "P-8a": PlRoadSignAsset324,
+  "P-8b": PlRoadSignAsset325,
+  "P-8c": PlRoadSignAsset326,
+  "P-9": PlRoadSignAsset327,
+  "P-10": PlRoadSignAsset328,
+  "P-11": PlRoadSignAsset329,
+  "P-12": PlRoadSignAsset330,
+  "P-13": PlRoadSignAsset331,
+  "P-14": PlRoadSignAsset332,
+  "P-15": PlRoadSignAsset333,
+  "P-16": PlRoadSignAsset334,
+  "P-17": PlRoadSignAsset335,
+  "P-18": PlRoadSignAsset336,
+  "P-19": PlRoadSignAsset337,
+  "P-20": PlRoadSignAsset338,
+  "P-21": PlRoadSignAsset339,
+  "P-22": PlRoadSignAsset340,
+  "P-23": PlRoadSignAsset341,
+  "P-24": PlRoadSignAsset342,
+  "P-25": PlRoadSignAsset343,
+  "P-27": PlRoadSignAsset344,
+  "S-1": PlRoadSignAsset345,
+  "S-2": PlRoadSignAsset346,
+  "S-3": PlRoadSignAsset347,
+  "S-4": PlRoadSignAsset348,
+  "S-5": PlRoadSignAsset349,
+  "S-6": PlRoadSignAsset350,
+  "S-7": PlRoadSignAsset351,
+  "T-1": PlRoadSignAsset352,
+  "T-1a": PlRoadSignAsset353,
+  "T-1b": PlRoadSignAsset354,
+  "T-2": PlRoadSignAsset355,
+  "T-3": PlRoadSignAsset356,
+  "T-3a": PlRoadSignAsset357,
+  "T-4": PlRoadSignAsset358,
+  "T-5": PlRoadSignAsset359,
+  "T-6a": PlRoadSignAsset360,
+  "T-6b": PlRoadSignAsset361,
+  "T-6c": PlRoadSignAsset362,
+  "T-6d": PlRoadSignAsset363,
+  "T-7": PlRoadSignAsset364,
+  "T-8": PlRoadSignAsset365,
+  "T-9": PlRoadSignAsset366,
+  "T-10": PlRoadSignAsset367,
+  "T-11": PlRoadSignAsset368,
+  "T-12": PlRoadSignAsset369,
+  "T-13": PlRoadSignAsset370,
+  "T-14": PlRoadSignAsset371,
+  "T-14a": PlRoadSignAsset372,
+  "T-14b": PlRoadSignAsset373,
+  "T-14c": PlRoadSignAsset374,
+  "T-14d": PlRoadSignAsset375,
+  "T-15": PlRoadSignAsset376,
+  "T-16": PlRoadSignAsset377,
+  "T-16a": PlRoadSignAsset378,
+  "T-17": PlRoadSignAsset379,
+  "T-18": PlRoadSignAsset380,
+  "T-18a": PlRoadSignAsset381,
+  "T-18b": PlRoadSignAsset382,
+  "T-18c": PlRoadSignAsset383,
+  "T-19": PlRoadSignAsset384,
+  "T-20": PlRoadSignAsset385,
+  "T-21": PlRoadSignAsset386,
+  "T-22": PlRoadSignAsset387,
+  "T-23a": PlRoadSignAsset388,
+  "T-23b": PlRoadSignAsset389,
+  "T-23c": PlRoadSignAsset390,
+  "T-23d": PlRoadSignAsset391,
+  "T-23e": PlRoadSignAsset392,
+  "T-23f": PlRoadSignAsset393,
+  "T-23g": PlRoadSignAsset394,
+  "T-23h": PlRoadSignAsset395,
+  "T-23i": PlRoadSignAsset396,
+  "T-23j": PlRoadSignAsset397,
+  "T-24": PlRoadSignAsset398,
+  "T-25a": PlRoadSignAsset399,
+  "T-25b": PlRoadSignAsset400,
+  "T-25c": PlRoadSignAsset401,
+  "T-26": PlRoadSignAsset402,
+  "T-27": PlRoadSignAsset403,
+  "T-28": PlRoadSignAsset404,
+  "T-28a": PlRoadSignAsset405,
+  "T-29": PlRoadSignAsset406,
+  "T-30": PlRoadSignAsset407,
+  "T-30a": PlRoadSignAsset408,
+  "T-30b": PlRoadSignAsset409,
+  "T-30c": PlRoadSignAsset410,
+  "T-30d": PlRoadSignAsset411,
+  "T-30e": PlRoadSignAsset412,
+  "T-30f": PlRoadSignAsset413,
+  "T-30g": PlRoadSignAsset414,
+  "T-30h": PlRoadSignAsset415,
+  "T-30i": PlRoadSignAsset416,
+  "T-31": PlRoadSignAsset417,
+  "T-31a": PlRoadSignAsset418,
+  "T-31b": PlRoadSignAsset419,
+  "T-31c": PlRoadSignAsset420,
+  "T-31d": PlRoadSignAsset421,
+  "T-31e": PlRoadSignAsset422,
+  "T-32": PlRoadSignAsset423,
+  "T-33": PlRoadSignAsset424,
+  "T-34": PlRoadSignAsset425,
+  "W-1": PlRoadSignAsset426,
+  "W-2": PlRoadSignAsset427,
+  "W-3": PlRoadSignAsset428,
+  "W-4": PlRoadSignAsset429,
+  "W-5": PlRoadSignAsset430,
+  "W-6": PlRoadSignAsset431,
+  "W-7": PlRoadSignAsset432,
 };

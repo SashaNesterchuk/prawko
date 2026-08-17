@@ -140,12 +140,12 @@ export function QuestionTrainingView({
   const correctChoiceBullets =
     hasAnswered && !isCorrectAnswer
       ? questionChoices
-          .filter((choice) => choice.id === currentQuestion.correctAnswer)
-          .map((choice) =>
-            isBooleanQuestion
-              ? choice.label
-              : `${choice.id}. ${choice.label}`
-          )
+        .filter((choice) => choice.id === currentQuestion.correctAnswer)
+        .map((choice) =>
+          isBooleanQuestion
+            ? choice.label
+            : `${choice.id}. ${choice.label}`
+        )
       : [];
 
   const handleReportProblem = () => {

@@ -42,12 +42,13 @@ export function ExamRestartGateDialog({
       transparent
       visible={visible}
     >
-      <View style={styles.overlay}>
+      <View style={styles.overlay} testID="exam-restart-gate">
         <View style={styles.card}>
           <Pressable
             accessibilityRole="button"
             disabled={isWatchingAd}
             onPress={onClose}
+            testID="exam-restart-gate-close"
             style={({ pressed }) => [
               styles.closeButton,
               pressed && !isWatchingAd ? styles.pressed : null,
@@ -64,6 +65,7 @@ export function ExamRestartGateDialog({
               accessibilityRole="button"
               disabled={isWatchingAd}
               onPress={onWatchAd}
+              testID="exam-restart-gate-watch"
               style={({ pressed }) => [
                 styles.actionButton,
                 styles.watchButton,
@@ -79,6 +81,7 @@ export function ExamRestartGateDialog({
               accessibilityRole="button"
               disabled={isWatchingAd}
               onPress={onPremium}
+              testID="exam-restart-gate-premium"
               style={({ pressed }) => [
                 styles.actionButton,
                 styles.premiumButton,
@@ -125,7 +128,6 @@ function useStyles() {
       fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
       fontFamily: getFontFamily("bold"),
-      letterSpacing: -0.64,
       textAlign: "center",
       color: colors.ink,
     },
@@ -162,14 +164,12 @@ function useStyles() {
       fontSize: responsiveFont(18),
       lineHeight: responsiveFont(26),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.2,
       color: colors.white,
     },
     premiumLabel: {
       fontSize: responsiveFont(18),
       lineHeight: responsiveFont(26),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.2,
       color: theme.accents.green.fill,
     },
     disabled: {

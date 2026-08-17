@@ -1,0 +1,63 @@
+# Feature: Exam
+# Scenario: Answering Q1, confirming Finish, then starting a new attempt
+# opens question 1 — it must not resume at question 2.
+appId: com.mindjar.prawko
+tags:
+  - exam
+  - session
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-home
+
+- runFlow:
+    file: subflows/start_exam_mini_from_home.yaml
+    env:
+      COUNT: "10"
+      TARGET_ID: screen-exam-session
+
+- tapOn:
+    id: "question-choice-index-0"
+
+- tapOn:
+    id: "exam-next-question"
+
+- extendedWaitUntil:
+    visible:
+      id: "exam-session-counter"
+      text: "Питання 2 з 10"
+    timeout: 15000
+
+- tapOn:
+    id: "exam-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "training-exit-dialog"
+    timeout: 10000
+
+- tapOn:
+    id: "training-exit-finish"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-result"
+    timeout: 20000
+
+- tapOn:
+    id: "exam-result-new-attempt"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-session"
+    timeout: 20000
+
+- assertVisible:
+    id: "exam-session-counter"
+    text: "Питання 1 з 10"
+- assertNotVisible:
+    id: "exam-session-counter"
+    text: "Питання 2 з 10"

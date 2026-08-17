@@ -4,10 +4,7 @@ import {
   typographyPresets,
   type TypographyStyleKey,
 } from "../../theme/tokens/typography";
-import {
-  createFontFamilyStyle,
-  type FontWeightKey,
-} from "./fontRegistry";
+import { createFontFamilyStyle, type FontWeightKey } from "./fontRegistry";
 
 export type { TypographyStyleKey };
 
@@ -76,7 +73,6 @@ export function getTypographyStyle(key: TypographyStyleKey): TextStyle {
   return {
     fontSize: preset.fontSize,
     lineHeight: preset.lineHeight,
-    letterSpacing: preset.letterSpacing,
     ...createFontFamilyStyle(fontWeightKey),
   };
 }
@@ -84,7 +80,7 @@ export function getTypographyStyle(key: TypographyStyleKey): TextStyle {
 /** Apply Figma→device font scaling to a typography preset / text style. */
 export function withResponsiveFont(
   style: TextStyle,
-  responsiveFont: (size: number) => number
+  responsiveFont: (size: number) => number,
 ): TextStyle {
   return {
     ...style,
@@ -100,8 +96,7 @@ export function withResponsiveFont(
 }
 
 export function getFontSizeMetrics(sizeKey: TextSizeKey) {
-  const metricsKey =
-    SIZE_TO_FONT_SIZE_KEY[sizeKey] as keyof typeof fontSizes;
+  const metricsKey = SIZE_TO_FONT_SIZE_KEY[sizeKey] as keyof typeof fontSizes;
   const style = fontSizes[metricsKey] ?? fontSizes.size16;
 
   const lineHeight =
@@ -117,7 +112,7 @@ export function getFontSizeMetrics(sizeKey: TextSizeKey) {
 
 export function getTextSizeStyle(
   sizeKey: TextSizeKey,
-  weight: FontWeightKey = "regular"
+  weight: FontWeightKey = "regular",
 ): TextStyle {
   const metricsKey = SIZE_TO_FONT_SIZE_KEY[sizeKey] as keyof typeof fontSizes;
 
@@ -136,8 +131,8 @@ export const textSize = StyleSheet.create(
     (Object.keys(SIZE_TO_FONT_SIZE_KEY) as TextSizeKey[]).map((sizeKey) => [
       sizeKey,
       getTextSizeStyle(sizeKey),
-    ])
-  ) as Record<TextSizeKey, TextStyle>
+    ]),
+  ) as Record<TextSizeKey, TextStyle>,
 );
 
 export const textWeight = {

@@ -60,46 +60,48 @@ export function SignsSummaryCard({
 
   return (
     <View style={styles.card}>
-      <View style={styles.topSection}>
-        <View style={styles.headerRow}>
-          <CText style={styles.title}>{title}</CText>
-          <CText style={styles.readiness}>{`${learnedPercent}%`}</CText>
+      <View style={styles.cardInner}>
+        <View style={styles.topSection}>
+          <View style={styles.headerRow}>
+            <CText style={styles.title}>{title}</CText>
+            <CText style={styles.readiness}>{`${learnedPercent}%`}</CText>
+          </View>
+
+          {variant === "split" ? (
+            <CText style={styles.fraction}>{display.coverageLabel}</CText>
+          ) : null}
+
+          {variant === "learned" ? (
+            <MonoProgressBar progress={learnedPercent} height={8} />
+          ) : (
+            <DualColorProgressBar
+              correct={correct}
+              wrong={wrong}
+              total={total}
+              height={8}
+            />
+          )}
         </View>
 
-        {variant === "split" ? (
-          <CText style={styles.fraction}>{display.coverageLabel}</CText>
-        ) : null}
+        <View style={styles.footerRow}>
+          <View style={styles.statsCopy}>
+            <CText style={styles.statsLabel}>{answersLabel}</CText>
+            <CText style={styles.statsValue}>{footerValue}</CText>
+          </View>
 
-        {variant === "learned" ? (
-          <MonoProgressBar progress={learnedPercent} height={8} />
-        ) : (
-          <DualColorProgressBar
-            correct={correct}
-            wrong={wrong}
-            total={total}
-            height={8}
-          />
-        )}
-      </View>
-
-      <View style={styles.footerRow}>
-        <View style={styles.statsCopy}>
-          <CText style={styles.statsLabel}>{answersLabel}</CText>
-          <CText style={styles.statsValue}>{footerValue}</CText>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onTrainAll}
+            style={({ pressed }) => [
+              styles.trainButton,
+              pressed ? styles.pressed : null,
+            ]}
+            testID="signs-train-all"
+          >
+            <CText style={styles.trainButtonLabel}>{trainLabel}</CText>
+            <Icon color={theme.colors.ink2} name="chevron" size={20} />
+          </Pressable>
         </View>
-
-        <Pressable
-          accessibilityRole="button"
-          onPress={onTrainAll}
-          style={({ pressed }) => [
-            styles.trainButton,
-            pressed ? styles.pressed : null,
-          ]}
-          testID="signs-train-all"
-        >
-          <CText style={styles.trainButtonLabel}>{trainLabel}</CText>
-          <Icon color={theme.colors.ink2} name="chevron" size={20} />
-        </Pressable>
       </View>
     </View>
   );
@@ -110,8 +112,12 @@ function useStyles() {
     card: {
       borderRadius: radius.xxl,
       backgroundColor: colors.white,
+      ...elevation.card,
+    },
+    cardInner: {
+      borderRadius: radius.xxl,
       overflow: "hidden",
-      ...elevation.raised,
+      backgroundColor: colors.white,
     },
     topSection: {
       gap: spacing.exact(4),
@@ -130,14 +136,12 @@ function useStyles() {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
       fontFamily: getFontFamily("bold"),
-      letterSpacing: -0.48,
       color: colors.ink,
     },
     readiness: {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.24,
       color: colors.ink,
     },
     fraction: {

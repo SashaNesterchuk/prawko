@@ -3,7 +3,7 @@
     "name": "Prawko",
     "slug": "prawko",
     "scheme": "prawko",
-    "version": "1.0.13",
+    "version": "1.0.15",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",

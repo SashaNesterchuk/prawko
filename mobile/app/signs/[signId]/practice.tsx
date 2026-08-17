@@ -7,7 +7,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../../src/components/shell/GreenWaveScreen";
-import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
+import { ScreenHeader } from "../../../src/components/shell/ScreenHeader";
 import {
   CText,
   getFontFamily,
@@ -159,7 +159,7 @@ export default function SignPracticeScreen() {
       <GreenWaveScreen>
         <SafeAreaView style={styles.safeArea} edges={["top"]}>
           <StatusBar style="dark" />
-          <SignsScreenHeader
+          <ScreenHeader
             title={t("signs.practiceTitle")}
             backLabel={t("common.back")}
             onBack={() => router.back()}
@@ -177,7 +177,7 @@ export default function SignPracticeScreen() {
       <GreenWaveScreen>
         <SafeAreaView style={styles.safeArea} edges={["top"]}>
           <StatusBar style="dark" />
-          <SignsScreenHeader
+          <ScreenHeader
             title={t("signs.practiceTitle")}
             backLabel={t("common.back")}
             onBack={() => router.back()}
@@ -222,7 +222,7 @@ export default function SignPracticeScreen() {
     <GreenWaveScreen>
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <StatusBar style="dark" />
-        <SignsScreenHeader
+        <ScreenHeader
           title={t("signs.practiceTitle")}
           backLabel={t("common.back")}
           onBack={() => router.back()}
@@ -359,7 +359,6 @@ function useStyles({
         fontFamily: getFontFamily("semiBold"),
         color: colors.textMuted,
         textTransform: "uppercase",
-        letterSpacing: 0.4,
       },
       progressName: {
         fontSize: responsiveFont(18),

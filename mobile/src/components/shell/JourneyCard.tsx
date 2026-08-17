@@ -133,14 +133,12 @@ function useStyles({
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.16,
       color: colors.white,
     },
     title: {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
       fontFamily: getFontFamily("bold"),
-      letterSpacing: -0.48,
       color: colors.white,
     },
     metaRow: {

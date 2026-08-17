@@ -1,0 +1,45 @@
+# Feature: Exam
+# Scenario: Closing an unanswered exam (miss-click) starts a fresh attempt
+# at question 1, not a leftover active session.
+appId: com.mindjar.prawko
+tags:
+  - exam
+  - session
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-home
+
+- runFlow:
+    file: subflows/start_exam_mini_from_home.yaml
+    env:
+      COUNT: "10"
+      TARGET_ID: screen-exam-session
+
+- assertVisible:
+    id: "exam-session-counter"
+    text: "Питання 1 з 10"
+
+- tapOn:
+    id: "exam-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
+
+- runFlow:
+    file: subflows/start_exam_mini_from_home.yaml
+    env:
+      COUNT: "10"
+      TARGET_ID: screen-exam-session
+
+- assertVisible:
+    id: "exam-session-counter"
+    text: "Питання 1 з 10"
+- assertNotVisible:
+    id: "exam-session-counter"
+    text: "Питання 2 з 10"

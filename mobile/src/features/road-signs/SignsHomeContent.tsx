@@ -162,11 +162,10 @@ function useStyles({
       flex: 1,
     },
     content: {
-      paddingLeft: spacing.lg,
-      paddingRight: spacing.xl,
-      paddingTop: spacing.sm,
+      paddingHorizontal: spacing.exact(24),
+      paddingTop: spacing.exact(12),
       paddingBottom: contentBottomPadding,
-      gap: spacing.sm,
+      gap: spacing.xxl,
     },
     categoryList: {
       gap: spacing.sm,

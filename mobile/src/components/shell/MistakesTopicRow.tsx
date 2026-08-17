@@ -87,7 +87,6 @@ function useStyles({ rateColor }: { rateColor: string }) {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.16,
       color: colors.ink,
     },
     statsRow: {
@@ -108,7 +107,6 @@ function useStyles({ rateColor }: { rateColor: string }) {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.16,
       color: rateColor,
     },
     chevronWrap: {

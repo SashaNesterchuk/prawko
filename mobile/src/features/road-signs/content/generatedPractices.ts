@@ -12,15 +12,44 @@ import type {
 type GeneratedRoadSignMetadata = {
   id: string;
   categoryId: RoadSignCategoryId;
-  name: string;
-  description: string;
+  name: string | LocalizedString;
+  description: string | LocalizedString;
 };
 
-const CATEGORY_ORDER: RoadSignCategoryId[] = ["A", "B", "C", "D", "F", "G", "T", "W"];
+function asLocalized(value: string | LocalizedString): LocalizedString {
+  if (typeof value === "string") {
+    return {
+      pl: value,
+      ua: value,
+      en: value,
+    };
+  }
+
+  return {
+    pl: value.pl,
+    ua: value.ua || value.pl,
+    en: value.en || value.pl,
+  };
+}
+
+const CATEGORY_ORDER: RoadSignCategoryId[] = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "T",
+  "G",
+  "P",
+  "S",
+  "W",
+];
 
 const CATEGORY_OPTION_GROUPS: RoadSignCategoryId[][] = [
   ["A", "B", "C", "D"],
-  ["F", "G", "T", "W"],
+  ["E", "F", "T", "G"],
+  ["P", "S", "W", "A"],
 ];
 
 const CATEGORY_LABELS: Record<RoadSignCategoryId, LocalizedString> = {
@@ -44,20 +73,35 @@ const CATEGORY_LABELS: Record<RoadSignCategoryId, LocalizedString> = {
     ua: "Інформаційні знаки",
     en: "Information signs",
   },
-  F: {
-    pl: "Znaki uzupelniajace",
-    ua: "Додаткові знаки",
-    en: "Supplementary signs",
+  E: {
+    pl: "Znaki kierunku i miejscowości",
+    ua: "Знаки напрямку та населених пунктів",
+    en: "Directional signs",
   },
-  G: {
-    pl: "Znaki kolejowe i tramwajowe",
-    ua: "Знаки залізничних і трамвайних переїздів",
-    en: "Railway and tram signs",
+  F: {
+    pl: "Znaki uzupełniające",
+    ua: "Доповнювальні знаки",
+    en: "Complementary signs",
   },
   T: {
-    pl: "Tabliczki dodatkowe",
-    ua: "Додаткові таблички",
-    en: "Additional plates",
+    pl: "Tabliczki do znaków drogowych",
+    ua: "Таблички до дорожніх знаків",
+    en: "Complementary plates",
+  },
+  G: {
+    pl: "Znaki dodatkowe",
+    ua: "Додаткові знаки",
+    en: "Additional signs",
+  },
+  P: {
+    pl: "Znaki drogowe poziome",
+    ua: "Горизонтальна дорожня розмітка",
+    en: "Road markings",
+  },
+  S: {
+    pl: "Znaki świetlne",
+    ua: "Світлові знаки",
+    en: "Traffic signals",
   },
   W: {
     pl: "Znaki wojskowe",
@@ -110,11 +154,11 @@ export const GENERATED_SIGN_PRACTICE_CONTENT: Record<
 );
 
 function parseSignCode(filename: string): string {
-  return filename.replace(/^PL_road_sign_/, "").replace(/\.svg$/, "");
+  return filename.replace(/^PL_road_sign_/, "").replace(/\.(svg|png|jpe?g)$/i, "");
 }
 
 function getCategoryId(signId: string): RoadSignCategoryId {
-  return signId[0] as RoadSignCategoryId;
+  return signId.split("-")[0] as RoadSignCategoryId;
 }
 
 function compareSignCodes(left: string, right: string): number {
@@ -158,6 +202,14 @@ function toLocalizedString(value: string): LocalizedString {
     ua: value,
     en: value,
   };
+}
+
+function metadataName(metadata?: GeneratedRoadSignMetadata): LocalizedString {
+  return asLocalized(metadata?.name ?? "");
+}
+
+function metadataDescription(metadata?: GeneratedRoadSignMetadata): LocalizedString {
+  return asLocalized(metadata?.description ?? "");
 }
 
 function summarizeDescription(value: string): string {
@@ -287,12 +339,13 @@ function buildSignExplanation(
     };
   }
 
-  const summary = summarizeDescription(metadata.description);
+  const name = metadataName(metadata);
+  const summary = metadataDescription(metadata);
 
   return {
-    pl: `To znak ${metadata.name}. ${summary}`,
-    ua: `Це знак ${metadata.name}. ${summary}`,
-    en: `This is sign ${metadata.name}. ${summary}`,
+    pl: `To znak ${name.pl}. ${summarizeDescription(summary.pl)}`,
+    ua: `Це знак ${name.ua}. ${summarizeDescription(summary.ua)}`,
+    en: `This is sign ${name.en}. ${summarizeDescription(summary.en)}`,
   };
 }
 
@@ -311,10 +364,12 @@ function buildCategoryExplanation(
     return base;
   }
 
+  const name = metadataName(metadata);
+
   return {
-    pl: `${base.pl} ${metadata.name}.`,
-    ua: `${base.ua} ${metadata.name}.`,
-    en: `${base.en} ${metadata.name}.`,
+    pl: `${base.pl} ${name.pl}.`,
+    ua: `${base.ua} ${name.ua}.`,
+    en: `${base.en} ${name.en}.`,
   };
 }
 
@@ -327,7 +382,7 @@ function buildNameQuestion(
     METADATA_IDS_BY_CATEGORY[metadata.categoryId],
     ALL_METADATA_IDS,
     3,
-    (candidateId) => GENERATED_METADATA[candidateId]?.name ?? candidateId
+    (candidateId) => metadataName(GENERATED_METADATA[candidateId]).pl || candidateId
   );
 
   if (distractorIds.length < 2) {
@@ -339,13 +394,11 @@ function buildNameQuestion(
     [
       {
         id: signId,
-        label: toLocalizedString(metadata.name),
+        label: metadataName(metadata),
       },
       ...distractorIds.map((distractorId) => ({
         id: distractorId,
-        label: toLocalizedString(
-          GENERATED_METADATA[distractorId]?.name ?? distractorId
-        ),
+        label: metadataName(GENERATED_METADATA[distractorId]),
       })),
     ],
     signId

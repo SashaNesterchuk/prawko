@@ -1,0 +1,13 @@
+# Feature: Signs
+# Scenario: Onboarded user can open the directional signs category (E)
+appId: com.mindjar.prawko
+tags:
+  - signs
+  - category
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: signs-category
+      SIGN_CATEGORY_ID: E
+      TARGET_ID: screen-signs-category-E

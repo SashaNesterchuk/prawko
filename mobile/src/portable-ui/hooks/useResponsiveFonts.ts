@@ -49,6 +49,7 @@ export function useResponsiveFonts(): ResponsiveFontHook {
   }, [screenWidth, screenHeight]);
 
   const responsiveFont = useMemo(() => {
+    return (size: number): number => size;
     return (size: number): number =>
       Math.round(
         PixelRatio.roundToNearestPixel(

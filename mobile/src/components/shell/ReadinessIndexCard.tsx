@@ -101,116 +101,117 @@ export function ReadinessIndexCard({
         pressed && onPress ? styles.pressed : null,
       ]}
     >
-      <ProgressRing progress={empty ? 0 : clamped} color={ringColor}>
+      <View style={styles.cardInner}>
+        <ProgressRing progress={empty ? 0 : clamped} color={ringColor}>
+          {empty ? (
+            <Icon
+              color={theme.accents.green.fill}
+              name="start"
+              size={responsiveFont(40)}
+            />
+          ) : (
+            <CText style={styles.ringValue} bold>
+              <CText style={styles.ringValueNumber} bold>{Math.round(clamped)}</CText>
+              <CText style={styles.ringValuePercent} bold>%</CText>
+            </CText>
+          )}
+        </ProgressRing>
+
         {empty ? (
-          <Icon
-            color={theme.accents.green.fill}
-            name="start"
-            size={responsiveFont(40)}
-          />
-        ) : (
-          <CText style={styles.ringValue} bold>
-            <CText style={styles.ringValueNumber} bold>{Math.round(clamped)}</CText>
-            <CText style={styles.ringValuePercent} bold>%</CText>
-          </CText>
-        )}
-      </ProgressRing>
-
-      {empty ? (
-        <View style={styles.emptyCopy}>
-          <CText style={styles.emptyTitle} semiBold>{title}</CText>
-          {subtitle ? <CText style={styles.emptySubtitle}>{subtitle}</CText> : null}
-          {detailsLabel ? (
-            <View style={styles.detailsRow}>
-              <CText style={styles.detailsLabel}>{detailsLabel}</CText>
-              <Icon
-                color={theme.accents.blue.ink}
-                name="chevron"
-                size={responsiveFont(20)}
-              />
-            </View>
-          ) : null}
-        </View>
-      ) : (
-        <View style={styles.copy}>
-          <View style={styles.topBlock}>
-            <View style={styles.levelBlock}>
-              {levelLabel ? (
-                <CText style={styles.levelTitle} semiBold>{levelLabel}</CText>
-              ) : null}
-              <CText style={styles.levelSubtitle}>{title}</CText>
-            </View>
-
-            {showWeekChange ? (
-              <View
-                testID={testID ? `${testID}-week-change` : undefined}
-                style={[
-                  styles.weekBadge,
-                  isWeekFlat
-                    ? styles.weekBadgeFlat
-                    : isWeekUp
-                      ? styles.weekBadgeUp
-                      : styles.weekBadgeDown,
-                ]}
-              >
-                {!isWeekFlat ? (
-                  <Icon
-                    color={
-                      isWeekUp
-                        ? theme.accents.green.ink
-                        : theme.accents.red.ink
-                    }
-                    name="arrow"
-                    size={responsiveFont(12)}
-                    style={isWeekUp ? styles.arrowUp : undefined}
-                  />
-                ) : null}
-                <CText
-                  style={[
-                    styles.weekBadgeLabel,
-                    isWeekFlat
-                      ? styles.weekBadgeLabelFlat
-                      : isWeekUp
-                        ? styles.weekBadgeLabelUp
-                        : styles.weekBadgeLabelDown,
-                  ]}
-                >
-                  {weekChangeLabel}
-                </CText>
+          <View style={styles.emptyCopy}>
+            <CText style={styles.emptyTitle} semiBold>{title}</CText>
+            {subtitle ? <CText style={styles.emptySubtitle}>{subtitle}</CText> : null}
+            {detailsLabel ? (
+              <View style={styles.detailsRow}>
+                <CText style={styles.detailsLabel}>{detailsLabel}</CText>
+                <Icon
+                  color={theme.accents.blue.ink}
+                  name="chevron"
+                  size={responsiveFont(20)}
+                />
               </View>
             ) : null}
           </View>
+        ) : (
+          <View style={styles.copy}>
+            <View style={styles.topBlock}>
+              <View style={styles.levelBlock}>
+                {levelLabel ? (
+                  <CText style={styles.levelTitle} semiBold>{levelLabel}</CText>
+                ) : null}
+                <CText style={styles.levelSubtitle}>{title}</CText>
+              </View>
 
-          {coveredCountLabel ? (
-            <View style={styles.coveredBlock}>
-              <CText style={styles.coveredCount} medium>{coveredCountLabel}</CText>
-              {coveredCaption ? (
-                <CText style={styles.coveredCaption} regular>{coveredCaption}</CText>
+              {showWeekChange ? (
+                <View
+                  testID={testID ? `${testID}-week-change` : undefined}
+                  style={[
+                    styles.weekBadge,
+                    isWeekFlat
+                      ? styles.weekBadgeFlat
+                      : isWeekUp
+                        ? styles.weekBadgeUp
+                        : styles.weekBadgeDown,
+                  ]}
+                >
+                  {!isWeekFlat ? (
+                    <Icon
+                      color={
+                        isWeekUp
+                          ? theme.accents.green.ink
+                          : theme.accents.red.ink
+                      }
+                      name="arrow"
+                      size={responsiveFont(12)}
+                      style={isWeekUp ? styles.arrowUp : undefined}
+                    />
+                  ) : null}
+                  <CText
+                    style={[
+                      styles.weekBadgeLabel,
+                      isWeekFlat
+                        ? styles.weekBadgeLabelFlat
+                        : isWeekUp
+                          ? styles.weekBadgeLabelUp
+                          : styles.weekBadgeLabelDown,
+                    ]}
+                  >
+                    {weekChangeLabel}
+                  </CText>
+                </View>
               ) : null}
             </View>
-          ) : null}
-        </View>
-      )}
+
+            {coveredCountLabel ? (
+              <View style={styles.coveredBlock}>
+                <CText style={styles.coveredCount} medium>{coveredCountLabel}</CText>
+                {coveredCaption ? (
+                  <CText style={styles.coveredCaption} regular>{coveredCaption}</CText>
+                ) : null}
+              </View>
+            ) : null}
+          </View>
+        )}
+      </View>
     </Pressable>
   );
 }
 
 function useStyles({ ringColor }: { ringColor: string }) {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+  return useResponsiveStyles(({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
     card: {
       width: "100%",
+      borderRadius: radius.xxl,
+      backgroundColor: colors.surface,
+      ...elevation.card,
+    },
+    cardInner: {
       flexDirection: "row",
       alignItems: "center",
       gap: spacing.lg,
       padding: spacing.lg,
       borderRadius: radius.xxl,
-      backgroundColor: colors.surface,
       overflow: "hidden",
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.05,
-      shadowRadius: spacing.exact(12),
-      shadowOffset: { width: 0, height: spacing.exact(2) },
-      elevation: 2,
     },
     pressed: {
       opacity: 0.7,
@@ -222,13 +223,11 @@ function useStyles({ ringColor }: { ringColor: string }) {
     ringValueNumber: {
       fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
-      letterSpacing: -0.64,
       color: ringColor,
     },
     ringValuePercent: {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
-      letterSpacing: -0.48,
       color: ringColor,
     },
     emptyCopy: {
@@ -239,7 +238,6 @@ function useStyles({ ringColor }: { ringColor: string }) {
     emptyTitle: {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
-      letterSpacing: -0.16,
       color: colors.ink,
     },
     emptySubtitle: {
@@ -278,7 +276,6 @@ function useStyles({ ringColor }: { ringColor: string }) {
     levelTitle: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      letterSpacing: -0.2,
       color: colors.ink,
     },
     levelSubtitle: {

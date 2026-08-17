@@ -24,7 +24,7 @@ export function useTrainerStyles({
       header: {
         flexDirection: "row",
         alignItems: "center",
-        gap: spacing.exact(8),
+        gap: spacing.exact(16),
       },
       headerCenter: {
         flex: 1,
@@ -79,7 +79,6 @@ export function useTrainerStyles({
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("medium"),
-        letterSpacing: -0.16,
         color: colors.textPrimary,
         marginBottom: spacing.exact(12),
         paddingHorizontal: spacing.exact(24),
@@ -123,7 +122,6 @@ export function useTrainerStyles({
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
         color: feedbackTitleColor,
       },
       feedbackHeaderActions: {
@@ -208,7 +206,6 @@ export function useTrainerStyles({
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
         color: colors.onAccent,
       },
       pressed: {
@@ -252,7 +249,6 @@ export function useTrainerStyles({
         fontSize: responsiveFont(32),
         lineHeight: responsiveFont(36),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -0.64,
         textAlign: "center",
         color: colors.textPrimary,
         marginBottom: spacing.exact(16),
@@ -261,7 +257,6 @@ export function useTrainerStyles({
         fontSize: responsiveFont(40),
         lineHeight: responsiveFont(40),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -0.8,
         textAlign: "center",
         marginBottom: spacing.exact(12),
         color: resultPercentColor,
@@ -301,7 +296,6 @@ export function useTrainerStyles({
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.16,
         color: colors.textPrimary,
       },
       nextSubtitle: {
@@ -309,6 +303,6 @@ export function useTrainerStyles({
         lineHeight: responsiveFont(16),
         color: colors.textMuted,
       },
-    })
+    }),
   );
 }

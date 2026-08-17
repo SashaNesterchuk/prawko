@@ -186,15 +186,15 @@ export function QuestionSessionResultView({
     };
     const reviewAnswer: RemoteExamAnswer | null = answer
       ? {
-          answerGiven: answer.selectedAnswer,
-          answeredAt: answer.answeredAt,
-          isCorrect: answer.isCorrect,
-          order: reviewIndex + 1,
-          pointsAwarded: answer.isCorrect ? questionRef.points : 0,
-          questionAttemptId: null,
-          questionId: reviewQuestionId,
-          questionSourceId: reviewQuestionId,
-        }
+        answerGiven: answer.selectedAnswer,
+        answeredAt: answer.answeredAt,
+        isCorrect: answer.isCorrect,
+        order: reviewIndex + 1,
+        pointsAwarded: answer.isCorrect ? questionRef.points : 0,
+        questionAttemptId: null,
+        questionId: reviewQuestionId,
+        questionSourceId: reviewQuestionId,
+      }
       : null;
 
     return (
@@ -258,16 +258,17 @@ export function QuestionSessionResultView({
   }
 
   function handleNewAttempt() {
-    clearActiveSession();
-    router.replace({
-      pathname: "/question",
-      params: buildQuestionRouteParams({
-        mode: activeSession?.request.mode ?? sessionMode,
-        questionLimit: activeSession?.request.questionLimit,
-        studyPlanTaskId: activeSession?.request.studyPlanTaskId,
-        topic: activeSession?.request.topic,
-      }),
+    const nextParams = buildQuestionRouteParams({
+      mode: activeSession?.request.mode ?? sessionMode,
+      questionLimit: activeSession?.request.questionLimit,
+      studyPlanTaskId: activeSession?.request.studyPlanTaskId,
+      timeLimitSeconds: activeSession?.request.timeLimitSeconds,
+      topic: activeSession?.request.topic,
     });
+    clearActiveSession();
+    // Already on `/question` — replace() pops to Home on iOS. Update params
+    // so the session hook draws a fresh queue at question 1.
+    router.setParams(nextParams);
   }
 
   function handleReviewAnswers() {
@@ -328,11 +329,11 @@ export function QuestionSessionResultView({
                   >
                     {scoreDelta.percentPoints > 0
                       ? t("question.deltaBetter", {
-                          percent: Math.abs(scoreDelta.percentPoints),
-                        })
+                        percent: Math.abs(scoreDelta.percentPoints),
+                      })
                       : t("question.deltaWorse", {
-                          percent: Math.abs(scoreDelta.percentPoints),
-                        })}
+                        percent: Math.abs(scoreDelta.percentPoints),
+                      })}
                   </CText>
                 </View>
               ) : null}
@@ -459,18 +460,18 @@ function QuestionResultChip({
   const palette =
     question.status === "correct"
       ? {
-          backgroundColor: accents.green.soft,
-          color: accents.green.ink,
-        }
+        backgroundColor: accents.green.soft,
+        color: accents.green.ink,
+      }
       : question.status === "wrong"
         ? {
-            backgroundColor: accents.red.soft,
-            color: accents.red.ink,
-          }
+          backgroundColor: accents.red.soft,
+          color: accents.red.ink,
+        }
         : {
-            backgroundColor: colors.surface2,
-            color: colors.ink3,
-          };
+          backgroundColor: colors.surface2,
+          color: colors.ink3,
+        };
 
   return (
     <View style={[styles.chip, { backgroundColor: palette.backgroundColor }]}>
@@ -535,7 +536,6 @@ function useStyles({
         fontSize: responsiveFont(40),
         lineHeight: responsiveFont(40),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -0.8,
         textAlign: "center",
         color: scoreColor ?? accents.green.fill,
         marginBottom: spacing.exact(8),
@@ -619,7 +619,6 @@ function useStyles({
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.16,
         color: colors.ink,
       },
       whatsNextBody: {

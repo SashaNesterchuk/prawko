@@ -16,6 +16,7 @@ import {
 import { getOfflineGateDescription } from "../../src/features/offline/offline-gate-copy";
 import { useOfflineFeatureGate } from "../../src/features/offline/useOfflineFeatureGate";
 import { getExamQuestionTarget, isExamSimulatorMode } from "../../src/features/exam/exam-config";
+import { resolveExamLaunchDecision } from "../../src/features/exam/exam-launch";
 import { cacheExamSnapshot } from "../../src/features/exam/exam-snapshot-cache";
 import {
   fetchLatestActiveExamSession,
@@ -102,31 +103,29 @@ export default function ExamIntroScreen() {
         useRemote: canUseRemoteExam,
       });
 
-      if (activeSnapshot) {
-        // Drop a stale active session if its size no longer matches this launch
-        // (e.g. full exam that was wrongly started with a leftover mini-test limit).
-        if (
-          activeSnapshot.session.totalQuestionsTarget === totalQuestionsTarget &&
-          activeSnapshot.session.currentCategory === preferredCategory
-        ) {
-          cacheExamSnapshot(activeSnapshot);
-          track(ANALYTICS_EVENTS.examSessionResumed.key, {
-            mode: activeSnapshot.session.mode,
-            question_total: activeSnapshot.session.totalQuestionsTarget,
-            resumed_at_question: activeSnapshot.session.currentQuestionIndex,
-          });
-          openExamSession(activeSnapshot.session.id);
-          return;
-        }
+      const launchDecision = resolveExamLaunchDecision({
+        activeSnapshot,
+        preferredCategory,
+        totalQuestionsTarget,
+      });
 
+      if (launchDecision.action === "resume" && activeSnapshot) {
+        cacheExamSnapshot(activeSnapshot);
+        track(ANALYTICS_EVENTS.examSessionResumed.key, {
+          mode: activeSnapshot.session.mode,
+          question_total: activeSnapshot.session.totalQuestionsTarget,
+          resumed_at_question: launchDecision.currentQuestionIndex,
+        });
+        openExamSession(launchDecision.sessionId);
+        return;
+      }
+
+      if (launchDecision.action === "abandon" && activeSnapshot) {
         await setExamSessionStatus({
-          sessionId: activeSnapshot.session.id,
+          sessionId: launchDecision.sessionId,
           status: "abandoned",
           metadata: {
-            reason:
-              activeSnapshot.session.currentCategory === preferredCategory
-                ? "question_target_mismatch"
-                : "category_mismatch",
+            reason: launchDecision.reason,
             expected_total_questions: totalQuestionsTarget,
             previous_total_questions:
               activeSnapshot.session.totalQuestionsTarget,

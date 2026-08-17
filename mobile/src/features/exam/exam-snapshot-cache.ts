@@ -6,6 +6,7 @@ const LAST_SNAPSHOT_PREFIX = "prawko.exam.lastSnapshot:";
 const ACTIVE_SESSION_ID_KEY = "prawko.exam.activeSessionId";
 
 let cachedSnapshot: RemoteExamSnapshot | null = null;
+let persistChain: Promise<void> = Promise.resolve();
 
 /**
  * Keep the latest exam snapshot in memory and on disk so both the live session
@@ -15,9 +16,21 @@ let cachedSnapshot: RemoteExamSnapshot | null = null;
 export function cacheExamSnapshot(snapshot: RemoteExamSnapshot) {
   cachedSnapshot = snapshot;
 
-  void persistExamSnapshot(snapshot).catch((error) => {
-    console.warn("Failed to persist exam snapshot.", error);
-  });
+  persistChain = persistChain
+    .then(() => persistExamSnapshot(snapshot))
+    .catch((error) => {
+      console.warn("Failed to persist exam snapshot.", error);
+    });
+}
+
+export async function waitForExamSnapshotPersistForTests() {
+  await persistChain;
+}
+
+export async function resetExamSnapshotCacheForTests() {
+  await persistChain.catch(() => undefined);
+  cachedSnapshot = null;
+  persistChain = Promise.resolve();
 }
 
 export function getCachedExamSnapshot(

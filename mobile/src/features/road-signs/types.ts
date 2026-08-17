@@ -1,6 +1,17 @@
 import type { GreenWaveAccent } from "../../theme/green-wave";
 
-export type RoadSignCategoryId = "A" | "B" | "C" | "D" | "F" | "G" | "T" | "W";
+export type RoadSignCategoryId =
+  | "A"
+  | "B"
+  | "C"
+  | "D"
+  | "E"
+  | "F"
+  | "T"
+  | "G"
+  | "P"
+  | "S"
+  | "W";
 
 export type RoadSign = {
   id: string;
@@ -17,6 +28,17 @@ export type RoadSignCategory = {
   titlePl: string;
   subtitlePl: string;
   accent: GreenWaveAccent;
-  iconName: "warning-outline" | "close-circle-outline" | "arrow-forward-circle-outline" | "information-circle-outline" | "add-circle-outline" | "train-outline" | "document-text-outline" | "shield-outline";
+  iconName:
+    | "warning-outline"
+    | "close-circle-outline"
+    | "arrow-forward-circle-outline"
+    | "information-circle-outline"
+    | "navigate-outline"
+    | "add-circle-outline"
+    | "document-text-outline"
+    | "train-outline"
+    | "git-network-outline"
+    | "traffic-light-outline"
+    | "shield-outline";
   count: number;
 };

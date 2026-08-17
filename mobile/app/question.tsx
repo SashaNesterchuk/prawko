@@ -165,36 +165,51 @@ function QuestionTrainingScreen() {
   if (
     session.isEmptyState &&
     (session.activeSession?.emptyReason === "saved_empty" ||
-      session.activeSession?.emptyReason === "wrong_answers_empty")
+      session.activeSession?.emptyReason === "wrong_answers_empty" ||
+      session.activeSession?.emptyReason === "review_due_empty")
   ) {
     // Read on demand: deriving it for every answered question would scan the
     // whole catalog on each tap.
     const { questionUserState } = useQuestionProgressStore.getState();
-    const isMistakesEmpty =
-      session.activeSession?.emptyReason === "wrong_answers_empty";
+    const displayStats = getQuestionDisplayStats(questionUserState);
+    const emptyReason = session.activeSession?.emptyReason;
+    const isMistakesEmpty = emptyReason === "wrong_answers_empty";
+    const isSmartReviewEmpty = emptyReason === "review_due_empty";
 
     return (
       <PracticeEmptyState
         headerTitle={
-          isMistakesEmpty
-            ? t("mistakes.screenTitle")
-            : t("practice.savedTitle")
+          isSmartReviewEmpty
+            ? t("learn.tileSrsTitle")
+            : isMistakesEmpty
+              ? t("mistakes.screenTitle")
+              : t("practice.savedTitle")
         }
         title={
-          isMistakesEmpty
-            ? t("mistakes.emptyTitle")
-            : t("practice.savedEmptyTitle")
+          isSmartReviewEmpty
+            ? t("learn.srsEmptyTitle")
+            : isMistakesEmpty
+              ? t("mistakes.emptyTitle")
+              : t("practice.savedEmptyTitle")
         }
         description={
-          isMistakesEmpty
-            ? t("mistakes.emptyDescription")
-            : t("practice.savedEmptyDescription")
+          isSmartReviewEmpty
+            ? t("learn.srsEmptyDescription")
+            : isMistakesEmpty
+              ? t("mistakes.emptyDescription")
+              : t("practice.savedEmptyDescription")
         }
         iconName="like"
-        dueReviews={getQuestionDisplayStats(questionUserState).reviewDue}
+        variant={isSmartReviewEmpty ? "smartReview" : "default"}
+        dueReviews={displayStats.reviewDue}
+        wrongAnswers={displayStats.wrongAnswers}
         onBack={exitToTabs}
         testID={
-          isMistakesEmpty ? "screen-mistakes-empty" : "screen-practice-empty"
+          isSmartReviewEmpty
+            ? "screen-srs-empty"
+            : isMistakesEmpty
+              ? "screen-mistakes-empty"
+              : "screen-practice-empty"
         }
       />
     );

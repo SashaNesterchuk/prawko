@@ -330,7 +330,6 @@ function useStyles() {
     monthLabel: {
       fontSize: responsiveFont(18),
       fontFamily: getFontFamily("bold"),
-      letterSpacing: -0.2,
       color: colors.ink,
     },
     weekRow: {

@@ -95,7 +95,6 @@ function useStyles({
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.16,
       color: colors.ink,
     },
     meta: {

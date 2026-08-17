@@ -1,6 +1,12 @@
 import { Pressable, View } from "react-native";
 
-import { CText, getFontFamily, useResponsiveStyles, type PercentageString } from "../../portable-ui";
+import {
+  CText,
+  getTypographyStyle,
+  useResponsiveStyles,
+  withResponsiveFont,
+  type PercentageString,
+} from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { Icon } from "../icons/Icon";
 
@@ -76,7 +82,7 @@ export function TopicReadinessCard({
   const body = (
     <View style={styles.inner}>
       <View style={styles.headerRow}>
-        <CText style={styles.title} numberOfLines={1}>
+        <CText style={styles.title} numberOfLines={1} s16>
           {title}
         </CText>
         <CText style={styles.readinessValue} testID={readinessTestID}>
@@ -181,16 +187,12 @@ function useStyles({
     title: {
       flex: 1,
       minWidth: 0,
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
-      fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.16,
+      ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
       color: colors.ink,
+      // color: "red",
     },
     readinessValue: {
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
-      fontFamily: getFontFamily("regular"),
+      ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
       color: readinessTextColor,
     },
     track: {
@@ -227,10 +229,8 @@ function useStyles({
       opacity: 0.6,
     },
     footerLabel: {
-      fontSize: responsiveFont(12),
-      lineHeight: responsiveFont(16),
-      fontFamily: getFontFamily("regular"),
-      color: colors.inkMuted,
+      ...withResponsiveFont(getTypographyStyle("bodyXS"), responsiveFont),
+      color: colors.ink2,
     },
   }));
 }

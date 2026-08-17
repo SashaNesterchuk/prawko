@@ -106,7 +106,6 @@ function useStyles() {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.2,
       color: theme.colors.white,
     },
     description: {

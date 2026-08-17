@@ -1,0 +1,15 @@
+# Reusable steps: confirm the training/exam exit dialog and wait for Home.
+appId: com.mindjar.prawko
+---
+- extendedWaitUntil:
+    visible:
+      id: "training-exit-dialog"
+    timeout: 10000
+
+- tapOn:
+    id: "training-exit-finish"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000

@@ -264,7 +264,6 @@ function useStyles() {
         fontSize: responsiveFont(32),
         lineHeight: responsiveFont(32),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -0.64,
         color: colors.textPrimary,
       },
       grid: {
@@ -301,7 +300,6 @@ function useStyles() {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.16,
         color: colors.textPrimary,
       },
       chipLabelSelected: {
@@ -347,7 +345,6 @@ function useStyles() {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
         color: colors.onAccent,
       },
     })

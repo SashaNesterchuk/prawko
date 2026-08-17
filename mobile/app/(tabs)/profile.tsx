@@ -611,7 +611,8 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
         flex: 1,
       },
       content: {
-        padding: spacing.exact(24),
+        paddingTop: spacing.exact(12),
+        paddingHorizontal: spacing.exact(24),
         paddingBottom: spacing.exact(96) + safeBottom,
         gap: spacing.exact(24),
       },
@@ -643,7 +644,6 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("medium"),
-        letterSpacing: -0.16,
         color: accents.red.ink,
       },
     })

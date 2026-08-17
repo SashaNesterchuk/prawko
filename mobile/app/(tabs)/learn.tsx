@@ -10,7 +10,9 @@ import { Icon, type IconName } from "../../src/components/icons";
 import { ActionTile } from "../../src/components/shell/ActionTile";
 import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
 import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
+import { ActionTileSection } from "../../src/components/shell/ActionTileSection";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { ScreenSection } from "../../src/components/shell/ScreenSection";
 import { TopicReadinessCard } from "../../src/components/shell/TopicReadinessCard";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
@@ -28,13 +30,7 @@ import {
   getWarsawIsoDate,
   type RemoteReadinessSummary,
 } from "../../src/features/study-plan/supabase-study-plan-progress";
-import {
-  CText,
-  getTypographyStyle,
-  useResponsiveFonts,
-  useResponsiveStyles,
-  withResponsiveFont,
-} from "../../src/portable-ui";
+import { useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
@@ -179,11 +175,11 @@ export default function LearnTabScreen() {
       title: examTitle,
       subtitle: recentExamPassed
         ? t("learn.tileExamSubtitlePassed", {
-            defaultValue: "Симуляція: 1/1",
-          })
+          defaultValue: "Симуляція: 1/1",
+        })
         : t("learn.tileExamSubtitlePending", {
-            defaultValue: "Симуляція: 0/1",
-          }),
+          defaultValue: "Симуляція: 0/1",
+        }),
       icon: <LearnActionIcon accent="green" name="exam" />,
       onPress: () => openExam({ title: examTitle }),
     },
@@ -261,6 +257,7 @@ export default function LearnTabScreen() {
             <ActionTile
               fullWidth
               accent="amber"
+              style="faded"
               title={t("learn.tileBlitzTitle", {
                 defaultValue: "Швидка сесія",
               })}
@@ -294,56 +291,39 @@ export default function LearnTabScreen() {
             />
           </View>
 
-          <View style={styles.section}>
-            <CText style={styles.sectionTitle}>
-              {t("learn.personalizedTitle", {
-                defaultValue: "Персоналізоване тренування",
-              })}
-            </CText>
-            <View style={styles.stack}>
-              {personalizedTiles.map((tile) => (
-                <ActionTile
-                  key={tile.key}
-                  title={tile.title}
-                  subtitle={tile.subtitle}
-                  accent={tile.accent}
-                  style={tile.style}
-                  icon={tile.icon}
-                  onPress={tile.onPress}
-                  testID={`learn-tile-${tile.key}`}
-                />
-              ))}
-            </View>
-          </View>
+          <ActionTileSection
+            title={t("learn.personalizedTitle", {
+              defaultValue: "Персоналізоване тренування",
+            })}
+            items={personalizedTiles}
+            testIDPrefix="learn-tile"
+          />
 
-          <View style={styles.section}>
-            <CText style={styles.sectionTitle}>
-              {t("learn.topicsByThemeTitle", {
-                defaultValue: "Навчання за темами",
-              })}
-            </CText>
-            <View style={styles.stack}>
-              {displayTopicCards.map(({ topicId, progress }, index) => (
-                  <TopicReadinessCard
-                    key={topicId}
-                    title={getQuestionTopicTitle(topicId, preferredLocale)}
-                    seen={progress.seen}
-                    total={progress.total}
-                    readiness={progress.progress}
-                    correct={progress.correct}
-                    wrong={progress.wrong}
-                    progressTestID={`learn-topic-card-${topicId}`}
-                    testID={`learn-topic-card-index-${index}`}
-                    onPress={() =>
-                      router.navigate({
-                        pathname: "/topic/[topicId]",
-                        params: { topicId },
-                      })
-                    }
-                  />
-              ))}
-            </View>
-          </View>
+          <ScreenSection
+            title={t("learn.topicsByThemeTitle", {
+              defaultValue: "Навчання за темами",
+            })}
+          >
+            {displayTopicCards.map(({ topicId, progress }, index) => (
+              <TopicReadinessCard
+                key={topicId}
+                title={getQuestionTopicTitle(topicId, preferredLocale)}
+                seen={progress.seen}
+                total={progress.total}
+                readiness={progress.progress}
+                correct={progress.correct}
+                wrong={progress.wrong}
+                progressTestID={`learn-topic-card-${topicId}`}
+                testID={`learn-topic-card-index-${index}`}
+                onPress={() =>
+                  router.navigate({
+                    pathname: "/topic/[topicId]",
+                    params: { topicId },
+                  })
+                }
+              />
+            ))}
+          </ScreenSection>
         </ScrollView>
       </SafeAreaView>
       {countDialog}
@@ -352,7 +332,7 @@ export default function LearnTabScreen() {
 }
 
 function useStyles({ safeBottom }: { safeBottom: number }) {
-  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
+  return useResponsiveStyles(({ spacing }) => ({
     safeArea: {
       flex: 1,
     },
@@ -360,19 +340,13 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       flex: 1,
     },
     content: {
-      padding: spacing.exact(24),
+      paddingTop: spacing.exact(12),
+      paddingHorizontal: spacing.exact(24),
       paddingBottom: spacing.exact(96) + safeBottom,
       gap: spacing.exact(24),
     },
     stack: {
-      gap: spacing.exact(8),
-    },
-    section: {
-      gap: spacing.exact(8),
-    },
-    sectionTitle: {
-      ...withResponsiveFont(getTypographyStyle("bodyM"), responsiveFont),
-      color: colors.ink3,
+      gap: spacing.sm,
     },
   }));
 }

@@ -1,0 +1,58 @@
+# Feature: Traps
+# Scenario: Answering then finishing traps training starts a fresh first question.
+appId: com.mindjar.prawko
+tags:
+  - traps
+  - session
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-home
+
+- tapOn:
+    id: "action-tile-traps"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-question
+
+- assertVisible:
+    id: "question-step-0-current"
+- assertVisible:
+    id: "question-counter"
+    text: "1 / 20"
+
+- runFlow:
+    file: subflows/answer_first_available_option.yaml
+    env:
+      OPTION_ID: question-choice-index-0
+
+- tapOn:
+    id: "question-close"
+
+- runFlow:
+    file: subflows/confirm_training_exit_to_home.yaml
+
+- tapOn:
+    id: "action-tile-traps"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-question
+
+- assertVisible:
+    id: "question-step-0-current"
+- assertNotVisible:
+    id: "question-step-0-wrong"
+- assertNotVisible:
+    id: "question-step-0-correct"
+- assertNotVisible:
+    id: "question-feedback"
+- assertVisible:
+    id: "question-counter"
+    text: "1 / 20"

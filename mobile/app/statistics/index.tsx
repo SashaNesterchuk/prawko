@@ -12,6 +12,7 @@ import { Icon } from "../../src/components/icons";
 import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { ProgressRing } from "../../src/components/shell/ProgressRing";
+import { ScreenHeader } from "../../src/components/shell/ScreenHeader";
 import {
   resolveReadinessLevel,
   resolveReadinessRingColor,
@@ -282,14 +283,13 @@ export default function StatisticsScreen() {
   const signsLearnedPercent =
     signsCatalogProgress.total > 0
       ? Math.round(
-          (signsCatalogProgress.seen / signsCatalogProgress.total) * 100
-        )
+        (signsCatalogProgress.seen / signsCatalogProgress.total) * 100
+      )
       : 0;
   const readiness = examReadiness;
   const readinessLevel = resolveReadinessLevel(readiness);
   const ringColor = resolveReadinessRingColor(readiness, accents);
   const styles = useStyles({ ringColor, safeBottom });
-  const backIconSize = responsiveFont(22);
   const smallIconSize = responsiveFont(16);
   const weekBadgeIconSize = responsiveFont(12);
   const ringSize = spacing.exact(160);
@@ -350,14 +350,14 @@ export default function StatisticsScreen() {
     readinessPeriodChange == null
       ? ""
       : t(
-          `statistics.${resolveReadinessPeriodChangeLabelKey(
-            readinessPeriodChange.periodDays
-          )}`,
-          {
-            days: readinessPeriodChange.periodDays,
-            value: Math.abs(readinessPeriodChange.deltaPercent),
-          }
-        );
+        `statistics.${resolveReadinessPeriodChangeLabelKey(
+          readinessPeriodChange.periodDays
+        )}`,
+        {
+          days: readinessPeriodChange.periodDays,
+          value: Math.abs(readinessPeriodChange.deltaPercent),
+        }
+      );
 
   const weakTopics = useMemo(
     () =>
@@ -454,23 +454,11 @@ export default function StatisticsScreen() {
         testID="screen-statistics"
       >
         <StatusBar style="dark" />
-        <View style={styles.header}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t("common.back")}
-            onPress={() => router.back()}
-            style={({ pressed }) => [styles.backButton, pressed ? styles.pressed : null]}
-          >
-            <Ionicons
-              color={colors.textPrimary}
-              name="chevron-back"
-              size={backIconSize}
-            />
-          </Pressable>
-          <CText style={styles.headerTitle}>
-            {t("statistics.title")}
-          </CText>
-        </View>
+        <ScreenHeader
+          title={t("statistics.title")}
+          backLabel={t("common.back")}
+          onBack={() => router.back()}
+        />
 
         <ScrollView
           style={styles.scroll}
@@ -731,9 +719,9 @@ export default function StatisticsScreen() {
                   value={
                     bestExam
                       ? t("statistics.bestExamValue", {
-                          score: bestExam.scorePoints,
-                          total: bestExam.totalPointsTarget,
-                        })
+                        score: bestExam.scorePoints,
+                        total: bestExam.totalPointsTarget,
+                      })
                       : "—"
                   }
                 />
@@ -919,7 +907,6 @@ function useQueueRowStyles({
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.16,
         color: countTextColor,
       },
     })
@@ -1014,7 +1001,6 @@ function useTopicsInfoStyles() {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.2,
       color: colors.ink,
     },
     body: {
@@ -1052,30 +1038,6 @@ function useStyles({
     ({ accents, colors, radius, responsiveFont, spacing }) => ({
       safeArea: {
         flex: 1,
-      },
-      header: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.exact(8),
-        paddingHorizontal: spacing.exact(16),
-        paddingTop: spacing.exact(8),
-        paddingBottom: spacing.exact(12),
-      },
-      backButton: {
-        width: spacing.exact(40),
-        height: spacing.exact(40),
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: radius.lg,
-        backgroundColor: colors.glassTint,
-      },
-      headerTitle: {
-        flex: 1,
-        fontSize: responsiveFont(20),
-        lineHeight: responsiveFont(28),
-        fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
-        color: colors.textPrimary,
       },
       scroll: {
         flex: 1,
@@ -1125,14 +1087,12 @@ function useStyles({
         fontSize: responsiveFont(52),
         lineHeight: responsiveFont(52),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -1.04,
         color: ringColor,
       },
       ringValuePercent: {
         fontSize: responsiveFont(40),
         lineHeight: responsiveFont(52),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -0.8,
         color: ringColor,
       },
       overviewCopy: {
@@ -1146,7 +1106,6 @@ function useStyles({
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
         color: colors.textPrimary,
       },
       levelSubtitle: {
@@ -1193,7 +1152,6 @@ function useStyles({
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
         color: colors.textPrimary,
       },
       examDateCta: {
@@ -1236,7 +1194,6 @@ function useStyles({
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
         color: colors.textPrimary,
       },
       infoButton: {
@@ -1278,7 +1235,6 @@ function useStyles({
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.16,
         color: colors.textPrimary,
       },
       queueSubtitle: {
@@ -1295,7 +1251,6 @@ function useStyles({
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.16,
         color: colors.textPrimary,
       },
       weakSubtitle: {

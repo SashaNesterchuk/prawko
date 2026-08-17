@@ -172,14 +172,14 @@ export default function HomeTabScreen() {
     readinessPeriodChange == null
       ? undefined
       : t(
-          `dash.${resolveReadinessPeriodChangeLabelKey(
-            readinessPeriodChange.periodDays
-          )}`,
-          {
-            days: readinessPeriodChange.periodDays,
-            value: Math.abs(readinessPeriodChange.deltaPercent),
-          }
-        );
+        `dash.${resolveReadinessPeriodChangeLabelKey(
+          readinessPeriodChange.periodDays
+        )}`,
+        {
+          days: readinessPeriodChange.periodDays,
+          value: Math.abs(readinessPeriodChange.deltaPercent),
+        }
+      );
   const wrongAnswers = stats.wrongAnswers;
   const examPassed =
     readinessSummary != null && readinessSummary.daysUntilExam <= 0;
@@ -273,9 +273,9 @@ export default function HomeTabScreen() {
             subtitle={
               isReadinessEmpty
                 ? t("dash.readinessEmptyDescription", {
-                    defaultValue:
-                      "Пройди швидкий тест, щоб оцінити свій рівень знань.",
-                  })
+                  defaultValue:
+                    "Пройди швидкий тест, щоб оцінити свій рівень знань.",
+                })
                 : undefined
             }
             levelLabel={isReadinessEmpty ? undefined : readinessLevelLabel}
@@ -288,14 +288,14 @@ export default function HomeTabScreen() {
               isReadinessEmpty
                 ? undefined
                 : t("dash.readinessCovered", {
-                    defaultValue: "Охоплено питань",
-                  })
+                  defaultValue: "Охоплено питань",
+                })
             }
             detailsLabel={
               isReadinessEmpty
                 ? t("dash.readinessDetails", {
-                    defaultValue: "Оціни знання",
-                  })
+                  defaultValue: "Оціни знання",
+                })
                 : undefined
             }
             weekChangePercent={readinessWeekChangePercent}
@@ -386,7 +386,8 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       flex: 1,
     },
     content: {
-      padding: spacing.exact(24),
+      paddingTop: spacing.exact(24),
+      paddingHorizontal: spacing.exact(24),
       paddingBottom: spacing.exact(96) + safeBottom,
       gap: spacing.exact(24),
     },
@@ -416,7 +417,6 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       color: colors.ink,
       fontFamily: getFontFamily("medium"),
       fontSize: responsiveFont(13),
-      letterSpacing: 0.2,
     },
   }));
 }

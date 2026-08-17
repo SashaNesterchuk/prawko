@@ -119,7 +119,6 @@ function useStyles({ embedded }: { embedded: boolean }) {
       fontSize: responsiveFont(embedded ? 14 : 16),
       lineHeight: responsiveFont(embedded ? 20 : 24),
       fontFamily: getFontFamily(embedded ? "medium" : "semiBold"),
-      letterSpacing: embedded ? 0 : -0.16,
       color: colors.ink,
     },
     statsRow: {

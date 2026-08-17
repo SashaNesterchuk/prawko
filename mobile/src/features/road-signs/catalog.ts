@@ -35,23 +35,41 @@ const CATEGORY_META: Record<
     accent: "green",
     iconName: "information-circle-outline",
   },
+  E: {
+    titlePl: "Znaki kierunku i miejscowości",
+    subtitlePl: "Wskazują kierunki i miejscowości",
+    accent: "blue",
+    iconName: "navigate-outline",
+  },
   F: {
     titlePl: "Znaki uzupełniające",
     subtitlePl: "Doprecyzowują inne znaki",
     accent: "green",
     iconName: "add-circle-outline",
   },
-  G: {
-    titlePl: "Znaki kolejowe i tramwajowe",
-    subtitlePl: "Dotyczą przejazdów i torowisk",
-    accent: "blue",
-    iconName: "train-outline",
-  },
   T: {
-    titlePl: "Tablice dodatkowe",
+    titlePl: "Tabliczki do znaków drogowych",
     subtitlePl: "Uzupełniają znaki główne",
     accent: "amber",
     iconName: "document-text-outline",
+  },
+  G: {
+    titlePl: "Znaki dodatkowe",
+    subtitlePl: "Dotyczą przejazdów kolejowych",
+    accent: "blue",
+    iconName: "train-outline",
+  },
+  P: {
+    titlePl: "Znaki drogowe poziome",
+    subtitlePl: "Oznakowanie poziome jezdni",
+    accent: "green",
+    iconName: "git-network-outline",
+  },
+  S: {
+    titlePl: "Znaki świetlne",
+    subtitlePl: "Sygnalizacja świetlna na drodze",
+    accent: "red",
+    iconName: "traffic-light-outline",
   },
   W: {
     titlePl: "Znaki wojskowe",
@@ -61,15 +79,28 @@ const CATEGORY_META: Record<
   },
 };
 
-const CATEGORY_ORDER: RoadSignCategoryId[] = ["A", "B", "C", "D", "F", "G", "T", "W"];
+const CATEGORY_ORDER: RoadSignCategoryId[] = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "T",
+  "G",
+  "P",
+  "S",
+  "W",
+];
 
 function parseCategoryId(filename: string): RoadSignCategoryId | null {
   const match = filename.match(/^PL_road_sign_([A-Z])-/);
-  return match ? (match[1] as RoadSignCategoryId) : null;
+  const categoryId = match?.[1] as RoadSignCategoryId | undefined;
+  return categoryId && CATEGORY_ORDER.includes(categoryId) ? categoryId : null;
 }
 
 function parseSignCode(filename: string): string {
-  return filename.replace(/^PL_road_sign_/, "").replace(/\.svg$/, "");
+  return filename.replace(/^PL_road_sign_/, "").replace(/\.(svg|png|jpe?g)$/i, "");
 }
 
 function compareSignCodes(left: string, right: string): number {
@@ -103,9 +134,15 @@ function compareSignCodes(left: string, right: string): number {
 }
 
 export function getRoadSignPreviewUrl(imageUrl: string, size = 256): string {
-  const filename = imageUrl.split("/").pop() ?? "";
-  const basePath = imageUrl.replace("https://upload.wikimedia.org/wikipedia/commons/", "");
-  return `https://upload.wikimedia.org/wikipedia/commons/thumb/${basePath}/${size}px-${filename}.png`;
+  const commonsPrefix = "https://upload.wikimedia.org/wikipedia/commons/";
+
+  if (!imageUrl.startsWith(commonsPrefix)) {
+    return imageUrl;
+  }
+
+  const basePath = imageUrl.slice(commonsPrefix.length).split("?")[0] ?? "";
+  const filename = basePath.split("/").pop() ?? "";
+  return `${commonsPrefix}thumb/${basePath}/${size}px-${filename}.png`;
 }
 
 function buildSign(filename: string, imageUrl: string): RoadSign | null {
@@ -123,7 +160,9 @@ function buildSign(filename: string, imageUrl: string): RoadSign | null {
     filename,
     imageUrl,
     previewUrl: getRoadSignPreviewUrl(imageUrl, 256),
-    searchText: `${code} ${categoryId} ${filename}`.toLowerCase(),
+    searchText: `${code} ${categoryId} ${filename}${
+      code === "E-19" ? " E-19a" : ""
+    }`.toLowerCase(),
   };
 }
 

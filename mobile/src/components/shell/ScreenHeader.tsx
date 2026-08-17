@@ -10,19 +10,19 @@ import {
 } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 
-type SignsScreenHeaderProps = {
+type ScreenHeaderProps = {
   title: string;
   onBack?: () => void;
   backLabel?: string;
   rightSlot?: ReactNode;
 };
 
-export function SignsScreenHeader({
+export function ScreenHeader({
   title,
   onBack,
   backLabel = "Назад",
   rightSlot,
-}: SignsScreenHeaderProps) {
+}: ScreenHeaderProps) {
   const theme = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles();
@@ -35,6 +35,7 @@ export function SignsScreenHeader({
           accessibilityLabel={backLabel}
           onPress={onBack}
           style={({ pressed }) => [styles.backButton, pressed ? styles.pressed : null]}
+          testID="nav-back"
         >
           <Icon color={theme.colors.ink} name="back" size={responsiveFont(22)} />
         </Pressable>
@@ -56,10 +57,8 @@ function useStyles() {
     header: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing.sm,
-      paddingHorizontal: spacing.lg,
-      paddingTop: spacing.sm,
-      paddingBottom: spacing.md,
+      gap: spacing.lg,
+      paddingHorizontal: spacing.xxl,
     },
     backButton: {
       width: spacing.exact(40),
@@ -78,7 +77,6 @@ function useStyles() {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.2,
       color: colors.ink,
     },
     pressed: {

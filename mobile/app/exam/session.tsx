@@ -605,7 +605,7 @@ export default function ExamSessionScreen() {
           mode === "success"
             ? question.correctAnswer
             : choices[Math.floor(Math.random() * Math.max(1, choices.length))]
-                ?.id ?? question.correctAnswer;
+              ?.id ?? question.correctAnswer;
 
         const isCorrect = question.correctAnswer === answerGiven;
         current = await submitExamAnswer({
@@ -1009,7 +1009,11 @@ export default function ExamSessionScreen() {
 
             <View style={styles.topBarTitle}>
               <CText style={styles.eyebrow}>{t("exam.sessionEyebrow")}</CText>
-              <CText style={styles.topBarHeading} numberOfLines={1}>
+              <CText
+                style={styles.topBarHeading}
+                numberOfLines={1}
+                testID="exam-session-counter"
+              >
                 {t("exam.sessionSubtitle", {
                   current: questionNumber,
                   total: totalQuestions,
@@ -1174,6 +1178,7 @@ export default function ExamSessionScreen() {
             accessibilityRole="button"
             disabled={primaryDisabled}
             onPress={() => void handleAdvance()}
+            testID="exam-next-question"
             style={({ pressed }) => [
               styles.primaryButton,
               primaryDisabled ? styles.primaryButtonDisabled : null,
@@ -1419,7 +1424,6 @@ function useStyles() {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.14,
         fontVariant: ["tabular-nums"],
         color: colors.textPrimary,
       },
@@ -1470,7 +1474,6 @@ function useStyles() {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("medium"),
-        letterSpacing: -0.16,
         color: colors.textPrimary,
         paddingHorizontal: spacing.exact(24),
       },
@@ -1596,7 +1599,6 @@ function useStyles() {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
         color: colors.onAccent,
       },
       pressed: {
@@ -1618,7 +1620,6 @@ function useStyles() {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
         color: colors.textPrimary,
         textAlign: "center",
       },

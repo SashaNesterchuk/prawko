@@ -14,6 +14,7 @@ export type ActionTileItem = {
   style?: ActionTileStyle;
   icon?: ReactNode;
   onPress?: () => void;
+  testID?: string;
 };
 
 type ActionTileGridProps = {
@@ -39,7 +40,7 @@ export function ActionTileGrid({ items, columns = 2 }: ActionTileGridProps) {
               style={item.style}
               icon={item.icon}
               onPress={item.onPress}
-              testID={`action-tile-${item.key}`}
+              testID={item.testID ?? `action-tile-${item.key}`}
             />
           ))}
           {row.length < columns

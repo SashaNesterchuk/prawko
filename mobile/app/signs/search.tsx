@@ -8,7 +8,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { SignListItem } from "../../src/components/shell/SignListItem";
 import { SignSearchField } from "../../src/components/shell/SignSearchField";
-import { SignsScreenHeader } from "../../src/components/shell/SignsScreenHeader";
+import { ScreenHeader } from "../../src/components/shell/ScreenHeader";
 import {
   CText,
   getFontFamily,
@@ -65,7 +65,7 @@ export default function SignsSearchScreen() {
     <GreenWaveScreen>
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <StatusBar style="dark" />
-        <SignsScreenHeader
+        <ScreenHeader
           title={t("signs.searchTitle")}
           backLabel={t("common.back")}
           onBack={() => router.back()}
@@ -163,7 +163,6 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.16,
       color: colors.ink,
     },
     resultList: {
@@ -178,7 +177,6 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
       fontFamily: getFontFamily("bold"),
-      letterSpacing: -0.48,
       color: colors.ink,
       textAlign: "center",
     },

@@ -124,6 +124,20 @@ export function useQuestionTrainingSession() {
       return;
     }
 
+    // A finished session already on screen (e2e seed, Fast Refresh remount)
+    // must keep the result. A new sessionKey would otherwise draw a fresh
+    // queue and look like "started at question 1 of a new attempt".
+    if (
+      currentSession?.finishedAt &&
+      !currentSession.emptyReason &&
+      currentSession.request.mode === mode &&
+      currentSession.request.currentCategory === preferredCategory &&
+      (currentSession.request.topic ?? null) === (topic ?? null) &&
+      (currentSession.request.questionLimit ?? null) === (questionLimit ?? null)
+    ) {
+      return;
+    }
+
     startOrResumeSession({
       currentCategory: preferredCategory,
       mode,

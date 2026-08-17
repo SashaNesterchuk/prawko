@@ -51,9 +51,9 @@ import { useAnalytics } from "../src/providers/AnalyticsProvider";
 
 type FeedbackState =
   | {
-      kind: "error" | "info";
-      message: string;
-    }
+    kind: "error" | "info";
+    message: string;
+  }
   | null;
 
 export default function OfflineModeScreen() {
@@ -199,9 +199,9 @@ export default function OfflineModeScreen() {
           setSnapshot((current) =>
             current
               ? {
-                  ...current,
-                  transfer,
-                }
+                ...current,
+                transfer,
+              }
               : current
           );
         },
@@ -519,8 +519,8 @@ export default function OfflineModeScreen() {
       ) : null}
 
       {readyPack &&
-      readyPack.category !== preferredCategory &&
-      canUseCurrentCatalog ? (
+        readyPack.category !== preferredCategory &&
+        canUseCurrentCatalog ? (
         <AppCard accent>
           <CText style={styles.sectionLabel}>
             {t("offlineMode.replaceCategoryNote")}
@@ -580,7 +580,7 @@ function getTransferPercent(transfer: OfflinePackTransfer | null) {
   if (transfer.unknownSizeAssetCount > 0 && transfer.targetAssetCount > 0) {
     return Math.round(
       (transfer.downloadedAssetCount / Math.max(transfer.targetAssetCount, 1)) *
-        100
+      100
     );
   }
 
@@ -591,7 +591,7 @@ function getTransferPercent(transfer: OfflinePackTransfer | null) {
 
     return Math.round(
       (transfer.downloadedAssetCount / Math.max(transfer.targetAssetCount, 1)) *
-        100
+      100
     );
   }
 
@@ -719,7 +719,6 @@ function useStyles() {
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
       fontFamily: getFontFamily("medium"),
-      letterSpacing: -0.16,
       color: colors.textPrimary,
       marginBottom: spacing.exact(6),
     },

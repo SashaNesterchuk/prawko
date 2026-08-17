@@ -111,14 +111,12 @@ function useStyles({
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
       fontFamily: getFontFamily("bold"),
-      letterSpacing: -0.48,
       color: colors.ink,
     },
     readinessValue: {
       fontSize: responsiveFont(24),
       lineHeight: responsiveFont(32),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.24,
       color: readinessTextColor,
     },
     track: {

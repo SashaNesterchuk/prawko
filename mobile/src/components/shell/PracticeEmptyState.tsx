@@ -16,7 +16,9 @@ import {
 import { useTheme } from "../../providers/ThemeProvider";
 import { ActionTile } from "./ActionTile";
 import { GreenWaveScreen } from "./GreenWaveScreen";
-import { NavigationButton } from "./NavigationButton";
+import { ScreenHeader } from "./ScreenHeader";
+
+type PracticeEmptyVariant = "default" | "smartReview";
 
 type PracticeEmptyStateProps = {
   description: string;
@@ -26,6 +28,8 @@ type PracticeEmptyStateProps = {
   onBack?: () => void;
   testID?: string;
   title: string;
+  variant?: PracticeEmptyVariant;
+  wrongAnswers?: number;
 };
 
 export function PracticeEmptyState({
@@ -36,6 +40,8 @@ export function PracticeEmptyState({
   onBack,
   testID = "screen-practice-empty",
   title,
+  variant = "default",
+  wrongAnswers = 0,
 }: PracticeEmptyStateProps) {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
@@ -48,6 +54,9 @@ export function PracticeEmptyState({
   const { openMode, dialog: countDialog } = useQuestionModeCountDialog();
   const trapsTitle = t("learn.tileTrapsTitle", {
     defaultValue: "Питання-пастки",
+  });
+  const mistakesTitle = t("learn.tileMistakesTitle", {
+    defaultValue: "Виправити помилки",
   });
 
   const openQuestionMode = (
@@ -62,15 +71,11 @@ export function PracticeEmptyState({
     <GreenWaveScreen>
       <SafeAreaView style={styles.safeArea} edges={["top"]} testID={testID}>
         <StatusBar style="dark" />
-        <View style={styles.header}>
-          <NavigationButton
-            inset
-            type="back"
-            accessibilityLabel={t("common.back")}
-            onPress={onBack ?? (() => router.back())}
-          />
-          <CText style={styles.headerTitle}>{headerTitle}</CText>
-        </View>
+        <ScreenHeader
+          title={headerTitle}
+          backLabel={t("common.back")}
+          onBack={onBack ?? (() => router.back())}
+        />
 
         <ScrollView
           style={styles.scroll}
@@ -112,23 +117,44 @@ export function PracticeEmptyState({
                 })
               }
             />
-            <ActionTile
-              accent="amber"
-              style="faded"
-              premium
-              testID="practice-empty-tile-srs"
-              title={t("learn.tileSrsTitle", {
-                defaultValue: "Розумні повторення",
-              })}
-              subtitle={t("learn.tileSrsSubtitle", {
-                defaultValue: "Питання на сьогодні: {{count}}",
-                count: dueReviews,
-              })}
-              icon={
-                <Icon color={accents.amber.fill} name="idea" size={iconSize} />
-              }
-              onPress={() => openQuestionMode("review_due")}
-            />
+            {variant === "smartReview" ? (
+              <ActionTile
+                accent="red"
+                style="faded"
+                testID="practice-empty-tile-mistakes"
+                title={mistakesTitle}
+                subtitle={t("learn.tileMistakesSubtitle", {
+                  defaultValue: "Невиправлених помилок: {{count}}",
+                  count: wrongAnswers,
+                })}
+                icon={
+                  <Icon
+                    color={accents.red.fill}
+                    name="alert"
+                    size={iconSize}
+                  />
+                }
+                onPress={() => router.replace("/mistakes")}
+              />
+            ) : (
+              <ActionTile
+                accent="amber"
+                style="faded"
+                premium
+                testID="practice-empty-tile-srs"
+                title={t("learn.tileSrsTitle", {
+                  defaultValue: "Розумні повторення",
+                })}
+                subtitle={t("learn.tileSrsSubtitle", {
+                  defaultValue: "Питання на сьогодні: {{count}}",
+                  count: dueReviews,
+                })}
+                icon={
+                  <Icon color={accents.amber.fill} name="idea" size={iconSize} />
+                }
+                onPress={() => openQuestionMode("review_due")}
+              />
+            )}
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -141,22 +167,6 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
   return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
     safeArea: {
       flex: 1,
-    },
-    header: {
-      flexDirection: "row" as const,
-      alignItems: "center" as const,
-      gap: spacing.exact(16),
-      paddingHorizontal: spacing.exact(24),
-      paddingTop: spacing.exact(0),
-      paddingBottom: spacing.exact(8),
-    },
-    headerTitle: {
-      flex: 1,
-      fontSize: responsiveFont(20),
-      lineHeight: responsiveFont(28),
-      fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.2,
-      color: colors.textPrimary,
     },
     scroll: {
       flex: 1,
@@ -179,7 +189,6 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
       fontFamily: getFontFamily("bold"),
-      letterSpacing: -0.64,
       color: colors.textPrimary,
       textAlign: "center" as const,
     },

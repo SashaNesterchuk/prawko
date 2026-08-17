@@ -175,7 +175,6 @@ function useStyles({
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
       fontFamily: getFontFamily("medium"),
-      letterSpacing: -0.16,
       color: titleColor ?? colors.ink,
     },
     subtitle: {

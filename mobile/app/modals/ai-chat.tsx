@@ -314,7 +314,6 @@ function useStyles() {
       marginBottom: spacing.exact(8),
       color: colors.textSecondary,
       textTransform: "uppercase",
-      letterSpacing: 0.8,
     },
     messageBody: {
       fontSize: responsiveFont(15),
@@ -328,7 +327,6 @@ function useStyles() {
       marginBottom: spacing.exact(8),
       color: colors.textSecondary,
       textTransform: "uppercase",
-      letterSpacing: 0.8,
     },
     metaPill: {
       paddingHorizontal: spacing.exact(10),

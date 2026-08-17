@@ -1,0 +1,52 @@
+# Feature: Signs
+# Scenario: Answering then closing a sign test starts a fresh first question.
+appId: com.mindjar.prawko
+tags:
+  - signs
+  - session
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: signs
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-signs
+
+- tapOn:
+    id: "signs-train-all"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-sign-test
+
+- assertVisible:
+    id: "question-step-0-current"
+
+- runFlow:
+    file: subflows/answer_first_available_option.yaml
+    env:
+      OPTION_ID: sign-test-option-index-0
+
+- tapOn:
+    id: "sign-test-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-signs"
+    timeout: 20000
+
+- tapOn:
+    id: "signs-train-all"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-sign-test
+
+- assertVisible:
+    id: "question-step-0-current"
+- assertNotVisible:
+    id: "question-step-0-wrong"
+- assertNotVisible:
+    id: "question-step-0-correct"

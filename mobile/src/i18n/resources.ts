@@ -315,6 +315,8 @@ const resourcesBase = {
         tileTrapsSubtitle: "Najczesciej mylone",
         tileSrsTitle: "Inteligentne powtorki",
         tileSrsSubtitle: "Pytania na dzis: {{count}}",
+        srsEmptyTitle: "Brak pytan do powtorki",
+        srsEmptyDescription: "Wroc pozniej albo kontynuuj trening.",
         personalizedTitle: "Spersonalizowany trening",
         topicsByThemeTitle: "Nauka wedlug tematow",
         journeyEyebrow: "Podroz",
@@ -1150,17 +1152,29 @@ const resourcesBase = {
             title: "Znaki informacyjne",
             subtitle: "Informuja o drodze i kierunkach",
           },
+          E: {
+            title: "Znaki kierunku i miejscowości",
+            subtitle: "Wskazuja kierunki i miejscowości",
+          },
           F: {
-            title: "Znaki uzupelniajace",
+            title: "Znaki uzupełniające",
             subtitle: "Doprecyzowuja inne znaki",
           },
-          G: {
-            title: "Znaki kolejowe i tramwajowe",
-            subtitle: "Dotycza przejazdow i torowisk",
-          },
           T: {
-            title: "Tablice dodatkowe",
+            title: "Tabliczki do znaków drogowych",
             subtitle: "Uzupelniaja znaki glowne",
+          },
+          G: {
+            title: "Znaki dodatkowe",
+            subtitle: "Dotycza przejazdow kolejowych",
+          },
+          P: {
+            title: "Znaki drogowe poziome",
+            subtitle: "Oznakowanie poziome jezdni",
+          },
+          S: {
+            title: "Znaki świetlne",
+            subtitle: "Sygnalizacja świetlna na drodze",
           },
           W: {
             title: "Znaki wojskowe",
@@ -1573,6 +1587,8 @@ const resourcesBase = {
         tileTrapsSubtitle: "Найчастіше плутають",
         tileSrsTitle: "Розумні повторення",
         tileSrsSubtitle: "Питання на сьогодні: {{count}}",
+        srsEmptyTitle: "Немає питань до повторення",
+        srsEmptyDescription: "Повертайся пізніше або продовжуй тренування.",
         personalizedTitle: "Персоналізоване тренування",
         topicsByThemeTitle: "Навчання за темами",
         journeyEyebrow: "Подорож",
@@ -2408,17 +2424,29 @@ const resourcesBase = {
             title: "Інформаційні знаки",
             subtitle: "Інформують про дорогу та напрямки",
           },
+          E: {
+            title: "Знаки напрямку та населених пунктів",
+            subtitle: "Вказують напрямки та населені пункти",
+          },
           F: {
-            title: "Додаткові знаки",
+            title: "Доповнювальні знаки",
             subtitle: "Уточнюють інші знаки",
           },
-          G: {
-            title: "Залізничні та трамвайні знаки",
-            subtitle: "Стосуються переїздів та колій",
-          },
           T: {
-            title: "Додаткові таблички",
+            title: "Таблички до дорожніх знаків",
             subtitle: "Доповнюють основні знаки",
+          },
+          G: {
+            title: "Додаткові знаки",
+            subtitle: "Стосуються залізничних переїздів",
+          },
+          P: {
+            title: "Горизонтальна дорожня розмітка",
+            subtitle: "Розмітка на проїзній частині",
+          },
+          S: {
+            title: "Світлові знаки",
+            subtitle: "Світлова сигналізація на дорозі",
           },
           W: {
             title: "Військові знаки",
@@ -2831,6 +2859,8 @@ const resourcesBase = {
         tileTrapsSubtitle: "Most often confused",
         tileSrsTitle: "Smart reviews",
         tileSrsSubtitle: "Questions for today: {{count}}",
+        srsEmptyTitle: "No reviews ready",
+        srsEmptyDescription: "Come back later, or continue training.",
         personalizedTitle: "Personalized training",
         topicsByThemeTitle: "Learn by topics",
         journeyEyebrow: "Journey",
@@ -3673,17 +3703,29 @@ const resourcesBase = {
             title: "Information signs",
             subtitle: "Inform about the road and directions",
           },
+          E: {
+            title: "Directional signs",
+            subtitle: "Show directions and place names",
+          },
           F: {
-            title: "Supplementary signs",
+            title: "Complementary signs",
             subtitle: "Clarify other signs",
           },
-          G: {
-            title: "Railway and tram signs",
-            subtitle: "Apply to crossings and tracks",
-          },
           T: {
-            title: "Additional plates",
+            title: "Complementary plates",
             subtitle: "Supplement main signs",
+          },
+          G: {
+            title: "Additional signs",
+            subtitle: "Apply to railway crossings",
+          },
+          P: {
+            title: "Road markings",
+            subtitle: "Horizontal markings on the roadway",
+          },
+          S: {
+            title: "Traffic signals",
+            subtitle: "Traffic lights and signal devices",
           },
           W: {
             title: "Military signs",

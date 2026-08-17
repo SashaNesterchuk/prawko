@@ -14,7 +14,7 @@ import {
   resolveQuestionCountDialog,
   type QuestionCountSelection,
 } from "../../../src/components/shell/QuestionCountDialog";
-import { SignsScreenHeader } from "../../../src/components/shell/SignsScreenHeader";
+import { ScreenHeader } from "../../../src/components/shell/ScreenHeader";
 import { useResponsiveStyles } from "../../../src/portable-ui";
 import { useTheme } from "../../../src/providers/ThemeProvider";
 import {
@@ -96,7 +96,7 @@ export default function SignsCategoryScreen() {
         testID={`screen-signs-category-${resolvedCategoryId}`}
       >
         <StatusBar style="dark" />
-        <SignsScreenHeader
+        <ScreenHeader
           title={
             category
               ? t(`signs.categories.${category.id}.title`)
@@ -178,11 +178,12 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       flex: 1,
     },
     content: {
-      padding: spacing.xl,
+      paddingHorizontal: spacing.xxl,
+      paddingTop: spacing.md,
       paddingBottom: spacing.exact(100) + safeBottom,
     },
     list: {
-      gap: spacing.md,
+      gap: spacing.sm,
     },
     footer: {
       position: "absolute",
@@ -191,7 +192,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       bottom: 0,
       paddingHorizontal: spacing.xxl,
       paddingTop: spacing.xxl,
-      paddingBottom: spacing.xxl + safeBottom,
+      paddingBottom: safeBottom,
       overflow: "visible",
     },
     footerFade: {

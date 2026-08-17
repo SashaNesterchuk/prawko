@@ -14,7 +14,19 @@ export function pickLocalized(
 
 export function buildSearchText(
   signId: string,
-  name: LocalizedString
+  name: LocalizedString,
+  description?: LocalizedString
 ): string {
-  return [signId, name.pl, name.ua, name.en].join(" ").toLowerCase();
+  return [
+    signId,
+    name.pl,
+    name.ua,
+    name.en,
+    description?.pl,
+    description?.ua,
+    description?.en,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
 }

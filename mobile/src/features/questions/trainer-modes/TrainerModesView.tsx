@@ -3,13 +3,14 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, View } from "react-native";
+import { ScrollView } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon, type IconName } from "../../../components/icons";
-import { ActionTile } from "../../../components/shell/ActionTile";
+import type { ActionTileItem } from "../../../components/shell/ActionTileGrid";
+import { ActionTileSection } from "../../../components/shell/ActionTileSection";
 import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
-import { NavigationButton } from "../../../components/shell/NavigationButton";
+import { ScreenHeader } from "../../../components/shell/ScreenHeader";
 import {
   QuestionCountDialog,
   resolveQuestionCountDialog,
@@ -22,14 +23,7 @@ import {
   getTrainerModeStats,
 } from "../question-engine";
 import { buildQuestionRouteParams } from "../question-routes";
-import {
-  CText,
-  getFontFamily,
-  getTypographyStyle,
-  useResponsiveFonts,
-  useResponsiveStyles,
-  withResponsiveFont,
-} from "../../../portable-ui";
+import { useResponsiveFonts, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
@@ -111,29 +105,29 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   const primaryTiles: TrainerModeTile[] = [
     topic
       ? {
-          key: "topic",
-          mode: "learning",
-          accent: "green",
-          icon: "target",
-          title: t("trainerModes.trainTopicTitle", {
-            defaultValue: "Тренувати тему",
-          }),
-          subtitle: t("trainerModes.trainTopicSubtitle", {
-            defaultValue: "Питання цієї теми",
-          }),
-        }
+        key: "topic",
+        mode: "learning",
+        accent: "green",
+        icon: "target",
+        title: t("trainerModes.trainTopicTitle", {
+          defaultValue: "Тренувати тему",
+        }),
+        subtitle: t("trainerModes.trainTopicSubtitle", {
+          defaultValue: "Питання цієї теми",
+        }),
+      }
       : {
-          key: "random",
-          mode: "learning",
-          accent: "green",
-          icon: "random",
-          title: t("trainerModes.randomTitle", {
-            defaultValue: "Випадкові питання",
-          }),
-          subtitle: t("trainerModes.randomSubtitle", {
-            defaultValue: "Швидке тренування з різних тем",
-          }),
-        },
+        key: "random",
+        mode: "learning",
+        accent: "green",
+        icon: "random",
+        title: t("trainerModes.randomTitle", {
+          defaultValue: "Випадкові питання",
+        }),
+        subtitle: t("trainerModes.randomSubtitle", {
+          defaultValue: "Швидке тренування з різних тем",
+        }),
+      },
     {
       key: "new",
       mode: "new_questions",
@@ -142,11 +136,11 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
       title: t("trainerModes.newTitle", { defaultValue: "Нові питання" }),
       subtitle: topic
         ? t("trainerModes.newSubtitleTopic", {
-            defaultValue: "Нові питання з цієї теми",
-          })
+          defaultValue: "Нові питання з цієї теми",
+        })
         : t("trainerModes.newSubtitle", {
-            defaultValue: "Питання, які ти ще не проходив",
-          }),
+          defaultValue: "Питання, які ти ще не проходив",
+        }),
     },
     {
       key: "saved",
@@ -166,30 +160,30 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   const personalizedTiles: TrainerModeTile[] = [
     topic
       ? {
-          key: "mistakes",
-          mode: "wrong_answers",
-          accent: "red",
-          icon: "alert",
-          title: t("trainerModes.mistakesTitle", {
-            defaultValue: "Виправити помилки",
-          }),
-          subtitle: t("trainerModes.mistakesSubtitle", {
-            defaultValue: "Невиправлених помилок: {{count}}",
-            count: stats.wrongAnswers,
-          }),
-        }
+        key: "mistakes",
+        mode: "wrong_answers",
+        accent: "red",
+        icon: "alert",
+        title: t("trainerModes.mistakesTitle", {
+          defaultValue: "Виправити помилки",
+        }),
+        subtitle: t("trainerModes.mistakesSubtitle", {
+          defaultValue: "Невиправлених помилок: {{count}}",
+          count: stats.wrongAnswers,
+        }),
+      }
       : {
-          key: "weak-topics",
-          mode: "weak_spots",
-          accent: "red",
-          icon: "alert",
-          title: t("trainerModes.weakTopicsTitle", {
-            defaultValue: "Слабкі теми",
-          }),
-          subtitle: t("trainerModes.weakTopicsSubtitle", {
-            defaultValue: "Автоматично за найнижчою готовністю",
-          }),
-        },
+        key: "weak-topics",
+        mode: "weak_spots",
+        accent: "red",
+        icon: "alert",
+        title: t("trainerModes.weakTopicsTitle", {
+          defaultValue: "Слабкі теми",
+        }),
+        subtitle: t("trainerModes.weakTopicsSubtitle", {
+          defaultValue: "Автоматично за найнижчою готовністю",
+        }),
+      },
     {
       key: "high-points",
       mode: "high_points",
@@ -245,25 +239,16 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     startMode(mode, toQuestionLimit(selectedCount));
   };
 
-  const renderSection = (sectionTitle: string, tiles: TrainerModeTile[]) => (
-    <View style={styles.section}>
-      <CText style={styles.sectionTitle}>{sectionTitle}</CText>
-      <View style={styles.stack}>
-        {tiles.map((tile) => (
-          <ActionTile
-            key={tile.key}
-            accent={tile.accent}
-            style="faded"
-            title={tile.title}
-            subtitle={tile.subtitle}
-            icon={<TrainerModeIcon accent={tile.accent} name={tile.icon} />}
-            onPress={() => openCountDialog(tile)}
-            testID={`trainer-mode-${tile.key}`}
-          />
-        ))}
-      </View>
-    </View>
-  );
+  const toActionItems = (tiles: TrainerModeTile[]): ActionTileItem[] =>
+    tiles.map((tile) => ({
+      key: tile.key,
+      title: tile.title,
+      subtitle: tile.subtitle,
+      accent: tile.accent,
+      style: "faded",
+      icon: <TrainerModeIcon accent={tile.accent} name={tile.icon} />,
+      onPress: () => openCountDialog(tile),
+    }));
 
   return (
     <GreenWaveScreen>
@@ -273,33 +258,31 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
         testID="screen-trainer-modes"
       >
         <StatusBar style="dark" />
-        <View style={styles.header}>
-          <NavigationButton
-            inset
-            type="back"
-            accessibilityLabel={t("common.back", { defaultValue: "Назад" })}
-            onPress={() => router.back()}
-          />
-          <CText style={styles.headerTitle} numberOfLines={2}>
-            {screenTitle}
-          </CText>
-        </View>
+        <ScreenHeader
+          title={screenTitle}
+          backLabel={t("common.back", { defaultValue: "Назад" })}
+          onBack={() => router.back()}
+        />
 
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {renderSection(
-            t("trainerModes.primaryTitle", { defaultValue: "Основні режими" }),
-            primaryTiles
-          )}
-          {renderSection(
-            t("trainerModes.personalizedTitle", {
+          <ActionTileSection
+            title={t("trainerModes.primaryTitle", {
+              defaultValue: "Основні режими",
+            })}
+            items={toActionItems(primaryTiles)}
+            testIDPrefix="trainer-mode"
+          />
+          <ActionTileSection
+            title={t("trainerModes.personalizedTitle", {
               defaultValue: "Персоналізоване тренування",
-            }),
-            personalizedTiles
-          )}
+            })}
+            items={toActionItems(personalizedTiles)}
+            testIDPrefix="trainer-mode"
+          />
         </ScrollView>
       </SafeAreaView>
 
@@ -337,42 +320,18 @@ function TrainerModeIcon({
 }
 
 function useStyles({ safeBottom }: { safeBottom: number }) {
-  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
+  return useResponsiveStyles(({ spacing }) => ({
     safeArea: {
       flex: 1,
-    },
-    header: {
-      flexDirection: "row" as const,
-      alignItems: "center" as const,
-      gap: spacing.exact(16),
-      paddingHorizontal: spacing.exact(24),
-      paddingBottom: spacing.exact(8),
-    },
-    headerTitle: {
-      flex: 1,
-      fontSize: responsiveFont(20),
-      lineHeight: responsiveFont(28),
-      fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.2,
-      color: colors.textPrimary,
     },
     scroll: {
       flex: 1,
     },
     content: {
-      padding: spacing.exact(24),
+      paddingTop: spacing.exact(12),
+      paddingHorizontal: spacing.exact(24),
       paddingBottom: spacing.exact(24) + safeBottom,
       gap: spacing.exact(24),
-    },
-    section: {
-      gap: spacing.exact(8),
-    },
-    sectionTitle: {
-      ...withResponsiveFont(getTypographyStyle("bodyM"), responsiveFont),
-      color: colors.ink3,
-    },
-    stack: {
-      gap: spacing.exact(8),
     },
   }));
 }

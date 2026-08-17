@@ -114,7 +114,6 @@ function useStyles({
       fontSize: responsiveFont(16),
       lineHeight: responsiveFont(24),
       fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.16,
       color: colors.ink,
     },
     subtitle: {
@@ -141,8 +140,11 @@ const CATEGORY_ICONS: Record<RoadSignCategory["iconName"], IconName> = {
   "close-circle-outline": "close",
   "arrow-forward-circle-outline": "start",
   "information-circle-outline": "info",
+  "navigate-outline": "map",
   "add-circle-outline": "new",
-  "train-outline": "map",
   "document-text-outline": "document",
+  "train-outline": "map",
+  "git-network-outline": "roadSign",
+  "traffic-light-outline": "warning",
   "shield-outline": "lock",
 };

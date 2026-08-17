@@ -8,8 +8,8 @@ import { StatusBar } from "expo-status-bar";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { MistakesOverviewCard } from "../../src/components/shell/MistakesOverviewCard";
 import { MistakesTopicRow } from "../../src/components/shell/MistakesTopicRow";
-import { NavigationButton } from "../../src/components/shell/NavigationButton";
 import { PracticeEmptyState } from "../../src/components/shell/PracticeEmptyState";
+import { ScreenHeader } from "../../src/components/shell/ScreenHeader";
 import {
   getQuestionTopicTitle,
 } from "../../src/features/question-topics/catalog";
@@ -19,7 +19,7 @@ import {
 } from "../../src/features/questions/question-engine";
 import { listCatalogTopicsWithMistakes } from "../../src/features/questions/mistakes-topics";
 import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
-import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
+import { useResponsiveStyles } from "../../src/portable-ui";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
@@ -97,15 +97,11 @@ export default function MistakesScreen() {
         testID="screen-mistakes"
       >
         <StatusBar style="dark" />
-        <View style={styles.header}>
-          <NavigationButton
-            inset
-            type="back"
-            accessibilityLabel={t("common.back", { defaultValue: "Назад" })}
-            onPress={() => router.back()}
-          />
-          <CText style={styles.headerTitle}>{screenTitle}</CText>
-        </View>
+        <ScreenHeader
+          title={screenTitle}
+          backLabel={t("common.back", { defaultValue: "Назад" })}
+          onBack={() => router.back()}
+        />
 
         <ScrollView
           style={styles.scroll}
@@ -143,24 +139,9 @@ export default function MistakesScreen() {
 }
 
 function useStyles({ safeBottom }: { safeBottom: number }) {
-  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
+  return useResponsiveStyles(({ spacing }) => ({
     safeArea: {
       flex: 1,
-    },
-    header: {
-      flexDirection: "row" as const,
-      alignItems: "center" as const,
-      gap: spacing.exact(16),
-      paddingHorizontal: spacing.exact(24),
-      paddingBottom: spacing.exact(8),
-    },
-    headerTitle: {
-      flex: 1,
-      fontSize: responsiveFont(20),
-      lineHeight: responsiveFont(28),
-      fontFamily: getFontFamily("semiBold"),
-      letterSpacing: -0.2,
-      color: colors.textPrimary,
     },
     scroll: {
       flex: 1,

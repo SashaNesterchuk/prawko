@@ -85,12 +85,12 @@ export function ExamAnswersReviewView({
   const correctChoiceBullets =
     answer && !isCorrectAnswer && question
       ? questionChoices
-          .filter((choice) => choice.id === question.correctAnswer)
-          .map((choice) =>
-            isBooleanQuestion
-              ? choice.label
-              : `${choice.id}. ${choice.label}`
-          )
+        .filter((choice) => choice.id === question.correctAnswer)
+        .map((choice) =>
+          isBooleanQuestion
+            ? choice.label
+            : `${choice.id}. ${choice.label}`
+        )
       : [];
 
   function handleReportProblem() {
@@ -308,7 +308,6 @@ function useStyles() {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("medium"),
-        letterSpacing: -0.16,
         color: colors.textPrimary,
         marginBottom: spacing.exact(12),
         paddingHorizontal: spacing.exact(24),

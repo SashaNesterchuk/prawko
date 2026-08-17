@@ -10,7 +10,7 @@ import {
   ScrollView,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { APP_FEATURES, FEATURE_FLAGS, type AppFeature } from "@prawko/config";
 
@@ -58,6 +58,7 @@ export default function PaywallPage() {
   const { t } = useTranslation();
   const { responsiveFont } = useResponsiveFonts();
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const styles = useStyles();
   const { track } = useAnalytics();
   const { captureError } = useErrorLogger();
@@ -450,7 +451,7 @@ export default function PaywallPage() {
     <PaywallScreen>
       <SafeAreaView
         style={styles.safeArea}
-        edges={["top", "bottom"]}
+        edges={["top"]}
         testID="screen-paywall"
       >
         <StatusBar style="light" />
@@ -579,7 +580,12 @@ export default function PaywallPage() {
             ) : null}
           </ScrollView>
 
-          <View style={styles.footer}>
+          <View
+            style={[
+              styles.footer,
+              insets.bottom > 0 ? { paddingBottom: insets.bottom } : null,
+            ]}
+          >
             {purchaseFeedback ? (
               <CText
                 style={[
@@ -704,7 +710,6 @@ function useStyles() {
     body: {
       flex: 1,
       paddingHorizontal: spacing.exact(24),
-      paddingBottom: spacing.exact(24),
     },
     scroll: {
       flex: 1,
@@ -728,14 +733,12 @@ function useStyles() {
     heroTitle: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      letterSpacing: -0.2,
       textAlign: "center",
       color: colors.onAccent,
     },
     heroPrice: {
       fontSize: responsiveFont(32),
       lineHeight: responsiveFont(32),
-      letterSpacing: -0.64,
       textAlign: "center",
       color: colors.onAccent,
     },
@@ -803,8 +806,10 @@ function useStyles() {
       color: colors.onAccent,
     },
     footer: {
+      marginTop: "auto",
       gap: spacing.exact(8),
       paddingTop: spacing.exact(8),
+      paddingBottom: spacing.exact(8),
     },
     feedbackText: {
       fontSize: responsiveFont(13),
@@ -860,7 +865,6 @@ function useStyles() {
     ctaLabel: {
       fontSize: responsiveFont(20),
       lineHeight: responsiveFont(28),
-      letterSpacing: -0.2,
       textAlign: "center",
       color: colors.onAccent,
     },

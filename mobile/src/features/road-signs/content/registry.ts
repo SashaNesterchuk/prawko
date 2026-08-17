@@ -13,15 +13,23 @@ import type {
 type GeneratedRoadSignMetadata = {
   id: string;
   categoryId: RoadSignMetadata["categoryId"];
-  name: string;
-  description: string;
+  name: string | LocalizedString;
+  description: string | LocalizedString;
 };
 
-function toLocalizedString(value: string): LocalizedString {
+function asLocalized(value: string | LocalizedString): LocalizedString {
+  if (typeof value === "string") {
+    return {
+      pl: value,
+      ua: value,
+      en: value,
+    };
+  }
+
   return {
-    pl: value,
-    ua: value,
-    en: value,
+    pl: value.pl,
+    ua: value.ua || value.pl,
+    en: value.en || value.pl,
   };
 }
 
@@ -32,8 +40,8 @@ const SIGN_METADATA: Record<string, RoadSignMetadata> = Object.fromEntries(
       {
         id: metadata.id,
         categoryId: metadata.categoryId,
-        name: toLocalizedString(metadata.name),
-        description: toLocalizedString(metadata.description),
+        name: asLocalized(metadata.name),
+        description: asLocalized(metadata.description),
       },
     ]
   )
@@ -110,7 +118,7 @@ export function getSignSearchText(signId: string): string {
     return "";
   }
 
-  return buildSearchText(signId, metadata.name);
+  return buildSearchText(signId, metadata.name, metadata.description);
 }
 
 export function matchesSignSearch(signId: string, query: string): boolean {

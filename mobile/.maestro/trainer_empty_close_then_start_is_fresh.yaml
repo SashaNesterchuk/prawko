@@ -1,0 +1,61 @@
+# Feature: Trainer
+# Scenario: Closing before any answer (miss-click) starts a fresh first question.
+appId: com.mindjar.prawko
+tags:
+  - trainer
+  - session
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: trainer-modes
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-trainer-modes
+
+- tapOn:
+    id: "trainer-mode-random"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-question
+
+- assertVisible:
+    id: "question-step-0-current"
+- assertVisible:
+    id: "question-counter"
+    text: "1 / 20"
+
+- tapOn:
+    id: "question-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
+
+- tapOn:
+    id: "action-tile-trainer"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-trainer-modes"
+    timeout: 15000
+
+- tapOn:
+    id: "trainer-mode-random"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-question
+
+- assertVisible:
+    id: "question-step-0-current"
+- assertNotVisible:
+    id: "question-step-0-wrong"
+- assertNotVisible:
+    id: "question-step-0-correct"
+- assertVisible:
+    id: "question-counter"
+    text: "1 / 20"

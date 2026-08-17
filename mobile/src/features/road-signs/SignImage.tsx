@@ -7,7 +7,10 @@ import {
 } from "react-native";
 
 import { useResponsiveStyles } from "../../portable-ui";
-import { getSignAssetComponent } from "./content/signAssets";
+import {
+  getSignAssetComponent,
+  getSignRasterSource,
+} from "./content/signAssets";
 import type { RoadSign } from "./types";
 
 type SignImageProps = {
@@ -37,6 +40,7 @@ export function SignImage({
   const renderWidth = frameWidth - resolvedInset * 2;
   const renderHeight = frameHeight - resolvedInset * 2;
   const SvgComponent = getSignAssetComponent(sign.id);
+  const rasterSource = getSignRasterSource(sign.id);
   const frameStyle = useMemo(
     () => ({
       width: frameWidth,
@@ -61,7 +65,7 @@ export function SignImage({
     <View style={[styles.wrap, frameStyle, style]}>
       <Image
         resizeMode="contain"
-        source={{ uri: sign.previewUrl }}
+        source={rasterSource ?? { uri: sign.previewUrl }}
         style={[
           { width: renderWidth, height: renderHeight },
           imageStyle,

@@ -4,6 +4,14 @@ appId: com.mindjar.prawko
 env:
   TARGET_ID: ${TARGET_ID || "screen-question"}
 ---
+- runFlow:
+    when:
+      visible: "Close Advertisement"
+    commands:
+      - tapOn: "Close Advertisement"
+      - waitForAnimationToEnd:
+          timeout: 3000
+
 - extendedWaitUntil:
     visible:
       id: "question-count-dialog"

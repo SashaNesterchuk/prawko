@@ -1,5 +1,5 @@
 # Feature: Learn personalized training
-# Scenario: Smart reviews opens count picker or session from Learn (no manual topic pick)
+# Scenario: Smart reviews opens the Figma empty screen when nothing is due
 appId: com.mindjar.prawko
 tags:
   - learn
@@ -14,10 +14,17 @@ tags:
 - tapOn:
     id: "learn-tile-srs"
 
+# Fresh onboarded state has no due reviews → Figma smart-review empty screen.
 - extendedWaitUntil:
     visible:
-      id: "screen-question-empty"
+      id: "screen-srs-empty"
     timeout: 15000
 
+- assertVisible:
+    id: "practice-empty-tile-traps"
+- assertVisible:
+    id: "practice-empty-tile-mistakes"
+- assertNotVisible:
+    id: "practice-empty-tile-srs"
 - assertNotVisible: "Work on mistakes"
 - assertNotVisible: "Робота над помилками"

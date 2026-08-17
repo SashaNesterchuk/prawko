@@ -125,6 +125,7 @@ export function ExamResultView({
             type="close"
             accessibilityLabel={t("common.close")}
             onPress={onClose}
+            testID="exam-result-close"
           />
         </View>
 
@@ -174,11 +175,11 @@ export function ExamResultView({
                   >
                     {scoreDelta.percentPoints > 0
                       ? t("exam.deltaBetter", {
-                          percent: Math.abs(scoreDelta.percentPoints),
-                        })
+                        percent: Math.abs(scoreDelta.percentPoints),
+                      })
                       : t("exam.deltaWorse", {
-                          percent: Math.abs(scoreDelta.percentPoints),
-                        })}
+                        percent: Math.abs(scoreDelta.percentPoints),
+                      })}
                   </CText>
                 </View>
               ) : null}
@@ -262,12 +263,17 @@ export function ExamResultView({
             style={styles.footerFade}
           />
           <View style={styles.footer}>
-            <AppButton label={primaryLabel} onPress={onPrimaryAction} />
+            <AppButton
+              label={primaryLabel}
+              onPress={onPrimaryAction}
+              testID="exam-result-primary"
+            />
 
             <View style={styles.secondaryRow}>
               <Pressable
                 accessibilityRole="button"
                 onPress={onReviewAnswers}
+                testID="exam-result-answers"
                 style={({ pressed }) => [
                   styles.secondaryButton,
                   pressed ? styles.pressed : null,
@@ -282,6 +288,7 @@ export function ExamResultView({
               <Pressable
                 accessibilityRole="button"
                 onPress={onNewAttempt}
+                testID="exam-result-new-attempt"
                 style={({ pressed }) => [
                   styles.secondaryButton,
                   pressed ? styles.pressed : null,
@@ -337,18 +344,18 @@ function QuestionResultChip({
   const palette =
     question.status === "correct"
       ? {
-          backgroundColor: accents.green.soft,
-          color: accents.green.ink,
-        }
+        backgroundColor: accents.green.soft,
+        color: accents.green.ink,
+      }
       : question.status === "wrong"
         ? {
-            backgroundColor: accents.red.soft,
-            color: accents.red.ink,
-          }
+          backgroundColor: accents.red.soft,
+          color: accents.red.ink,
+        }
         : {
-            backgroundColor: colors.surface2,
-            color: colors.ink3,
-          };
+          backgroundColor: colors.surface2,
+          color: colors.ink3,
+        };
 
   return (
     <View style={[styles.chip, { backgroundColor: palette.backgroundColor }]}>
@@ -461,7 +468,6 @@ function useStyles({
         fontSize: responsiveFont(32),
         lineHeight: responsiveFont(32),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -0.64,
         textAlign: "center",
         color: colors.ink,
       },
@@ -476,7 +482,6 @@ function useStyles({
         fontSize: responsiveFont(40),
         lineHeight: responsiveFont(40),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -0.8,
         textAlign: "center",
         color: scoreColor ?? accents.green.fill,
         marginTop: spacing.exact(0),
@@ -577,7 +582,6 @@ function useStyles({
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.16,
         color: colors.ink,
       },
       whatsNextBody: {
@@ -623,7 +627,6 @@ function useStyles({
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.2,
         color: colors.onAccent,
       },
       secondaryRow: {
@@ -658,7 +661,6 @@ function useStyles({
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("medium"),
-        letterSpacing: -0.2,
         textAlign: "center",
         color: colors.textPrimary,
       },

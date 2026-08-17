@@ -38,40 +38,42 @@ export function MistakesOverviewCard({
 
   return (
     <View style={styles.card} testID={testID}>
-      <View style={styles.topSection}>
-        <View style={styles.headerRow}>
-          <CText style={styles.title}>{title}</CText>
-          <CText style={styles.rateValue}>{`${mistakeRate}%`}</CText>
-        </View>
+      <View style={styles.cardInner}>
+        <View style={styles.topSection}>
+          <View style={styles.headerRow}>
+            <CText style={styles.title}>{title}</CText>
+            <CText style={styles.rateValue}>{`${mistakeRate}%`}</CText>
+          </View>
 
-        <View style={styles.track}>
-          {mistakeRate > 0 ? <View style={styles.fill} /> : null}
-        </View>
-      </View>
-
-      <View style={styles.footerRow}>
-        <View style={styles.statsCopy}>
-          <CText style={styles.statsLabel}>{wrongLabel}</CText>
-          <View style={styles.statsValueRow}>
-            <Icon color={theme.accents.red.fill} name="close" size={16} />
-            <CText style={styles.statsValue}>{`${wrong} / ${total}`}</CText>
+          <View style={styles.track}>
+            {mistakeRate > 0 ? <View style={styles.fill} /> : null}
           </View>
         </View>
 
-        {onTrainAll ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={onTrainAll}
-            style={({ pressed }) => [
-              styles.trainButton,
-              pressed ? styles.pressed : null,
-            ]}
-            testID="mistakes-train-all"
-          >
-            <CText style={styles.trainButtonLabel}>{trainLabel}</CText>
-            <Icon color={theme.colors.ink2} name="chevron" size={20} />
-          </Pressable>
-        ) : null}
+        <View style={styles.footerRow}>
+          <View style={styles.statsCopy}>
+            <CText style={styles.statsLabel}>{wrongLabel}</CText>
+            <View style={styles.statsValueRow}>
+              <Icon color={theme.accents.red.fill} name="close" size={16} />
+              <CText style={styles.statsValue}>{`${wrong} / ${total}`}</CText>
+            </View>
+          </View>
+
+          {onTrainAll ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={onTrainAll}
+              style={({ pressed }) => [
+                styles.trainButton,
+                pressed ? styles.pressed : null,
+              ]}
+              testID="mistakes-train-all"
+            >
+              <CText style={styles.trainButtonLabel}>{trainLabel}</CText>
+              <Icon color={theme.colors.ink2} name="chevron" size={20} />
+            </Pressable>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -83,8 +85,12 @@ function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
       card: {
         borderRadius: radius.xxl,
         backgroundColor: colors.white,
+        ...elevation.card,
+      },
+      cardInner: {
+        borderRadius: radius.xxl,
         overflow: "hidden",
-        ...elevation.raised,
+        backgroundColor: colors.white,
       },
       topSection: {
         gap: spacing.exact(4),
@@ -103,14 +109,12 @@ function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
         fontSize: responsiveFont(24),
         lineHeight: responsiveFont(32),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: -0.48,
         color: colors.ink,
       },
       rateValue: {
         fontSize: responsiveFont(24),
         lineHeight: responsiveFont(32),
         fontFamily: getFontFamily("semiBold"),
-        letterSpacing: -0.24,
         color: theme.accents.red.fill,
       },
       track: {

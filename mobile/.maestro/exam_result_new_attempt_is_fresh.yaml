@@ -1,0 +1,29 @@
+# Feature: Exam result
+# Scenario: Plus user starts a new attempt from a finished result at question 1.
+appId: com.mindjar.prawko
+tags:
+  - exam
+  - result
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: exam-result
+      EXAM_SESSION_STATUS: completed
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-exam-result
+
+- tapOn:
+    id: "exam-result-new-attempt"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-session"
+    timeout: 20000
+
+- assertVisible:
+    id: "exam-session-counter"
+    text: "Питання 1 з 32"
+- assertNotVisible:
+    id: "exam-session-counter"
+    text: "Питання 2 з 32"

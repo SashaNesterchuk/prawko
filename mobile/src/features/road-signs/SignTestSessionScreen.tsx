@@ -286,6 +286,7 @@ export function SignTestSessionScreen({
             onPress={() => {
               void handleCloseSession();
             }}
+            testID="sign-test-close"
             type="close"
           />
 
@@ -296,7 +297,7 @@ export function SignTestSessionScreen({
             ) : null}
           </View>
 
-          <CText style={styles.headerCounter}>
+          <CText style={styles.headerCounter} testID="sign-test-counter">
             {`${questionIndex + 1} / ${questions.length}`}
           </CText>
         </View>

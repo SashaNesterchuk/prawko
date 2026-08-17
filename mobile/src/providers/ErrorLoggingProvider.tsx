@@ -286,7 +286,6 @@ function useCrashStyles() {
         color: accents.red.ink,
         fontSize: responsiveFont(12),
         fontFamily: getFontFamily("bold"),
-        letterSpacing: 1.4,
         textTransform: "uppercase",
       },
       crashTitle: {
