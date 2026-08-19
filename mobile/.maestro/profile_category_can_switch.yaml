@@ -1,0 +1,35 @@
+# Feature: Profile category
+# Scenario: Onboarded user can select a driving category other than B
+appId: com.mindjar.prawko
+tags:
+  - profile
+  - category
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      TARGET_ID: screen-profile
+      LOCALE: ua
+
+- assertVisible:
+    id: "profile-row-category-value-B"
+
+- tapOn:
+    id: "profile-row-category"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-settings-category"
+    timeout: 15000
+
+- tapOn:
+    id: "onboarding-category-A"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
+- assertVisible:
+    id: "profile-row-category-value-A"

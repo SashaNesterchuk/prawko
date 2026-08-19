@@ -41,7 +41,11 @@ export function SignPlatePopup({
       visible={visible}
     >
       <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.card} onPress={(event) => event.stopPropagation()}>
+        <Pressable
+          style={styles.card}
+          testID="sign-plate-popup"
+          onPress={(event) => event.stopPropagation()}
+        >
           <View style={styles.header}>
             <CText style={styles.code}>{sign.code}</CText>
             <View style={styles.imageWrap}>

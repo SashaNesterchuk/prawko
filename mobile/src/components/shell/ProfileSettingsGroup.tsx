@@ -56,7 +56,12 @@ export function ProfileSettingsRow({
       </View>
 
       {trailing === "value" && value ? (
-        <CText style={styles.value}>{value}</CText>
+        <CText
+          style={styles.value}
+          testID={testID ? `${testID}-value-${value}` : undefined}
+        >
+          {value}
+        </CText>
       ) : null}
       {trailing === "switch" ? (
         <Switch
@@ -108,7 +113,11 @@ type ProfileSettingsGroupProps = {
 
 export function ProfileSettingsGroup({ children }: ProfileSettingsGroupProps) {
   const styles = useStyles();
-  return <View style={styles.group}>{children}</View>;
+  return (
+    <View style={styles.group}>
+      <View style={styles.groupInner}>{children}</View>
+    </View>
+  );
 }
 
 function PremiumMiniBadge() {
@@ -134,17 +143,17 @@ function useStyles({
   iconBackgroundColor?: string;
   titleColor?: string;
 } = {}) {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+  return useResponsiveStyles(({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
     group: {
       width: "100%",
       borderRadius: radius.xl,
       backgroundColor: colors.surface,
+      ...elevation.card,
+    },
+    groupInner: {
+      borderRadius: radius.xl,
       overflow: "hidden",
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.05,
-      shadowRadius: spacing.exact(6),
-      shadowOffset: { width: 0, height: spacing.exact(2) },
-      elevation: 2,
+      backgroundColor: colors.surface,
     },
     row: {
       flexDirection: "row",

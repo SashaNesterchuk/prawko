@@ -21,7 +21,7 @@ import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 type CategoryOption = {
-  id: string;
+  id: DrivingCategory;
   icon: IconName;
 };
 
@@ -103,9 +103,7 @@ export default function CategoryScreen() {
                   selected: isSelected,
                 }}
                 disabled={!isActive}
-                onPress={() =>
-                  handleSelectCategory(option.id as DrivingCategory)
-                }
+                onPress={() => handleSelectCategory(option.id)}
                 style={({ pressed }) => [
                   styles.chip,
                   isSelected ? styles.chipSelected : null,
@@ -148,7 +146,9 @@ export default function CategoryScreen() {
               type="back"
               inset
             />
-            <CText style={styles.topBarTitle}>{t("profile.categoryTitle")}</CText>
+            <CText style={styles.topBarTitle} testID="screen-settings-category">
+              {t("profile.categoryTitle")}
+            </CText>
           </View>
 
           <ScrollView

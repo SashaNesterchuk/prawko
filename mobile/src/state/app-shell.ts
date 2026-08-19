@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DEFAULT_CATEGORY,
   DEFAULT_LOCALE,
+  isDrivingCategory,
   type DrivingCategory,
   type PlanLevel,
   type SupportedLocale,
@@ -192,6 +193,12 @@ function normalizePersistedLocale(
   return normalizeSupportedLocale(locale ?? null) ?? DEFAULT_LOCALE;
 }
 
+function normalizePersistedCategory(
+  category: string | null | undefined,
+): DrivingCategory {
+  return isDrivingCategory(category) ? category : DEFAULT_CATEGORY;
+}
+
 function normalizePersistedShellState(
   persistedState: Partial<PersistedAppShellState> | undefined,
 ): PersistedAppShellState {
@@ -214,7 +221,9 @@ function normalizePersistedShellState(
     onboardingCompleted: persistedState?.onboardingCompleted ?? false,
     onboardingProgress:
       persistedState?.onboardingProgress ?? defaultOnboardingProgress,
-    preferredCategory: persistedState?.preferredCategory ?? DEFAULT_CATEGORY,
+    preferredCategory: normalizePersistedCategory(
+      persistedState?.preferredCategory
+    ),
     preferredLocale: resolvedPreferredLocale,
     hasChosenPreferredLocale,
     enablePjmTracks: persistedState?.enablePjmTracks ?? false,
@@ -278,7 +287,7 @@ export const useAppShellStore = create<AppShellState>()(
           onboardingProgress: onboardingCompleted
             ? createCompletedOnboardingProgress()
             : state.onboardingProgress,
-          preferredCategory,
+          preferredCategory: normalizePersistedCategory(preferredCategory),
           preferredLocale: normalizePersistedLocale(preferredLocale),
           hasChosenPreferredLocale: true,
         })),
@@ -373,7 +382,13 @@ export const useAppShellStore = create<AppShellState>()(
             minutesPerDay,
           },
         })),
-      setPreferredCategory: (preferredCategory) => set({ preferredCategory }),
+      setPreferredCategory: (preferredCategory) =>
+        set((state) => ({
+          preferredCategory,
+          currentStudyPlan: state.currentStudyPlan
+            ? { ...state.currentStudyPlan, category: preferredCategory }
+            : null,
+        })),
       setPreferredLocale: (preferredLocale) =>
         set({
           preferredLocale: normalizePersistedLocale(preferredLocale),

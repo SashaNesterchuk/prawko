@@ -88,19 +88,14 @@ export function ProfileStatsCard({
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+  return useResponsiveStyles(({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
     card: {
       width: "100%",
       borderRadius: radius.xl,
       backgroundColor: colors.white,
-      overflow: "hidden",
       padding: spacing.lg,
       gap: spacing.md,
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.05,
-      shadowRadius: spacing.exact(12),
-      shadowOffset: { width: 0, height: spacing.exact(2) },
-      elevation: 2,
+      ...elevation.card,
     },
     headerRow: {
       flexDirection: "row",

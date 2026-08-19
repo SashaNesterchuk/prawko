@@ -3,7 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Linking, Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Icon } from "../../src/components/icons";
@@ -59,9 +59,9 @@ import {
 } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
 import type { RemoteExamSnapshot } from "../../src/features/exam/types";
+import { openSupportEmail } from "../../src/features/support/support-email";
 
 const URGENT_THRESHOLD_SECONDS = 180;
-const SUPPORT_EMAIL = "support@prawko.app";
 
 type ExamSessionShellProps = {
   children: ReactNode;
@@ -646,12 +646,11 @@ export default function ExamSessionScreen() {
       question_id: currentQuestionRef.questionSourceId,
       source: "exam",
     });
-    const subject = t("question.reportProblemSubject", {
-      questionId: currentQuestionRef.questionSourceId,
+    void openSupportEmail({
+      subject: t("question.reportProblemSubject", {
+        questionId: currentQuestionRef.questionSourceId,
+      }),
     });
-    void Linking.openURL(
-      `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
-    );
   };
 
   const handleToggleBookmark = () => {

@@ -2,9 +2,8 @@ import { useMemo, useState } from "react";
 
 import { CText, useResponsiveStyles } from "../../portable-ui";
 import { getRoadSignById } from "../../features/road-signs/catalog";
+import { SIGN_CODE_PATTERN } from "../../features/road-signs/sign-codes";
 import { SignPlatePopup } from "./SignPlatePopup";
-
-const SIGN_CODE_PATTERN = /\b([A-Z]-\d+[a-z]?)\b/g;
 
 type SignDescriptionWithPlatesProps = {
   text: string;

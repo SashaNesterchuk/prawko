@@ -10,10 +10,17 @@ import {
   hydrateQuestionBankFromSupabaseRecordsAsync,
   resetQuestionBankToMock,
 } from "../features/questions/question-bank";
+import {
+  areQuestionCatalogSignaturesEqual,
+  readQuestionCatalogCache,
+  writeQuestionCatalogCache,
+  type QuestionCatalogSignature,
+} from "../features/questions/question-catalog-cache";
 import type {
   QuestionAiExplanationMap,
   SupabaseQuestionRecord,
 } from "../features/questions/supabase-question-record";
+import type { LocalQuestion } from "../features/questions/types";
 import { fetchAllSupabasePages } from "../lib/fetch-all-supabase-pages";
 import { getMobileSupabaseClient } from "../lib/supabase";
 import {
@@ -164,6 +171,53 @@ function mergeQuestionAiExplanations(
   });
 }
 
+/**
+ * Cheap freshness probe: row counts plus the newest `updated_at` on both
+ * catalog tables. Two head-ish queries replace ~2k rows of download whenever
+ * the content did not move since the cached copy was written.
+ */
+async function fetchQuestionCatalogSignature(
+  preferredCategory: string
+): Promise<QuestionCatalogSignature> {
+  const client = getMobileSupabaseClient();
+
+  const [questions, explanations] = await Promise.all([
+    client
+      .from("questions")
+      .select("updated_at", { count: "exact" })
+      .eq("is_active", true)
+      .contains("categories", [preferredCategory])
+      .order("updated_at", { ascending: false })
+      .limit(1),
+    client
+      .from("question_ai_explanations")
+      .select("updated_at", { count: "exact" })
+      .order("updated_at", { ascending: false })
+      .limit(1),
+  ]);
+
+  if (questions.error) {
+    throw questions.error;
+  }
+
+  if (explanations.error) {
+    throw explanations.error;
+  }
+
+  return {
+    explanationCount: explanations.count ?? 0,
+    explanationsUpdatedAt: readNewestUpdatedAt(explanations.data),
+    questionCount: questions.count ?? 0,
+    questionsUpdatedAt: readNewestUpdatedAt(questions.data),
+  };
+}
+
+function readNewestUpdatedAt(rows: unknown) {
+  const value = (rows as { updated_at?: unknown }[] | null)?.[0]?.updated_at;
+
+  return typeof value === "string" ? value : null;
+}
+
 async function fetchQuestionAiExplanations() {
   const client = getMobileSupabaseClient();
 
@@ -236,6 +290,23 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
       }
 
       setMock({
+        questionCount: questionIds.length,
+      });
+    };
+
+    const applyCachedCatalog = (questions: LocalQuestion[]) => {
+      hydrateQuestionBankFromLocalQuestions(questions);
+      setOfflinePackMediaEnabled(false);
+
+      const questionIds = questions.map((question) => question.id);
+
+      if (cancelled) {
+        return;
+      }
+
+      reconcileCatalog(questionIds);
+      ensureTopicQuestionProgressSeeded();
+      setRemote({
         questionCount: questionIds.length,
       });
     };
@@ -321,7 +392,74 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
         return;
       }
 
-      setLoading();
+      // The catalog only changes when content is edited, so a cold start paints
+      // the cached copy first and downloads again only if the probe disagrees.
+      const cachedCatalog = await readQuestionCatalogCache(preferredCategory);
+
+      if (cancelled) {
+        return;
+      }
+
+      const servedFromCache = cachedCatalog != null;
+
+      if (cachedCatalog) {
+        applyCachedCatalog(cachedCatalog.questions);
+
+        if (cancelled) {
+          return;
+        }
+      }
+
+      let signature: QuestionCatalogSignature | null = null;
+
+      try {
+        signature = await fetchQuestionCatalogSignature(preferredCategory);
+      } catch (error: unknown) {
+        if (cancelled) {
+          return;
+        }
+
+        if (servedFromCache) {
+          // Unreachable remote while the cache is warm: the downloaded pack
+          // still wins when ready, because it also carries local media.
+          const offlineQuestions = await tryLoadOfflineCatalog();
+
+          if (!cancelled) {
+            applyOfflineCatalog(offlineQuestions);
+          }
+
+          return;
+        }
+
+        captureFallbackRef.current({
+          area: "question_catalog",
+          error,
+          eventName: "question_catalog_signature_probe_failed",
+          message:
+            "The catalog freshness probe failed, so the app continued with the full catalog bootstrap flow.",
+          metadata: {
+            category: preferredCategory,
+            reason: "signature_probe_failed",
+          },
+        });
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      if (
+        cachedCatalog &&
+        areQuestionCatalogSignaturesEqual(signature, cachedCatalog.signature)
+      ) {
+        return;
+      }
+
+      // A warm cache is already on screen; refreshing it must not flip the app
+      // back into a loading state.
+      if (!servedFromCache) {
+        setLoading();
+      }
 
       try {
         let records: SupabaseQuestionRecord[];
@@ -330,6 +468,21 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
           records = await fetchAllActiveQuestionsForCategory(preferredCategory);
         } catch (error: unknown) {
           if (cancelled) {
+            return;
+          }
+
+          if (servedFromCache) {
+            captureFallbackRef.current({
+              area: "question_catalog",
+              error,
+              eventName: "question_catalog_cached_catalog_used",
+              message:
+                "The catalog refresh failed, so the app kept the cached catalog it had already loaded.",
+              metadata: {
+                category: preferredCategory,
+                reason: "remote_query_failed_cached_catalog_present",
+              },
+            });
             return;
           }
 
@@ -384,6 +537,20 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
         }
 
         if (records.length === 0) {
+          if (servedFromCache) {
+            captureErrorRef.current({
+              area: "question_catalog",
+              eventName: "question_catalog_cached_catalog_used",
+              message:
+                "The catalog refresh returned no rows, so the app kept the cached catalog it had already loaded.",
+              metadata: {
+                category: preferredCategory,
+                reason: "remote_catalog_empty_cached_catalog_present",
+              },
+            });
+            return;
+          }
+
           const offlineQuestions = await tryLoadOfflineCatalog();
           if (applyOfflineCatalog(offlineQuestions)) {
             captureFallbackRef.current({
@@ -426,6 +593,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
         }
 
         let hydratedRecords = records;
+        let hasCompleteExplanations = true;
 
         try {
           const explanationRows = await fetchQuestionAiExplanations();
@@ -434,6 +602,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
             explanationRows
           );
         } catch (error: unknown) {
+          hasCompleteExplanations = false;
           captureErrorRef.current({
             area: "question_catalog",
             error,
@@ -459,8 +628,46 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
         setRemote({
           questionCount: hydratedRecords.length,
         });
+
+        // Only cache a catalog the probe can vouch for in full: a partial
+        // fetch would otherwise look fresh forever.
+        if (signature && hasCompleteExplanations) {
+          void writeQuestionCatalogCache({
+            category: preferredCategory,
+            questions: getQuestionBank(),
+            savedAt: new Date().toISOString(),
+            signature,
+          }).catch((error: unknown) => {
+            captureFallbackRef.current({
+              area: "question_catalog",
+              error,
+              eventName: "question_catalog_cache_write_failed",
+              message:
+                "The question catalog could not be cached on disk, so the next cold start downloads it again.",
+              metadata: {
+                category: preferredCategory,
+                reason: "catalog_cache_write_failed",
+              },
+            });
+          });
+        }
       } catch (error: unknown) {
         if (cancelled) {
+          return;
+        }
+
+        if (servedFromCache) {
+          captureFallbackRef.current({
+            area: "question_catalog",
+            error,
+            eventName: "question_catalog_cached_catalog_used",
+            message:
+              "The catalog refresh threw before completion, so the app kept the cached catalog it had already loaded.",
+            metadata: {
+              category: preferredCategory,
+              reason: "remote_query_exception_cached_catalog_present",
+            },
+          });
           return;
         }
 

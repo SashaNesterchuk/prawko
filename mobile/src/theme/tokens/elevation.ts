@@ -19,7 +19,9 @@ export const elevation = {
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 12,
-    elevation: 2,
+    // Material elevation on Android is much heavier than the 5% Figma shadow.
+    // New Architecture renders `boxShadow` on both platforms.
+    elevation: 0,
     boxShadow: "0px 2px 12px rgba(20, 45, 33, 0.05)",
   },
   raised: {
@@ -54,7 +56,7 @@ export const elevation = {
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 0,
     boxShadow:
       "0px 2px 2px rgba(0, 0, 0, 0.04), 0px 1px 1px rgba(0, 0, 0, 0.04)",
   },

@@ -1,4 +1,4 @@
-import type { DrivingCategory } from "@prawko/config";
+import { isDrivingCategory, type DrivingCategory } from "@prawko/config";
 
 import { mobileEnv } from "../../config/env";
 import { useEntitlementStore } from "../../state/entitlements";
@@ -109,5 +109,5 @@ export function setE2EOfflinePackOverride(input: {
 
 function resolveLooseCategory(value: string | null | undefined) {
   const normalized = value?.trim().toUpperCase();
-  return normalized ? (normalized as DrivingCategory) : null;
+  return isDrivingCategory(normalized) ? normalized : null;
 }

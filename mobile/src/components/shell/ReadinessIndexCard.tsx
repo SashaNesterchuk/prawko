@@ -28,6 +28,8 @@ type ReadinessIndexCardProps = {
   weekChangePercent?: number | null;
   weekChangeLabel?: string;
   empty?: boolean;
+  /** First launch only: nothing is known yet, not even a persisted snapshot. */
+  loading?: boolean;
   onPress?: () => void;
   testID?: string;
 };
@@ -72,16 +74,19 @@ export function ReadinessIndexCard({
   weekChangePercent,
   weekChangeLabel,
   empty = false,
+  loading = false,
   onPress,
   testID,
 }: ReadinessIndexCardProps) {
   const theme = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const clamped = Math.max(0, Math.min(progress, 100));
-  const ringColor = empty
+  const isNeutral = loading || empty;
+  const ringColor = isNeutral
     ? theme.colors.track
     : resolveReadinessRingColor(clamped, theme.accents);
   const styles = useStyles({ ringColor });
+  const isPressable = Boolean(onPress) && !loading;
   const showWeekChange =
     !empty &&
     weekChangePercent != null &&
@@ -92,18 +97,18 @@ export function ReadinessIndexCard({
 
   return (
     <Pressable
-      accessibilityRole={onPress ? "button" : undefined}
-      disabled={!onPress}
-      onPress={onPress}
-      testID={testID}
+      accessibilityRole={isPressable ? "button" : undefined}
+      disabled={!isPressable}
+      onPress={isPressable ? onPress : undefined}
+      testID={loading && testID ? `${testID}-loading` : testID}
       style={({ pressed }) => [
         styles.card,
-        pressed && onPress ? styles.pressed : null,
+        pressed && isPressable ? styles.pressed : null,
       ]}
     >
       <View style={styles.cardInner}>
-        <ProgressRing progress={empty ? 0 : clamped} color={ringColor}>
-          {empty ? (
+        <ProgressRing progress={isNeutral ? 0 : clamped} color={ringColor}>
+          {loading ? null : empty ? (
             <Icon
               color={theme.accents.green.fill}
               name="start"
@@ -117,7 +122,13 @@ export function ReadinessIndexCard({
           )}
         </ProgressRing>
 
-        {empty ? (
+        {loading ? (
+          <View style={styles.copy}>
+            <View style={[styles.skeletonLine, styles.skeletonTitle]} />
+            <View style={[styles.skeletonLine, styles.skeletonSubtitle]} />
+            <View style={[styles.skeletonLine, styles.skeletonCaption]} />
+          </View>
+        ) : empty ? (
           <View style={styles.emptyCopy}>
             <CText style={styles.emptyTitle} semiBold>{title}</CText>
             {subtitle ? <CText style={styles.emptySubtitle}>{subtitle}</CText> : null}
@@ -331,6 +342,24 @@ function useStyles({ ringColor }: { ringColor: string }) {
       fontSize: responsiveFont(12),
       lineHeight: responsiveFont(16),
       color: colors.inkSecondary,
+    },
+    skeletonLine: {
+      backgroundColor: colors.track,
+      borderRadius: radius.pill,
+    },
+    skeletonTitle: {
+      width: "60%",
+      height: responsiveFont(20),
+      marginBottom: spacing.exact(8),
+    },
+    skeletonSubtitle: {
+      width: "80%",
+      height: responsiveFont(12),
+      marginBottom: spacing.exact(12),
+    },
+    skeletonCaption: {
+      width: "45%",
+      height: responsiveFont(12),
     },
   }));
 }

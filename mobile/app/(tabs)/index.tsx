@@ -42,13 +42,26 @@ import {
   getWarsawIsoDate,
   type RemoteReadinessSummary,
 } from "../../src/features/study-plan/supabase-study-plan-progress";
-import { useAppShellStore } from "../../src/state/app-shell";
+import { useAppShellStore, useCurrentUser } from "../../src/state/app-shell";
 import {
   useEntitlementStore,
   useHasPlusAccess,
 } from "../../src/state/entitlements";
-import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
-import { useQuestionProgressStore } from "../../src/state/question-progress";
+import {
+  useQuestionCatalogResolved,
+  useQuestionCatalogVersion,
+} from "../../src/state/question-catalog";
+import {
+  useQuestionProgressHydrated,
+  useQuestionProgressStore,
+} from "../../src/state/question-progress";
+import {
+  resolveReadinessView,
+  useReadinessSnapshot,
+  useReadinessSnapshotHydrated,
+  useReadinessSnapshotStore,
+  type ReadinessSnapshot,
+} from "../../src/state/readiness-snapshot";
 import { Icon, IconName } from "../../src/components/icons";
 
 function HomeActionIcon({
@@ -80,7 +93,16 @@ export default function HomeTabScreen() {
     (state) => state.setDebugPlusOverride
   );
   const isFocused = useIsFocused();
+  const currentUser = useCurrentUser();
+  const currentUserId = currentUser?.id ?? null;
   const questionCatalogVersion = useQuestionCatalogVersion();
+  const catalogResolved = useQuestionCatalogResolved();
+  const progressHydrated = useQuestionProgressHydrated();
+  const readinessSnapshot = useReadinessSnapshot();
+  const readinessSnapshotHydrated = useReadinessSnapshotHydrated();
+  const saveReadinessSnapshot = useReadinessSnapshotStore(
+    (state) => state.saveSnapshot
+  );
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
@@ -142,11 +164,9 @@ export default function HomeTabScreen() {
   const readiness = Math.round(
     readinessSummary?.readinessScore ?? localReadiness
   );
-  const isReadinessEmpty =
-    stats.seen <= 0 && readinessAssessment == null;
-  const readinessLevel = resolveReadinessLevel(readiness);
+  const isLiveReadinessEmpty = stats.seen <= 0 && readinessAssessment == null;
   const readinessPeriodChange = useMemo(() => {
-    if (!isFocused || isReadinessEmpty) {
+    if (!isFocused || isLiveReadinessEmpty) {
       return null;
     }
 
@@ -160,24 +180,75 @@ export default function HomeTabScreen() {
   }, [
     attempts,
     isFocused,
-    isReadinessEmpty,
+    isLiveReadinessEmpty,
     questionCatalogVersion,
     questionUserState,
     readiness,
     readinessAssessment,
     stats.total,
   ]);
-  const readinessWeekChangePercent = readinessPeriodChange?.deltaPercent ?? null;
+  const liveReadiness = useMemo<ReadinessSnapshot>(
+    () => ({
+      isEmpty: isLiveReadinessEmpty,
+      percent: readiness,
+      seen: stats.seen,
+      total: stats.total,
+      weekChangePercent: readinessPeriodChange?.deltaPercent ?? null,
+      weekChangePeriodDays: readinessPeriodChange?.periodDays ?? null,
+      userId: currentUserId,
+    }),
+    [
+      currentUserId,
+      isLiveReadinessEmpty,
+      readiness,
+      readinessPeriodChange,
+      stats.seen,
+      stats.total,
+    ]
+  );
+  // The progress blob and the remote catalog both settle late, so the card
+  // paints the last resolved snapshot instead of flashing the empty CTA.
+  const isLiveReadinessResolved = progressHydrated && catalogResolved;
+  const readinessView = resolveReadinessView({
+    live: liveReadiness,
+    snapshot: readinessSnapshot,
+    currentUserId,
+    isLiveResolved: isLiveReadinessResolved,
+    isProgressHydrated: progressHydrated,
+    isSnapshotHydrated: readinessSnapshotHydrated,
+  });
+
+  useEffect(() => {
+    if (!isFocused || !isLiveReadinessResolved || !readinessSnapshotHydrated) {
+      return;
+    }
+
+    saveReadinessSnapshot(liveReadiness);
+  }, [
+    isFocused,
+    isLiveReadinessResolved,
+    liveReadiness,
+    readinessSnapshotHydrated,
+    saveReadinessSnapshot,
+  ]);
+
+  const isReadinessLoading = readinessView == null;
+  const isReadinessEmpty = readinessView?.isEmpty ?? false;
+  const readinessPercent = readinessView?.percent ?? 0;
+  const readinessLevel = resolveReadinessLevel(readinessPercent);
+  const readinessWeekChangePercent = readinessView?.weekChangePercent ?? null;
+  const readinessWeekChangePeriodDays =
+    readinessView?.weekChangePeriodDays ?? null;
   const readinessWeekChangeLabel =
-    readinessPeriodChange == null
+    readinessWeekChangePeriodDays == null
       ? undefined
       : t(
         `dash.${resolveReadinessPeriodChangeLabelKey(
-          readinessPeriodChange.periodDays
+          readinessWeekChangePeriodDays
         )}`,
         {
-          days: readinessPeriodChange.periodDays,
-          value: Math.abs(readinessPeriodChange.deltaPercent),
+          days: readinessWeekChangePeriodDays,
+          value: Math.abs(readinessWeekChangePercent ?? 0),
         }
       );
   const wrongAnswers = stats.wrongAnswers;
@@ -265,7 +336,8 @@ export default function HomeTabScreen() {
         >
           <ReadinessIndexCard
             empty={isReadinessEmpty}
-            progress={readiness}
+            loading={isReadinessLoading}
+            progress={readinessPercent}
             testID="home-readiness-index"
             title={t("dash.readinessTitle", {
               defaultValue: "Індекс готовності",
@@ -280,9 +352,9 @@ export default function HomeTabScreen() {
             }
             levelLabel={isReadinessEmpty ? undefined : readinessLevelLabel}
             coveredCountLabel={
-              isReadinessEmpty
+              isReadinessEmpty || !readinessView
                 ? undefined
-                : `${stats.seen} / ${stats.total}`
+                : `${readinessView.seen} / ${readinessView.total}`
             }
             coveredCaption={
               isReadinessEmpty

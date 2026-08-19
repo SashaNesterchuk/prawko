@@ -51,6 +51,28 @@ export const REVENUECAT_PACKAGE_ALIASES: Record<
   monthly: ["monthly", "$rc_monthly", "MONTHLY"],
 };
 
+/**
+ * Local and E2E runs share the production RevenueCat project, where every fresh
+ * install (or Maestro `clearState`) registers another anonymous customer and
+ * skews the dashboard. Purchases stay off in dev builds until someone opts in
+ * with EXPO_PUBLIC_REVENUECAT_ENABLE_IN_DEV=true.
+ */
+export function isRevenueCatEnabledForBuild(input: {
+  enableInDevBuilds: boolean;
+  isDevBuild: boolean;
+  isE2ETestMode: boolean;
+}) {
+  if (input.isE2ETestMode) {
+    return false;
+  }
+
+  if (input.isDevBuild) {
+    return input.enableInDevBuilds;
+  }
+
+  return true;
+}
+
 export type RevenueCatPaywallOutcome =
   | "purchased"
   | "restored"

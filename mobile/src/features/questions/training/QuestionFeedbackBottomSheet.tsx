@@ -1,10 +1,9 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "../../../components/icons";
-import { AppButton } from "../../../components/shell/AppButton";
+import { ExplanationSignStrip } from "../../../components/shell/ExplanationSignStrip";
 import { CText, getFontFamily, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 
@@ -12,75 +11,54 @@ type QuestionFeedbackBottomSheetProps = {
   visible: boolean;
   isCorrectAnswer: boolean;
   explanationText: string | null;
-  correctChoiceBullets: string[];
   showMasteryProgress: boolean;
   masteryCurrent: number;
   masteryTarget: number;
   isBookmarked: boolean;
-  nextLabel: string;
   feedbackAccentFill: string;
   feedbackAccentInk: string;
   feedbackGradientColors: readonly [string, string];
   premiumIconSize: number;
   showExplain?: boolean;
-  /**
-   * Training uses a single primary CTA. Exam answer review uses Previous/Next
-   * ghost controls as in Figma exam-answers frames.
-   */
-  navigationMode?: "next" | "previousNext";
-  canGoPrevious?: boolean;
-  canGoNext?: boolean;
-  previousLabel?: string;
-  onPrevious?: () => void;
+  /** Sign already rendered in the question body, kept out of the sign strip. */
+  excludeSignId?: string;
   onReportProblem: () => void;
   onToggleBookmark: () => void;
   onExplain?: () => void;
-  onNext: () => void;
 };
 
 export function QuestionFeedbackBottomSheet({
   visible,
   isCorrectAnswer,
   explanationText,
-  correctChoiceBullets,
   showMasteryProgress,
   masteryCurrent,
   masteryTarget,
   isBookmarked,
-  nextLabel,
   feedbackAccentFill,
   feedbackAccentInk,
   feedbackGradientColors,
   premiumIconSize,
   showExplain = false,
-  navigationMode = "next",
-  canGoPrevious = false,
-  canGoNext = true,
-  previousLabel,
-  onPrevious,
+  excludeSignId,
   onReportProblem,
   onToggleBookmark,
   onExplain,
-  onNext,
 }: QuestionFeedbackBottomSheetProps) {
   const { t } = useTranslation();
   const { accents, colors } = useTheme();
-  const insets = useSafeAreaInsets();
   const styles = useStyles({ feedbackTitleColor: feedbackAccentInk });
 
   if (!visible) {
     return null;
   }
 
-  const bottomPad = Math.max(insets.bottom, 24);
-  const resolvedPreviousLabel = previousLabel ?? t("question.previousShort");
-
   return (
     <LinearGradient
       colors={[...feedbackGradientColors]}
       end={{ x: 0.5, y: 1 }}
       start={{ x: 0.5, y: 0 }}
-      style={[styles.sheet, { paddingBottom: bottomPad }]}
+      style={styles.sheet}
       testID="question-feedback"
     >
       <View style={styles.header}>
@@ -132,25 +110,10 @@ export function QuestionFeedbackBottomSheet({
         <CText style={styles.body}>{explanationText}</CText>
       ) : null}
 
-      {correctChoiceBullets.length > 0 ? (
-        <>
-          <View style={styles.gapXs} />
-          <View style={styles.bullets}>
-            {correctChoiceBullets.map((bullet) => (
-              <View key={bullet} style={styles.bulletRow}>
-                <View style={styles.bulletIcon}>
-                  <Icon
-                    name="bulletDot"
-                    size={16}
-                    color={feedbackAccentInk}
-                  />
-                </View>
-                <CText style={styles.bulletText}>{bullet}</CText>
-              </View>
-            ))}
-          </View>
-        </>
-      ) : null}
+      <ExplanationSignStrip
+        excludeSignId={excludeSignId}
+        text={explanationText}
+      />
 
       {showMasteryProgress ? (
         <>
@@ -188,49 +151,6 @@ export function QuestionFeedbackBottomSheet({
           </Pressable>
         </>
       ) : null}
-
-      <View style={styles.gapMd} />
-
-      {navigationMode === "previousNext" ? (
-        <View style={styles.navRow}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ disabled: !canGoPrevious }}
-            disabled={!canGoPrevious}
-            onPress={onPrevious}
-            style={({ pressed }) => [
-              styles.navButton,
-              !canGoPrevious ? styles.navButtonDisabled : null,
-              pressed && canGoPrevious ? styles.navButtonPressed : null,
-            ]}
-          >
-            <Icon name="back" size={20} color={colors.ink2} />
-            <CText style={styles.navButtonText}>{resolvedPreviousLabel}</CText>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ disabled: !canGoNext }}
-            disabled={!canGoNext}
-            onPress={onNext}
-            style={({ pressed }) => [
-              styles.navButton,
-              !canGoNext ? styles.navButtonDisabled : null,
-              pressed && canGoNext ? styles.navButtonPressed : null,
-            ]}
-            testID="question-feedback-next"
-          >
-            <CText style={styles.navButtonText}>{nextLabel}</CText>
-            <Icon name="chevron" size={20} color={colors.ink2} />
-          </Pressable>
-        </View>
-      ) : (
-        <AppButton
-          label={nextLabel}
-          onPress={onNext}
-          testID="question-feedback-next"
-          variant={isCorrectAnswer ? "primary" : "danger"}
-        />
-      )}
     </LinearGradient>
   );
 }
@@ -286,27 +206,6 @@ function useStyles({ feedbackTitleColor }: { feedbackTitleColor: string }) {
         lineHeight: responsiveFont(20),
         color: colors.textSecondary,
       },
-      bullets: {
-        alignSelf: "stretch",
-        gap: spacing.exact(8),
-      },
-      bulletRow: {
-        flexDirection: "row",
-        alignItems: "flex-start",
-        gap: spacing.exact(4),
-      },
-      bulletIcon: {
-        width: spacing.exact(20),
-        height: spacing.exact(20),
-        alignItems: "center",
-        justifyContent: "center",
-      },
-      bulletText: {
-        flex: 1,
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        color: colors.textSecondary,
-      },
       masteryProgress: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
@@ -333,32 +232,6 @@ function useStyles({ feedbackTitleColor }: { feedbackTitleColor: string }) {
         backgroundColor: accents.green.fill,
         alignItems: "center",
         justifyContent: "center",
-      },
-      navRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        alignSelf: "stretch",
-      },
-      navButton: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: spacing.exact(8),
-        paddingHorizontal: spacing.exact(16),
-        paddingVertical: spacing.exact(12),
-        minHeight: spacing.exact(48),
-      },
-      navButtonDisabled: {
-        opacity: 0.2,
-      },
-      navButtonPressed: {
-        opacity: 0.85,
-      },
-      navButtonText: {
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(24),
-        color: colors.ink2,
       },
     })
   );

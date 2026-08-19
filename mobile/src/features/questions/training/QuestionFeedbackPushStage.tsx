@@ -1,12 +1,19 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { StyleSheet, type StyleProp, View, type ViewStyle } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   Easing,
   runOnJS,
   useAnimatedRef,
   useAnimatedStyle,
-  useDerivedValue,
+  useScrollViewOffset,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
@@ -19,99 +26,186 @@ const ENTER_EASING = Easing.inOut(Easing.ease);
 const EXIT_MS = 200;
 const EXIT_EASING = Easing.out(Easing.cubic);
 
-/** Breathing room left between the question and the panel edge. */
+/** Breathing room between the question and whatever follows it. */
 const CONTENT_GAP = 12;
 
-/** How far the question has to travel before the top fade is at full strength. */
+/** How far the content has to scroll before the top fade is at full strength. */
 const FADE_RAMP = 24;
+
+/**
+ * Panel header height. The panel is scrolled up by at least this much above the
+ * pinned actions, so the verdict is readable without touching the scroll.
+ */
+const PANEL_HEADER_REVEAL = 64;
+
+/**
+ * Backstop for the case where the panel does not change the content size, so
+ * `onContentSizeChange` never fires — happens on surfaces that keep the panel
+ * up while swapping the question underneath it.
+ */
+const SCROLL_FALLBACK_MS = 64;
 
 type QuestionFeedbackPushStageProps = {
   children: ReactNode;
   /**
-   * Bottom padding the content needs while the panel is down (home indicator,
-   * screen padding). It is excluded from the lift, so once the panel is up the
-   * question still lands on it with just `CONTENT_GAP` to spare.
+   * Bottom padding the content needs while no panel is shown (home indicator,
+   * screen padding). Once the panel is in the flow it reaches the bottom edge
+   * on its own and this is no longer applied.
    */
   contentBottomInset?: number;
   contentContainerStyle?: StyleProp<ViewStyle>;
   feedback: ReactNode;
+  /** Pinned over the panel, above the fade, instead of scrolling with it. */
+  feedbackActions?: ReactNode;
+  /**
+   * Changing this re-runs the scroll positioning. Needed on surfaces that keep
+   * the panel up while swapping the question underneath it, where `visible`
+   * alone never flips.
+   */
+  resetKey?: string | number;
   visible: boolean;
 };
 
 /**
- * Slides the feedback panel up and lifts the question by exactly the amount
- * the panel would otherwise overlap it. Both moves read the same `progress`,
- * so they always travel together, and the scroller never unmounts, so the
- * media and options are never re-created mid-transition.
+ * Appends the feedback panel to the question content, so question, options and
+ * explanation scroll as one block, and pins the actions over a bottom fade. The
+ * scroller never unmounts, so the media and options are never re-created
+ * mid-transition.
  */
 export function QuestionFeedbackPushStage({
   children,
   contentBottomInset = 0,
   contentContainerStyle,
   feedback,
+  feedbackActions,
+  resetKey,
   visible,
 }: QuestionFeedbackPushStageProps) {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const styles = useStyles();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const scrollOffset = useScrollViewOffset(scrollRef);
   const progress = useSharedValue(0);
   const stageHeight = useSharedValue(0);
-  const contentHeight = useSharedValue(0);
-  const panelHeight = useSharedValue(0);
+  const panelTop = useSharedValue(0);
+  const actionsHeight = useSharedValue(0);
+  const [actionsHeightPx, setActionsHeightPx] = useState(0);
   const [mounted, setMounted] = useState(visible);
+  const [measured, setMeasured] = useState(false);
+  const contentHeightRef = useRef(0);
+  const pendingRevealRef = useRef(false);
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const runEnterAnimation = useCallback(() => {
-    // Only matters when the question is long enough to scroll: brings its
-    // bottom edge into view so the lift lands it right on top of the panel.
-    scrollRef.current?.scrollToEnd({ animated: true });
-    progress.value = withTiming(1, {
-      duration: ENTER_MS,
-      easing: ENTER_EASING,
-    });
-  }, [progress, scrollRef]);
+  const clearFallbackTimer = useCallback(() => {
+    if (fallbackTimerRef.current) {
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+  }, []);
+
+  // Runs once the panel is laid out inside the content, otherwise the target
+  // offset would be computed against the pre-panel content size.
+  const flushPendingReveal = useCallback(() => {
+    if (!pendingRevealRef.current || stageHeight.value === 0) {
+      return;
+    }
+
+    pendingRevealRef.current = false;
+    clearFallbackTimer();
+
+    const maxScroll = Math.max(0, contentHeightRef.current - stageHeight.value);
+    const target = Math.min(
+      maxScroll,
+      Math.max(
+        0,
+        panelTop.value +
+          actionsHeight.value +
+          PANEL_HEADER_REVEAL -
+          stageHeight.value
+      )
+    );
+
+    scrollRef.current?.scrollTo({ y: target, animated: true });
+  }, [actionsHeight, clearFallbackTimer, panelTop, scrollRef, stageHeight]);
 
   useEffect(() => {
     if (visible) {
       setMounted(true);
-
-      // Height is already known from an earlier question, so the panel can
-      // start moving without waiting for another layout pass.
-      if (panelHeight.value > 0) {
-        runEnterAnimation();
-      }
-
       return;
     }
 
+    pendingRevealRef.current = false;
+    clearFallbackTimer();
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
     progress.value = withTiming(
       0,
       { duration: EXIT_MS, easing: EXIT_EASING },
       (finished) => {
         if (finished) {
           runOnJS(setMounted)(false);
+          runOnJS(setMeasured)(false);
         }
       }
     );
-  }, [panelHeight, progress, runEnterAnimation, visible]);
+  }, [clearFallbackTimer, progress, scrollRef, visible]);
 
-  const lift = useDerivedValue(() => {
-    const freeSpace = Math.max(0, stageHeight.value - contentHeight.value);
+  // Armed only once the panel is measured, because that is the render in which
+  // its offset inside the content is known.
+  useEffect(() => {
+    if (!visible || !measured) {
+      return;
+    }
 
-    return Math.max(0, panelHeight.value - freeSpace - contentBottomInset);
+    progress.value = withTiming(1, {
+      duration: ENTER_MS,
+      easing: ENTER_EASING,
+    });
+
+    pendingRevealRef.current = true;
+    clearFallbackTimer();
+    fallbackTimerRef.current = setTimeout(
+      flushPendingReveal,
+      SCROLL_FALLBACK_MS
+    );
+
+    return clearFallbackTimer;
+    // `resetKey` re-runs the positioning for surfaces that swap the question
+    // while the panel stays up, where `visible` never flips.
+  }, [
+    clearFallbackTimer,
+    flushPendingReveal,
+    measured,
+    progress,
+    resetKey,
+    visible,
+  ]);
+
+  useEffect(() => clearFallbackTimer, [clearFallbackTimer]);
+
+  // Slides in from wherever the panel currently pokes into the viewport, so it
+  // reads as rising from the bottom edge no matter how far the list is scrolled.
+  const panelStyle = useAnimatedStyle(() => {
+    const exposed = Math.min(
+      stageHeight.value,
+      Math.max(0, stageHeight.value - (panelTop.value - scrollOffset.value))
+    );
+
+    return {
+      opacity: progress.value,
+      transform: [{ translateY: exposed * (1 - progress.value) }],
+    };
   });
 
-  const contentStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -lift.value * progress.value }],
+  const actionsStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [
+      { translateY: actionsHeight.value * (1 - progress.value) },
+    ],
   }));
 
-  const panelStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -panelHeight.value * progress.value }],
-  }));
-
-  // Nothing is clipped when the question fits without moving, so the fade
-  // would just be a stray gradient over the top of the media.
-  const fadeStyle = useAnimatedStyle(() => ({
-    opacity: Math.min(1, lift.value / FADE_RAMP) * progress.value,
+  const topFadeStyle = useAnimatedStyle(() => ({
+    opacity: Math.min(1, Math.max(0, scrollOffset.value) / FADE_RAMP),
   }));
 
   return (
@@ -119,6 +213,7 @@ export function QuestionFeedbackPushStage({
       style={styles.stage}
       onLayout={(event) => {
         stageHeight.value = event.nativeEvent.layout.height;
+        flushPendingReveal();
       }}
     >
       <Animated.ScrollView
@@ -126,43 +221,37 @@ export function QuestionFeedbackPushStage({
         bounces={false}
         contentContainerStyle={[
           contentContainerStyle,
-          { paddingBottom: contentBottomInset + CONTENT_GAP },
+          styles.content,
+          { paddingBottom: visible ? 0 : contentBottomInset + CONTENT_GAP },
         ]}
-        scrollEnabled={!visible}
         showsVerticalScrollIndicator={false}
-        style={[styles.scroll, contentStyle]}
+        style={styles.scroll}
         onContentSizeChange={(_width, height) => {
-          contentHeight.value = height;
+          contentHeightRef.current = height;
+          flushPendingReveal();
         }}
       >
         {children}
+
+        {mounted ? (
+          <Animated.View
+            style={[styles.panelSlot, panelStyle]}
+            onLayout={(event) => {
+              panelTop.value = event.nativeEvent.layout.y;
+              setMeasured(true);
+              flushPendingReveal();
+            }}
+          >
+            {feedback}
+            {/* Continues the panel gradient's white end down to the screen
+                edge, both behind the pinned actions and on questions whose
+                content is shorter than the viewport. */}
+            <View style={[styles.panelFiller, { minHeight: actionsHeightPx }]} />
+          </Animated.View>
+        ) : null}
       </Animated.ScrollView>
 
-      {mounted ? (
-        <Animated.View
-          pointerEvents={visible ? "box-none" : "none"}
-          style={[styles.panelHost, panelStyle]}
-          onLayout={(event) => {
-            const nextHeight = Math.round(event.nativeEvent.layout.height);
-            if (nextHeight <= 0 || nextHeight === panelHeight.value) {
-              return;
-            }
-
-            const wasMeasured = panelHeight.value > 0;
-            panelHeight.value = nextHeight;
-
-            // First measurement for this panel: the enter effect could not run
-            // yet, so it is kicked off here instead of after another render.
-            if (visible && !wasMeasured) {
-              runEnterAnimation();
-            }
-          }}
-        >
-          {feedback}
-        </Animated.View>
-      ) : null}
-
-      <Animated.View pointerEvents="none" style={[styles.topFade, fadeStyle]}>
+      <Animated.View pointerEvents="none" style={[styles.topFade, topFadeStyle]}>
         <LinearGradient
           colors={[colors.paper, `${colors.paper}00`]}
           end={{ x: 0.5, y: 1 }}
@@ -170,12 +259,46 @@ export function QuestionFeedbackPushStage({
           style={StyleSheet.absoluteFill}
         />
       </Animated.View>
+
+      {mounted && feedbackActions ? (
+        <Animated.View
+          pointerEvents={visible ? "box-none" : "none"}
+          style={[styles.actionsBar, actionsStyle]}
+          onLayout={(event) => {
+            const nextHeight = Math.round(event.nativeEvent.layout.height);
+            if (nextHeight <= 0 || nextHeight === actionsHeight.value) {
+              return;
+            }
+
+            actionsHeight.value = nextHeight;
+            setActionsHeightPx(nextHeight);
+            flushPendingReveal();
+          }}
+        >
+          <LinearGradient
+            colors={[`${colors.white}00`, colors.white]}
+            end={{ x: 0.5, y: 1 }}
+            pointerEvents="none"
+            start={{ x: 0.5, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <View
+            pointerEvents="box-none"
+            style={[
+              styles.actionsContent,
+              { paddingBottom: Math.max(insets.bottom, 24) },
+            ]}
+          >
+            {feedbackActions}
+          </View>
+        </Animated.View>
+      ) : null}
     </View>
   );
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ spacing }) => ({
+  return useResponsiveStyles(({ colors, spacing }) => ({
     stage: {
       flex: 1,
       overflow: "hidden",
@@ -183,12 +306,16 @@ function useStyles() {
     scroll: {
       flex: 1,
     },
-    /** Parked just below the stage, so it is clipped away until it slides up. */
-    panelHost: {
-      position: "absolute",
-      top: "100%",
-      left: 0,
-      right: 0,
+    content: {
+      flexGrow: 1,
+    },
+    panelSlot: {
+      flexGrow: 1,
+      marginTop: spacing.exact(CONTENT_GAP),
+    },
+    panelFiller: {
+      flexGrow: 1,
+      backgroundColor: colors.white,
     },
     topFade: {
       position: "absolute",
@@ -197,6 +324,17 @@ function useStyles() {
       right: 0,
       height: spacing.exact(40),
       zIndex: 4,
+    },
+    actionsBar: {
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 5,
+    },
+    actionsContent: {
+      paddingHorizontal: spacing.exact(24),
+      paddingTop: spacing.exact(24),
     },
   }));
 }

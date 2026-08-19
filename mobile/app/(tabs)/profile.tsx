@@ -55,6 +55,11 @@ import {
   type RemoteReadinessSummary,
 } from "../../src/features/study-plan/supabase-study-plan-progress";
 import { pickRecommendedPackage } from "../../src/features/entitlements/revenuecat";
+import { openStoreReview } from "../../src/features/profile/store-review";
+import {
+  SUPPORT_EMAIL,
+  openSupportEmail,
+} from "../../src/features/support/support-email";
 import { getMobileSupabaseClient } from "../../src/lib/supabase";
 import {
   CText,
@@ -79,8 +84,6 @@ import {
   getAnalyticsErrorCode,
 } from "../../src/analytics/catalog";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
-
-const SUPPORT_EMAIL = "support@prawko.app";
 
 export default function ProfileTabScreen() {
   const { t, i18n } = useTranslation();
@@ -365,18 +368,30 @@ export default function ProfileTabScreen() {
     }
   };
 
-  const handleFeedback = () => {
+  const handleLeaveReview = () => {
     track(ANALYTICS_EVENTS.profileActionSelected.key, {
-      action: "feedback",
+      action: "leave_review",
     });
-    void Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t("profile.feedbackEmailSubject"))}`);
+    void openStoreReview().catch((error) => {
+      console.warn("Failed to open store review.", error);
+      Alert.alert(
+        t("profile.reviewUnavailableTitle"),
+        t("profile.reviewUnavailableMessage")
+      );
+    });
   };
 
   const handleSupport = () => {
     track(ANALYTICS_EVENTS.profileActionSelected.key, {
       action: "support",
     });
-    void Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
+    void openSupportEmail({
+      subject: t("profile.supportEmailSubject"),
+      unavailableTitle: t("profile.supportUnavailableTitle"),
+      unavailableMessage: t("profile.supportUnavailableMessage", {
+        email: SUPPORT_EMAIL,
+      }),
+    });
   };
 
   return (
@@ -445,6 +460,7 @@ export default function ProfileTabScreen() {
             <ProfileSettingsRow
               title={t("profile.categoryTitle")}
               value={preferredCategory}
+              testID="profile-row-category"
               icon={
                 <Ionicons
                   color={colors.textSecondary}
@@ -516,18 +532,21 @@ export default function ProfileTabScreen() {
           <ProfileSettingsGroup>
             <ProfileSettingsRow
               title={t("profile.feedbackTitle")}
+              testID="profile-row-feedback"
               icon={
                 <Ionicons
                   color={colors.textSecondary}
-                  name="chatbubble-ellipses-outline"
+                  name="star-outline"
                   size={iconSize}
                 />
               }
               trailing="none"
-              onPress={handleFeedback}
+              onPress={handleLeaveReview}
             />
             <ProfileSettingsRow
               title={t("profile.supportTitle")}
+              subtitle={SUPPORT_EMAIL}
+              testID="profile-row-support"
               icon={
                 <Ionicons
                   color={colors.textSecondary}
@@ -603,7 +622,7 @@ export default function ProfileTabScreen() {
 
 function useStyles({ safeBottom }: { safeBottom: number }) {
   return useResponsiveStyles(
-    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+    ({ accents, colors, elevation, radius, responsiveFont, spacing }) => ({
       safeArea: {
         flex: 1,
       },
@@ -623,11 +642,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
         padding: spacing.exact(16),
         borderRadius: radius.xl,
         backgroundColor: colors.surface,
-        shadowColor: colors.shadow,
-        shadowOpacity: 0.05,
-        shadowRadius: spacing.exact(12),
-        shadowOffset: { width: 0, height: spacing.exact(2) },
-        elevation: 2,
+        ...elevation.card,
       },
       pressed: {
         opacity: 0.85,

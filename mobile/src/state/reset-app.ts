@@ -4,11 +4,13 @@ import { isMobileSupabaseConfigured } from "../config/env";
 import { disableStudyNotificationsAsync } from "../features/notifications/runtime";
 import { getMobileSupabaseClient } from "../lib/supabase";
 import { clearOfflinePack } from "../features/offline/offline-pack";
+import { clearQuestionCatalogCache } from "../features/questions/question-catalog-cache";
 import { useAiChatStore } from "./ai-chat";
 import { useAppShellStore } from "./app-shell";
 import { useEntitlementStore } from "./entitlements";
 import { useFreeTierQuestionUsageStore } from "./free-tier-usage";
 import { useQuestionProgressStore } from "./question-progress";
+import { useReadinessSnapshotStore } from "./readiness-snapshot";
 import { useSignBookmarksStore } from "./sign-bookmarks";
 import { useSignPracticeProgressStore } from "./sign-practice-progress";
 
@@ -33,6 +35,7 @@ export async function resetAppToFreshStart() {
   useEntitlementStore.getState().clearEntitlements();
   useEntitlementStore.getState().clearRevenueCatState();
   useQuestionProgressStore.getState().resetProgress();
+  useReadinessSnapshotStore.getState().clearSnapshot();
   useSignBookmarksStore.getState().resetSaved();
   useSignPracticeProgressStore.getState().resetProgress();
   useFreeTierQuestionUsageStore.setState({ answeredQuestionsByDate: {} });
@@ -54,4 +57,6 @@ export async function resetAppToFreshStart() {
   } catch {
     // Ignore file-system cleanup errors during a hard reset.
   }
+
+  clearQuestionCatalogCache();
 }

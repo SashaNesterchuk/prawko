@@ -2,12 +2,13 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Linking, Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
 import { QuestionChoiceOption } from "../questions/training/QuestionChoiceOption";
+import { QuestionFeedbackActions } from "../questions/training/QuestionFeedbackActions";
 import { QuestionFeedbackBottomSheet } from "../questions/training/QuestionFeedbackBottomSheet";
 import { QuestionFeedbackPushStage } from "../questions/training/QuestionFeedbackPushStage";
 import { QuestionStepPill } from "../questions/training/QuestionStepPill";
@@ -30,12 +31,11 @@ import { useSignBookmarksStore } from "../../state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../state/sign-practice-progress";
 import { ANALYTICS_EVENTS } from "../../analytics/catalog";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
+import { openSupportEmail } from "../support/support-email";
 
 type SignTestAnswer = {
   isCorrect: boolean;
 };
-
-const SUPPORT_EMAIL = "support@prawko.app";
 
 type SignTestSessionScreenProps = {
   questions: SignTestQuestion[];
@@ -98,13 +98,6 @@ export function SignTestSessionScreen({
   const explanationText = currentQuestion?.explanation
     ? pickLocalized(currentQuestion.explanation, i18n.language)
     : null;
-  const correctChoiceBullets =
-    hasAnswered && !isCorrect && currentQuestion
-      ? currentQuestion.options
-          .filter((option) => option.id === currentQuestion.correctOptionId)
-          .map((option) => pickLocalized(option.label, i18n.language))
-      : [];
-
   useEffect(() => {
     if (didTrackStartRef.current) {
       return;
@@ -225,13 +218,12 @@ export function SignTestSessionScreen({
       question_id: currentQuestion.id,
       source: "sign_test",
     });
-    const subject = t("signs.reportProblemSubject", {
-      signId: currentQuestion.signId,
-      defaultValue: `Problem with sign ${currentQuestion.signId}`,
+    void openSupportEmail({
+      subject: t("signs.reportProblemSubject", {
+        signId: currentQuestion.signId,
+        defaultValue: `Problem with sign ${currentQuestion.signId}`,
+      }),
     });
-    void Linking.openURL(
-      `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
-    );
   };
 
   const handleToggleBookmark = () => {
@@ -325,16 +317,29 @@ export function SignTestSessionScreen({
           visible={hasAnswered}
           contentBottomInset={insets.bottom + 24}
           contentContainerStyle={styles.content}
+          resetKey={currentQuestion?.id}
           feedback={
             <QuestionFeedbackBottomSheet
               visible
               isCorrectAnswer={Boolean(isCorrect)}
               explanationText={explanationText}
-              correctChoiceBullets={correctChoiceBullets}
               showMasteryProgress={false}
               masteryCurrent={0}
               masteryTarget={0}
               isBookmarked={isBookmarked}
+              feedbackAccentFill={feedbackAccent.fill}
+              feedbackAccentInk={feedbackAccent.ink}
+              feedbackGradientColors={feedbackGradientColors}
+              premiumIconSize={premiumIconSize}
+              showExplain={false}
+              excludeSignId={currentSignId}
+              onReportProblem={handleReportProblem}
+              onToggleBookmark={handleToggleBookmark}
+            />
+          }
+          feedbackActions={
+            <QuestionFeedbackActions
+              isCorrectAnswer={Boolean(isCorrect)}
               nextLabel={
                 questionIndex >= questions.length - 1
                   ? t("question.finish")
@@ -342,13 +347,6 @@ export function SignTestSessionScreen({
                     ? t("question.nextQuestion")
                     : t("question.gotIt")
               }
-              feedbackAccentFill={feedbackAccent.fill}
-              feedbackAccentInk={feedbackAccent.ink}
-              feedbackGradientColors={feedbackGradientColors}
-              premiumIconSize={premiumIconSize}
-              showExplain={false}
-              onReportProblem={handleReportProblem}
-              onToggleBookmark={handleToggleBookmark}
               onNext={() => {
                 void handleContinue();
               }}

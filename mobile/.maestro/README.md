@@ -32,7 +32,7 @@ pnpm test:e2e:studio
 | `onboarding_skip_exam_date_leaves_date_unset.yaml` | Skip exam date on onboarding → Profile shows unset date |
 | `home_opens_trainer_modes.yaml` | Home → Trainer tile |
 | `home_blitz_opens_duration_dialog.yaml` | Home → Quick session → duration picker → timed blitz training |
-| `home_readiness_assessment_starts_training.yaml` | Empty readiness CTA (no period-change badge) → untimed mini_test training (not exam) |
+| `home_readiness_assessment_starts_training.yaml` | Empty readiness CTA (no period-change badge, never stuck on the loading skeleton) → untimed mini_test training (not exam) |
 | `home_traps_opens_count_dialog.yaml` | Home → Traps tile → count picker → training |
 | `home_exam_opens_count_dialog.yaml` | Home → Exam tile → count picker → exam session |
 | `exam_empty_close_then_start_is_fresh.yaml` | Unanswered exam close (miss-click) → start again at question 1 |
@@ -50,7 +50,9 @@ pnpm test:e2e:studio
 | `practice_exam_starts_session.yaml` | Practice screen → exam card → exam session |
 | `profile_offline_mode_screen_opens.yaml` | Profile → Offline mode screen (Plus) |
 | `profile_notifications_switch_visible.yaml` | Profile → notifications switch is visible |
+| `profile_support_row_visible.yaml` | Profile → Support (mailto) and Leave a review (Apple / store review) rows are visible |
 | `profile_language_screen_opens.yaml` | Profile → Language screen with locale tiles |
+| `profile_category_can_switch.yaml` | Profile → Category screen → select A (not only B) |
 | `profile_offline_without_plus_opens_paywall.yaml` | Profile → Offline mode row → paywall (free) |
 | `paywall_activate_stays_on_paywall.yaml` | Guest Activate on paywall stays on paywall (never App access) |
 | `profile_offline_missing_pack_can_download.yaml` | Offline mode → download missing pack (e2e) |
@@ -66,7 +68,7 @@ pnpm test:e2e:studio
 | `trainer_result_screen_opens.yaml` | Direct finished training → result screen → answers review |
 | `exam_answers_category_mismatch_switches_category.yaml` | Direct exam answer review → category mismatch → switch and load review |
 | `trainer_random_mode_starts_questions.yaml` | Trainer modes → count picker → first question |
-| `trainer_first_answer_shows_feedback.yaml` | Trainer question → first answer → feedback sheet (wrong → Зрозуміло / correct → Наступне питання) |
+| `trainer_first_answer_shows_feedback.yaml` | Trainer question → first answer → feedback sheet (wrong → Зрозуміло / correct → Наступне питання); question, options and explanation scroll as one block while the CTA stays pinned; sign codes in the explanation open the sign plate popup |
 | `trainer_exit_then_start_is_fresh.yaml` | Answer → finish training → start again → first unanswered question (not resumed) |
 | `trainer_empty_close_then_start_is_fresh.yaml` | Close unanswered trainer → start again at question 1 |
 | `blitz_exit_then_start_is_fresh.yaml` | Answer blitz → Finish → start again at question 1 |

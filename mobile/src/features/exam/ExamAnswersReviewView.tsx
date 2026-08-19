@@ -1,6 +1,6 @@
 import type { SupportedLocale } from "@prawko/config";
 import { StatusBar } from "expo-status-bar";
-import { Linking, View } from "react-native";
+import { View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -16,12 +16,12 @@ import {
 import { QuestionMediaCard } from "../questions/QuestionMediaCard";
 import { QuestionMediaEmptyPlaceholder } from "../questions/QuestionMediaEmptyPlaceholder";
 import { QuestionChoiceOption } from "../questions/training/QuestionChoiceOption";
+import { QuestionFeedbackActions } from "../questions/training/QuestionFeedbackActions";
 import { QuestionFeedbackBottomSheet } from "../questions/training/QuestionFeedbackBottomSheet";
 import { QuestionFeedbackPushStage } from "../questions/training/QuestionFeedbackPushStage";
 
+import { openSupportEmail } from "../support/support-email";
 import type { RemoteExamAnswer, RemoteExamQuestionRef } from "./types";
-
-const SUPPORT_EMAIL = "support@prawko.app";
 
 type ExamAnswersReviewViewProps = {
   answer: RemoteExamAnswer | null;
@@ -82,24 +82,12 @@ export function ExamAnswersReviewView({
     ? t(`question.scopes.${question.scope}`)
     : t(`question.scopes.${questionRef.scope}`);
   const points = question?.points ?? questionRef.points;
-  const correctChoiceBullets =
-    answer && !isCorrectAnswer && question
-      ? questionChoices
-        .filter((choice) => choice.id === question.correctAnswer)
-        .map((choice) =>
-          isBooleanQuestion
-            ? choice.label
-            : `${choice.id}. ${choice.label}`
-        )
-      : [];
-
   function handleReportProblem() {
-    const subject = t("question.reportProblemSubject", {
-      questionId: questionRef.questionSourceId,
+    void openSupportEmail({
+      subject: t("question.reportProblemSubject", {
+        questionId: questionRef.questionSourceId,
+      }),
     });
-    void Linking.openURL(
-      `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
-    );
   }
 
   if (!question) {
@@ -220,29 +208,34 @@ export function ExamAnswersReviewView({
           <QuestionFeedbackPushStage
             visible
             contentBottomInset={insets.bottom + 24}
+            resetKey={questionRef.questionSourceId}
             feedback={
               <QuestionFeedbackBottomSheet
                 visible
                 isCorrectAnswer={isCorrectAnswer}
                 explanationText={explanationText || null}
-                correctChoiceBullets={correctChoiceBullets}
                 showMasteryProgress={false}
                 masteryCurrent={0}
                 masteryTarget={0}
                 isBookmarked={isBookmarked}
-                navigationMode="previousNext"
-                canGoPrevious={canGoPrevious}
-                canGoNext={canGoNext}
-                previousLabel={t("question.previousShort")}
-                nextLabel={t("question.nextShort")}
                 feedbackAccentFill={feedbackAccent.fill}
                 feedbackAccentInk={feedbackAccent.ink}
                 feedbackGradientColors={feedbackGradientColors}
                 premiumIconSize={premiumIconSize}
                 onReportProblem={handleReportProblem}
                 onToggleBookmark={onToggleBookmark}
-                onPrevious={onPrevious}
+              />
+            }
+            feedbackActions={
+              <QuestionFeedbackActions
+                canGoNext={canGoNext}
+                canGoPrevious={canGoPrevious}
+                isCorrectAnswer={isCorrectAnswer}
+                navigationMode="previousNext"
+                nextLabel={t("question.nextShort")}
+                previousLabel={t("question.previousShort")}
                 onNext={onNext}
+                onPrevious={onPrevious}
               />
             }
           >

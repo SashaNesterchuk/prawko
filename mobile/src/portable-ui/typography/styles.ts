@@ -170,6 +170,7 @@ export const globalStyles = StyleSheet.create({
     },
     shadowOpacity: 0.05,
     shadowRadius: 12,
-    elevation: 2,
+    elevation: 0,
+    boxShadow: "0px 2px 12px rgba(20, 45, 33, 0.05)",
   },
 });

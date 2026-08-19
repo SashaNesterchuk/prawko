@@ -155,7 +155,7 @@ export default function ExamScheduleScreen() {
 
 function useStyles() {
   return useResponsiveStyles(
-    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+    ({ accents, colors, elevation, radius, responsiveFont, spacing }) => ({
       safeArea: {
         flex: 1,
       },
@@ -193,11 +193,7 @@ function useStyles() {
         borderWidth: 1,
         borderColor: colors.line,
         backgroundColor: colors.surface,
-        shadowColor: colors.shadow,
-        shadowOpacity: 0.05,
-        shadowRadius: spacing.exact(12),
-        shadowOffset: { width: 0, height: spacing.exact(2) },
-        elevation: 1,
+        ...elevation.card,
       },
       fieldPressed: {
         opacity: 0.85,

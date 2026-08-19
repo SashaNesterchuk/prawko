@@ -15,6 +15,7 @@ import {
   type RevenueCatPackageSummary,
 } from "../../state/entitlements";
 import {
+  isRevenueCatEnabledForBuild,
   REVENUECAT_PACKAGE_ALIASES,
   REVENUECAT_PRO_ENTITLEMENT_ALIASES,
   REVENUECAT_PRO_ENTITLEMENT_ID,
@@ -431,6 +432,16 @@ async function getRevenueCatUIModule() {
 }
 
 function getRevenueCatPublicApiKey() {
+  if (
+    !isRevenueCatEnabledForBuild({
+      enableInDevBuilds: mobileEnv.revenueCatEnableInDev,
+      isDevBuild: __DEV__,
+      isE2ETestMode: mobileEnv.enableE2ETestMode,
+    })
+  ) {
+    return "";
+  }
+
   if (Platform.OS === "ios") {
     return mobileEnv.revenueCatAppleApiKey;
   }

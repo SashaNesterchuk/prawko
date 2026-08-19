@@ -12,6 +12,10 @@ import {
 } from "../typography/styles";
 import type { FontWeightKey } from "../typography/fontRegistry";
 
+const androidTextMetrics: TextStyle = {
+  includeFontPadding: false,
+};
+
 const sizes: TextSizeKey[] = [
   "s72",
   "s52",
@@ -404,6 +408,7 @@ export default function CText(props: CTextProps) {
       return (
         <Text
           style={[
+            androidTextMetrics,
             baseStyle,
             scaledBase,
             weightStyle,
@@ -426,6 +431,7 @@ export default function CText(props: CTextProps) {
       return (
         <Text
           style={[
+            androidTextMetrics,
             baseStyle,
             scaledBase,
             weightStyle,
@@ -443,6 +449,7 @@ export default function CText(props: CTextProps) {
     return (
       <Text
         style={[
+          androidTextMetrics,
           baseStyle,
           scaledBase,
           weightStyle,
@@ -453,7 +460,7 @@ export default function CText(props: CTextProps) {
         {...rest}
       >
         {styledSegments?.resolvedSegments.map((segment) => (
-          <Text key={segment.key} style={segment.style}>
+          <Text key={segment.key} style={[androidTextMetrics, segment.style]}>
             {segment.text}
           </Text>
         ))}
@@ -464,6 +471,7 @@ export default function CText(props: CTextProps) {
   return (
     <Text
       style={[
+        androidTextMetrics,
         baseStyle,
         scaledBase,
         weightStyle,

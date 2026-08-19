@@ -1,6 +1,9 @@
 # Feature: Trainer
 # Scenario: Onboarded user answers the first trainer question and sees feedback
 # Wrong answers show a red "Зрозуміло" CTA; correct answers keep "Наступне питання"
+# Question, options and explanation scroll as one block while the CTA stays
+# pinned over the bottom fade, and sign codes in the explanation render
+# tappable sign tiles
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -43,6 +46,45 @@ tags:
       - assertNotVisible: "Пояснити чому інші хибні?"
       - assertVisible:
           id: "question-feedback-next"
+
+# The panel is part of the scroll content now, so question, options and
+# explanation scroll as one block while the CTA stays pinned over the fade.
+- scrollUntilVisible:
+    element:
+      id: "question-feedback"
+    direction: DOWN
+    timeout: 5000
+
+- assertVisible:
+    id: "question-feedback-next"
+
+# Only explanations that name a road sign render the sign strip, and a random
+# question is not guaranteed to be one of them.
+- runFlow:
+    when:
+      visible:
+        id: "explanation-sign-.*"
+    commands:
+      - tapOn:
+          id: "explanation-sign-.*"
+      - assertVisible:
+          id: "sign-plate-popup"
+      - tapOn:
+          point: "50%,8%"
+      - assertNotVisible:
+          id: "sign-plate-popup"
+
+- scrollUntilVisible:
+    element:
+      id: "question-prompt"
+    direction: UP
+    timeout: 5000
+
+- assertVisible:
+    id: "question-prompt"
+
+- assertVisible:
+    id: "question-feedback-next"
 
 - tapOn:
     id: "question-feedback-next"

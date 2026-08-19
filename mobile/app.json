@@ -3,7 +3,7 @@
     "name": "Prawko",
     "slug": "prawko",
     "scheme": "prawko",
-    "version": "1.0.15",
+    "version": "1.0.18",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
@@ -39,12 +39,14 @@
     },
     "android": {
       "package": "com.mindjar.prawko",
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.mindjar.prawko",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#EEF4F2"
       }
     },
     "ios": {
+      "appStoreUrl": "https://apps.apple.com/app/id6795258105",
       "bundleIdentifier": "com.mindjar.prawko",
       "supportsTablet": false,
       "appleTeamId": "6ZQHZ3FP75",

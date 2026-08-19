@@ -8,6 +8,12 @@ type AppStateListener = (state: string) => void;
 
 const appStateListeners = new Set<AppStateListener>();
 
+export const Linking = {
+  canOpenURL: jest.fn(async () => true),
+  openURL: jest.fn(async () => {}),
+  openSettings: jest.fn(async () => {}),
+};
+
 export const AppState = {
   currentState: "active",
   addEventListener: jest.fn((_type: string, listener: AppStateListener) => {
@@ -30,5 +36,6 @@ export const AppState = {
 
 export default {
   Platform,
+  Linking,
   AppState,
 };

@@ -52,7 +52,7 @@ export function StatusPromptCard({
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+  return useResponsiveStyles(({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
     card: {
       width: "100%",
       flexDirection: "row",
@@ -63,12 +63,7 @@ function useStyles() {
       backgroundColor: colors.surface,
       borderWidth: 2,
       borderColor: theme.accents.amber.fill,
-      overflow: "hidden",
-      shadowColor: colors.shadow,
-      shadowOpacity: 0.05,
-      shadowRadius: spacing.exact(12),
-      shadowOffset: { width: 0, height: spacing.exact(2) },
-      elevation: 2,
+      ...elevation.card,
     },
     pressed: {
       opacity: 0.85,

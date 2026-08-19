@@ -1,0 +1,19 @@
+# Feature: Profile support
+# Scenario: Onboarded user sees support (mail) and leave-review (Apple review) rows
+appId: com.mindjar.prawko
+tags:
+  - profile
+  - support
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      TARGET_ID: screen-profile
+      LOCALE: ua
+
+- assertVisible:
+    id: "profile-row-support"
+
+- assertVisible:
+    id: "profile-row-feedback"

@@ -1,8 +1,8 @@
 import {
-  ACTIVE_CATEGORIES,
   DEFAULT_CATEGORY,
   QUESTION_TOPIC_IDS,
   STUDY_PLAN_LIMITS,
+  isDrivingCategory,
   type DrivingCategory,
   type SupportedLocale,
 } from "@prawko/config";
@@ -252,11 +252,8 @@ function normalizeDestination(
 }
 
 function resolveCategory(value: string | null | undefined): DrivingCategory {
-  const candidate = value?.trim().toUpperCase() as DrivingCategory | undefined;
-
-  return candidate && ACTIVE_CATEGORIES.includes(candidate)
-    ? candidate
-    : DEFAULT_CATEGORY;
+  const candidate = value?.trim().toUpperCase();
+  return isDrivingCategory(candidate) ? candidate : DEFAULT_CATEGORY;
 }
 
 function resolveDaysUntilExam(value: number | null | undefined) {
@@ -279,7 +276,7 @@ function resolveTopicId(value: string | null | undefined) {
 
 function resolveLooseCategory(value: string | null | undefined) {
   const normalized = value?.trim().toUpperCase();
-  return normalized ? (normalized as DrivingCategory) : null;
+  return isDrivingCategory(normalized) ? normalized : null;
 }
 
 function waitForQuestionProgressHydrated(timeoutMs = 5000) {

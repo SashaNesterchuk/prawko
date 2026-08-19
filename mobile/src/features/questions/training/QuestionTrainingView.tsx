@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef } from "react";
-import { Linking, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -15,6 +15,7 @@ import {
 import { QuestionMediaCard } from "../QuestionMediaCard";
 import { QuestionMediaEmptyPlaceholder } from "../QuestionMediaEmptyPlaceholder";
 import { QuestionChoiceOption } from "./QuestionChoiceOption";
+import { QuestionFeedbackActions } from "./QuestionFeedbackActions";
 import { QuestionFeedbackBottomSheet } from "./QuestionFeedbackBottomSheet";
 import { QuestionFeedbackPushStage } from "./QuestionFeedbackPushStage";
 import { QuestionStepPill } from "./QuestionStepPill";
@@ -22,9 +23,9 @@ import type { QuestionTrainingSession } from "./useQuestionTrainingSession";
 import { getQuestionStepState } from "./visible-steps";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
+import { openSupportEmail } from "../../support/support-email";
 
 import { CText } from "../../../portable-ui";
-const SUPPORT_EMAIL = "support@prawko.app";
 
 type QuestionTrainingViewProps = Pick<
   QuestionTrainingSession,
@@ -137,28 +138,16 @@ export function QuestionTrainingView({
     isCorrectAnswer &&
     !isQuestionMastered(currentQuestionState) &&
     currentQuestionState.timesWrong > 0;
-  const correctChoiceBullets =
-    hasAnswered && !isCorrectAnswer
-      ? questionChoices
-        .filter((choice) => choice.id === currentQuestion.correctAnswer)
-        .map((choice) =>
-          isBooleanQuestion
-            ? choice.label
-            : `${choice.id}. ${choice.label}`
-        )
-      : [];
-
   const handleReportProblem = () => {
     track(ANALYTICS_EVENTS.questionProblemReportRequested.key, {
       question_id: currentQuestionId,
       source: "training",
     });
-    const subject = t("question.reportProblemSubject", {
-      questionId: currentQuestionId,
+    void openSupportEmail({
+      subject: t("question.reportProblemSubject", {
+        questionId: currentQuestionId,
+      }),
     });
-    void Linking.openURL(
-      `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
-    );
   };
 
   const questionBlock = (
@@ -175,7 +164,7 @@ export function QuestionTrainingView({
         )}
       </View>
 
-      <CText style={trainerStyles.prompt}>
+      <CText style={trainerStyles.prompt} testID="question-prompt">
         {getLocalizedText(currentQuestion.prompt, displayLocale)}
       </CText>
 
@@ -283,23 +272,16 @@ export function QuestionTrainingView({
           <QuestionFeedbackPushStage
             visible={hasAnswered}
             contentBottomInset={insets.bottom + 24}
+            resetKey={currentQuestionId}
             feedback={
               <QuestionFeedbackBottomSheet
                 visible
                 isCorrectAnswer={isCorrectAnswer}
                 explanationText={explanationText || null}
-                correctChoiceBullets={correctChoiceBullets}
                 showMasteryProgress={showMasteryProgress}
                 masteryCurrent={masteryProgress.current}
                 masteryTarget={masteryProgress.target}
                 isBookmarked={currentQuestionState.isBookmarked}
-                nextLabel={
-                  summary.answered >= summary.total
-                    ? t("question.finish")
-                    : isCorrectAnswer
-                      ? t("question.nextQuestion")
-                      : t("question.gotIt")
-                }
                 feedbackAccentFill={feedbackAccent.fill}
                 feedbackAccentInk={feedbackAccent.ink}
                 feedbackGradientColors={feedbackGradientColors}
@@ -307,6 +289,18 @@ export function QuestionTrainingView({
                 onReportProblem={handleReportProblem}
                 onToggleBookmark={() =>
                   handleToggleBookmark(currentQuestionId)
+                }
+              />
+            }
+            feedbackActions={
+              <QuestionFeedbackActions
+                isCorrectAnswer={isCorrectAnswer}
+                nextLabel={
+                  summary.answered >= summary.total
+                    ? t("question.finish")
+                    : isCorrectAnswer
+                      ? t("question.nextQuestion")
+                      : t("question.gotIt")
                 }
                 onNext={handleContinueAfterFeedback}
               />

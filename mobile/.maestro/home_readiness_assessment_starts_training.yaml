@@ -16,6 +16,9 @@ tags:
     id: "home-readiness-index"
 - assertNotVisible:
     id: "home-readiness-index-week-change"
+# The card must resolve from the persisted snapshot, never stay a skeleton.
+- assertNotVisible:
+    id: "home-readiness-index-loading"
 
 - tapOn:
     id: "home-readiness-index"

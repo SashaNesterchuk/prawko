@@ -33,6 +33,13 @@ export const mobileEnv = {
     process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY ?? "",
   revenueCatGoogleApiKey:
     process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY ?? "",
+  // Every fresh install registers another anonymous customer in the shared
+  // RevenueCat project, so dev builds stay out of it until purchases are
+  // actually being tested.
+  revenueCatEnableInDev: parseBooleanEnv(
+    process.env.EXPO_PUBLIC_REVENUECAT_ENABLE_IN_DEV,
+    false
+  ),
   admobIosAppId: process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID ?? "",
   admobAndroidAppId: process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID ?? "",
   admobIosInterstitialUnitId:

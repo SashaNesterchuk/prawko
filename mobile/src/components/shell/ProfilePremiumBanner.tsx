@@ -59,18 +59,14 @@ export function ProfilePremiumBanner({
 }
 
 function useStyles() {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
+  return useResponsiveStyles(({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
     banner: {
       width: "100%",
       gap: spacing.md,
       padding: spacing.exact(24),
       borderRadius: radius.xl,
       backgroundColor: theme.accents.green.fill,
-      shadowColor: theme.colors.shadow,
-      shadowOpacity: 0.05,
-      shadowRadius: spacing.exact(12),
-      shadowOffset: { width: 0, height: spacing.exact(2) },
-      elevation: 2,
+      ...elevation.card,
     },
     pressed: {
       opacity: 0.92,
