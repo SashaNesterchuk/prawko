@@ -17,6 +17,7 @@ import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui
 import {
   getAnswerTextFromContext,
 } from "../../src/features/ai/question-chat-context";
+import { ExplanationSignReferences } from "../../src/features/road-signs/ExplanationSignReferences";
 import { useQuestionAiChat } from "../../src/features/ai/use-question-ai-chat";
 import { getQuestionTopicTitleSafe } from "../../src/features/question-topics/catalog";
 import { useHasAiChatAccess } from "../../src/state/entitlements";
@@ -257,6 +258,9 @@ export default function AiChatModalScreen() {
                 : t("modals.aiUserRole")}
             </CText>
             <CText style={styles.messageBody}>{message.content}</CText>
+            {message.role === "assistant" ? (
+              <ExplanationSignReferences explanation={message.content} />
+            ) : null}
           </AppCard>
         ))}
 

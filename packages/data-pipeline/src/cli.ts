@@ -10,6 +10,11 @@ import {
   prepareNormalizedQuestionTopics,
   syncNormalizedQuestionTopicsToSupabase,
 } from "./question-topic-sync";
+import {
+  keepOnlyUkrainianQuestionAiExplanations,
+  rewriteQuestionAiExplanations,
+  verifyQuestionAiExplanations,
+} from "./question-ai-explanations";
 import { prepareTopicsFromCategorizedWorkbook } from "./categorized-workbook-topics";
 import { syncQuestionsToSupabase } from "./question-sync";
 import { clearQuestionMediaStorage } from "./storage-clear";
@@ -238,8 +243,26 @@ async function main() {
     return;
   }
 
+  if (command === "question-ai-explanations:rewrite") {
+    const result = await rewriteQuestionAiExplanations(options);
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "question-ai-explanations:verify") {
+    const result = await verifyQuestionAiExplanations();
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "question-ai-explanations:keep-ua") {
+    const result = await keepOnlyUkrainianQuestionAiExplanations();
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
   throw new Error(
-    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, storage:clear, questions:sync, question-topics:from-xlsx, question-topics:prepare, question-topics:sync.`
+    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, storage:clear, questions:sync, question-topics:from-xlsx, question-topics:prepare, question-topics:sync, question-ai-explanations:rewrite, question-ai-explanations:verify, question-ai-explanations:keep-ua.`
   );
 }
 
