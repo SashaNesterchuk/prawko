@@ -7,6 +7,7 @@ describe("app variant manifest", () => {
     expect(prawko.productionReady).toBe(true);
     expect(prawko.iosBundleIdentifier).toBe("com.mindjar.prawko");
     expect(prawko.questionSetKey).toBe("pl-v2-current");
+    expect(prawko.supportedLocales).toEqual(["pl", "ua", "en", "de", "es"]);
     expect(prawko.features.roadSigns).toBe(true);
   });
 
