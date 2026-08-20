@@ -15,6 +15,7 @@
     "data:media:upload": "corepack pnpm --filter @prawko/data-pipeline media:upload",
     "data:storage:clear": "corepack pnpm --filter @prawko/data-pipeline storage:clear",
     "data:questions:sync": "corepack pnpm --filter @prawko/data-pipeline questions:sync",
+    "data:questions:v2:import-v1": "corepack pnpm --filter @prawko/data-pipeline questions:v2:import-v1",
     "data:question-ai-explanations:rewrite": "corepack pnpm --filter @prawko/data-pipeline question-ai-explanations:rewrite",
     "data:question-ai-explanations:verify": "corepack pnpm --filter @prawko/data-pipeline question-ai-explanations:verify",
     "data:question-ai-explanations:keep-ua": "corepack pnpm --filter @prawko/data-pipeline question-ai-explanations:keep-ua",

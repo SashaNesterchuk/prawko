@@ -40,8 +40,9 @@ import { useSignBookmarksStore } from "../../../src/state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 import { ANALYTICS_EVENTS } from "../../../src/analytics/catalog";
 import { useAnalytics } from "../../../src/providers/AnalyticsProvider";
+import { withRoadSignsFeature } from "../../../src/app-config/with-road-signs-feature";
 
-export default function SignDetailScreen() {
+function SignDetailScreen() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
   const { width: pageWidth } = useWindowDimensions();
@@ -263,6 +264,8 @@ export default function SignDetailScreen() {
     </GreenWaveScreen>
   );
 }
+
+export default withRoadSignsFeature(SignDetailScreen);
 
 const SignDetailPage = memo(function SignDetailPage({
   pageHeight,

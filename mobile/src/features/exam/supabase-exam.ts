@@ -1,6 +1,6 @@
 import type { DrivingCategory, SupportedLocale } from "@prawko/config";
 
-import { isMobileSupabaseConfigured } from "../../config/env";
+import { isMobileSupabaseConfigured, mobileEnv } from "../../config/env";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 import type {
   ExamSimulatorMode,
@@ -39,12 +39,12 @@ export async function startRemoteExamSession(
   assertMobileSupabaseConfigured();
 
   const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("start_exam_session", {
+  const { data, error } = await client.rpc("start_exam_session_v2", {
+    p_question_set_key: mobileEnv.questionSetKey,
     p_mode: input.mode,
     p_session_locale: input.locale,
     p_current_category: input.category,
     p_requested_total_questions: input.requestedTotalQuestions ?? null,
-    p_study_plan_id: input.studyPlanId ?? null,
     p_metadata: toRpcJsonObject({
       source: "mobile_exam_flow",
       study_plan_task_id: input.studyPlanTaskId ?? null,
@@ -63,7 +63,7 @@ export async function fetchExamSessionSnapshot(sessionId: string) {
   assertMobileSupabaseConfigured();
 
   const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("get_exam_session_snapshot", {
+  const { data, error } = await client.rpc("get_exam_session_snapshot_v2", {
     p_exam_session_id: sessionId,
   });
 
@@ -78,7 +78,8 @@ export async function fetchLatestActiveExamSession(mode?: ExamSimulatorMode | nu
   assertMobileSupabaseConfigured();
 
   const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("get_latest_active_exam_session", {
+  const { data, error } = await client.rpc("get_latest_active_exam_session_v2", {
+    p_question_set_key: mobileEnv.questionSetKey,
     p_mode: mode ?? null,
   });
 
@@ -99,7 +100,8 @@ export async function fetchRecentExamSessions(
   assertMobileSupabaseConfigured();
 
   const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("list_recent_exam_sessions", {
+  const { data, error } = await client.rpc("list_recent_exam_sessions_v2", {
+    p_question_set_key: mobileEnv.questionSetKey,
     p_limit: limit,
   });
 
@@ -116,7 +118,7 @@ export async function submitRemoteExamAnswer(
   assertMobileSupabaseConfigured();
 
   const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("submit_exam_session_answer", {
+  const { data, error } = await client.rpc("submit_exam_session_answer_v2", {
     p_exam_session_id: input.sessionId,
     p_answer_given: input.answerGiven,
     p_question_locale: input.locale,
@@ -137,7 +139,7 @@ export async function setRemoteExamSessionStatus(
   assertMobileSupabaseConfigured();
 
   const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("set_exam_session_status", {
+  const { data, error } = await client.rpc("set_exam_session_status_v2", {
     p_exam_session_id: input.sessionId,
     p_status: input.status,
     p_metadata: toRpcJsonObject(input.metadata ?? {}),

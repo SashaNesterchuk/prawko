@@ -7,7 +7,7 @@ import {
 import {
   getQuestionBank,
   hydrateQuestionBankFromLocalQuestions,
-  hydrateQuestionBankFromSupabaseRecordsAsync,
+  hydrateQuestionBankFromSupabaseV2RecordsAsync,
   resetQuestionBankToMock,
 } from "../features/questions/question-bank";
 import {
@@ -18,7 +18,7 @@ import {
 } from "../features/questions/question-catalog-cache";
 import type {
   QuestionAiExplanationMap,
-  SupabaseQuestionRecord,
+  SupabaseQuestionV2Record,
 } from "../features/questions/supabase-question-record";
 import type { LocalQuestion } from "../features/questions/types";
 import { fetchAllSupabasePages } from "../lib/fetch-all-supabase-pages";
@@ -41,69 +41,49 @@ import {
 } from "../features/offline/offline-pack";
 import { useErrorLogger } from "./ErrorLoggingProvider";
 
-const QUESTION_CATALOG_SELECT = [
-  "question_source_id",
+const QUESTION_CATALOG_V2_SELECT = [
+  "id",
+  "source_id",
   "source_row_number",
-  "question_pl",
-  "question_ua",
-  "question_en",
-  "question_de",
-  "explanation_pl",
-  "explanation_ua",
-  "explanation_en",
-  "answer_type",
-  "correct_answer",
-  "option_a",
-  "option_b",
-  "option_c",
-  "option_a_ua",
-  "option_b_ua",
-  "option_c_ua",
-  "option_a_en",
-  "option_b_en",
-  "option_c_en",
-  "option_a_de",
-  "option_b_de",
-  "option_c_de",
+  "answer_kind",
+  "correct_option_id",
   "points",
   "scope",
-  "topic_block",
   "primary_topic_id",
   "topic_ids",
   "difficulty_seed",
-  "media_asset",
-  "pjm_question_asset",
-  "pjm_answer_a_asset",
-  "pjm_answer_b_asset",
-  "pjm_answer_c_asset",
+  "content",
+  "official_metadata",
 ].join(", ");
 
-const QUESTION_AI_EXPLANATION_SELECT = [
-  "question_source_id",
+const QUESTION_AI_EXPLANATION_V2_SELECT = [
+  "question_id",
   "explanations",
 ].join(", ");
 
 type SupabaseQuestionAiExplanationRecord = {
-  question_source_id: string;
+  question_id: string;
   explanations: QuestionAiExplanationMap | null;
 };
 
 async function fetchAllActiveQuestionsForCategory(
+  questionSetId: string,
   preferredCategory: string
-): Promise<SupabaseQuestionRecord[]> {
+): Promise<SupabaseQuestionV2Record[]> {
   const client = getMobileSupabaseClient();
 
   return fetchAllSupabasePages(async (from, to) => {
     const { data, error } = await client
-      .from("questions")
-      .select(QUESTION_CATALOG_SELECT)
+      .from("questions_v2")
+      .select(QUESTION_CATALOG_V2_SELECT)
+      .eq("question_set_id", questionSetId)
       .eq("is_active", true)
-      .contains("categories", [preferredCategory])
+      .contains("category_codes", [preferredCategory])
       .order("source_row_number", { ascending: true })
       .range(from, to);
 
     return {
-      data: ((data ?? []) as unknown) as SupabaseQuestionRecord[],
+      data: ((data ?? []) as unknown) as SupabaseQuestionV2Record[],
       error,
     };
   });
@@ -133,7 +113,7 @@ function normalizeQuestionAiExplanationMap(
 }
 
 function mergeQuestionAiExplanations(
-  records: SupabaseQuestionRecord[],
+  records: SupabaseQuestionV2Record[],
   explanationRows: SupabaseQuestionAiExplanationRecord[]
 ) {
   if (explanationRows.length === 0) {
@@ -143,14 +123,14 @@ function mergeQuestionAiExplanations(
   const explanationsByQuestionId = new Map<string, QuestionAiExplanationMap>();
 
   for (const row of explanationRows) {
-    const questionSourceId = row.question_source_id?.trim();
+    const questionId = row.question_id?.trim();
     const explanations = normalizeQuestionAiExplanationMap(row.explanations);
 
-    if (!questionSourceId || !explanations) {
+    if (!questionId || !explanations) {
       continue;
     }
 
-    explanationsByQuestionId.set(questionSourceId, explanations);
+    explanationsByQuestionId.set(questionId, explanations);
   }
 
   if (explanationsByQuestionId.size === 0) {
@@ -159,7 +139,7 @@ function mergeQuestionAiExplanations(
 
   return records.map((record) => {
     const aiExplanations = explanationsByQuestionId.get(
-      record.question_source_id
+      record.id
     );
 
     return aiExplanations
@@ -177,21 +157,24 @@ function mergeQuestionAiExplanations(
  * the content did not move since the cached copy was written.
  */
 async function fetchQuestionCatalogSignature(
+  questionSetId: string,
   preferredCategory: string
 ): Promise<QuestionCatalogSignature> {
   const client = getMobileSupabaseClient();
 
   const [questions, explanations] = await Promise.all([
     client
-      .from("questions")
+      .from("questions_v2")
       .select("updated_at", { count: "exact" })
+      .eq("question_set_id", questionSetId)
       .eq("is_active", true)
-      .contains("categories", [preferredCategory])
+      .contains("category_codes", [preferredCategory])
       .order("updated_at", { ascending: false })
       .limit(1),
     client
-      .from("question_ai_explanations")
-      .select("updated_at", { count: "exact" })
+      .from("question_ai_explanations_v2")
+      .select("updated_at, question:questions_v2!inner(question_set_id)", { count: "exact" })
+      .eq("question.question_set_id", questionSetId)
       .order("updated_at", { ascending: false })
       .limit(1),
   ]);
@@ -218,14 +201,15 @@ function readNewestUpdatedAt(rows: unknown) {
   return typeof value === "string" ? value : null;
 }
 
-async function fetchQuestionAiExplanations() {
+async function fetchQuestionAiExplanations(questionSetId: string) {
   const client = getMobileSupabaseClient();
 
   return fetchAllSupabasePages(async (from, to) => {
     const { data, error } = await client
-      .from("question_ai_explanations")
-      .select(QUESTION_AI_EXPLANATION_SELECT)
-      .order("source_row_number", { ascending: true })
+      .from("question_ai_explanations_v2")
+      .select(`${QUESTION_AI_EXPLANATION_V2_SELECT}, question:questions_v2!inner(question_set_id)`)
+      .eq("question.question_set_id", questionSetId)
+      .order("question_id", { ascending: true })
       .range(from, to);
 
     return {
@@ -233,6 +217,18 @@ async function fetchQuestionAiExplanations() {
       error,
     };
   });
+}
+
+async function fetchQuestionSetId(key: string): Promise<string> {
+  const { data, error } = await getMobileSupabaseClient()
+    .from("question_sets")
+    .select("id")
+    .eq("key", key)
+    .eq("is_active", true)
+    .single();
+  if (error) throw error;
+  if (!data?.id) throw new Error(`Active question set "${key}" was not found.`);
+  return data.id as string;
 }
 
 export function QuestionCatalogProvider({ children }: PropsWithChildren) {
@@ -411,9 +407,14 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
       }
 
       let signature: QuestionCatalogSignature | null = null;
+      let questionSetId: string | null = null;
 
       try {
-        signature = await fetchQuestionCatalogSignature(preferredCategory);
+        questionSetId = await fetchQuestionSetId(mobileEnv.questionSetKey);
+        signature = await fetchQuestionCatalogSignature(
+          questionSetId,
+          preferredCategory
+        );
       } catch (error: unknown) {
         if (cancelled) {
           return;
@@ -462,10 +463,16 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
       }
 
       try {
-        let records: SupabaseQuestionRecord[];
+        let records: SupabaseQuestionV2Record[];
 
         try {
-          records = await fetchAllActiveQuestionsForCategory(preferredCategory);
+          if (!questionSetId) {
+            throw new Error(`Active question set "${mobileEnv.questionSetKey}" was not found.`);
+          }
+          records = await fetchAllActiveQuestionsForCategory(
+            questionSetId,
+            preferredCategory
+          );
         } catch (error: unknown) {
           if (cancelled) {
             return;
@@ -596,7 +603,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
         let hasCompleteExplanations = true;
 
         try {
-          const explanationRows = await fetchQuestionAiExplanations();
+          const explanationRows = await fetchQuestionAiExplanations(questionSetId!);
           hydratedRecords = mergeQuestionAiExplanations(
             records,
             explanationRows
@@ -616,13 +623,13 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
           });
         }
 
-        await hydrateQuestionBankFromSupabaseRecordsAsync(hydratedRecords);
+        await hydrateQuestionBankFromSupabaseV2RecordsAsync(hydratedRecords);
         if (cancelled) {
           return;
         }
         setOfflinePackMediaEnabled(false);
         reconcileCatalog(
-          hydratedRecords.map((record) => record.question_source_id)
+          hydratedRecords.map((record) => record.source_id)
         );
         ensureTopicQuestionProgressSeeded();
         setRemote({

@@ -20,6 +20,7 @@ module.exports = {
     ],
   },
   moduleNameMapper: {
+    "^@app-variant$": "<rootDir>/variants/prawko/runtime.ts",
     "^react-native$": "<rootDir>/src/features/ads/__tests__/mocks/react-native.ts",
     "^expo-router$": "<rootDir>/src/features/ads/__tests__/mocks/expo-router.ts",
   },

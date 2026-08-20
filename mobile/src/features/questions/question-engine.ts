@@ -38,19 +38,23 @@ const HIGH_POINTS_THRESHOLD = 3;
 
 const BOOLEAN_CHOICES: Record<
   "true" | "false",
-  Record<"pl" | "ua" | "en" | "de", string>
+  Record<"pl" | "ua" | "en" | "de" | "cs" | "el", string>
 > = {
   true: {
     pl: "Tak",
     ua: "Так",
     en: "Yes",
     de: "Ja",
+    cs: "Ano",
+    el: "Ναι",
   },
   false: {
     pl: "Nie",
     ua: "Ні",
     en: "No",
     de: "Nein",
+    cs: "Ne",
+    el: "Όχι",
   },
 };
 

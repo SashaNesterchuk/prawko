@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DEFAULT_CATEGORY,
-  DEFAULT_LOCALE,
   isDrivingCategory,
   type DrivingCategory,
   type PlanLevel,
@@ -12,6 +11,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { isMockAuthEnabled } from "../config/env";
+import { appVariant } from "../app-config/runtime";
 import {
   getSupportedDeviceLocale,
   normalizeSupportedLocale,
@@ -190,7 +190,10 @@ function getNextMockUser(mockUser: AppUser | null) {
 function normalizePersistedLocale(
   locale: SupportedLocale | null | undefined,
 ): SupportedLocale {
-  return normalizeSupportedLocale(locale ?? null) ?? DEFAULT_LOCALE;
+  const normalized = normalizeSupportedLocale(locale ?? null);
+  return normalized && appVariant.supportedLocales.includes(normalized)
+    ? normalized
+    : (appVariant.defaultLocale as SupportedLocale);
 }
 
 function normalizePersistedCategory(
@@ -211,7 +214,7 @@ function normalizePersistedShellState(
     false;
   const resolvedPreferredLocale = hasChosenPreferredLocale
     ? normalizePersistedLocale(persistedState?.preferredLocale)
-    : getSupportedDeviceLocale();
+    : normalizePersistedLocale(getSupportedDeviceLocale());
 
   return {
     authMode,

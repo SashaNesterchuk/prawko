@@ -17,6 +17,8 @@ const txt = (
   ua,
   en,
   de,
+  cs: en,
+  el: en,
 });
 
 const choice = (

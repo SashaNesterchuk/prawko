@@ -9,6 +9,7 @@ import {
   useNextOnboardingRoute,
   useAppShellStore,
 } from "../../src/state/app-shell";
+import { appVariant } from "../../src/app-config/runtime";
 
 export default function TabsLayout() {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ export default function TabsLayout() {
 
   if (!hasHydrated || !sessionResolved) {
     return (
-      <AppScreen scroll={false} title="Prawko">
+      <AppScreen scroll={false} title={appVariant.name}>
         <LoadingStateView
           title={t("states.loadingTitle")}
           description={t("states.loadingSubtitle")}
@@ -71,7 +72,11 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="signs"
-        options={{ title: t("nav.signs"), tabBarLabel: t("nav.signs") }}
+        options={{
+          title: t("nav.signs"),
+          tabBarLabel: t("nav.signs"),
+          href: appVariant.features.roadSigns ? undefined : null,
+        }}
       />
       <Tabs.Screen
         name="profile"

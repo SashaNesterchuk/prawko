@@ -26,8 +26,9 @@ import { buildCategorySignTestQuestions } from "../../../src/features/road-signs
 import { getSignLearningStatus } from "../../../src/features/road-signs/sign-progress";
 import { useSignBookmarksStore } from "../../../src/state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
+import { withRoadSignsFeature } from "../../../src/app-config/with-road-signs-feature";
 
-export default function SignsCategoryScreen() {
+function SignsCategoryScreen() {
   const { t } = useTranslation();
   const { background } = useTheme();
   const { bottom: safeBottom } = useSafeAreaInsets();
@@ -168,6 +169,8 @@ export default function SignsCategoryScreen() {
     </GreenWaveScreen>
   );
 }
+
+export default withRoadSignsFeature(SignsCategoryScreen);
 
 function useStyles({ safeBottom }: { safeBottom: number }) {
   return useResponsiveStyles(({ spacing }) => ({

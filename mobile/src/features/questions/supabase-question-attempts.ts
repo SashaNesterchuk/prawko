@@ -1,6 +1,6 @@
 import type { QuestionSessionMode, SupportedLocale } from "@prawko/config";
 
-import { isMobileSupabaseConfigured } from "../../config/env";
+import { isMobileSupabaseConfigured, mobileEnv } from "../../config/env";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 import type { QuestionOptionValue } from "./types";
 
@@ -27,13 +27,13 @@ export async function recordQuestionAttemptBySourceId(
   }
 
   const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("record_question_attempt_by_source_id", {
+  const { data, error } = await client.rpc("record_question_attempt_by_source_id_v2", {
+    p_question_set_key: mobileEnv.questionSetKey,
     p_question_source_id: input.questionSourceId,
     p_mode: input.mode,
     p_answer_given: input.selectedAnswer,
     p_is_correct: input.isCorrect,
     p_question_locale: input.locale,
-    p_study_plan_id: input.studyPlanId ?? null,
     p_answer_duration_ms: input.answerDurationMs ?? null,
     p_explanation_opened: input.explanationOpened ?? false,
     p_ai_chat_used: input.aiChatUsed ?? false,
@@ -46,7 +46,7 @@ export async function recordQuestionAttemptBySourceId(
 
   if (typeof data !== "string" || data.trim().length === 0) {
     throw new Error(
-      "record_question_attempt_by_source_id returned an empty response."
+      "record_question_attempt_by_source_id_v2 returned an empty response."
     );
   }
 

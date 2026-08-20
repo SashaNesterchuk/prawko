@@ -1,6 +1,6 @@
 import type { QuestionSessionMode, SupportedLocale } from "@prawko/config";
 
-import { isMobileSupabaseConfigured } from "../../config/env";
+import { isMobileSupabaseConfigured, mobileEnv } from "../../config/env";
 import { fetchAllSupabasePages } from "../../lib/fetch-all-supabase-pages";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 import { createEmptyQuestionUserState } from "./question-engine";
@@ -9,9 +9,11 @@ import type { QuestionUserStateMap } from "./types";
 type RelatedQuestionRef =
   | {
       question_source_id?: string | null;
+      source_id?: string | null;
     }
   | Array<{
       question_source_id?: string | null;
+      source_id?: string | null;
     }>
   | null;
 
@@ -55,6 +57,13 @@ export async function fetchRemoteQuestionUserStateMap() {
   }
 
   const client = getMobileSupabaseClient();
+  const { data: set, error: setError } = await client
+    .from("question_sets")
+    .select("id")
+    .eq("key", mobileEnv.questionSetKey)
+    .eq("is_active", true)
+    .single();
+  if (setError) throw setError;
   const questionStateSelect = [
     "times_seen",
     "times_correct",
@@ -67,14 +76,15 @@ export async function fetchRemoteQuestionUserStateMap() {
     "is_hard",
     "is_mastered",
     "mastery_score",
-    "question:questions!inner(question_source_id)",
+    "question:questions_v2!inner(source_id)",
   ].join(", ");
 
   const [questionStateRows, bookmarkRows] = await Promise.all([
     fetchAllSupabasePages(async (from, to) => {
       const { data, error } = await client
-        .from("question_user_state")
+        .from("question_user_state_v2")
         .select(questionStateSelect)
+        .eq("question.question_set_id", set.id)
         .order("question_id", { ascending: true })
         .range(from, to);
 
@@ -85,8 +95,9 @@ export async function fetchRemoteQuestionUserStateMap() {
     }),
     fetchAllSupabasePages(async (from, to) => {
       const { data, error } = await client
-        .from("bookmarks")
-        .select("question:questions!inner(question_source_id)")
+        .from("bookmarks_v2")
+        .select("question:questions_v2!inner(source_id)")
+        .eq("question.question_set_id", set.id)
         .order("question_id", { ascending: true })
         .range(from, to);
 
@@ -108,7 +119,8 @@ export async function syncQuestionBookmarkState(input: SyncBookmarkInput) {
   }
 
   const client = getMobileSupabaseClient();
-  const { error } = await client.rpc("set_question_bookmark_state_by_source_id", {
+  const { error } = await client.rpc("set_question_bookmark_state_by_source_id_v2", {
+    p_question_set_key: mobileEnv.questionSetKey,
     p_question_source_id: input.questionSourceId,
     p_is_bookmarked: input.isBookmarked,
     p_saved_from_mode: input.savedFromMode ?? null,
@@ -128,7 +140,8 @@ export async function syncQuestionHardState(input: SyncHardStateInput) {
   }
 
   const client = getMobileSupabaseClient();
-  const { error } = await client.rpc("set_question_hard_state_by_source_id", {
+  const { error } = await client.rpc("set_question_hard_state_by_source_id_v2", {
+    p_question_set_key: mobileEnv.questionSetKey,
     p_question_source_id: input.questionSourceId,
     p_is_hard: input.isHard,
     p_review_due_at: input.reviewDueAt ?? null,
@@ -193,7 +206,7 @@ function getRelatedQuestionSourceId(question: RelatedQuestionRef) {
     return getRelatedQuestionSourceId(question[0] ?? null);
   }
 
-  const questionSourceId = question?.question_source_id;
+  const questionSourceId = question?.question_source_id ?? question?.source_id;
 
   return typeof questionSourceId === "string" && questionSourceId.trim()
     ? questionSourceId

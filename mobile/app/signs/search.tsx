@@ -21,8 +21,9 @@ import {
 } from "../../src/features/road-signs/catalog";
 import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
+import { withRoadSignsFeature } from "../../src/app-config/with-road-signs-feature";
 
-export default function SignsSearchScreen() {
+function SignsSearchScreen() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
@@ -138,6 +139,8 @@ export default function SignsSearchScreen() {
     </GreenWaveScreen>
   );
 }
+
+export default withRoadSignsFeature(SignsSearchScreen);
 
 function useStyles({ safeBottom }: { safeBottom: number }) {
   return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { buildAllSignTestQuestions } from "../../src/features/road-signs/category-test";
 import { SignTestSessionScreen } from "../../src/features/road-signs/SignTestSessionScreen";
+import { withRoadSignsFeature } from "../../src/app-config/with-road-signs-feature";
 
 function parseLimit(value?: string): number | "all" | null {
   if (!value) {
@@ -18,7 +19,7 @@ function parseLimit(value?: string): number | "all" | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
-export default function AllSignsTestScreen() {
+function AllSignsTestScreen() {
   const { t } = useTranslation();
   const { limit } = useLocalSearchParams<{ limit?: string }>();
   const resolvedLimit = parseLimit(
@@ -37,3 +38,5 @@ export default function AllSignsTestScreen() {
     />
   );
 }
+
+export default withRoadSignsFeature(AllSignsTestScreen);

@@ -9,6 +9,7 @@ import {
   buildCategorySignTestQuestions,
 } from "../../../../src/features/road-signs/category-test";
 import { SignTestSessionScreen } from "../../../../src/features/road-signs/SignTestSessionScreen";
+import { withRoadSignsFeature } from "../../../../src/app-config/with-road-signs-feature";
 
 function parseLimit(value?: string): number | "all" | null {
   if (!value) {
@@ -23,7 +24,7 @@ function parseLimit(value?: string): number | "all" | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
-export default function CategorySignTestScreen() {
+function CategorySignTestScreen() {
   const { t, i18n } = useTranslation();
   const { categoryId, limit } = useLocalSearchParams<{
     categoryId: string;
@@ -55,3 +56,5 @@ export default function CategorySignTestScreen() {
     />
   );
 }
+
+export default withRoadSignsFeature(CategorySignTestScreen);

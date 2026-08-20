@@ -7,6 +7,8 @@ const sharedTopicQuestionText: LocalizedQuestionText = {
   ua: "E2E-питання про прогрес у темах.",
   en: "E2E question about topic progress.",
   de: "E2E-Frage zum Themenfortschritt.",
+  cs: "E2E otázka k postupu v tématech.",
+  el: "Ερώτηση E2E για την πρόοδο στα θέματα.",
 };
 
 /**

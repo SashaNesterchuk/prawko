@@ -1,7 +1,9 @@
 import { MOCK_QUESTION_BANK } from "./mock-question-bank";
 import {
   mapSupabaseQuestionRecordToLocalQuestion,
+  mapSupabaseQuestionV2RecordToLocalQuestion,
   type SupabaseQuestionRecord,
+  type SupabaseQuestionV2Record,
 } from "./supabase-question-record";
 import type { LocalQuestion } from "./types";
 
@@ -43,6 +45,26 @@ export async function hydrateQuestionBankFromSupabaseRecordsAsync(
 
   for (let index = 0; index < records.length; index += 1) {
     nextBank[index] = mapSupabaseQuestionRecordToLocalQuestion(records[index]!);
+
+    if (index > 0 && index % chunkSize === 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    }
+  }
+
+  activeQuestionBank = nextBank;
+  activeQuestionBankById = buildQuestionBankById(activeQuestionBank);
+}
+
+/** Hydrates the country-neutral v2 catalogue without touching the v1 mapper. */
+export async function hydrateQuestionBankFromSupabaseV2RecordsAsync(
+  records: SupabaseQuestionV2Record[],
+  options: { chunkSize?: number } = {}
+) {
+  const chunkSize = Math.max(50, options.chunkSize ?? 250);
+  const nextBank: LocalQuestion[] = new Array(records.length);
+
+  for (let index = 0; index < records.length; index += 1) {
+    nextBank[index] = mapSupabaseQuestionV2RecordToLocalQuestion(records[index]!);
 
     if (index > 0 && index % chunkSize === 0) {
       await new Promise<void>((resolve) => setTimeout(resolve, 0));

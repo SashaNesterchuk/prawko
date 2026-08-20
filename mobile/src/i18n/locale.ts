@@ -9,6 +9,8 @@ import { getLocales } from "expo-localization";
 
 const localeAliases: Record<string, SupportedLocale> = {
   en: "en",
+  cs: "cs",
+  el: "el",
   pl: "pl",
   ua: "ua",
   uk: "ua",

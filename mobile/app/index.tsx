@@ -8,6 +8,7 @@ import {
   useNextOnboardingRoute,
   useAppShellStore,
 } from "../src/state/app-shell";
+import { appVariant } from "../src/app-config/runtime";
 
 export default function IndexScreen() {
   const { t } = useTranslation();
@@ -20,7 +21,7 @@ export default function IndexScreen() {
 
   if (!hasHydrated || !sessionResolved) {
     return (
-      <AppScreen scroll={false} title="Prawko">
+      <AppScreen scroll={false} title={appVariant.name}>
         <LoadingStateView
           title={t("states.loadingTitle")}
           description={t("states.loadingSubtitle")}

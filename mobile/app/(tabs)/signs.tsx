@@ -4,8 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { useResponsiveStyles } from "../../src/portable-ui";
 import { SignsHomeContent } from "../../src/features/road-signs/SignsHomeContent";
+import { withRoadSignsFeature } from "../../src/app-config/with-road-signs-feature";
 
-export default function SignsTabScreen() {
+function SignsTabScreen() {
   const styles = useStyles();
 
   return (
@@ -21,6 +22,8 @@ export default function SignsTabScreen() {
     </GreenWaveScreen>
   );
 }
+
+export default withRoadSignsFeature(SignsTabScreen);
 
 function useStyles() {
   return useResponsiveStyles(() => ({

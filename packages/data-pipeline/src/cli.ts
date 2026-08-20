@@ -17,6 +17,7 @@ import {
 } from "./question-ai-explanations";
 import { prepareTopicsFromCategorizedWorkbook } from "./categorized-workbook-topics";
 import { syncQuestionsToSupabase } from "./question-sync";
+import { importV1QuestionsToV2 } from "./question-v2-import";
 import { clearQuestionMediaStorage } from "./storage-clear";
 import { pathExists, readJsonFile, resolveRepoPath } from "./utils";
 
@@ -225,6 +226,12 @@ async function main() {
     return;
   }
 
+  if (command === "questions:v2:import-v1") {
+    const result = await importV1QuestionsToV2(options);
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
   if (command === "question-topics:prepare") {
     const result = await prepareNormalizedQuestionTopics(options);
     console.log(JSON.stringify(result, null, 2));
@@ -262,7 +269,7 @@ async function main() {
   }
 
   throw new Error(
-    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, storage:clear, questions:sync, question-topics:from-xlsx, question-topics:prepare, question-topics:sync, question-ai-explanations:rewrite, question-ai-explanations:verify, question-ai-explanations:keep-ua.`
+    `Unknown command "${command}". Use one of: pipeline, inspect, validate, media:audit, media:build, media:upload, storage:clear, questions:sync, questions:v2:import-v1, question-topics:from-xlsx, question-topics:prepare, question-topics:sync, question-ai-explanations:rewrite, question-ai-explanations:verify, question-ai-explanations:keep-ua.`
   );
 }
 

@@ -30,10 +30,11 @@ import { SignImage } from "../../../src/features/road-signs/SignImage";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 import { ANALYTICS_EVENTS } from "../../../src/analytics/catalog";
 import { useAnalytics } from "../../../src/providers/AnalyticsProvider";
+import { withRoadSignsFeature } from "../../../src/app-config/with-road-signs-feature";
 
 type PracticePhase = "question" | "result";
 
-export default function SignPracticeScreen() {
+function SignPracticeScreen() {
   const { t, i18n } = useTranslation();
   const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
@@ -327,6 +328,8 @@ export default function SignPracticeScreen() {
     </GreenWaveScreen>
   );
 }
+
+export default withRoadSignsFeature(SignPracticeScreen);
 
 function useStyles({
   accentInk,

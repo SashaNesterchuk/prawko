@@ -55,11 +55,58 @@ export type SupabaseQuestionRecord = {
   pjm_answer_c_asset: QuestionDeliveryAsset | null;
 };
 
+export type SupabaseQuestionV2Record = {
+  id: string;
+  source_id: string;
+  source_row_number: number;
+  points: number;
+  answer_kind: "boolean" | "choice";
+  correct_option_id: QuestionOptionValue;
+  scope: QuestionScope | null;
+  primary_topic_id: string | null;
+  topic_ids: string[] | null;
+  difficulty_seed: number | null;
+  official_metadata?: { legacy_topic_block?: TopicBlockId } | null;
+  ai_explanations?: QuestionAiExplanationMap | null;
+  content: {
+    prompt?: Record<string, string>;
+    options?: Array<{ id: QuestionOptionValue; text?: Record<string, string>; media?: Array<{ role?: string; asset?: QuestionDeliveryAsset }> }>;
+    question_media?: Array<{ role?: string; asset?: QuestionDeliveryAsset }>;
+  };
+};
+
+export function mapSupabaseQuestionV2RecordToLocalQuestion(record: SupabaseQuestionV2Record): LocalQuestion {
+  const prompt = record.content.prompt ?? {};
+  const options = record.content.options ?? [];
+  const questionAsset = record.content.question_media?.find((media) => media.role === "pjm-question")?.asset ?? null;
+  const primary = record.content.question_media?.find((media) => media.role === "primary")?.asset ?? questionAsset;
+  const answerAssets = Object.fromEntries(options.flatMap((option) => {
+    const answerAsset = option.media?.find((media) => media.role === "pjm-answer")?.asset;
+    return answerAsset && ["A", "B", "C"].includes(option.id) ? [[option.id, answerAsset]] : [];
+  })) as Partial<Record<"A" | "B" | "C", QuestionDeliveryAsset>>;
+  const topicIds = normalizeQuestionTopicIds(record.topic_ids ?? []);
+  const topicBlock = record.official_metadata?.legacy_topic_block ?? (record.scope === "specialist" ? "technical" : "safety");
+  const fallback = getQuestionTopicFallbackFromTopicBlock(topicBlock);
+  return {
+    id: record.source_id, sourceRowNumber: record.source_row_number,
+    prompt: localizedText(prompt.pl, prompt.ua, prompt.en, prompt.de, prompt.cs, prompt.el),
+    explanation: localizedText(record.ai_explanations?.pl, record.ai_explanations?.ua, record.ai_explanations?.en, record.ai_explanations?.de, record.ai_explanations?.cs, record.ai_explanations?.el), answerType: record.answer_kind === "choice" ? "abc" : "boolean",
+    correctAnswer: record.correct_option_id,
+    choices: record.answer_kind === "choice" ? options.map((option) => ({ id: option.id, text: localizedText(option.text?.pl, option.text?.ua, option.text?.en, option.text?.de, option.text?.cs, option.text?.el) })) : undefined,
+    media: primary ? { type: primary.mediaType, asset: primary, pjm: questionAsset || Object.keys(answerAssets).length ? { questionAsset, answerAssets } : null } : null,
+    points: record.points, scope: record.scope ?? "base", topicBlock,
+    primaryTopicId: normalizeQuestionTopicId(record.primary_topic_id) ?? topicIds[0] ?? fallback.primaryTopicId,
+    topicIds: topicIds.length ? topicIds : fallback.topicIds, difficultySeed: record.difficulty_seed ?? 1,
+  };
+}
+
 function localizedText(
   pl: string | null | undefined,
   ua: string | null | undefined,
   en: string | null | undefined,
-  de?: string | null | undefined
+  de?: string | null | undefined,
+  cs?: string | null | undefined,
+  el?: string | null | undefined
 ): LocalizedQuestionText {
   const plText = pl ?? "";
   const enText = en ?? plText;
@@ -69,12 +116,14 @@ function localizedText(
     ua: ua ?? plText,
     en: enText,
     de: de ?? enText,
+    cs: cs ?? enText,
+    el: el ?? enText,
   };
 }
 
 function readAiExplanation(
   explanations: QuestionAiExplanationMap | null | undefined,
-  locale: "pl" | "ua" | "en" | "de"
+  locale: string
 ) {
   const value = explanations?.[locale];
 
@@ -99,12 +148,18 @@ function localizedExplanation(record: SupabaseQuestionRecord): LocalizedQuestion
     explanationPl;
   const explanationDe =
     readAiExplanation(record.ai_explanations, "de") ?? explanationEn;
+  const explanationCs =
+    readAiExplanation(record.ai_explanations, "cs") ?? explanationEn;
+  const explanationEl =
+    readAiExplanation(record.ai_explanations, "el") ?? explanationEn;
 
   return localizedText(
     explanationPl,
     explanationUa,
     explanationEn,
-    explanationDe
+    explanationDe,
+    explanationCs,
+    explanationEl
   );
 }
 

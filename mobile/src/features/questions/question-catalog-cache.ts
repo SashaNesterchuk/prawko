@@ -14,7 +14,7 @@ import type { LocalQuestion } from "./types";
 const CATALOG_CACHE_DIR_NAME = "prawko-question-catalog";
 
 /** Bump whenever LocalQuestion or its Supabase mapping changes shape. */
-const CATALOG_CACHE_VERSION = 1;
+const CATALOG_CACHE_VERSION = 2;
 
 export type QuestionCatalogSignature = {
   explanationCount: number;
@@ -209,7 +209,8 @@ function getCatalogCacheDirectory() {
 }
 
 function getCatalogCacheFileName(category: DrivingCategory) {
-  return `${category}.json`;
+  const setKey = mobileEnv.questionSetKey.replace(/[^a-z0-9_-]/gi, "_");
+  return `${setKey}-${category}.json`;
 }
 
 function getCatalogCacheFile(category: DrivingCategory) {
