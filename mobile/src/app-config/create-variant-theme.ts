@@ -1,7 +1,10 @@
 import { lightTheme, type AppTheme } from "../theme/light";
 
 /** Keeps component token contracts stable while allowing each app a brand accent. */
-export function createVariantTheme(accent: AppTheme["accents"]["green"]): AppTheme {
+export function createVariantTheme(
+  accent: AppTheme["accents"]["green"],
+  background: AppTheme["background"] = lightTheme.background
+): AppTheme {
   return {
     ...lightTheme,
     colors: {
@@ -13,10 +16,13 @@ export function createVariantTheme(accent: AppTheme["accents"]["green"]): AppThe
       statusSuccessBorder: accent.fill,
       statusSuccessSurface: accent.soft,
       success: accent.fill,
+      background: background.end,
+      backgroundSky: background.start,
     },
     accents: {
       ...lightTheme.accents,
       green: accent,
     },
+    background,
   };
 }

@@ -179,6 +179,10 @@ function createMockUser(): AppUser {
   };
 }
 
+function getDefaultPreferredLocale(): SupportedLocale {
+  return normalizePersistedLocale(getSupportedDeviceLocale());
+}
+
 function getSignedOutAuthMode(): AuthMode {
   return isMockAuthEnabled ? "mock" : "supabase";
 }
@@ -252,7 +256,7 @@ export const useAppShellStore = create<AppShellState>()(
       onboardingCompleted: false,
       onboardingProgress: defaultOnboardingProgress,
       preferredCategory: DEFAULT_CATEGORY,
-      preferredLocale: getSupportedDeviceLocale(),
+      preferredLocale: getDefaultPreferredLocale(),
       hasChosenPreferredLocale: false,
       enablePjmTracks: false,
       isScheduleNotificationEnabled: false,
@@ -322,7 +326,7 @@ export const useAppShellStore = create<AppShellState>()(
           onboardingCompleted: false,
           onboardingProgress: defaultOnboardingProgress,
           preferredCategory: DEFAULT_CATEGORY,
-          preferredLocale: getSupportedDeviceLocale(),
+          preferredLocale: getDefaultPreferredLocale(),
           hasChosenPreferredLocale: false,
           enablePjmTracks: false,
           isScheduleNotificationEnabled: false,
@@ -455,7 +459,7 @@ export const useAppShellStore = create<AppShellState>()(
           onboardingCompleted: false,
           onboardingProgress: defaultOnboardingProgress,
           studyPlanSetup: defaultStudyPlanSetup,
-          preferredLocale: getSupportedDeviceLocale(),
+          preferredLocale: getDefaultPreferredLocale(),
           hasChosenPreferredLocale: false,
           isScheduleNotificationEnabled: false,
           notificationHours: DEFAULT_NOTIFICATION_HOURS,
@@ -473,6 +477,12 @@ export const useAppShellStore = create<AppShellState>()(
           (persistedState as Partial<PersistedAppShellState> | undefined) ??
             undefined,
         ),
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...normalizePersistedShellState(
+          persistedState as Partial<PersistedAppShellState> | undefined,
+        ),
+      }),
       partialize: (state) => ({
         authMode: state.authMode,
         currentStudyPlan: state.currentStudyPlan,

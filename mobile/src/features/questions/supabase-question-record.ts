@@ -100,6 +100,14 @@ export function mapSupabaseQuestionV2RecordToLocalQuestion(record: SupabaseQuest
   };
 }
 
+function nonEmptyText(value: string | null | undefined) {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return undefined;
+  }
+
+  return value;
+}
+
 function localizedText(
   pl: string | null | undefined,
   ua: string | null | undefined,
@@ -108,16 +116,20 @@ function localizedText(
   cs?: string | null | undefined,
   el?: string | null | undefined
 ): LocalizedQuestionText {
-  const plText = pl ?? "";
-  const enText = en ?? plText;
+  // Country catalogues (Czech/Greek) may only ship one language. Keep the
+  // historical pl → ua/en and en → de chain for Prawko, and only then fall
+  // back to cs/el so a Ukrainian UI still shows Czech text instead of blanks.
+  const lastResort = nonEmptyText(cs) ?? nonEmptyText(el) ?? "";
+  const plText = nonEmptyText(pl) ?? lastResort;
+  const enText = nonEmptyText(en) ?? plText;
 
   return {
     pl: plText,
-    ua: ua ?? plText,
+    ua: nonEmptyText(ua) ?? plText,
     en: enText,
-    de: de ?? enText,
-    cs: cs ?? enText,
-    el: el ?? enText,
+    de: nonEmptyText(de) ?? enText,
+    cs: nonEmptyText(cs) ?? enText,
+    el: nonEmptyText(el) ?? enText,
   };
 }
 

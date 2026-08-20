@@ -586,6 +586,9 @@ export function getLocalizedText(
     value.en ||
     value.ua ||
     value.pl ||
+    value.de ||
+    value.cs ||
+    value.el ||
     ""
   );
 }

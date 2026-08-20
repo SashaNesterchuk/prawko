@@ -4,13 +4,19 @@ import { czechTranslations } from "./translations";
 
 export const variantRuntime: AppVariantRuntime = {
   id: "czech",
-  theme: createVariantTheme({
-    // Czech red makes this development variant immediately distinct from Prawko.
-    fill: "#D7141A",
-    ink: "#A30F14",
-    soft: "rgba(215,20,26,0.14)",
-    wash: "#FCE1E2",
-  }),
+  theme: createVariantTheme(
+    {
+      fill: "#3B82F6",
+      ink: "#2563C4",
+      soft: "rgba(59,130,246,0.13)",
+      wash: "#D6E4FF",
+    },
+    {
+      start: "#DCE8FF",
+      end: "#EEF2F8",
+      transparent: "rgba(220,232,255,0)",
+    }
+  ),
   // This is injected only into the Czech build. Prawko keeps its own resource
   // set untouched; any newly added shared key safely falls back to English.
   translations: { cs: { translation: czechTranslations } },
