@@ -3,6 +3,7 @@ import {
   QUESTION_TOPIC_IDS,
   STUDY_PLAN_LIMITS,
   isDrivingCategory,
+  normalizeQuestionTopicId,
   type DrivingCategory,
   type SupportedLocale,
 } from "@prawko/config";
@@ -269,9 +270,7 @@ function resolveSignCategoryId(value: string | null | undefined) {
 }
 
 function resolveTopicId(value: string | null | undefined) {
-  return value && QUESTION_TOPIC_IDS.includes(value as (typeof QUESTION_TOPIC_IDS)[number])
-    ? value
-    : QUESTION_TOPIC_IDS[0];
+  return normalizeQuestionTopicId(value) ?? QUESTION_TOPIC_IDS[0];
 }
 
 function resolveLooseCategory(value: string | null | undefined) {

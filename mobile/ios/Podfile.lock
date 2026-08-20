@@ -79,7 +79,7 @@ PODS:
   - ExpoVideo (3.0.16):
     - ExpoModulesCore
   - FBLazyVector (0.81.5)
-  - Google-Mobile-Ads-SDK (13.5.0):
+  - Google-Mobile-Ads-SDK (13.1.0):
     - GoogleUserMessagingPlatform (>= 1.1)
   - GoogleUserMessagingPlatform (3.1.0)
   - hermes-engine (0.81.5):
@@ -1857,8 +1857,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNGoogleMobileAds (16.4.0):
-    - Google-Mobile-Ads-SDK (= 13.5.0)
+  - RNGoogleMobileAds (16.3.4):
+    - Google-Mobile-Ads-SDK (= 13.1.0)
     - GoogleUserMessagingPlatform (= 3.1.0)
     - hermes-engine
     - RCTRequired
@@ -2215,7 +2215,7 @@ DEPENDENCIES:
   - "ReactNativeDependencies (from `../../node_modules/.pnpm/react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-config@0.85.3_@babel+core@7.29.0___ke6lzl4dpn3e2z4o6x64qvv6sm/node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)"
   - "RNCAsyncStorage (from `../../node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.29.0_@react_cgc7k2i46wnqvxxuonk46vltq4/node_modules/@react-native-async-storage/async-storage`)"
   - "RNGestureHandler (from `../../node_modules/.pnpm/react-native-gesture-handler@2.28.0_react-native@0.81.5_@babel+core@7.29.0_@react-native+metr_6foaep53ktu3gk2itm3d47fidy/node_modules/react-native-gesture-handler`)"
-  - "RNGoogleMobileAds (from `../../node_modules/.pnpm/react-native-google-mobile-ads@16.4.0_expo@54.0.34_react@19.1.0/node_modules/react-native-google-mobile-ads`)"
+  - "RNGoogleMobileAds (from `../../node_modules/.pnpm/react-native-google-mobile-ads@16.3.4_expo@54.0.34_react@19.1.0/node_modules/react-native-google-mobile-ads`)"
   - "RNPaywalls (from `../../node_modules/.pnpm/react-native-purchases-ui@10.7.0_react-native-purchases@10.7.0_react-native@0.81.5_@babel+cor_rzyfxxlytgjk7jshv5b5xzssgy/node_modules/react-native-purchases-ui`)"
   - "RNPurchases (from `../../node_modules/.pnpm/react-native-purchases@10.7.0_react-native@0.81.5_@babel+core@7.29.0_@react-native+metro-conf_rjwm3bowbnvlonnurqdjsyv4ua/node_modules/react-native-purchases`)"
   - "RNReanimated (from `../../node_modules/.pnpm/react-native-reanimated@4.1.7_react-native-worklets@0.5.1_@babel+core@7.29.0_react-native@0.8_bqg7aix5lc4jzzdl74jkhmzq4e/node_modules/react-native-reanimated`)"
@@ -2410,7 +2410,7 @@ EXTERNAL SOURCES:
   RNGestureHandler:
     :path: "../../node_modules/.pnpm/react-native-gesture-handler@2.28.0_react-native@0.81.5_@babel+core@7.29.0_@react-native+metr_6foaep53ktu3gk2itm3d47fidy/node_modules/react-native-gesture-handler"
   RNGoogleMobileAds:
-    :path: "../../node_modules/.pnpm/react-native-google-mobile-ads@16.4.0_expo@54.0.34_react@19.1.0/node_modules/react-native-google-mobile-ads"
+    :path: "../../node_modules/.pnpm/react-native-google-mobile-ads@16.3.4_expo@54.0.34_react@19.1.0/node_modules/react-native-google-mobile-ads"
   RNPaywalls:
     :path: "../../node_modules/.pnpm/react-native-purchases-ui@10.7.0_react-native-purchases@10.7.0_react-native@0.81.5_@babel+cor_rzyfxxlytgjk7jshv5b5xzssgy/node_modules/react-native-purchases-ui"
   RNPurchases:
@@ -2445,7 +2445,7 @@ SPEC CHECKSUMS:
   ExpoStoreReview: 32bb43b6fae9c8db3e33cad69996dff3785eef5f
   ExpoVideo: 8d9e8a1acd0c4c210e538b4355e34ae8ff5e04f7
   FBLazyVector: e95a291ad2dadb88e42b06e0c5fb8262de53ec12
-  Google-Mobile-Ads-SDK: 2171620c6497804b57dc88b95644cc82e7dfb5b0
+  Google-Mobile-Ads-SDK: 8429bef6ee1a4e322b0a5571b64217ed8317a3d5
   GoogleUserMessagingPlatform: befe603da6501006420c206222acd449bba45a9c
   hermes-engine: 9f4dfe93326146a1c99eb535b1cb0b857a3cd172
   PurchasesHybridCommon: 94a0fde86cfecdc487fb64667b68f527af930265
@@ -2520,7 +2520,7 @@ SPEC CHECKSUMS:
   RevenueCatUI: 6f819d25fe953112c3722e33d0879bd590d78810
   RNCAsyncStorage: 3a4f5e2777dae1688b781a487923a08569e27fe4
   RNGestureHandler: 2914750df066d89bf9d8f48a10ad5f0051108ac3
-  RNGoogleMobileAds: f7aeb5dcf5362fe82d61ffa2c66671f85bbf20aa
+  RNGoogleMobileAds: 7cbcc4e127540900df5ebeb9650ffb63811b4bbf
   RNPaywalls: 766f341527f7f6c4174a4bc5448d83d12a762a06
   RNPurchases: d646405958082374e8b3cb5d6398318114750804
   RNReanimated: 70781cac1aaea05f63c7be6133c02fcbec59772d
