@@ -1,0 +1,4112 @@
+{
+  "A-1": {
+    "name": {
+      "ua": "Небезпечний поворот праворуч",
+      "en": "Dangerous bend to the right"
+    },
+    "description": {
+      "ua": "Попереджає про наближення до небезпечного повороту праворуч.",
+      "en": "Warns of approaching a dangerous bend to the right."
+    }
+  },
+  "A-10": {
+    "name": {
+      "ua": "Залізничний переїзд без шлагбаумів",
+      "en": "Level crossing without barriers"
+    },
+    "description": {
+      "ua": "Попереджає про залізничний переїзд, не обладнаний ні шлагбаумами, ні напівшлагбаумами. Табличка T-7, розміщена під знаком A-10, показує схему розташування колій і дороги на переїзді.",
+      "en": "Warns of a railway level crossing equipped with neither barriers nor half-barriers. Plate T-7 placed below sign A-10 indicates the layout of the tracks and the road at the crossing."
+    }
+  },
+  "A-11": {
+    "name": {
+      "ua": "Нерівна дорога",
+      "en": "Uneven road"
+    },
+    "description": {
+      "ua": "Попереджає про поперечну нерівність проїзної частини.",
+      "en": "Warns of a transverse unevenness of the carriageway."
+    }
+  },
+  "A-11a": {
+    "name": {
+      "ua": "Штучна нерівність",
+      "en": "Speed bump"
+    },
+    "description": {
+      "ua": "Попереджає про опуклість на проїзній частині, застосовану з метою сповільнення руху транспортних засобів.",
+      "en": "Warns of a raised area on the carriageway installed in order to slow down vehicle traffic."
+    }
+  },
+  "A-12a": {
+    "name": {
+      "ua": "Звуження проїзної частини — двостороннє",
+      "en": "Carriageway narrows on both sides"
+    },
+    "description": {
+      "ua": "Попереджає про звуження проїзної частини з обох боків, яке може спричиняти ускладнення руху.",
+      "en": "Warns of a narrowing of the carriageway on both sides, which may cause traffic difficulties."
+    }
+  },
+  "A-12b": {
+    "name": {
+      "ua": "Звуження проїзної частини — правостороннє",
+      "en": "Carriageway narrows on the right"
+    },
+    "description": {
+      "ua": "Попереджає про звуження проїзної частини з правого боку, яке може спричиняти ускладнення руху.",
+      "en": "Warns of a narrowing of the carriageway on the right-hand side, which may cause traffic difficulties."
+    }
+  },
+  "A-12c": {
+    "name": {
+      "ua": "Звуження проїзної частини — лівостороннє",
+      "en": "Carriageway narrows on the left"
+    },
+    "description": {
+      "ua": "Попереджає про звуження проїзної частини з лівого боку, яке може спричиняти ускладнення руху.",
+      "en": "Warns of a narrowing of the carriageway on the left-hand side, which may cause traffic difficulties."
+    }
+  },
+  "A-13": {
+    "name": {
+      "ua": "Рухомий міст",
+      "en": "Movable bridge"
+    },
+    "description": {
+      "ua": "Попереджає про в'їзд на розвідний або поворотний міст.",
+      "en": "Warns of entering a drawbridge or swing bridge."
+    }
+  },
+  "A-14": {
+    "name": {
+      "ua": "Дорожні роботи",
+      "en": "Roadworks"
+    },
+    "description": {
+      "ua": "Попереджає про дорожні роботи, що проводяться на дорозі; табличка T-19, розміщена під знаком, вказує на нанесення горизонтальної дорожньої розмітки.",
+      "en": "Warns of roadworks being carried out on the road; plate T-19 placed below the sign indicates that road markings are being painted."
+    }
+  },
+  "A-15": {
+    "name": {
+      "ua": "Слизька проїзна частина",
+      "en": "Slippery road"
+    },
+    "description": {
+      "ua": "Попереджає про можливість заносу транспортного засобу, спричиненого зокрема зміною покриття проїзної частини, її постійним або періодичним зволоженням тощо.",
+      "en": "Warns of the possibility of a vehicle skidding, caused in particular by a change in the carriageway surface, by its permanent or periodic wetness, and similar conditions."
+    }
+  },
+  "A-16": {
+    "name": {
+      "ua": "Пішохідний перехід",
+      "en": "Pedestrian crossing"
+    },
+    "description": {
+      "ua": "Попереджає про пішохідний перехід.",
+      "en": "Warns of a pedestrian crossing."
+    }
+  },
+  "A-17": {
+    "name": {
+      "ua": "Діти",
+      "en": "Children"
+    },
+    "description": {
+      "ua": "Попереджає про місце на дорозі, яким особливо часто користуються діти, або про близькість такого місця.",
+      "en": "Warns of a place on the road particularly frequented by children, or of the proximity of such a place."
+    }
+  },
+  "A-18a": {
+    "name": {
+      "ua": "Свійські тварини",
+      "en": "Farm animals"
+    },
+    "description": {
+      "ua": "Попереджає про можливість появи на дорозі свійських тварин.",
+      "en": "Warns of the possibility of encountering farm animals on the road."
+    }
+  },
+  "A-18b": {
+    "name": {
+      "ua": "Дикі тварини",
+      "en": "Wild animals"
+    },
+    "description": {
+      "ua": "Попереджає про можливість появи на дорозі диких тварин.",
+      "en": "Warns of the possibility of encountering wild animals on the road."
+    }
+  },
+  "A-19": {
+    "name": {
+      "ua": "Бічний вітер",
+      "en": "Side wind"
+    },
+    "description": {
+      "ua": "Попереджає про місце, де можуть виникати сильні бічні пориви вітру.",
+      "en": "Warns of a place where strong side gusts of wind may occur."
+    }
+  },
+  "A-2": {
+    "name": {
+      "ua": "Небезпечний поворот ліворуч",
+      "en": "Dangerous bend to the left"
+    },
+    "description": {
+      "ua": "Попереджає про наближення до небезпечного повороту ліворуч.",
+      "en": "Warns of approaching a dangerous bend to the left."
+    }
+  },
+  "A-20": {
+    "name": {
+      "ua": "Ділянка проїзної частини з двостороннім рухом",
+      "en": "Two-way traffic"
+    },
+    "description": {
+      "ua": "Попереджає водіїв, які рухаються односторонньою проїзною частиною, про місце, де починається двосторонній рух.",
+      "en": "Warns drivers travelling on a one-way carriageway of the place where two-way traffic begins."
+    }
+  },
+  "A-21": {
+    "name": {
+      "ua": "Трамвай",
+      "en": "Tram"
+    },
+    "description": {
+      "ua": "Попереджає про переїзд через трамвайні колії. Табличка T-7, розміщена під знаком, показує схему розташування колій і дороги на цьому переїзді.",
+      "en": "Warns of a crossing over tram tracks. Plate T-7 placed below the sign indicates the layout of the tracks and the road at this crossing."
+    }
+  },
+  "A-22": {
+    "name": {
+      "ua": "Небезпечний спуск",
+      "en": "Dangerous descent"
+    },
+    "description": {
+      "ua": "Попереджає про значний поздовжній ухил дороги вниз. Табличка T-9, розміщена під знаком, вказує фактичну величину ухилу; наприклад, значення 8% означає, що на довжині 100 м дорога знижується на 8 м.",
+      "en": "Warns of a significant downhill gradient. Plate T-9 placed below the sign indicates the actual gradient; for example, a value of 8% means that over a length of 100 m the road drops by 8 m."
+    }
+  },
+  "A-23": {
+    "name": {
+      "ua": "Крутий підйом",
+      "en": "Steep ascent"
+    },
+    "description": {
+      "ua": "Попереджає про значний підйом дороги. Табличка T-9, розміщена під знаком, вказує фактичну величину підйому; наприклад, значення 8% означає, що на довжині 100 м дорога піднімається на 8 м.",
+      "en": "Warns of a significant uphill gradient. Plate T-9 placed below the sign indicates the actual gradient; for example, a value of 8% means that over a length of 100 m the road rises by 8 m."
+    }
+  },
+  "A-24": {
+    "name": {
+      "ua": "Велосипедисти",
+      "en": "Cyclists"
+    },
+    "description": {
+      "ua": "Знак A-24 «велосипедисти» попереджає про місце, де велосипедисти виїжджають на проїзну частину або перетинають її.",
+      "en": "Sign A-24 “Cyclists” warns of a place where cyclists enter the carriageway or cross it."
+    }
+  },
+  "A-25": {
+    "name": {
+      "ua": "Падіння каміння",
+      "en": "Falling rocks"
+    },
+    "description": {
+      "ua": "Попереджає про можливість падіння на дорогу або перебування на ній уламків скель значного розміру.",
+      "en": "Warns of the possibility of large rock fragments falling onto the road or lying on it."
+    }
+  },
+  "A-26": {
+    "name": {
+      "ua": "Аеродром",
+      "en": "Airfield"
+    },
+    "description": {
+      "ua": "Попереджає про можливість раптової появи літака або гелікоптера, що низько пролітає.",
+      "en": "Warns of the possible sudden appearance of a low-flying aeroplane or helicopter."
+    }
+  },
+  "A-27": {
+    "name": {
+      "ua": "Набережна або берег річки",
+      "en": "Quayside or river bank"
+    },
+    "description": {
+      "ua": "Попереджає про ділянку дороги, що веде безпосередньо до набережної або вздовж берега річки чи іншої водойми.",
+      "en": "Warns of a stretch of road leading directly to a quayside or along the bank of a river or other body of water."
+    }
+  },
+  "A-28": {
+    "name": {
+      "ua": "Сипкий гравій",
+      "en": "Loose gravel"
+    },
+    "description": {
+      "ua": "Попереджає про ділянку дороги, покриту гравієм (щебенем), який може вилітати з-під коліс транспортних засобів, що рухаються.",
+      "en": "Warns of a stretch of road covered with gravel (chippings) that may be thrown up from under the wheels of moving vehicles."
+    }
+  },
+  "A-29": {
+    "name": {
+      "ua": "Світлові сигнали",
+      "en": "Traffic signals"
+    },
+    "description": {
+      "ua": "Попереджає про місце, де рух регулюється світлофором.",
+      "en": "Warns of a place where traffic is controlled by traffic signals."
+    }
+  },
+  "A-3": {
+    "name": {
+      "ua": "Небезпечні повороти, перший праворуч",
+      "en": "Dangerous bends, the first to the right"
+    },
+    "description": {
+      "ua": "Попереджає про два небезпечні повороти, з яких перший — у напрямку, зазначеному на знаку, а другий може бути як ліворуч, так і праворуч. Може застосовуватися разом із табличкою T-4 або T-5.",
+      "en": "Warns of two dangerous bends, of which the first is in the direction shown on the sign, and the second may be either to the left or to the right. It may appear together with plate T-4 or T-5."
+    }
+  },
+  "A-30": {
+    "name": {
+      "ua": "Інша небезпека",
+      "en": "Other danger"
+    },
+    "description": {
+      "ua": "Попереджає про наближення до іншої небезпеки, не визначеної іншими дорожніми знаками. Під знаком можуть розміщуватися відповідні додаткові таблички, що уточнюють небезпеку написом або символом.",
+      "en": "Warns of approaching another danger not specified by other traffic signs. Appropriate supplementary plates may be placed below the sign, specifying the danger by means of an inscription or a symbol."
+    }
+  },
+  "A-31": {
+    "name": {
+      "ua": "Небезпечне узбіччя",
+      "en": "Dangerous verge"
+    },
+    "description": {
+      "ua": "Попереджає про небезпечне узбіччя (м'яке або занижене); знак із дзеркально оберненим символом попереджає про небезпечне узбіччя з лівого боку дороги.",
+      "en": "Warns of a dangerous verge (soft or dropped); a sign with the symbol reversed warns of a dangerous verge on the left-hand side of the road."
+    }
+  },
+  "A-32": {
+    "name": {
+      "ua": "Ожеледь",
+      "en": "Icy road"
+    },
+    "description": {
+      "ua": "Попереджає про можливе обмерзання проїзної частини або ожеледицю на дорозі.",
+      "en": "Warns of possible frost on the carriageway or black ice on the road."
+    }
+  },
+  "A-33": {
+    "name": {
+      "ua": "Затор",
+      "en": "Traffic congestion"
+    },
+    "description": {
+      "ua": "Попереджає про часте виникнення блокування руху транспортних засобів.",
+      "en": "Warns that vehicle traffic is frequently blocked."
+    }
+  },
+  "A-34": {
+    "name": {
+      "ua": "Дорожньо-транспортна пригода",
+      "en": "Road accident"
+    },
+    "description": {
+      "ua": "Попереджає про місце, де внаслідок дорожньо-транспортної пригоди дорогу заблоковано або значно ускладнено рух транспортних засобів.",
+      "en": "Warns of a place where a road accident has blocked the road or significantly hindered vehicle traffic."
+    }
+  },
+  "A-4": {
+    "name": {
+      "ua": "Небезпечні повороти, перший ліворуч",
+      "en": "Dangerous bends, the first to the left"
+    },
+    "description": {
+      "ua": "Попереджає про два небезпечні повороти, з яких перший — у напрямку, зазначеному на знаку, а другий може бути як ліворуч, так і праворуч. Може застосовуватися разом із табличкою T-4 або T-5.",
+      "en": "Warns of two dangerous bends, of which the first is in the direction shown on the sign, and the second may be either to the left or to the right. It may appear together with plate T-4 or T-5."
+    }
+  },
+  "A-5": {
+    "name": {
+      "ua": "Перехрестя доріг",
+      "en": "Crossroads"
+    },
+    "description": {
+      "ua": "Попереджає про перехрестя доріг, на якому перевагу проїзду не визначено знаками.",
+      "en": "Warns of a crossroads where the right of way is not indicated by signs."
+    }
+  },
+  "A-6a": {
+    "name": {
+      "ua": "Перехрестя з другорядною дорогою з обох боків",
+      "en": "Junction with a minor road on both sides"
+    },
+    "description": {
+      "ua": "Попереджає про перехрестя з другорядною дорогою, що прилягає з обох боків. Табличка T-6b, розміщена під знаком, показує схему доріг.",
+      "en": "Warns of a junction with a minor road joining from both sides. Plate T-6b placed below the sign indicates the layout of the roads."
+    }
+  },
+  "A-6b": {
+    "name": {
+      "ua": "Перехрестя з другорядною дорогою справа",
+      "en": "Junction with a minor road on the right"
+    },
+    "description": {
+      "ua": "Попереджає про перехрестя з другорядною дорогою, що прилягає справа. Табличка T-6b, розміщена під знаком, показує схему доріг.",
+      "en": "Warns of a junction with a minor road joining from the right. Plate T-6b placed below the sign indicates the layout of the roads."
+    }
+  },
+  "A-6c": {
+    "name": {
+      "ua": "Перехрестя з другорядною дорогою зліва",
+      "en": "Junction with a minor road on the left"
+    },
+    "description": {
+      "ua": "Попереджає про перехрестя з другорядною дорогою, що прилягає зліва.",
+      "en": "Warns of a junction with a minor road joining from the left."
+    }
+  },
+  "A-6d": {
+    "name": {
+      "ua": "Прилягання односторонньої дороги справа",
+      "en": "One-way road joining from the right"
+    },
+    "description": {
+      "ua": "Попереджає про перехрестя з односторонньою другорядною дорогою, в'їзд якої розташований справа. Товста лінія на знаках позначає дорогу з перевагою.",
+      "en": "Warns of a junction with a one-way minor road whose entry is on the right. The thick line on the signs indicates the priority road."
+    }
+  },
+  "A-6e": {
+    "name": {
+      "ua": "Прилягання односторонньої дороги зліва",
+      "en": "One-way road joining from the left"
+    },
+    "description": {
+      "ua": "Попереджає про перехрестя з односторонньою другорядною дорогою, в'їзд якої розташований зліва. Товста лінія на знаках позначає дорогу з перевагою.",
+      "en": "Warns of a junction with a one-way minor road whose entry is on the left. The thick line on the signs indicates the priority road."
+    }
+  },
+  "A-7": {
+    "name": {
+      "ua": "Дати дорогу",
+      "en": "Give way"
+    },
+    "description": {
+      "ua": "Попереджає про перехрестя з дорогою, що має перевагу. Знак A-7, розміщений у межах перехрестя, стосується лише найближчої проїзної частини, перед якою його встановлено.",
+      "en": "Warns of a junction with a priority road. Sign A-7 placed within a junction applies only to the nearest carriageway in front of which it is installed."
+    }
+  },
+  "A-8": {
+    "name": {
+      "ua": "Перехрестя з круговим рухом",
+      "en": "Roundabout"
+    },
+    "description": {
+      "ua": "Попереджає про перехрестя, на якому рух відбувається навколо острівця або площі в напрямку, зазначеному на знаку.",
+      "en": "Warns of a junction where traffic moves around an island or square in the direction indicated on the sign."
+    }
+  },
+  "A-9": {
+    "name": {
+      "ua": "Залізничний переїзд зі шлагбаумами",
+      "en": "Level crossing with barriers"
+    },
+    "description": {
+      "ua": "Попереджає про залізничний переїзд, обладнаний шлагбаумами або напівшлагбаумами. Табличка T-7, розміщена під знаком A-9, показує схему розташування колій і дороги на переїзді.",
+      "en": "Warns of a railway level crossing equipped with barriers or half-barriers. Plate T-7 placed below sign A-9 indicates the layout of the tracks and the road at the crossing."
+    }
+  },
+  "B-1": {
+    "name": {
+      "ua": "Заборона руху в обох напрямках",
+      "en": "No traffic in both directions"
+    },
+    "description": {
+      "ua": "Означає заборону руху дорогою транспортних засобів, колон пішоходів, а також вершників і погоничів; знак може бути встановлений на проїзній частині.",
+      "en": "Prohibits traffic on the road of vehicles, columns of pedestrians, as well as riders and drovers; the sign may be placed on the carriageway."
+    }
+  },
+  "B-10": {
+    "name": {
+      "ua": "Заборона в'їзду мопедів",
+      "en": "No entry for mopeds"
+    },
+    "description": {
+      "ua": "Означає заборону руху мопедів.",
+      "en": "Prohibits moped traffic."
+    }
+  },
+  "B-11": {
+    "name": {
+      "ua": "Заборона в'їзду велосипедних візків і багатоколійних велосипедів",
+      "en": "No entry for cycle carts and multi-track bicycles"
+    },
+    "description": {
+      "ua": "Означає заборону в'їзду велосипедних візків і багатоколійних велосипедів.",
+      "en": "Prohibits entry of cycle carts and multi-track bicycles."
+    }
+  },
+  "B-12": {
+    "name": {
+      "ua": "Заборона в'їзду ручних візків",
+      "en": "No entry for handcarts"
+    },
+    "description": {
+      "ua": "Означає заборону руху проїзною частиною та узбіччям ручних візків, призначених для використання на проїзній частині, які ведуть, тягнуть або штовхають.",
+      "en": "Prohibits traffic on the carriageway and the shoulder of handcarts intended for use on the carriageway, whether led, towed or pushed."
+    }
+  },
+  "B-13": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів із вибуховими або легкозаймистими матеріалами",
+      "en": "No entry for vehicles carrying explosives or flammable materials"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, що перевозять вибухові або легкозаймисті матеріали, визначені в положеннях про перевезення небезпечних вантажів.",
+      "en": "Prohibits traffic of vehicles carrying explosives or flammable materials specified in the regulations on the transport of dangerous goods."
+    }
+  },
+  "B-13a": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів із небезпечними матеріалами",
+      "en": "No entry for vehicles carrying dangerous goods"
+    },
+    "description": {
+      "ua": "Означає, що в'їзд на дорогу транспортних засобів, які перевозять небезпечні матеріали та позначені попереджувальними табличками, заборонено.",
+      "en": "Means that vehicles carrying dangerous goods and marked with warning plates are prohibited from entering the road."
+    }
+  },
+  "B-14": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів із матеріалами, що можуть забруднити воду",
+      "en": "No entry for vehicles carrying water-polluting materials"
+    },
+    "description": {
+      "ua": "Забороняє в'їзд на дорогу транспортних засобів, що перевозять матеріали, які можуть забруднити воду, у кількостях, визначених окремими положеннями.",
+      "en": "Prohibits vehicles carrying materials that may contaminate water, in quantities specified by separate regulations, from entering the road."
+    }
+  },
+  "B-15": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів завширшки понад ... м",
+      "en": "No entry for vehicles over ... m wide"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, ширина яких (також із вантажем) більша за величину, зазначену на знаку.",
+      "en": "Prohibits traffic of vehicles whose width (including load) is greater than the value shown on the sign."
+    }
+  },
+  "B-15-2.0m": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів завширшки понад ... м",
+      "en": "No entry for vehicles over ... m wide"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, ширина яких (також із вантажем) більша за величину, зазначену на знаку.",
+      "en": "Prohibits traffic of vehicles whose width (including load) is greater than the value shown on the sign."
+    }
+  },
+  "B-16": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів заввишки понад ... м",
+      "en": "No entry for vehicles over ... m high"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, висота яких (також із вантажем) більша за величину, зазначену на знаку.",
+      "en": "Prohibits traffic of vehicles whose height (including load) is greater than the value shown on the sign."
+    }
+  },
+  "B-16-3.1m": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів заввишки понад ... м",
+      "en": "No entry for vehicles over ... m high"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, висота яких (також із вантажем) більша за величину, зазначену на знаку.",
+      "en": "Prohibits traffic of vehicles whose height (including load) is greater than the value shown on the sign."
+    }
+  },
+  "B-16-3.2m": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів заввишки понад ... м",
+      "en": "No entry for vehicles over ... m high"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, висота яких (також із вантажем) більша за величину, зазначену на знаку.",
+      "en": "Prohibits traffic of vehicles whose height (including load) is greater than the value shown on the sign."
+    }
+  },
+  "B-16-3.4m": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів заввишки понад ... м",
+      "en": "No entry for vehicles over ... m high"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, висота яких (також із вантажем) більша за величину, зазначену на знаку.",
+      "en": "Prohibits traffic of vehicles whose height (including load) is greater than the value shown on the sign."
+    }
+  },
+  "B-16-3.5m": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів заввишки понад ... м",
+      "en": "No entry for vehicles over ... m high"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, висота яких (також із вантажем) більша за величину, зазначену на знаку.",
+      "en": "Prohibits traffic of vehicles whose height (including load) is greater than the value shown on the sign."
+    }
+  },
+  "B-17": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів завдовжки понад ... м",
+      "en": "No entry for vehicles over ... m long"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів або автопоїздів, довжина яких (також із вантажем) більша за величину, зазначену на знаку.",
+      "en": "Prohibits traffic of vehicles or combinations of vehicles whose length (including load) is greater than the value shown on the sign."
+    }
+  },
+  "B-17-6m": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів завдовжки понад ... м",
+      "en": "No entry for vehicles over ... m long"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів або автопоїздів, довжина яких (також із вантажем) більша за величину, зазначену на знаку.",
+      "en": "Prohibits traffic of vehicles or combinations of vehicles whose length (including load) is greater than the value shown on the sign."
+    }
+  },
+  "B-18": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів із фактичною повною масою понад ... т",
+      "en": "No entry for vehicles with actual total mass over ... t"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, фактична повна маса яких більша за величину, зазначену на знаку; для автопоїзда заборона стосується їхньої сумарної маси.",
+      "en": "Prohibits traffic of vehicles whose actual total mass is greater than the value shown on the sign; for a combination of vehicles the prohibition applies to their combined mass."
+    }
+  },
+  "B-18-3.5t": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів із фактичною повною масою понад ... т",
+      "en": "No entry for vehicles with actual total mass over ... t"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, фактична повна маса яких більша за величину, зазначену на знаку; для автопоїзда заборона стосується їхньої сумарної маси.",
+      "en": "Prohibits traffic of vehicles whose actual total mass is greater than the value shown on the sign; for a combination of vehicles the prohibition applies to their combined mass."
+    }
+  },
+  "B-18-7t": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів із фактичною повною масою понад ... т",
+      "en": "No entry for vehicles with actual total mass over ... t"
+    },
+    "description": {
+      "ua": "Означає заборону руху транспортних засобів, фактична повна маса яких більша за величину, зазначену на знаку; для автопоїзда заборона стосується їхньої сумарної маси.",
+      "en": "Prohibits traffic of vehicles whose actual total mass is greater than the value shown on the sign; for a combination of vehicles the prohibition applies to their combined mass."
+    }
+  },
+  "B-19": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів із навантаженням на вісь понад ... т",
+      "en": "No entry for vehicles with axle load over ... t"
+    },
+    "description": {
+      "ua": "Заборона в'їзду транспортних засобів, у яких навантаження на одну з осей перевищує величину, зазначену на знаку. При багатоосьовій (складеній) осі навантаження на жодну зі складових осей не може відповідати масі, більшій ніж 80% маси, зазначеної на знаку.",
+      "en": "Prohibits entry of vehicles in which the load on any one axle exceeds the value shown on the sign. For a multiple axle, the load on none of the component axles may correspond to a mass greater than 80% of the mass shown on the sign."
+    }
+  },
+  "B-19-10t": {
+    "name": {
+      "ua": "Заборона в'їзду транспортних засобів із навантаженням на вісь понад ... т",
+      "en": "No entry for vehicles with axle load over ... t"
+    },
+    "description": {
+      "ua": "Заборона в'їзду транспортних засобів, у яких навантаження на одну з осей перевищує величину, зазначену на знаку. При багатоосьовій (складеній) осі навантаження на жодну зі складових осей не може відповідати масі, більшій ніж 80% маси, зазначеної на знаку.",
+      "en": "Prohibits entry of vehicles in which the load on any one axle exceeds the value shown on the sign. For a multiple axle, the load on none of the component axles may correspond to a mass greater than 80% of the mass shown on the sign."
+    }
+  },
+  "B-2": {
+    "name": {
+      "ua": "Заборона в'їзду",
+      "en": "No entry"
+    },
+    "description": {
+      "ua": "Означає заборону в'їзду транспортних засобів на дорогу або проїзну частину з боку, де встановлено знак; заборона також стосується колон пішоходів, а також вершників і погоничів.",
+      "en": "Prohibits vehicles from entering the road or carriageway from the side where the sign is placed; the prohibition also applies to columns of pedestrians, as well as riders and drovers."
+    }
+  },
+  "B-20": {
+    "name": {
+      "ua": "STOP",
+      "en": "STOP"
+    },
+    "description": {
+      "ua": "Цей знак вказує, що водій, під'їжджаючи до перехрестя, повинен зупинитися, перш ніж виїхати на дорогу. Якщо він виїжджає на дорогу з перевагою проїзду, то повинен дати дорогу транспортним засобам, що рухаються цією дорогою.",
+      "en": "This sign indicates that a driver approaching an intersection must stop before entering the road. When entering a road with priority, the driver must give way to vehicles travelling on that road."
+    }
+  },
+  "B-21": {
+    "name": {
+      "ua": "Заборона повороту ліворуч і розвороту",
+      "en": "No left turn and U-turn"
+    },
+    "description": {
+      "ua": "Забороняє поворот ліворуч і забороняє розворот. Заборона, виражена знаком B-21, діє на найближчому перехресті. Знак B-21, розміщений у межах перехрестя, стосується лише найближчої проїзної частини, перед якою його встановлено.",
+      "en": "Prohibits turning left and prohibits making a U-turn. The prohibition of sign B-21 applies at the nearest intersection. Sign B-21 placed within an intersection applies only to the nearest carriageway in front of which it is placed."
+    }
+  },
+  "B-22": {
+    "name": {
+      "ua": "Заборона повороту праворуч",
+      "en": "No right turn"
+    },
+    "description": {
+      "ua": "Забороняє поворот праворуч. Заборона, виражена знаком B-22, діє на найближчому перехресті. Знак B-22, розміщений у межах перехрестя, стосується лише найближчої проїзної частини, перед якою його встановлено.",
+      "en": "Prohibits turning right. The prohibition of sign B-22 applies at the nearest intersection. Sign B-22 placed within an intersection applies only to the nearest carriageway in front of which it is placed."
+    }
+  },
+  "B-23": {
+    "name": {
+      "ua": "Заборона розвороту",
+      "en": "No U-turn"
+    },
+    "description": {
+      "ua": "Забороняє водіям розвертатися аж до найближчого перехрестя включно.",
+      "en": "Prohibits drivers from making a U-turn up to and including the nearest intersection."
+    }
+  },
+  "B-24": {
+    "name": {
+      "ua": "Кінець заборони розвороту",
+      "en": "End of no U-turn"
+    },
+    "description": {
+      "ua": "Означає скасування заборони розвороту перед перехрестям.",
+      "en": "Cancels the U-turn prohibition before the intersection."
+    }
+  },
+  "B-25": {
+    "name": {
+      "ua": "Заборона обгону",
+      "en": "No overtaking"
+    },
+    "description": {
+      "ua": "Цей знак забороняє водіям обганяти будь-які багатоколійні механічні транспортні засоби. На ділянці дороги, де діє цей знак, водій механічного транспортного засобу може обганяти лише одноколійні транспортні засоби та немеханічні транспортні засоби.",
+      "en": "This sign prohibits drivers from overtaking any multi-track motor vehicles. On the road section where this sign applies, a motor vehicle driver may overtake only single-track vehicles and non-motor vehicles."
+    }
+  },
+  "B-26": {
+    "name": {
+      "ua": "Заборона обгону вантажними автомобілями",
+      "en": "No overtaking by goods vehicles"
+    },
+    "description": {
+      "ua": "Забороняє водіям вантажних транспортних засобів із дозволеною повною масою понад 3,5 тонни обганяти багатоколійні механічні транспортні засоби.",
+      "en": "Prohibits drivers of goods vehicles with a maximum authorised mass over 3.5 tonnes from overtaking multi-track motor vehicles."
+    }
+  },
+  "B-27": {
+    "name": {
+      "ua": "Кінець заборони обгону",
+      "en": "End of no overtaking"
+    },
+    "description": {
+      "ua": "Означає кінець дії заборони, встановленої знаком B-25.",
+      "en": "Marks the end of the prohibition imposed by sign B-25."
+    }
+  },
+  "B-28": {
+    "name": {
+      "ua": "Кінець заборони обгону вантажними автомобілями",
+      "en": "End of no overtaking by goods vehicles"
+    },
+    "description": {
+      "ua": "Означає кінець дії заборони, встановленої знаком B-26.",
+      "en": "Marks the end of the prohibition imposed by sign B-26."
+    }
+  },
+  "B-29": {
+    "name": {
+      "ua": "Заборона користування звуковими сигналами",
+      "en": "No use of audible signals"
+    },
+    "description": {
+      "ua": "Цей знак забороняє користуватися звуковими сигналами, якщо це не викликано необхідністю попередити інших учасників руху про безпосередню загрозу безпеці руху.",
+      "en": "This sign prohibits the use of audible signals, unless it is necessary to warn other road users of an immediate threat to traffic safety."
+    }
+  },
+  "B-3": {
+    "name": {
+      "ua": "Заборона в'їзду механічних транспортних засобів, крім одноколійних мотоциклів",
+      "en": "No entry for motor vehicles except two-wheeled motorcycles"
+    },
+    "description": {
+      "ua": "Означає заборону руху механічних транспортних засобів; заборона не стосується одноколійних мотоциклів.",
+      "en": "Prohibits traffic of motor vehicles; the prohibition does not apply to two-wheeled motorcycles."
+    }
+  },
+  "B-30": {
+    "name": {
+      "ua": "Кінець заборони користування звуковими сигналами",
+      "en": "End of audible signal prohibition"
+    },
+    "description": {
+      "ua": "Означає кінець дії заборони, встановленої знаком B-29.",
+      "en": "Marks the end of the prohibition imposed by sign B-29."
+    }
+  },
+  "B-31": {
+    "name": {
+      "ua": "Перевага для зустрічного руху",
+      "en": "Priority for oncoming traffic"
+    },
+    "description": {
+      "ua": "Забороняє водіям в'їжджати або заходити на звужену ділянку проїзної частини, якщо це змусило б водіїв, які вже перебувають на цій ділянці або наближаються до неї з протилежного боку, зупинитися.",
+      "en": "Prohibits drivers from entering a narrowed section of the carriageway if that would force drivers already on that section or approaching it from the opposite direction to stop."
+    }
+  },
+  "B-32": {
+    "name": {
+      "ua": "Стій — митний контроль",
+      "en": "Stop — customs control"
+    },
+    "description": {
+      "ua": "Означає обов'язок зупинитися. Замість напису «Cło-Zoll» на знаку можуть бути написи «Прикордонний контроль», «Шлагбаум пошкоджено», «Світлофор пошкоджено», «В'їзд на пором», «Дорожній контроль» або «Стягнення плати».",
+      "en": "Means you must stop. Instead of the inscription \"Cło-Zoll\", the sign may show \"Border control\", \"Barrier out of order\", \"Signals out of order\", \"Ferry boarding\", \"Road check\" or \"Toll collection\"."
+    }
+  },
+  "B-32a": {
+    "name": {
+      "ua": "Стій — прикордонний контроль",
+      "en": "Stop — border control"
+    },
+    "description": {
+      "ua": "Означає обов'язок зупинитися. Зупинитися слід у місці, призначеному для цього, а якщо його не визначено — перед знаком. Подальший рух можливий за згодою уповноваженої особи або після сигналу, що дозволяє рух.",
+      "en": "Means you must stop. You should stop at the place designated for this purpose, and if none is designated — before the sign. You may proceed with the consent of an authorised person or after a signal permitting movement."
+    }
+  },
+  "B-32b": {
+    "name": {
+      "ua": "Стій — пошкоджений шлагбаум",
+      "en": "Stop — barrier out of order"
+    },
+    "description": {
+      "ua": "Означає обов'язок зупинитися. Зупинитися слід у місці, призначеному для цього, а якщо його не визначено — перед знаком. Подальший рух можливий за згодою уповноваженої особи або після сигналу, що дозволяє рух.",
+      "en": "Means you must stop. You should stop at the place designated for this purpose, and if none is designated — before the sign. You may proceed with the consent of an authorised person or after a signal permitting movement."
+    }
+  },
+  "B-32c": {
+    "name": {
+      "ua": "Стій — пошкоджена світлофорна сигналізація",
+      "en": "Stop — signals out of order"
+    },
+    "description": {
+      "ua": "Означає обов'язок зупинитися. Зупинитися слід у місці, призначеному для цього, а якщо його не визначено — перед знаком. Подальший рух можливий за згодою уповноваженої особи або після сигналу, що дозволяє рух.",
+      "en": "Means you must stop. You should stop at the place designated for this purpose, and if none is designated — before the sign. You may proceed with the consent of an authorised person or after a signal permitting movement."
+    }
+  },
+  "B-32d": {
+    "name": {
+      "ua": "Стій — в'їзд на пором",
+      "en": "Stop — ferry boarding"
+    },
+    "description": {
+      "ua": "Означає обов'язок зупинитися. Зупинитися слід у місці, призначеному для цього, а якщо його не визначено — перед знаком. Подальший рух можливий за згодою уповноваженої особи або після сигналу, що дозволяє рух.",
+      "en": "Means you must stop. You should stop at the place designated for this purpose, and if none is designated — before the sign. You may proceed with the consent of an authorised person or after a signal permitting movement."
+    }
+  },
+  "B-32e": {
+    "name": {
+      "ua": "Стій — дорожній контроль",
+      "en": "Stop — road check"
+    },
+    "description": {
+      "ua": "Означає обов'язок зупинитися. Зупинитися слід у місці, призначеному для цього, а якщо його не визначено — перед знаком. Подальший рух можливий за згодою уповноваженої особи або після сигналу, що дозволяє рух.",
+      "en": "Means you must stop. You should stop at the place designated for this purpose, and if none is designated — before the sign. You may proceed with the consent of an authorised person or after a signal permitting movement."
+    }
+  },
+  "B-32f": {
+    "name": {
+      "ua": "Стій — стягнення плати",
+      "en": "Stop — toll collection"
+    },
+    "description": {
+      "ua": "Означає обов'язок зупинитися. Зупинитися слід у місці, призначеному для цього, а якщо його не визначено — перед знаком. Подальший рух можливий за згодою уповноваженої особи або після сигналу, що дозволяє рух.",
+      "en": "Means you must stop. You should stop at the place designated for this purpose, and if none is designated — before the sign. You may proceed with the consent of an authorised person or after a signal permitting movement."
+    }
+  },
+  "B-33": {
+    "name": {
+      "ua": "Обмеження швидкості",
+      "en": "Speed limit"
+    },
+    "description": {
+      "ua": "Цей знак означає заборону перевищувати швидкість, зазначену на знаку. Під знаком може бути розміщена додаткова табличка із символом транспортного засобу, якого він стосується.",
+      "en": "This sign prohibits exceeding the speed shown on the sign. An additional plate with the symbol of the vehicle to which it applies may be placed below the sign."
+    }
+  },
+  "B-33-50": {
+    "name": {
+      "ua": "Обмеження швидкості",
+      "en": "Speed limit"
+    },
+    "description": {
+      "ua": "Цей знак означає заборону перевищувати швидкість, зазначену на знаку. Під знаком може бути розміщена додаткова табличка із символом транспортного засобу, якого він стосується.",
+      "en": "This sign prohibits exceeding the speed shown on the sign. An additional plate with the symbol of the vehicle to which it applies may be placed below the sign."
+    }
+  },
+  "B-34": {
+    "name": {
+      "ua": "Кінець обмеження швидкості",
+      "en": "End of speed limit"
+    },
+    "description": {
+      "ua": "Означає скасування обмеження швидкості, встановленого знаком B-33.",
+      "en": "Cancels the speed limit imposed by sign B-33."
+    }
+  },
+  "B-34-50": {
+    "name": {
+      "ua": "Кінець обмеження швидкості",
+      "en": "End of speed limit"
+    },
+    "description": {
+      "ua": "Означає скасування обмеження швидкості, встановленого знаком B-33.",
+      "en": "Cancels the speed limit imposed by sign B-33."
+    }
+  },
+  "B-35": {
+    "name": {
+      "ua": "Заборона стоянки",
+      "en": "No parking"
+    },
+    "description": {
+      "ua": "Означає заборону стоянки транспортного засобу. Дозволений час перебування транспортного засобу без руху, довший ніж одна хвилина, вказується написом на знаку або на розміщеній під ним табличці.",
+      "en": "Prohibits parking a vehicle. The permitted immobilisation time longer than one minute is indicated by an inscription on the sign or on a plate placed below it."
+    }
+  },
+  "B-36": {
+    "name": {
+      "ua": "Заборона зупинки",
+      "en": "No stopping"
+    },
+    "description": {
+      "ua": "Означає заборону зупинки транспортного засобу.",
+      "en": "Prohibits stopping a vehicle."
+    }
+  },
+  "B-37": {
+    "name": {
+      "ua": "Заборона стоянки в непарні дні",
+      "en": "No parking on odd-numbered days"
+    },
+    "description": {
+      "ua": "Означає заборону стоянки транспортних засобів у непарні дні місяця; заборона не діє з 21:00 до 24:00.",
+      "en": "Prohibits parking vehicles on odd-numbered days of the month; the prohibition does not apply from 21:00 to 24:00."
+    }
+  },
+  "B-38": {
+    "name": {
+      "ua": "Заборона стоянки в парні дні",
+      "en": "No parking on even-numbered days"
+    },
+    "description": {
+      "ua": "Означає заборону стоянки транспортних засобів у парні дні місяця; заборона не діє з 21:00 до 24:00.",
+      "en": "Prohibits parking vehicles on even-numbered days of the month; the prohibition does not apply from 21:00 to 24:00."
+    }
+  },
+  "B-39": {
+    "name": {
+      "ua": "Зона обмеженої стоянки",
+      "en": "Restricted parking zone"
+    },
+    "description": {
+      "ua": "Цей знак означає в'їзд на частину населеного пункту, де стоянка на всіх дорогах підлягає спеціальним обмеженням. Якщо на знаку час стоянки не зазначено, це означає, що стоянка в цій зоні не може перевищувати 1 хвилини.",
+      "en": "This sign marks entry into a part of a built-up area where parking on all roads is subject to special restrictions. If the parking time is not specified on the sign, parking in this zone must not exceed 1 minute."
+    }
+  },
+  "B-3a": {
+    "name": {
+      "ua": "Заборона в'їзду автобусів",
+      "en": "No entry for buses"
+    },
+    "description": {
+      "ua": "Означає заборону руху автобусів.",
+      "en": "Prohibits bus traffic."
+    }
+  },
+  "B-4": {
+    "name": {
+      "ua": "Заборона в'їзду мотоциклів",
+      "en": "No entry for motorcycles"
+    },
+    "description": {
+      "ua": "Означає заборону руху мотоциклів.",
+      "en": "Prohibits motorcycle traffic."
+    }
+  },
+  "B-40": {
+    "name": {
+      "ua": "Кінець зони обмеженої стоянки",
+      "en": "End of restricted parking zone"
+    },
+    "description": {
+      "ua": "Означає виїзд із зони обмеженої стоянки.",
+      "en": "Marks exit from the restricted parking zone."
+    }
+  },
+  "B-41": {
+    "name": {
+      "ua": "Заборона руху пішоходів",
+      "en": "No pedestrians"
+    },
+    "description": {
+      "ua": "Означає заборону руху пішоходів з того боку дороги, з якого встановлено знак.",
+      "en": "Prohibits pedestrian traffic on the side of the road where the sign is placed."
+    }
+  },
+  "B-42": {
+    "name": {
+      "ua": "Кінець заборон",
+      "en": "End of prohibitions"
+    },
+    "description": {
+      "ua": "Цей знак скасовує дію таких знаків заборони: заборона обгону, заборона обгону вантажними автомобілями, заборона розвороту, заборона користування звуковими сигналами, обмеження швидкості.",
+      "en": "This sign cancels the following prohibition signs: no overtaking, no overtaking by goods vehicles, no U-turn, no use of audible signals, and speed limit."
+    }
+  },
+  "B-43": {
+    "name": {
+      "ua": "Зона обмеження швидкості",
+      "en": "Speed limit zone"
+    },
+    "description": {
+      "ua": "Цей знак означає в'їзд до зони в населеному пункті, де заборонено перевищувати швидкість, зазначену на знаку числом кілометрів на годину.",
+      "en": "This sign marks entry into a zone in a built-up area where it is prohibited to exceed the speed shown on the sign in kilometres per hour."
+    }
+  },
+  "B-43-30": {
+    "name": {
+      "ua": "Зона обмеження швидкості",
+      "en": "Speed limit zone"
+    },
+    "description": {
+      "ua": "Цей знак означає в'їзд до зони в населеному пункті, де заборонено перевищувати швидкість, зазначену на знаку числом кілометрів на годину.",
+      "en": "This sign marks entry into a zone in a built-up area where it is prohibited to exceed the speed shown on the sign in kilometres per hour."
+    }
+  },
+  "B-44": {
+    "name": {
+      "ua": "Кінець зони обмеження швидкості",
+      "en": "End of speed limit zone"
+    },
+    "description": {
+      "ua": "Означає виїзд із зони обмеження швидкості.",
+      "en": "Marks exit from the speed limit zone."
+    }
+  },
+  "B-44-30": {
+    "name": {
+      "ua": "Кінець зони обмеження швидкості",
+      "en": "End of speed limit zone"
+    },
+    "description": {
+      "ua": "Означає виїзд із зони обмеження швидкості.",
+      "en": "Marks exit from the speed limit zone."
+    }
+  },
+  "B-5": {
+    "name": {
+      "ua": "Заборона в'їзду вантажних автомобілів",
+      "en": "No entry for goods vehicles"
+    },
+    "description": {
+      "ua": "Забороняє в'їзд на дорогу вантажних автомобілів, сільськогосподарських тракторів, сідлових тягачів і тихохідних транспортних засобів. Цей знак також стосується спеціальних транспортних засобів масою понад 3,5 тонни, якщо на знаку не зазначено більшу масу транспортного засобу.",
+      "en": "Prohibits goods vehicles, agricultural tractors, tractor units and slow-moving vehicles from entering the road. The sign also applies to special vehicles with a mass exceeding 3.5 tonnes, unless the sign specifies a greater vehicle mass."
+    }
+  },
+  "B-6": {
+    "name": {
+      "ua": "Заборона в'їзду сільськогосподарських тракторів",
+      "en": "No entry for agricultural tractors"
+    },
+    "description": {
+      "ua": "Означає заборону руху сільськогосподарських тракторів і тихохідних транспортних засобів.",
+      "en": "Prohibits traffic of agricultural tractors and slow-moving vehicles."
+    }
+  },
+  "B-7": {
+    "name": {
+      "ua": "Заборона в'їзду механічних транспортних засобів із причепом",
+      "en": "No entry for motor vehicles with a trailer"
+    },
+    "description": {
+      "ua": "Означає заборону в'їзду на дорогу механічних транспортних засобів, що тягнуть причепи. Не стосується транспортних засобів з одноосьовим причепом або напівпричепом.",
+      "en": "Prohibits motor vehicles towing trailers from entering the road. It does not apply to vehicles with a single-axle trailer or a semi-trailer."
+    }
+  },
+  "B-8": {
+    "name": {
+      "ua": "Заборона в'їзду гужового транспорту",
+      "en": "No entry for animal-drawn vehicles"
+    },
+    "description": {
+      "ua": "Означає заборону руху гужового транспорту, а також вершників і погоничів.",
+      "en": "Prohibits traffic of animal-drawn vehicles, as well as riders and drovers."
+    }
+  },
+  "B-9": {
+    "name": {
+      "ua": "Заборона в'їзду велосипедів",
+      "en": "No entry for bicycles"
+    },
+    "description": {
+      "ua": "Означає заборону руху велосипедів проїзною частиною та узбіччям.",
+      "en": "Prohibits bicycle traffic on the carriageway and the shoulder."
+    }
+  },
+  "C-1": {
+    "name": {
+      "ua": "Наказ їхати праворуч перед знаком",
+      "en": "Mandatory turn right before the sign"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати праворуч перед знаком; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to go right before the sign; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "C-10": {
+    "name": {
+      "ua": "Наказ їхати ліворуч від знака",
+      "en": "Mandatory keep left of the sign"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати ліворуч від знака; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to pass on the left side of the sign; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "C-11": {
+    "name": {
+      "ua": "Наказ їхати праворуч або ліворуч від знака",
+      "en": "Mandatory keep right or left of the sign"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати праворуч або ліворуч від знака; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to pass on the right or left side of the sign; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "C-12": {
+    "name": {
+      "ua": "Круговий рух",
+      "en": "Roundabout"
+    },
+    "description": {
+      "ua": "Означає, що на перехресті рух відбувається навколо острівця або площі в напрямку, вказаному на знаку.",
+      "en": "Means that at the intersection traffic moves around an island or square in the direction indicated on the sign."
+    }
+  },
+  "C-13": {
+    "name": {
+      "ua": "Дорога для велосипедів",
+      "en": "Cycle path"
+    },
+    "description": {
+      "ua": "Означає дорогу, призначену для водіїв одноколійних велосипедів, які зобов'язані користуватися цією дорогою.",
+      "en": "Means a road intended for riders of single-track bicycles, who are required to use this road."
+    }
+  },
+  "C-13a": {
+    "name": {
+      "ua": "Кінець дороги для велосипедів",
+      "en": "End of cycle path"
+    },
+    "description": {
+      "ua": "Означає кінець дороги, призначеної для водіїв одноколійних велосипедів.",
+      "en": "Marks the end of the road intended for riders of single-track bicycles."
+    }
+  },
+  "C-14": {
+    "name": {
+      "ua": "Мінімальна швидкість",
+      "en": "Minimum speed"
+    },
+    "description": {
+      "ua": "Означає, що водій, дотримуючись обмежень швидкості, які випливають із спеціальних положень, зобов'язаний їхати зі швидкістю не меншою, ніж зазначена на знаку кількість кілометрів на годину.",
+      "en": "Means that the driver, while still observing speed limits arising from specific regulations, is required to travel at a speed not lower than the number of kilometers per hour shown on the sign."
+    }
+  },
+  "C-14-30": {
+    "name": {
+      "ua": "Мінімальна швидкість",
+      "en": "Minimum speed"
+    },
+    "description": {
+      "ua": "Означає, що водій, дотримуючись обмежень швидкості, які випливають із спеціальних положень, зобов'язаний їхати зі швидкістю не меншою, ніж зазначена на знаку кількість кілометрів на годину.",
+      "en": "Means that the driver, while still observing speed limits arising from specific regulations, is required to travel at a speed not lower than the number of kilometers per hour shown on the sign."
+    }
+  },
+  "C-15": {
+    "name": {
+      "ua": "Кінець мінімальної швидкості",
+      "en": "End of minimum speed"
+    },
+    "description": {
+      "ua": "Означає місце, де мінімальна швидкість, визначена знаком C-14, припиняє діяти.",
+      "en": "Marks the place where the minimum speed specified by sign C-14 ceases to apply."
+    }
+  },
+  "C-15-30": {
+    "name": {
+      "ua": "Кінець мінімальної швидкості",
+      "en": "End of minimum speed"
+    },
+    "description": {
+      "ua": "Означає місце, де мінімальна швидкість, визначена знаком C-14, припиняє діяти.",
+      "en": "Marks the place where the minimum speed specified by sign C-14 ceases to apply."
+    }
+  },
+  "C-16": {
+    "name": {
+      "ua": "Дорога для пішоходів",
+      "en": "Pedestrian path"
+    },
+    "description": {
+      "ua": "Означає дорогу або її частину, призначену для пішоходів, які зобов'язані нею користуватися.",
+      "en": "Means a road or part of a road intended for pedestrians, who are required to use it."
+    }
+  },
+  "C-16a": {
+    "name": {
+      "ua": "Кінець дороги для пішоходів",
+      "en": "End of pedestrian path"
+    },
+    "description": {
+      "ua": "Означає кінець дороги, призначеної для пішоходів.",
+      "en": "Marks the end of the road intended for pedestrians."
+    }
+  },
+  "C-17": {
+    "name": {
+      "ua": "Наказаний напрямок для транспортних засобів з небезпечними вантажами",
+      "en": "Mandatory direction for vehicles carrying dangerous goods"
+    },
+    "description": {
+      "ua": "Означає напрямок руху для транспортних засобів з небезпечними вантажами.",
+      "en": "Indicates the required direction of travel for vehicles carrying dangerous goods."
+    }
+  },
+  "C-17-2": {
+    "name": {
+      "ua": "Наказаний напрямок для транспортних засобів з небезпечними вантажами",
+      "en": "Mandatory direction for vehicles carrying dangerous goods"
+    },
+    "description": {
+      "ua": "Означає напрямок руху для транспортних засобів з небезпечними вантажами.",
+      "en": "Indicates the required direction of travel for vehicles carrying dangerous goods."
+    }
+  },
+  "C-18": {
+    "name": {
+      "ua": "Наказ використовувати ланцюги протиковзання",
+      "en": "Snow chains required"
+    },
+    "description": {
+      "ua": "Означає, що на дорозі, де встановлено знак, водій механічного транспортного засобу зобов'язаний використовувати ланцюги протиковзання щонайменше на двох ведучих колесах.",
+      "en": "Means that on the road where the sign is placed, the driver of a motor vehicle is required to use snow chains on at least two driving wheels."
+    }
+  },
+  "C-19": {
+    "name": {
+      "ua": "Кінець наказу використовувати ланцюги протиковзання",
+      "en": "End of snow chains requirement"
+    },
+    "description": {
+      "ua": "Означає кінець наказу використовувати ланцюги протиковзання.",
+      "en": "Marks the end of the requirement to use snow chains."
+    }
+  },
+  "C-2": {
+    "name": {
+      "ua": "Наказ їхати праворуч за знаком",
+      "en": "Mandatory turn right after the sign"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати праворуч за знаком; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to go right after the sign; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "C-3": {
+    "name": {
+      "ua": "Наказ їхати ліворуч перед знаком",
+      "en": "Mandatory turn left before the sign"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати ліворуч перед знаком; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to go left before the sign; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "C-4": {
+    "name": {
+      "ua": "Наказ їхати ліворуч за знаком",
+      "en": "Mandatory turn left after the sign"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати ліворуч за знаком; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to go left after the sign; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "C-5": {
+    "name": {
+      "ua": "Наказ їхати прямо",
+      "en": "Mandatory straight ahead"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати прямо; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to go straight ahead; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "C-6": {
+    "name": {
+      "ua": "Наказ їхати прямо або праворуч",
+      "en": "Mandatory straight ahead or right"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати прямо або праворуч; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to go straight ahead or to the right; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "C-7": {
+    "name": {
+      "ua": "Наказ їхати прямо або ліворуч",
+      "en": "Mandatory straight ahead or left"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати прямо або ліворуч; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to go straight ahead or to the left; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "C-8": {
+    "name": {
+      "ua": "Наказ їхати праворуч або ліворуч",
+      "en": "Mandatory turn right or left"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати праворуч або ліворуч; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to go right or left; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "C-9": {
+    "name": {
+      "ua": "Наказ їхати праворуч від знака",
+      "en": "Mandatory keep right of the sign"
+    },
+    "description": {
+      "ua": "Зобов'язує водія їхати праворуч від знака; цей знак може бути розміщений на продовженні осі дороги (проїзної частини) або безпосередньо на проїзній частині.",
+      "en": "Requires the driver to pass on the right side of the sign; this sign may be placed on the extension of the road (roadway) axis or on the roadway itself."
+    }
+  },
+  "D-1": {
+    "name": {
+      "ua": "Головна дорога",
+      "en": "Priority road"
+    },
+    "description": {
+      "ua": "Цей знак інформує про в'їзд на дорогу з першістю проїзду. Це означає, що водій має першість проїзду на перехрестях з іншими дорогами.",
+      "en": "This sign informs you that you are entering a priority road. It means the driver has right of way at intersections with other roads."
+    }
+  },
+  "D-10": {
+    "name": {
+      "ua": "Кінець автомагістралі",
+      "en": "End of motorway"
+    },
+    "description": {
+      "ua": "Означає кінець автомагістралі. Розміщена під знаком табличка T-1a вказує відстань до кінця автомагістралі.",
+      "en": "Marks the end of the motorway. Plate T-1a placed under the sign indicates the distance to the end of the motorway."
+    }
+  },
+  "D-11": {
+    "name": {
+      "ua": "Початок смуги для автобусів",
+      "en": "Beginning of bus lane"
+    },
+    "description": {
+      "ua": "Означає початок смуги руху, призначеної лише для автобусів або тролейбусів, а також інших транспортних засобів, що здійснюють платне перевезення осіб на регулярних маршрутах.",
+      "en": "Marks the beginning of a lane intended only for buses or trolleybuses and other vehicles providing paid passenger transport on regular routes."
+    }
+  },
+  "D-12": {
+    "name": {
+      "ua": "Смуга для автобусів",
+      "en": "Bus lane"
+    },
+    "description": {
+      "ua": "Інформує, що смуга руху праворуч на проїзній частині призначена лише для руху автобусів або тролейбусів громадського транспорту.",
+      "en": "Informs that the lane on the right side of the roadway is intended only for public-transport buses or trolleybuses."
+    }
+  },
+  "D-13": {
+    "name": {
+      "ua": "Початок смуги для повільного руху",
+      "en": "Beginning of crawler lane"
+    },
+    "description": {
+      "ua": "Цей знак означає, що транспортні засоби, які на підйомі не досягають повної швидкості, зазначеної на знаку, повинні рухатися виділеною для них смугою.",
+      "en": "This sign means that vehicles which on an uphill cannot reach the full speed shown on the sign should use the lane designated for them."
+    }
+  },
+  "D-13a": {
+    "name": {
+      "ua": "Початок смуги руху",
+      "en": "Beginning of lane"
+    },
+    "description": {
+      "ua": "Означає початок смуги руху з боку, зазначеного на знаку. Розміщена під знаком табличка T-1a вказує відстань до початку або кінця смуги руху.",
+      "en": "Marks the beginning of a lane on the side indicated on the sign. Plate T-1a placed under the sign indicates the distance to the beginning or end of the lane."
+    }
+  },
+  "D-13b": {
+    "name": {
+      "ua": "Початок смуги на дорозі з двостороннім рухом",
+      "en": "Beginning of lane on a two-way roadway"
+    },
+    "description": {
+      "ua": "Застосовують, щоб вказати початок додаткової смуги руху на проїзній частині з двостороннім рухом.",
+      "en": "Used to indicate the beginning of an additional lane on a two-way roadway."
+    }
+  },
+  "D-14": {
+    "name": {
+      "ua": "Кінець смуги руху",
+      "en": "End of lane"
+    },
+    "description": {
+      "ua": "Інформує про місце, де закінчується смуга для повільного руху.",
+      "en": "Informs about the place where the crawler lane ends."
+    }
+  },
+  "D-15": {
+    "name": {
+      "ua": "Автобусна зупинка",
+      "en": "Bus stop"
+    },
+    "description": {
+      "ua": "Інформує про місце на проїзній частині, призначене для зупинки автобусів громадського транспорту.",
+      "en": "Informs about a place on the roadway intended for public-transport buses to stop."
+    }
+  },
+  "D-16": {
+    "name": {
+      "ua": "Тролейбусна зупинка",
+      "en": "Trolleybus stop"
+    },
+    "description": {
+      "ua": "Інформує про місце на проїзній частині, призначене для зупинки тролейбусів громадського транспорту.",
+      "en": "Informs about a place on the roadway intended for public-transport trolleybuses to stop."
+    }
+  },
+  "D-17": {
+    "name": {
+      "ua": "Трамвайна зупинка",
+      "en": "Tram stop"
+    },
+    "description": {
+      "ua": "Означає місце зупинки зазначених на знаку транспортних засобів, що здійснюють платне перевезення осіб на регулярних маршрутах.",
+      "en": "Marks a stopping place for the vehicles indicated on the sign that provide paid passenger transport on regular routes."
+    }
+  },
+  "D-18": {
+    "name": {
+      "ua": "Парковка",
+      "en": "Parking"
+    },
+    "description": {
+      "ua": "Означає місце, призначене для стоянки або паркування механічних транспортних засобів. Якщо спосіб стоянки на тротуарі або проїзній частині інший, ніж паралельно до її краю, цей спосіб показано на відповідній табличці (див.: додаткові таблички).",
+      "en": "Marks a place intended for standing or parking of motor vehicles. If the way of parking on the sidewalk or roadway is other than parallel to its edge, that arrangement is shown on the appropriate plate (see: complementary plates)."
+    }
+  },
+  "D-18a": {
+    "name": {
+      "ua": "Парковка — зарезервоване місце",
+      "en": "Parking — reserved space"
+    },
+    "description": {
+      "ua": "Означає місце, призначене для стоянки транспортного засобу уповноваженої особи. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Marks a space intended for parking a vehicle of an authorized person. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-18b": {
+    "name": {
+      "ua": "Крита парковка",
+      "en": "Covered parking"
+    },
+    "description": {
+      "ua": "Інформує про місце, де є крита парковка.",
+      "en": "Informs about a place where covered parking is located."
+    }
+  },
+  "D-19": {
+    "name": {
+      "ua": "Стоянка таксі",
+      "en": "Taxi stand"
+    },
+    "description": {
+      "ua": "Означає місце, призначене для стоянки вільних легкових таксі.",
+      "en": "Marks a place intended for vacant passenger taxis to stand."
+    }
+  },
+  "D-2": {
+    "name": {
+      "ua": "Кінець головної дороги",
+      "en": "End of priority road"
+    },
+    "description": {
+      "ua": "Означає кінець дороги з першістю проїзду.",
+      "en": "Marks the end of the priority road."
+    }
+  },
+  "D-20": {
+    "name": {
+      "ua": "Кінець стоянки таксі",
+      "en": "End of taxi stand"
+    },
+    "description": {
+      "ua": "Означає місце, де закінчується стоянка таксі. Додатковий напис «Bagażowe» на знаку вказує, що знак стосується вантажних таксі.",
+      "en": "Marks the place where the taxi stand ends. An additional “Bagażowe” inscription on the sign indicates that it applies to luggage taxis."
+    }
+  },
+  "D-21": {
+    "name": {
+      "ua": "Лікарня",
+      "en": "Hospital"
+    },
+    "description": {
+      "ua": "Інформує про те, що поблизу є лікарня. Водій повинен виявити особливу обережність через рух, який може відбуватися біля лікарні.",
+      "en": "Informs that a hospital is nearby. The driver should exercise particular caution because of traffic that may occur near the hospital."
+    }
+  },
+  "D-21a": {
+    "name": {
+      "ua": "Поліція",
+      "en": "Police"
+    },
+    "description": {
+      "ua": "Інформує про те, що поблизу є поліція.",
+      "en": "Informs that the police are nearby."
+    }
+  },
+  "D-22": {
+    "name": {
+      "ua": "Пункт першої допомоги",
+      "en": "First-aid station"
+    },
+    "description": {
+      "ua": "Інформує про місце, де є пункт першої допомоги або аптечка. Аптечки найчастіше розташовані в придорожніх будівлях.",
+      "en": "Informs about a place where there is a first-aid station or a first-aid kit. First-aid kits are most often located in roadside buildings."
+    }
+  },
+  "D-23": {
+    "name": {
+      "ua": "Заправна станція",
+      "en": "Filling station"
+    },
+    "description": {
+      "ua": "Інформує, що на відстані, зазначеній на знаку, є станція заправки пальним.",
+      "en": "Informs that a fuel filling station is located at the distance indicated on the sign."
+    }
+  },
+  "D-23a": {
+    "name": {
+      "ua": "Заправна станція лише з газом для транспортних засобів",
+      "en": "Filling station with vehicle gas only"
+    },
+    "description": {
+      "ua": "Інформує, що на відстані, зазначеній на знаку, є станція заправки газом.",
+      "en": "Informs that a gas filling station is located at the distance indicated on the sign."
+    }
+  },
+  "D-23b": {
+    "name": {
+      "ua": "Заправна станція з пунктом заряджання електромобілів",
+      "en": "Filling station with electric vehicle charging"
+    },
+    "description": {
+      "ua": "Знак D-23b «заправна станція з пунктом заряджання електромобілів» застосовують, щоб вказати заправну станцію, обладнану пунктом заряджання електромобілів. Якщо станція також продає газове паливо для транспортних засобів, у нижній частині знака можна розмістити напис із видом цього палива: «LPG», «CNG», «LNG», «водень (H2)».",
+      "en": "Sign D-23b “filling station with electric vehicle charging point” is used to indicate a filling station equipped with an electric vehicle charging point. If the station also sells gaseous fuel for vehicles, an inscription specifying the type of that fuel may be placed in the lower part of the sign: “LPG”, “CNG”, “LNG”, “hydrogen (H2)”."
+    }
+  },
+  "D-23c": {
+    "name": {
+      "ua": "Пункт заряджання електромобілів",
+      "en": "Electric vehicle charging point"
+    },
+    "description": {
+      "ua": "Знак D-23c «пункт заряджання електромобілів» застосовують, щоб вказати пункт заряджання електромобілів.",
+      "en": "Sign D-23c “electric vehicle charging point” is used to indicate an electric vehicle charging point."
+    }
+  },
+  "D-24": {
+    "name": {
+      "ua": "Телефон",
+      "en": "Telephone"
+    },
+    "description": {
+      "ua": "Інформує про телефон громадського користування поблизу.",
+      "en": "Informs about a nearby telephone intended for public use."
+    }
+  },
+  "D-25": {
+    "name": {
+      "ua": "Пошта",
+      "en": "Post office"
+    },
+    "description": {
+      "ua": "Інформує про поштове відділення, розташоване неподалік від знака.",
+      "en": "Informs about a post office located near the sign."
+    }
+  },
+  "D-26": {
+    "name": {
+      "ua": "Станція техобслуговування",
+      "en": "Vehicle service station"
+    },
+    "description": {
+      "ua": "Інформує, що поблизу є станція технічного обслуговування транспортних засобів.",
+      "en": "Informs that a vehicle service station is nearby."
+    }
+  },
+  "D-26a": {
+    "name": {
+      "ua": "Вулканізація",
+      "en": "Tire repair"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-26b": {
+    "name": {
+      "ua": "Мийка",
+      "en": "Car wash"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-26c": {
+    "name": {
+      "ua": "Громадський туалет",
+      "en": "Public toilet"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Напис BUS у нижній частині знака інформує про можливість спорожнення туалетів, встановлених у транспортних засобах.",
+      "en": "Informs about the facility indicated on the sign located by the road. A BUS inscription in the lower part of the sign informs that toilets installed in vehicles can be emptied there."
+    }
+  },
+  "D-26d": {
+    "name": {
+      "ua": "Душ",
+      "en": "Shower"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-27": {
+    "name": {
+      "ua": "Буфет або кав'ярня",
+      "en": "Snack bar or café"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-28": {
+    "name": {
+      "ua": "Ресторан",
+      "en": "Restaurant"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-29": {
+    "name": {
+      "ua": "Готель (мотель)",
+      "en": "Hotel (motel)"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-3": {
+    "name": {
+      "ua": "Дорога з одностороннім рухом",
+      "en": "One-way road"
+    },
+    "description": {
+      "ua": "Інформує про в'їзд на дорогу або проїзну частину з одним напрямком руху.",
+      "en": "Informs you that you are entering a road or roadway with one-way traffic."
+    }
+  },
+  "D-30": {
+    "name": {
+      "ua": "Кемпінг",
+      "en": "Campsite"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-31": {
+    "name": {
+      "ua": "Кемпінг з електричними підключеннями для житлових причепів",
+      "en": "Campsite with electric hook-ups for caravans"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-32": {
+    "name": {
+      "ua": "Місце для біваку",
+      "en": "Picnic / bivouac site"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-33": {
+    "name": {
+      "ua": "Молодіжний хостел",
+      "en": "Youth hostel"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-34": {
+    "name": {
+      "ua": "Пункт туристичної інформації",
+      "en": "Tourist information point"
+    },
+    "description": {
+      "ua": "Інформує про зазначений на знаку об'єкт, розташований біля дороги. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Informs about the facility indicated on the sign located by the road. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-34a": {
+    "name": {
+      "ua": "Радіоінформація про дорожній рух",
+      "en": "Traffic information radio"
+    },
+    "description": {
+      "ua": "Інформує про радіостанції, які повідомляють про умови дорожнього руху.",
+      "en": "Informs about radio stations that broadcast information on traffic conditions."
+    }
+  },
+  "D-35": {
+    "name": {
+      "ua": "Підземний пішохідний перехід",
+      "en": "Pedestrian underpass"
+    },
+    "description": {
+      "ua": "Інформує про можливість переходу пішоходів під проїзною частиною або над нею способом, зазначеним на знаку.",
+      "en": "Informs that pedestrians can cross under or over the roadway in the manner indicated on the sign."
+    }
+  },
+  "D-35a": {
+    "name": {
+      "ua": "Ескалатор униз",
+      "en": "Escalator down"
+    },
+    "description": {
+      "ua": "Інформує про можливість переходу пішоходів під проїзною частиною або над нею способом, зазначеним на знаку.",
+      "en": "Informs that pedestrians can cross under or over the roadway in the manner indicated on the sign."
+    }
+  },
+  "D-36": {
+    "name": {
+      "ua": "Надземний пішохідний перехід",
+      "en": "Pedestrian overpass"
+    },
+    "description": {
+      "ua": "Інформує про можливість переходу пішоходів під проїзною частиною або над нею способом, зазначеним на знаку.",
+      "en": "Informs that pedestrians can cross under or over the roadway in the manner indicated on the sign."
+    }
+  },
+  "D-36a": {
+    "name": {
+      "ua": "Ескалатор угору",
+      "en": "Escalator up"
+    },
+    "description": {
+      "ua": "Інформує про можливість переходу пішоходів під проїзною частиною або над нею способом, зазначеним на знаку.",
+      "en": "Informs that pedestrians can cross under or over the roadway in the manner indicated on the sign."
+    }
+  },
+  "D-37": {
+    "name": {
+      "ua": "Тунель",
+      "en": "Tunnel"
+    },
+    "description": {
+      "ua": "Означає в'їзд до тунелю. Наказує увімкнути на транспортному засобі ближнє світло фар.",
+      "en": "Marks entry into a tunnel. Requires dipped headlights (low beam) to be switched on."
+    }
+  },
+  "D-38": {
+    "name": {
+      "ua": "Кінець тунелю",
+      "en": "End of tunnel"
+    },
+    "description": {
+      "ua": "Означає виїзд із тунелю.",
+      "en": "Marks the exit from the tunnel."
+    }
+  },
+  "D-39": {
+    "name": {
+      "ua": "Дозволені швидкості",
+      "en": "Speed limits"
+    },
+    "description": {
+      "ua": "Інформує про дозволені швидкості.",
+      "en": "Informs about the applicable speed limits."
+    }
+  },
+  "D-39a": {
+    "name": {
+      "ua": "Дорожні збори",
+      "en": "Road tolls"
+    },
+    "description": {
+      "ua": "Знак D-39a «дорожні збори» інформує про дорожні збори за проїзд публічними дорогами на території Республіки Польща.",
+      "en": "Sign D-39a “road tolls” informs about road charges payable for using public roads in the territory of the Republic of Poland."
+    }
+  },
+  "D-40": {
+    "name": {
+      "ua": "Житлова зона",
+      "en": "Residential zone"
+    },
+    "description": {
+      "ua": "Цей знак означає в'їзд до житлової зони. Слід пам'ятати, що дозволена швидкість у житловій зоні становить 20 км/год.",
+      "en": "This sign marks entry into a residential zone. Remember that the speed limit in a residential zone is 20 km/h."
+    }
+  },
+  "D-41": {
+    "name": {
+      "ua": "Кінець житлової зони",
+      "en": "End of residential zone"
+    },
+    "description": {
+      "ua": "Означає виїзд із житлової зони. Знак може бути розміщений не лише праворуч від проїзної частини.",
+      "en": "Marks the exit from a residential zone. The sign may be placed somewhere other than on the right side of the roadway."
+    }
+  },
+  "D-42": {
+    "name": {
+      "ua": "Населений пункт",
+      "en": "Built-up area"
+    },
+    "description": {
+      "ua": "Означає в'їзд до населеного пункту (забудованої території).",
+      "en": "Marks entry into a built-up area."
+    }
+  },
+  "D-43": {
+    "name": {
+      "ua": "Кінець населеного пункту",
+      "en": "End of built-up area"
+    },
+    "description": {
+      "ua": "Означає виїзд із населеного пункту (забудованої території).",
+      "en": "Marks the exit from a built-up area."
+    }
+  },
+  "D-44": {
+    "name": {
+      "ua": "Зона платного паркування",
+      "en": "Paid parking zone"
+    },
+    "description": {
+      "ua": "Знак D-44 «зона платного паркування» означає в'їзд до зони, у якій за стоянку автотранспортного засобу стягується плата.",
+      "en": "Sign D-44 “paid parking zone” marks entry into a zone where a fee is charged for standing a motor vehicle."
+    }
+  },
+  "D-45": {
+    "name": {
+      "ua": "Кінець зони платного паркування",
+      "en": "End of paid parking zone"
+    },
+    "description": {
+      "ua": "Знак D-45 «кінець зони платного паркування» означає виїзд із зони платного паркування.",
+      "en": "Sign D-45 “end of paid parking zone” marks the exit from a paid parking zone."
+    }
+  },
+  "D-46": {
+    "name": {
+      "ua": "Внутрішня дорога",
+      "en": "Internal road"
+    },
+    "description": {
+      "ua": "Знак D-46 «внутрішня дорога» застосовують, щоб вказати в'їзд на внутрішню дорогу.",
+      "en": "Sign D-46 “internal road” is used to indicate entry onto an internal road."
+    }
+  },
+  "D-47": {
+    "name": {
+      "ua": "Кінець внутрішньої дороги",
+      "en": "End of internal road"
+    },
+    "description": {
+      "ua": "Знак D-47 «кінець внутрішньої дороги» застосовують, щоб вказати виїзд із внутрішньої дороги на публічну дорогу. Цей знак може бути розміщений ліворуч від проїзної частини, на зворотному боці знака D-46.",
+      "en": "Sign D-47 “end of internal road” is used to indicate the exit from an internal road onto a public road. This sign may be placed on the left side of the roadway, on the reverse of sign D-46."
+    }
+  },
+  "D-48": {
+    "name": {
+      "ua": "Зміна першості",
+      "en": "Change of priority"
+    },
+    "description": {
+      "ua": "Попереджає про майбутню або нещодавно запроваджену зміну чинних досі правил першості на найближчому перехресті.",
+      "en": "Warns of an upcoming or recently introduced change to the priority rules previously in force at the nearest intersection."
+    }
+  },
+  "D-49": {
+    "name": {
+      "ua": "Стягнення плати",
+      "en": "Toll collection"
+    },
+    "description": {
+      "ua": "Попереджає про місце, де стягують плату за проїзд.",
+      "en": "Warns of a place where a toll is collected for passage."
+    }
+  },
+  "D-4a": {
+    "name": {
+      "ua": "Дорога без наскрізного проїзду",
+      "en": "No through road"
+    },
+    "description": {
+      "ua": "Означає початок дороги без наскрізного проїзду.",
+      "en": "Marks the beginning of a road with no through passage."
+    }
+  },
+  "D-4b": {
+    "name": {
+      "ua": "В'їзд на дорогу без наскрізного проїзду",
+      "en": "Entry onto a no-through road"
+    },
+    "description": {
+      "ua": "Означає, що дорога за перехрестям з боку, зазначеного на знаку, є дорогою без наскрізного проїзду.",
+      "en": "Means that the road after the intersection on the side indicated on the sign is a no-through road."
+    }
+  },
+  "D-5": {
+    "name": {
+      "ua": "Першість на звуженій ділянці проїзної частини",
+      "en": "Priority on a narrowed section of roadway"
+    },
+    "description": {
+      "ua": "Означає, що водії проїжджають або пішоходи переходять перед тими, хто наближається з протилежного напрямку.",
+      "en": "Means that drivers pass, or pedestrians cross, ahead of those approaching from the opposite direction."
+    }
+  },
+  "D-50": {
+    "name": {
+      "ua": "Кишеня",
+      "en": "Emergency bay"
+    },
+    "description": {
+      "ua": "Знак інформує про кишеню (зупинкову нішу) в тунелі.",
+      "en": "The sign informs about a lay-by (emergency bay) in a tunnel."
+    }
+  },
+  "D-51": {
+    "name": {
+      "ua": "Автоматичний контроль швидкості",
+      "en": "Automatic speed control"
+    },
+    "description": {
+      "ua": "Знак D-51 «автоматичний контроль швидкості» застосовують, щоб поінформувати водіїв про розташування пристроїв, що автоматично контролюють і реєструють швидкість руху транспортних засобів.",
+      "en": "Sign D-51 “automatic speed control” is used to inform drivers of the location of automatically operating devices that monitor and record vehicle speed."
+    }
+  },
+  "D-51aa": {
+    "name": {
+      "ua": "Початок зони вимірювання середньої швидкості",
+      "en": "Beginning of average-speed control zone"
+    },
+    "description": {
+      "ua": "Початок зони вимірювання середньої швидкості; «автоматичний контроль середньої швидкості» попереджає про початок ділянки дороги, на якій середня швидкість руху контролюється і реєструється стаціонарним реєструвальним пристроєм.",
+      "en": "Beginning of an average-speed measurement zone; “automatic average-speed control” warns of the start of a road section where average driving speed is monitored and recorded by a stationary recording device."
+    }
+  },
+  "D-51ab": {
+    "name": {
+      "ua": "Початок зони вимірювання середньої швидкості",
+      "en": "Beginning of average-speed control zone"
+    },
+    "description": {
+      "ua": "Початок зони вимірювання середньої швидкості; «автоматичний контроль середньої швидкості» попереджає про початок ділянки дороги, на якій середня швидкість руху контролюється і реєструється стаціонарним реєструвальним пристроєм.",
+      "en": "Beginning of an average-speed measurement zone; “automatic average-speed control” warns of the start of a road section where average driving speed is monitored and recorded by a stationary recording device."
+    }
+  },
+  "D-51b": {
+    "name": {
+      "ua": "Кінець зони вимірювання середньої швидкості",
+      "en": "End of average-speed control zone"
+    },
+    "description": {
+      "ua": "Кінець зони вимірювання середньої швидкості; інформує про кінець ділянки дороги, на якій середня швидкість руху контролюється і реєструється стаціонарним реєструвальним пристроєм.",
+      "en": "End of an average-speed measurement zone; informs of the end of a road section where average driving speed is monitored and recorded by a stationary recording device."
+    }
+  },
+  "D-52": {
+    "name": {
+      "ua": "Зона руху",
+      "en": "Traffic zone"
+    },
+    "description": {
+      "ua": "Знак D-52 «зона руху» застосовують для позначення встановленої зони руху. Цей знак розміщують на всіх в'їздах до зони руху.",
+      "en": "Sign D-52 “traffic zone” is used to mark an established traffic zone. This sign is placed at all entries to the traffic zone."
+    }
+  },
+  "D-53": {
+    "name": {
+      "ua": "Кінець зони руху",
+      "en": "End of traffic zone"
+    },
+    "description": {
+      "ua": "Знак D-53 «кінець зони руху» застосовують, щоб вказати виїзд із внутрішньої дороги, розташованої в зоні руху.",
+      "en": "Sign D-53 “end of traffic zone” is used to indicate the exit from an internal road located in a traffic zone."
+    }
+  },
+  "D-54": {
+    "name": {
+      "ua": "Зона чистого транспорту",
+      "en": "Clean transport zone"
+    },
+    "description": {
+      "ua": "Цей знак позначає зони чистого транспорту. Означає, що у визначених районах можуть рухатися лише електромобілі, транспортні засоби на водні та на природному газі (CNG). Знак має бути розміщений біля кожного в'їзду до зони чистого транспорту.",
+      "en": "This sign designates clean transport zones. It means that in the marked areas only electric cars, hydrogen-powered vehicles and vehicles running on natural gas (CNG) may travel. The sign should be placed at every entry to the clean transport zone."
+    }
+  },
+  "D-55": {
+    "name": {
+      "ua": "Кінець зони чистого транспорту",
+      "en": "End of clean transport zone"
+    },
+    "description": {
+      "ua": "Цей знак позначає виїзд із зони чистого транспорту. Знак має бути розміщений біля кожного виїзду із зони чистого транспорту.",
+      "en": "This sign marks the exit from a clean transport zone. The sign should be placed at every exit from the clean transport zone."
+    }
+  },
+  "D-6": {
+    "name": {
+      "ua": "Пішохідний перехід",
+      "en": "Pedestrian crossing"
+    },
+    "description": {
+      "ua": "Інформує про місце, призначене для переходу пішоходів через проїзну частину або трамвайні колії. Поверхня пішохідного переходу може бути позначена горизонтальним дорожнім знаком «Пішохідний перехід» або двома лініями впоперек проїзної частини.",
+      "en": "Informs about a place intended for pedestrians to cross the roadway or tram tracks. The surface of the pedestrian crossing may be marked with the horizontal road marking Pedestrian crossing or with two lines across the roadway."
+    }
+  },
+  "D-6a": {
+    "name": {
+      "ua": "Велосипедний проїзд",
+      "en": "Cycle crossing"
+    },
+    "description": {
+      "ua": "Означає місце, призначене для проїзду велосипедистів упоперек дороги.",
+      "en": "Marks a place intended for cyclists to cross the road."
+    }
+  },
+  "D-6b": {
+    "name": {
+      "ua": "Пішохідний перехід і проїзд для велосипедистів",
+      "en": "Pedestrian crossing and cycle crossing"
+    },
+    "description": {
+      "ua": "Означає місце, призначене для переходу пішоходів і проїзду велосипедистів через проїзну частину.",
+      "en": "Marks a place intended for pedestrians to cross and cyclists to ride across the roadway."
+    }
+  },
+  "D-7": {
+    "name": {
+      "ua": "Швидкісна дорога",
+      "en": "Expressway"
+    },
+    "description": {
+      "ua": "Цей знак означає в'їзд на швидкісну дорогу. Ця дорога призначена лише для руху автотранспортних засобів.",
+      "en": "This sign marks entry onto an expressway. This road is intended only for motor-vehicle traffic."
+    }
+  },
+  "D-8": {
+    "name": {
+      "ua": "Кінець швидкісної дороги",
+      "en": "End of expressway"
+    },
+    "description": {
+      "ua": "Означає місце, де закінчується швидкісна дорога. Під знаком може бути розміщена табличка з відстанню до місця, де дорога закінчується.",
+      "en": "Marks the place where the expressway ends. A plate giving the distance to the point where the road ends may be placed under the sign."
+    }
+  },
+  "D-9": {
+    "name": {
+      "ua": "Автомагістраль",
+      "en": "Motorway"
+    },
+    "description": {
+      "ua": "Цей знак інформує водія про в'їзд на автомагістраль. Автомагістраллю можуть рухатися лише автотранспортні засоби, які на рівній дорозі можуть розвинути швидкість щонайменше 40 км/год, у тому числі під час буксирування причепа.",
+      "en": "This sign informs the driver of entry onto a motorway. Only motor vehicles that can reach a speed of at least 40 km/h on a level road may use the motorway, including when towing a trailer."
+    }
+  },
+  "E-1": {
+    "name": {
+      "ua": "Попередня таблиця напрямків",
+      "en": "Advance direction sign"
+    },
+    "description": {
+      "ua": "Попереджає про перехрестя. Зразки інших знаків, розміщені на цьому знаку, інформують про наявність цих знаків на дорогах, зазначених на знаку.",
+      "en": "Warns of an intersection. Diagrams of other signs shown on this sign indicate that those signs occur on the roads indicated on the sign."
+    }
+  },
+  "E-10": {
+    "name": {
+      "ua": "Покажчик до пам'ятки культури",
+      "en": "Direction sign to a cultural heritage site"
+    },
+    "description": {
+      "ua": "Вказує напрямок до пам'ятки як об'єкта культурної спадщини.",
+      "en": "Indicates the direction to a historic monument as a cultural heritage site."
+    }
+  },
+  "E-11": {
+    "name": {
+      "ua": "Покажчик до пам'ятки природи",
+      "en": "Direction sign to a natural monument"
+    },
+    "description": {
+      "ua": "Вказує напрямок до пам'ятки природи.",
+      "en": "Indicates the direction to a natural monument."
+    }
+  },
+  "E-12": {
+    "name": {
+      "ua": "Покажчик до оглядового майданчика",
+      "en": "Direction sign to a viewpoint"
+    },
+    "description": {
+      "ua": "Вказує напрямок до оглядового майданчика.",
+      "en": "Indicates the direction to a viewpoint."
+    }
+  },
+  "E-12a": {
+    "name": {
+      "ua": "Покажчик до велосипедного маршруту",
+      "en": "Direction sign to a cycle route"
+    },
+    "description": {
+      "ua": "Знак E-12a «покажчик до велосипедного маршруту» застосовують, щоб указати під'їзд до місця, де починається або проходить позначений туристичний маршрут для велосипедів.",
+      "en": "Sign E-12a “direction sign to a cycle route” is used to indicate the way to a place where a marked tourist cycle route starts or runs."
+    }
+  },
+  "E-13": {
+    "name": {
+      "ua": "Напрямкова таблиця",
+      "en": "Direction confirmation sign"
+    },
+    "description": {
+      "ua": "Напрямкова таблиця, що підтверджує напрямок руху.",
+      "en": "Direction confirmation sign."
+    }
+  },
+  "E-14": {
+    "name": {
+      "ua": "Таблиця дорожнього маршруту",
+      "en": "Route confirmation sign"
+    },
+    "description": {
+      "ua": "Вказує номер дороги та відстань до головних населених пунктів, розташованих уздовж цього дорожнього маршруту.",
+      "en": "Indicates the road number and the distance to the main localities along this route."
+    }
+  },
+  "E-14a": {
+    "name": {
+      "ua": "Таблиця дорожнього маршруту біля автостради",
+      "en": "Motorway route confirmation sign"
+    },
+    "description": {
+      "ua": "Вказує номер дороги та відстань до головних населених пунктів, розташованих уздовж цього дорожнього маршруту.",
+      "en": "Indicates the road number and the distance to the main localities along this route."
+    }
+  },
+  "E-15a": {
+    "name": {
+      "ua": "Номер національної дороги",
+      "en": "National road number"
+    },
+    "description": {
+      "ua": "Вказує номер і тип (категорію) дороги.",
+      "en": "Indicates the number and type (category) of the road."
+    }
+  },
+  "E-15b": {
+    "name": {
+      "ua": "Номер воєводської дороги",
+      "en": "Voivodeship road number"
+    },
+    "description": {
+      "ua": "Вказує номер і тип (категорію) дороги.",
+      "en": "Indicates the number and type (category) of the road."
+    }
+  },
+  "E-15c": {
+    "name": {
+      "ua": "Номер автостради",
+      "en": "Motorway number"
+    },
+    "description": {
+      "ua": "Вказує номер і тип (категорію) дороги.",
+      "en": "Indicates the number and type (category) of the road."
+    }
+  },
+  "E-15d": {
+    "name": {
+      "ua": "Номер швидкісної дороги",
+      "en": "Expressway number"
+    },
+    "description": {
+      "ua": "Знак E-15d «номер швидкісної дороги» застосовують, щоб указати трасу швидкісної дороги або в'їзд на неї.",
+      "en": "Sign E-15d “expressway number” is used to indicate the course of an expressway or an entry onto it."
+    }
+  },
+  "E-15e": {
+    "name": {
+      "ua": "Номер воєводської дороги з підвищеним допустимим навантаженням на вісь (до 10 т)",
+      "en": "Voivodeship road number with increased permitted axle load (up to 10 t)"
+    },
+    "description": {
+      "ua": "Знак E-15e «номер воєводської дороги з підвищеним до 10 т допустимим навантаженням на вісь» застосовують, щоб указати трасу або в'їзд на воєводську дорогу, на якій дозволено рух транспортних засобів із навантаженням на одну вісь не більше 10 т.",
+      "en": "Sign E-15e “voivodeship road number with increased permitted axle load of up to 10 t” is used to indicate the course of, or entry onto, a voivodeship road where vehicles with a single-axle load not exceeding 10 t are permitted."
+    }
+  },
+  "E-16": {
+    "name": {
+      "ua": "Номер міжнародного маршруту",
+      "en": "International route number"
+    },
+    "description": {
+      "ua": "Вказує номер і тип (категорію) дороги.",
+      "en": "Indicates the number and type (category) of the road."
+    }
+  },
+  "E-17a": {
+    "name": {
+      "ua": "Населений пункт",
+      "en": "Locality"
+    },
+    "description": {
+      "ua": "Позначає в'їзд до населеного пункту.",
+      "en": "Marks entry into a locality."
+    }
+  },
+  "E-17b": {
+    "name": {
+      "ua": "Таблиця населеного пункту",
+      "en": "Built-up area place-name sign"
+    },
+    "description": {
+      "ua": "Позначає в'їзд до населеного пункту, який є забудованою територією.",
+      "en": "Marks entry into a locality that constitutes a built-up area."
+    }
+  },
+  "E-18a": {
+    "name": {
+      "ua": "Кінець населеного пункту",
+      "en": "End of locality"
+    },
+    "description": {
+      "ua": "Позначає виїзд із населеного пункту.",
+      "en": "Marks exit from a locality."
+    }
+  },
+  "E-18b": {
+    "name": {
+      "ua": "Таблиця кінця населеного пункту",
+      "en": "End of built-up area place-name sign"
+    },
+    "description": {
+      "ua": "Позначає виїзд із населеного пункту, який є забудованою територією.",
+      "en": "Marks exit from a locality that constitutes a built-up area."
+    }
+  },
+  "E-19": {
+    "name": {
+      "ua": "Об'їзна дорога",
+      "en": "Bypass"
+    },
+    "description": {
+      "ua": "На перехресті вказує напрямок до об'їзної дороги міста.",
+      "en": "At an intersection, indicates the direction to the town bypass."
+    }
+  },
+  "E-1a": {
+    "name": {
+      "ua": "Попередня таблиця напрямків на автостраді",
+      "en": "Motorway advance direction sign"
+    },
+    "description": {
+      "ua": "Попереджає про з'їзд з автостради.",
+      "en": "Warns of a motorway exit."
+    }
+  },
+  "E-1b": {
+    "name": {
+      "ua": "Попередня таблиця напрямків перед в'їздом на автостраду",
+      "en": "Advance direction sign before motorway entry"
+    },
+    "description": {
+      "ua": "Попереджає про перехрестя з в'їздом на автостраду або з дорогою, що веде до автостради.",
+      "en": "Warns of an intersection with a motorway entry or with a road leading to a motorway."
+    }
+  },
+  "E-20": {
+    "name": {
+      "ua": "Таблиця дорожньої розв'язки на автостраді",
+      "en": "Motorway interchange sign"
+    },
+    "description": {
+      "ua": "Інформує про наближення до з'їзду з автостради.",
+      "en": "Informs that a motorway exit is approaching."
+    }
+  },
+  "E-21": {
+    "name": {
+      "ua": "Район (житловий масив)",
+      "en": "District (housing estate)"
+    },
+    "description": {
+      "ua": "Інформує про в'їзд до району міста, назва якого зазначена на таблиці.",
+      "en": "Informs of entry into a city district whose name is given on the sign."
+    }
+  },
+  "E-22a": {
+    "name": {
+      "ua": "Автомобільний туристичний маршрут",
+      "en": "Scenic driving route"
+    },
+    "description": {
+      "ua": "Вказує початок визначеного автомобільного туристичного маршруту.",
+      "en": "Indicates the start of a designated scenic driving route."
+    }
+  },
+  "E-22b": {
+    "name": {
+      "ua": "Об'єкт на автомобільному туристичному маршруті",
+      "en": "Site on a scenic driving route"
+    },
+    "description": {
+      "ua": "Вказує туристичний об'єкт на автомобільному туристичному маршруті.",
+      "en": "Indicates a tourist site on a scenic driving route."
+    }
+  },
+  "E-22c": {
+    "name": {
+      "ua": "Інформація про туристичні об'єкти",
+      "en": "Tourist attractions information"
+    },
+    "description": {
+      "ua": "Інформує про туристичні об'єкти на території, зазначеній на знаку.",
+      "en": "Informs about tourist attractions in the area indicated on the sign."
+    }
+  },
+  "E-2a": {
+    "name": {
+      "ua": "Табличний покажчик біля проїзної частини",
+      "en": "Direction signboard beside the carriageway"
+    },
+    "description": {
+      "ua": "На перехресті або безпосередньо перед ним вказує напрямки до населених пунктів або районів міст.",
+      "en": "At an intersection or immediately before it, indicates directions to localities or city districts."
+    }
+  },
+  "E-2b": {
+    "name": {
+      "ua": "Табличний покажчик над проїзною частиною",
+      "en": "Overhead direction signboard"
+    },
+    "description": {
+      "ua": "На перехресті або безпосередньо перед ним вказує напрямки до населених пунктів або районів міст.",
+      "en": "At an intersection or immediately before it, indicates directions to localities or city districts."
+    }
+  },
+  "E-2c": {
+    "name": {
+      "ua": "Табличний покажчик біля проїзної частини на автостраді",
+      "en": "Motorway direction signboard beside the carriageway"
+    },
+    "description": {
+      "ua": "На перехресті або безпосередньо перед ним вказує напрямки до населених пунктів або районів міст.",
+      "en": "At an intersection or immediately before it, indicates directions to localities or city districts."
+    }
+  },
+  "E-2d": {
+    "name": {
+      "ua": "Табличний покажчик над проїзною частиною на автостраді",
+      "en": "Overhead motorway direction signboard"
+    },
+    "description": {
+      "ua": "Табличний покажчик над проїзною частиною на автостраді.",
+      "en": "Overhead direction signboard on a motorway."
+    }
+  },
+  "E-2e": {
+    "name": {
+      "ua": "Табличний покажчик перед в'їздом на автостраду",
+      "en": "Direction signboard before motorway entry"
+    },
+    "description": {
+      "ua": "Табличний покажчик перед в'їздом на автостраду.",
+      "en": "Direction signboard before entry onto a motorway."
+    }
+  },
+  "E-2f": {
+    "name": {
+      "ua": "Табличний покажчик над проїзною частиною перед в'їздом на автостраду",
+      "en": "Overhead direction signboard before motorway entry"
+    },
+    "description": {
+      "ua": "Табличний покажчик, розміщений над проїзною частиною перед в'їздом на автостраду.",
+      "en": "Direction signboard placed above the carriageway before entry onto a motorway."
+    }
+  },
+  "E-3": {
+    "name": {
+      "ua": "Покажчик у формі стрілки до населеного пункту з номером дороги",
+      "en": "Arrow direction sign to a locality showing the road number"
+    },
+    "description": {
+      "ua": "Покажчик у формі стрілки до населеного пункту, який вказує номер дороги.",
+      "en": "Arrow-shaped direction sign to a locality showing the road number."
+    }
+  },
+  "E-4": {
+    "name": {
+      "ua": "Покажчик у формі стрілки до населеного пункту з відстанню",
+      "en": "Arrow direction sign to a locality showing the distance"
+    },
+    "description": {
+      "ua": "Покажчик у формі стрілки до населеного пункту, що вказує відстань до нього.",
+      "en": "Arrow-shaped direction sign to a locality showing the distance to it."
+    }
+  },
+  "E-5": {
+    "name": {
+      "ua": "Покажчик до району міста",
+      "en": "Direction sign to a city district"
+    },
+    "description": {
+      "ua": "Вказує напрямок до району міста.",
+      "en": "Indicates the direction to a city district."
+    }
+  },
+  "E-6": {
+    "name": {
+      "ua": "Покажчик до аеропорту",
+      "en": "Direction sign to an airport"
+    },
+    "description": {
+      "ua": "Вказує напрямок до аеропорту.",
+      "en": "Indicates the direction to an airport."
+    }
+  },
+  "E-6a": {
+    "name": {
+      "ua": "Покажчик до залізничного вокзалу або станції",
+      "en": "Direction sign to a railway station"
+    },
+    "description": {
+      "ua": "Вказує напрямок до залізничного вокзалу або станції.",
+      "en": "Indicates the direction to a railway station."
+    }
+  },
+  "E-6b": {
+    "name": {
+      "ua": "Покажчик до автовокзалу",
+      "en": "Direction sign to a bus station"
+    },
+    "description": {
+      "ua": "Вказує напрямок до автовокзалу.",
+      "en": "Indicates the direction to a bus station."
+    }
+  },
+  "E-6c": {
+    "name": {
+      "ua": "Покажчик до поромної пристані",
+      "en": "Direction sign to a ferry terminal"
+    },
+    "description": {
+      "ua": "Вказує напрямок до поромної пристані.",
+      "en": "Indicates the direction to a ferry terminal."
+    }
+  },
+  "E-7": {
+    "name": {
+      "ua": "Покажчик до водної пристані або судноплавства",
+      "en": "Direction sign to a harbour or waterway"
+    },
+    "description": {
+      "ua": "Вказує напрямок до водної пристані або судноплавства.",
+      "en": "Indicates the direction to a water harbour or shipping facility."
+    }
+  },
+  "E-8": {
+    "name": {
+      "ua": "Покажчик до пляжу або місця купання",
+      "en": "Direction sign to a beach or bathing area"
+    },
+    "description": {
+      "ua": "Вказує напрямок до пляжу або місця купання.",
+      "en": "Indicates the direction to a beach or bathing area."
+    }
+  },
+  "E-9": {
+    "name": {
+      "ua": "Покажчик до музею",
+      "en": "Direction sign to a museum"
+    },
+    "description": {
+      "ua": "Вказує напрямок до музею.",
+      "en": "Indicates the direction to a museum."
+    }
+  },
+  "F-1": {
+    "name": {
+      "ua": "Прикордонний перехід",
+      "en": "Border crossing"
+    },
+    "description": {
+      "ua": "Інформує про діючий прикордонний перехід.",
+      "en": "Informs of an open border crossing."
+    }
+  },
+  "F-10": {
+    "name": {
+      "ua": "Напрямки на смугах руху",
+      "en": "Lane directions"
+    },
+    "description": {
+      "ua": "Цей знак показує напрямки, у яких можна проїхати перехрестя з відповідних смуг руху.",
+      "en": "This sign shows the directions in which you may proceed through the intersection from the respective lanes."
+    }
+  },
+  "F-11": {
+    "name": {
+      "ua": "Напрямки на смузі руху",
+      "en": "Directions from a lane"
+    },
+    "description": {
+      "ua": "Вказує дозволені, відповідно до стрілок на знаку, напрямки руху зі смуги, над якою розміщено знак.",
+      "en": "Indicates the permitted directions of travel, according to the arrows on the sign, from the lane over which the sign is placed."
+    }
+  },
+  "F-11d": {
+    "name": {
+      "ua": "Напрямки на смузі руху",
+      "en": "Directions from a lane"
+    },
+    "description": {
+      "ua": "Вказує дозволені, відповідно до стрілок на знаку, напрямки руху зі смуги, над якою розміщено знак.",
+      "en": "Indicates the permitted directions of travel, according to the arrows on the sign, from the lane over which the sign is placed."
+    }
+  },
+  "F-12": {
+    "name": {
+      "ua": "Знак транзитного проїзду перед перехрестям",
+      "en": "Through-traffic sign before an intersection"
+    },
+    "description": {
+      "ua": "Відповідно до стрілки вказує напрямок транзитного проїзду транспортних засобів, зазначених символом на знаку.",
+      "en": "According to the arrow, indicates the through-traffic route for vehicles shown by the vehicle symbol on the sign."
+    }
+  },
+  "F-12a": {
+    "name": {
+      "ua": "Знак транзитного проїзду перед перехрестям",
+      "en": "Through-traffic sign before an intersection"
+    },
+    "description": {
+      "ua": "Відповідно до стрілки вказує напрямок транзитного проїзду транспортних засобів, зазначених символом на знаку.",
+      "en": "According to the arrow, indicates the through-traffic route for vehicles shown by the vehicle symbol on the sign."
+    }
+  },
+  "F-13": {
+    "name": {
+      "ua": "Транзитний проїзд",
+      "en": "Through traffic"
+    },
+    "description": {
+      "ua": "Відповідно до стрілки вказує напрямок транзитного проїзду транспортних засобів, зазначених символом на знаку.",
+      "en": "According to the arrow, indicates the through-traffic route for vehicles shown by the vehicle symbol on the sign."
+    }
+  },
+  "F-13a": {
+    "name": {
+      "ua": "Транзитний проїзд",
+      "en": "Through traffic"
+    },
+    "description": {
+      "ua": "Відповідно до стрілки вказує напрямок транзитного проїзду транспортних засобів, зазначених символом на знаку.",
+      "en": "According to the arrow, indicates the through-traffic route for vehicles shown by the vehicle symbol on the sign."
+    }
+  },
+  "F-14a": {
+    "name": {
+      "ua": "Вказівні таблиці на автостраді",
+      "en": "Motorway countdown markers"
+    },
+    "description": {
+      "ua": "Інформує про наближення до початку смуги, що веде до з'їзду з автостради (смуги гальмування).",
+      "en": "Informs that the start of the lane leading to a motorway exit (deceleration lane) is approaching."
+    }
+  },
+  "F-14b": {
+    "name": {
+      "ua": "Вказівні таблиці на автостраді",
+      "en": "Motorway countdown markers"
+    },
+    "description": {
+      "ua": "Інформує про наближення до початку смуги, що веде до з'їзду з автостради (смуги гальмування).",
+      "en": "Informs that the start of the lane leading to a motorway exit (deceleration lane) is approaching."
+    }
+  },
+  "F-14c": {
+    "name": {
+      "ua": "Вказівні таблиці на автостраді",
+      "en": "Motorway countdown markers"
+    },
+    "description": {
+      "ua": "Інформує про наближення до початку смуги, що веде до з'їзду з автостради (смуги гальмування).",
+      "en": "Informs that the start of the lane leading to a motorway exit (deceleration lane) is approaching."
+    }
+  },
+  "F-15": {
+    "name": {
+      "ua": "Несиметричний поділ проїзної частини для протилежних напрямків руху",
+      "en": "Asymmetric carriageway allocation for opposite directions"
+    },
+    "description": {
+      "ua": "Вказує смуги руху, призначені для руху в зазначених напрямках.",
+      "en": "Indicates the lanes intended for travel in the given directions."
+    }
+  },
+  "F-15a": {
+    "name": {
+      "ua": "Несиметричний поділ проїзної частини для протилежних напрямків руху",
+      "en": "Asymmetric carriageway allocation for opposite directions"
+    },
+    "description": {
+      "ua": "Вказує смуги руху, призначені для руху в зазначених напрямках.",
+      "en": "Indicates the lanes intended for travel in the given directions."
+    }
+  },
+  "F-16": {
+    "name": {
+      "ua": "Кінець смуги руху на двосторонній проїзній частині",
+      "en": "End of lane on a two-way carriageway"
+    },
+    "description": {
+      "ua": "Попереджає про кінець внутрішньої смуги руху на проїзній частині.",
+      "en": "Warns of the end of an inner lane on the carriageway."
+    }
+  },
+  "F-17": {
+    "name": {
+      "ua": "Кінець смуги руху на односторонній проїзній частині",
+      "en": "End of lane on a one-way carriageway"
+    },
+    "description": {
+      "ua": "Попереджає про кінець внутрішньої смуги руху на проїзній частині, зазначеній на знаку.",
+      "en": "Warns of the end of an inner lane on the carriageway indicated on the sign."
+    }
+  },
+  "F-18": {
+    "name": {
+      "ua": "Зустрічний напрямок для певних транспортних засобів",
+      "en": "Opposite direction for specified vehicles"
+    },
+    "description": {
+      "ua": "Вказує ліву смугу руху, призначену лише для транспортних засобів, зазначених на знаку.",
+      "en": "Indicates the left lane reserved only for the vehicles specified on the sign."
+    }
+  },
+  "F-19": {
+    "name": {
+      "ua": "Смуга руху для певних транспортних засобів",
+      "en": "Lane for specified vehicles"
+    },
+    "description": {
+      "ua": "Вказує виділену на проїзній частині смугу руху для транспортних засобів, зазначених на знаку.",
+      "en": "Indicates a lane marked on the carriageway reserved for the vehicles shown on the sign."
+    }
+  },
+  "F-2": {
+    "name": {
+      "ua": "Перетин кордону заборонено",
+      "en": "Border crossing prohibited"
+    },
+    "description": {
+      "ua": "Інформує, що рух через кордон закрито.",
+      "en": "Informs that traffic across the border is closed."
+    }
+  },
+  "F-20": {
+    "name": {
+      "ua": "Частина дороги (смуга руху) для певних транспортних засобів",
+      "en": "Road section (lane) for specified vehicles"
+    },
+    "description": {
+      "ua": "Вказує дорогу або її частину, призначену для транспортних засобів, символ яких розміщено на знаку.",
+      "en": "Indicates a road or part of a road reserved for the vehicles whose symbol is shown on the sign."
+    }
+  },
+  "F-21": {
+    "name": {
+      "ua": "Рух спрямовано на сусідню проїзну частину",
+      "en": "Traffic diverted onto the adjacent carriageway"
+    },
+    "description": {
+      "ua": "Вказує з'їзд на сусідню проїзну частину у зв'язку з тимчасовою організацією руху.",
+      "en": "Indicates a move onto the adjacent carriageway due to a temporary traffic arrangement."
+    }
+  },
+  "F-22": {
+    "name": {
+      "ua": "Обмеження на смузі руху",
+      "en": "Restrictions on a lane"
+    },
+    "description": {
+      "ua": "Вказує смугу руху, на якій заборонено рух транспортних засобів, зазначених символом знака заборони.",
+      "en": "Indicates a lane on which traffic of the vehicles specified by the prohibitory sign symbol is forbidden."
+    }
+  },
+  "F-23": {
+    "name": {
+      "ua": "Середня багатофункціональна смуга",
+      "en": "Central two-way left-turn lane"
+    },
+    "description": {
+      "ua": "Знак F-23 «середня багатофункціональна смуга» вказує середню смугу проїзної частини, призначену для маневрів в обох напрямках.",
+      "en": "Sign F-23 “central two-way left-turn lane” marks the centre lane used for manoeuvres in both directions."
+    }
+  },
+  "F-24": {
+    "name": {
+      "ua": "Неправильний напрямок",
+      "en": "Wrong way"
+    },
+    "description": {
+      "ua": "Знак F-24 «неправильний напрямок» попереджає про в'їзд на проїзну частину або смугу проти дозволеного напрямку руху.",
+      "en": "Sign F-24 “wrong way” warns that you are entering a carriageway or lane against the permitted direction of traffic."
+    }
+  },
+  "F-2a": {
+    "name": {
+      "ua": "Державний кордон",
+      "en": "National border"
+    },
+    "description": {
+      "ua": "Знак F-2a «державний кордон» інформує про місце перетину кордону Республіки Польща.",
+      "en": "Sign F-2a “national border” informs of the point where the border of the Republic of Poland is crossed."
+    }
+  },
+  "F-3": {
+    "name": {
+      "ua": "Межа адміністративної території",
+      "en": "Administrative boundary"
+    },
+    "description": {
+      "ua": "Інформує про межу адміністративної території.",
+      "en": "Informs of an administrative boundary."
+    }
+  },
+  "F-3a": {
+    "name": {
+      "ua": "Межа адміністративної території — на межі повіту",
+      "en": "Administrative boundary — county boundary"
+    },
+    "description": {
+      "ua": "Інформує про межу адміністративної території на межі повіту.",
+      "en": "Informs of an administrative boundary at a county boundary."
+    }
+  },
+  "F-3b": {
+    "name": {
+      "ua": "Межа адміністративної території — на межі ґміни",
+      "en": "Administrative boundary — municipality boundary"
+    },
+    "description": {
+      "ua": "Інформує про межу адміністративної території на межі ґміни.",
+      "en": "Informs of an administrative boundary at a municipality boundary."
+    }
+  },
+  "F-3c": {
+    "name": {
+      "ua": "Межа адміністративної території — місто на правах повіту",
+      "en": "Administrative boundary — city with county rights"
+    },
+    "description": {
+      "ua": "Інформує про межу адміністративної території міста на правах повіту.",
+      "en": "Informs of the administrative boundary of a city with county rights."
+    }
+  },
+  "F-4": {
+    "name": {
+      "ua": "Назва річки",
+      "en": "River name"
+    },
+    "description": {
+      "ua": "Подає назву річки або іншого водотоку, над яким проходить дорога.",
+      "en": "Gives the name of the river or other watercourse that the road crosses."
+    }
+  },
+  "F-5": {
+    "name": {
+      "ua": "Попередження про заборону",
+      "en": "Advance warning of a prohibition"
+    },
+    "description": {
+      "ua": "Попереджає про знак заборони, розміщений на дорозі на відстані, зазначеній на знаку.",
+      "en": "Warns of a prohibitory sign placed on the road at the distance shown on the sign."
+    }
+  },
+  "F-6": {
+    "name": {
+      "ua": "Попереджувальний знак перед перехрестям",
+      "en": "Advance warning sign before an intersection"
+    },
+    "description": {
+      "ua": "Попереджає про небезпеку або заборону, зазначену на ньому відповідним знаком, що є за перехрестям на вказаній дорозі.",
+      "en": "Warns of a hazard or prohibition, shown on it by the relevant sign, that occurs after the intersection on the indicated road."
+    }
+  },
+  "F-6a": {
+    "name": {
+      "ua": "Попереджувальний знак перед перехрестям",
+      "en": "Advance warning sign before an intersection"
+    },
+    "description": {
+      "ua": "Попереджає про небезпеку або заборону, зазначену на ньому відповідним знаком, що є за перехрестям на вказаній дорозі.",
+      "en": "Warns of a hazard or prohibition, shown on it by the relevant sign, that occurs after the intersection on the indicated road."
+    }
+  },
+  "F-7": {
+    "name": {
+      "ua": "Схема проїзду у зв'язку із забороною лівого повороту",
+      "en": "Recommended route where left turn is prohibited"
+    },
+    "description": {
+      "ua": "Вказує під'їзд до дороги, на яку заборонено повертати ліворуч.",
+      "en": "Indicates how to reach a road onto which a left turn is prohibited."
+    }
+  },
+  "F-8": {
+    "name": {
+      "ua": "Об'їзд у зв'язку із закриттям дороги",
+      "en": "Diversion due to road closure"
+    },
+    "description": {
+      "ua": "Цей знак розміщують на дорозі, частина якої закрита для дорожнього руху. Він вказує маршрут найближчого зручного об'їзду цієї ділянки.",
+      "en": "This sign is placed on a road of which a section is closed to traffic. It indicates the nearest convenient diversion around that section."
+    }
+  },
+  "F-9": {
+    "name": {
+      "ua": "Напрямний знак на об'їзній дорозі",
+      "en": "Diversion route direction sign"
+    },
+    "description": {
+      "ua": "Вказує напрямок руху транспортних засобів на визначеному об'їзді.",
+      "en": "Indicates the direction of traffic on a designated diversion."
+    }
+  },
+  "G-1a": {
+    "name": {
+      "ua": "Вказівний стовпчик із трьома рисками праворуч",
+      "en": "Approach marker with three bars, right side"
+    },
+    "description": {
+      "ua": "Повідомляє про наближення до залізничного переїзду. Три риски, праворуч від проїзної частини — зазвичай близько 240 м до переїзду.",
+      "en": "Warns that you are approaching a railway crossing. Three bars on the right-hand side of the carriageway — usually about 240 m before the crossing."
+    }
+  },
+  "G-1b": {
+    "name": {
+      "ua": "Вказівний стовпчик із двома рисками праворуч",
+      "en": "Approach marker with two bars, right side"
+    },
+    "description": {
+      "ua": "Повідомляє про наближення до залізничного переїзду. Дві риски, праворуч від проїзної частини — зазвичай близько 160 м до переїзду.",
+      "en": "Warns that you are approaching a railway crossing. Two bars on the right-hand side of the carriageway — usually about 160 m before the crossing."
+    }
+  },
+  "G-1c": {
+    "name": {
+      "ua": "Вказівний стовпчик з однією рискою праворуч",
+      "en": "Approach marker with one bar, right side"
+    },
+    "description": {
+      "ua": "Повідомляє про наближення до залізничного переїзду. Одна риска, праворуч від проїзної частини — зазвичай близько 80 м до переїзду.",
+      "en": "Warns that you are approaching a railway crossing. One bar on the right-hand side of the carriageway — usually about 80 m before the crossing."
+    }
+  },
+  "G-1d": {
+    "name": {
+      "ua": "Вказівний стовпчик із трьома рисками ліворуч",
+      "en": "Approach marker with three bars, left side"
+    },
+    "description": {
+      "ua": "Повідомляє про наближення до залізничного переїзду. Три риски, ліворуч від проїзної частини — зазвичай близько 240 м до переїзду.",
+      "en": "Warns that you are approaching a railway crossing. Three bars on the left-hand side of the carriageway — usually about 240 m before the crossing."
+    }
+  },
+  "G-1e": {
+    "name": {
+      "ua": "Вказівний стовпчик із двома рисками ліворуч",
+      "en": "Approach marker with two bars, left side"
+    },
+    "description": {
+      "ua": "Повідомляє про наближення до залізничного переїзду. Дві риски, ліворуч від проїзної частини — зазвичай близько 160 м до переїзду.",
+      "en": "Warns that you are approaching a railway crossing. Two bars on the left-hand side of the carriageway — usually about 160 m before the crossing."
+    }
+  },
+  "G-1f": {
+    "name": {
+      "ua": "Вказівний стовпчик з однією рискою ліворуч",
+      "en": "Approach marker with one bar, left side"
+    },
+    "description": {
+      "ua": "Повідомляє про наближення до залізничного переїзду. Одна риска, ліворуч від проїзної частини — зазвичай близько 80 м до переїзду.",
+      "en": "Warns that you are approaching a railway crossing. One bar on the left-hand side of the carriageway — usually about 80 m before the crossing."
+    }
+  },
+  "G-2": {
+    "name": {
+      "ua": "Контактна мережа під напругою",
+      "en": "Live overhead line"
+    },
+    "description": {
+      "ua": "Знак означає, що над залізничним переїздом підвішено контактну мережу під напругою.",
+      "en": "The sign means a live overhead contact line is suspended above the railway crossing."
+    }
+  },
+  "G-3": {
+    "name": {
+      "ua": "Андріївський хрест перед одноколійним переїздом",
+      "en": "St Andrew's Cross before a single-track crossing"
+    },
+    "description": {
+      "ua": "Позначає місце зупинки через рух поїзда чи іншого рейкового транспорту на залізничному переїзді без шлагбаумів і напівшлагбаумів. Один хрест — одна колія.",
+      "en": "Marks the stopping place because of a train or other rail vehicle at a railway crossing with no barriers or half-barriers. One cross means a single track."
+    }
+  },
+  "G-4": {
+    "name": {
+      "ua": "Андріївський хрест перед багатоколійним переїздом",
+      "en": "St Andrew's Cross before a multi-track crossing"
+    },
+    "description": {
+      "ua": "Позначає місце зупинки через рух поїзда чи іншого рейкового транспорту на переїзді без шлагбаумів і напівшлагбаумів. Додатково повідомляє, що на переїзді більше ніж одна колія.",
+      "en": "Marks the stopping place because of a train or other rail vehicle at a crossing with no barriers or half-barriers. It also tells you there is more than one track."
+    }
+  },
+  "P-1": {
+    "name": {
+      "ua": "Одинарна переривчаста лінія",
+      "en": "Single broken line"
+    },
+    "description": {
+      "ua": "Одинарна переривчаста лінія, у якій штрихи коротші за проміжки або рівні їм, позначає смуги руху. Її можна перетинати, якщо це безпечно. Лінія подвійної ширини з рівними штрихами і проміжками додатково означає смугу тихохідного руху, смугу, що закінчується, або смугу лише для виїзду на іншу дорогу чи проїзну частину.",
+      "en": "A single broken line with dashes shorter than or equal to the gaps marks lanes. You may cross it if it is safe. A double-width version with equal dashes and gaps also marks a slow lane, a lane that is ending, or a lane only for leaving onto another road or carriageway."
+    }
+  },
+  "P-10": {
+    "name": {
+      "ua": "Пішохідний перехід",
+      "en": "Pedestrian crossing"
+    },
+    "description": {
+      "ua": "Розмітка позначає місце пішохідного переходу на проїзній частині.",
+      "en": "Marking showing where pedestrians may cross the carriageway."
+    }
+  },
+  "P-11": {
+    "name": {
+      "ua": "Переїзд для велосипедистів",
+      "en": "Cyclist crossing"
+    },
+    "description": {
+      "ua": "Розмітка позначає місце переїзду для велосипедистів через проїзну частину.",
+      "en": "Marking showing where cyclists may cross the carriageway."
+    }
+  },
+  "P-12": {
+    "name": {
+      "ua": "Лінія обов'язкової зупинки — STOP",
+      "en": "Stop line — STOP"
+    },
+    "description": {
+      "ua": "Лінія обов'язкової зупинки показує місце зупинки транспортного засобу у зв'язку зі знаками B-20 (STOP) або B-32 (стій — митний контроль).",
+      "en": "An absolute stop line showing where to stop for vertical signs B-20 (STOP) or B-32 (stop — customs control)."
+    }
+  },
+  "P-13": {
+    "name": {
+      "ua": "Лінія умовної зупинки з трикутників",
+      "en": "Yield line of triangles"
+    },
+    "description": {
+      "ua": "Лінія з трикутників показує місце зупинки, щоб поступитися дорогою згідно зі знаком A-7.",
+      "en": "A line of triangles showing where to stop in order to give way, matching vertical sign A-7."
+    }
+  },
+  "P-14": {
+    "name": {
+      "ua": "Лінія умовної зупинки з прямокутників",
+      "en": "Conditional stop line of rectangles"
+    },
+    "description": {
+      "ua": "Лінія з прямокутників показує місце зупинки на в'їздах рівнозначних доріг, перед пішохідним переходом, трамвайними зупинками без острівців, трамвайними та залізничними переїздами, переїздом для велосипедистів, велошлюзом і перед світлофором. Обов'язок зупинятися в цьому місці не стосується велосипедиста, який в'їжджає у велошлюз.",
+      "en": "A line of rectangles showing where to stop at equal-priority entries, before a pedestrian crossing, tram stops without islands, tram and railway crossings, a cyclist crossing, a bike box, and before traffic lights. This stop duty does not apply to a cyclist entering a bike box."
+    }
+  },
+  "P-15": {
+    "name": {
+      "ua": "Трикутник «поступися дорогою»",
+      "en": "Give-way triangle"
+    },
+    "description": {
+      "ua": "Трикутник на покритті підтверджує, що в'їзд на перехрестя позначено знаком A-7 (поступитися дорогою).",
+      "en": "A triangle painted on the road confirming that the junction entry is signed with A-7 (give way)."
+    }
+  },
+  "P-16": {
+    "name": {
+      "ua": "Напис STOP",
+      "en": "STOP inscription"
+    },
+    "description": {
+      "ua": "Напис STOP на покритті підтверджує, що в'їзд на перехрестя позначено знаком B-20.",
+      "en": "The word STOP painted on the road confirming that the junction entry is signed with B-20."
+    }
+  },
+  "P-17": {
+    "name": {
+      "ua": "Лінія зупинки громадського транспорту",
+      "en": "Public-transport stop line"
+    },
+    "description": {
+      "ua": "Лінія зупинки позначає на проїзній частині місце зупинки автобусів, тролейбусів чи трамваїв. Іншим транспортним засобам заборонено зупинятися на всій довжині цієї лінії.",
+      "en": "A stop line marking a bus, trolleybus or tram stop on the carriageway. Other vehicles must not stop along the whole length of this line."
+    }
+  },
+  "P-18": {
+    "name": {
+      "ua": "Паркувальне місце",
+      "en": "Parking bay"
+    },
+    "description": {
+      "ua": "Розмітка позначає місце, призначене для стоянки транспортних засобів.",
+      "en": "Marking that sets out a space intended for parking vehicles."
+    }
+  },
+  "P-19": {
+    "name": {
+      "ua": "Лінія паркувальної смуги",
+      "en": "Parking-lane line"
+    },
+    "description": {
+      "ua": "Лінія позначає смугу для стоянки вздовж краю проїзної частини або відокремлює від неї паркувальну кишеню.",
+      "en": "A line marking a parking lane along the carriageway edge or separating a parking lay-by from it."
+    }
+  },
+  "P-2": {
+    "name": {
+      "ua": "Одинарна суцільна лінія",
+      "en": "Single solid line"
+    },
+    "description": {
+      "ua": "Одинарна суцільна лінія розділяє смуги одного напрямку. Заборонено переїжджати через неї та наїжджати на неї.",
+      "en": "A single solid line separates lanes in the same direction. You must not cross it or drive on it."
+    }
+  },
+  "P-20": {
+    "name": {
+      "ua": "Конверт",
+      "en": "Envelope marking"
+    },
+    "description": {
+      "ua": "«Конверт» позначає зарезервоване паркувальне місце для визначеного виду транспорту.",
+      "en": "An envelope-shaped marking setting out a parking bay reserved for a specified type of vehicle."
+    }
+  },
+  "P-21": {
+    "name": {
+      "ua": "Площа, виключена з руху",
+      "en": "Area excluded from traffic"
+    },
+    "description": {
+      "ua": "Штрихована площа, на яку заборонено в'їжджати і зупинятися.",
+      "en": "A hatched area you must not enter or stop on."
+    }
+  },
+  "P-22": {
+    "name": {
+      "ua": "BUS",
+      "en": "BUS"
+    },
+    "description": {
+      "ua": "Напис BUS означає смугу, призначену для транспорту, що виконує платні регулярні перевезення пасажирів.",
+      "en": "The word BUS marks a lane for vehicles providing paid regular passenger services."
+    }
+  },
+  "P-23": {
+    "name": {
+      "ua": "Велосипед",
+      "en": "Bicycle"
+    },
+    "description": {
+      "ua": "Символ велосипеда означає велосипедну доріжку, смугу для велосипедів, велошлюз або частину односторонньої дороги, де велосипеди можуть рухатися в обох напрямках.",
+      "en": "A bicycle symbol marking a cycle track, cycle lane, bike box, or part of a one-way road where cycles may travel in both directions."
+    }
+  },
+  "P-24": {
+    "name": {
+      "ua": "Місце для автомобіля особи з інвалідністю",
+      "en": "Disabled parking space"
+    },
+    "description": {
+      "ua": "Символ означає, що паркувальне місце призначене для автомобіля особи з інвалідністю, яка має відповідне право.",
+      "en": "A symbol meaning the parking bay is for a motor vehicle of a person with a disability who is entitled to use it."
+    }
+  },
+  "P-25": {
+    "name": {
+      "ua": "Лежачий поліцейський",
+      "en": "Speed hump"
+    },
+    "description": {
+      "ua": "Розмітка позначає штучну нерівність на проїзній частині, зроблену щоб сповільнити рух.",
+      "en": "Marking a raised strip on the carriageway built to slow vehicles down."
+    }
+  },
+  "P-27": {
+    "name": {
+      "ua": "Напрямок і траєкторія руху велосипеда",
+      "en": "Bicycle direction and path"
+    },
+    "description": {
+      "ua": "Знак P-27 «напрямок і траєкторія руху велосипеда» вказує напрямок і траєкторію руху велосипеда.",
+      "en": "Sign P-27 “bicycle direction and path” indicates the direction and path of bicycle traffic."
+    }
+  },
+  "P-3": {
+    "name": {
+      "ua": "Лінія, яку можна перетинати з одного боку",
+      "en": "Line that may be crossed from one side"
+    },
+    "description": {
+      "ua": "Лінія з суцільного і переривчастого рядків. Заборонено перетинати її та наїжджати на неї з боку суцільної лінії, крім повернення після обгону на смугу біля переривчастої лінії, яку ви займали до обгону на дорозі з двостороннім рухом.",
+      "en": "A line with one solid and one broken strand. You must not cross it or drive on it from the solid side, except to return after overtaking to the lane beside the broken line that you were using before, on a two-way road."
+    }
+  },
+  "P-4": {
+    "name": {
+      "ua": "Подвійна суцільна лінія",
+      "en": "Double solid line"
+    },
+    "description": {
+      "ua": "Подвійна суцільна лінія розділяє смуги протилежних напрямків. Заборонено переїжджати через неї та наїжджати на неї.",
+      "en": "A double solid line separates lanes of opposite directions. You must not cross it or drive on it."
+    }
+  },
+  "P-5": {
+    "name": {
+      "ua": "Подвійна переривчаста лінія",
+      "en": "Double broken line"
+    },
+    "description": {
+      "ua": "Подвійна переривчаста лінія з обох боків смуги між перехрестями означає смугу зі змінним напрямком руху, яку відкривають і закривають сигналами світлофора S-4.",
+      "en": "A double broken line on both sides of a lane between junctions marks a reversible lane opened and closed by S-4 lane signals."
+    }
+  },
+  "P-6": {
+    "name": {
+      "ua": "Попереджувальна лінія",
+      "en": "Warning line"
+    },
+    "description": {
+      "ua": "Попереджувальна лінія, у якій штрихи довші за проміжки, розділяє смуги і попереджає про наближення до лінії, яку заборонено перетинати, або до небезпечного місця.",
+      "en": "A warning line with dashes longer than the gaps separates lanes and warns that you are approaching a line you must not cross, or a hazardous place."
+    }
+  },
+  "P-7a": {
+    "name": {
+      "ua": "Переривчаста крайова лінія",
+      "en": "Broken edge line"
+    },
+    "description": {
+      "ua": "Переривчаста лінія біля краю проїзної частини позначає край проїзної частини.",
+      "en": "A broken line along the edge of the carriageway marking that edge."
+    }
+  },
+  "P-7b": {
+    "name": {
+      "ua": "Суцільна крайова лінія",
+      "en": "Solid edge line"
+    },
+    "description": {
+      "ua": "Суцільна лінія позначає край проїзної частини. Водієві автомобіля додатково заборонено з'їжджати нею на узбіччя.",
+      "en": "A solid line marking the edge of the carriageway. A motor-vehicle driver must also not use it to drive onto the shoulder."
+    }
+  },
+  "P-8a": {
+    "name": {
+      "ua": "Стрілка напрямку прямо",
+      "en": "Straight-ahead arrow"
+    },
+    "description": {
+      "ua": "Зі смуги, на якій нанесено стрілку, дозволено рух лише прямо. Поєднані стрілки P-8 дозволяють рух у вказаних напрямках.",
+      "en": "From the lane with this arrow you may only go straight on. Combined P-8 arrows allow travel in the directions shown."
+    }
+  },
+  "P-8b": {
+    "name": {
+      "ua": "Стрілка напрямку для повороту",
+      "en": "Turn arrow"
+    },
+    "description": {
+      "ua": "Зі смуги зі стрілкою повороту дозволено рух лише в напрямку стрілки. Стрілка ліворуч на крайній лівій смузі також дозволяє розворот, якщо цього не забороняє знак B-23 і рух не регулює світлофор S-3.",
+      "en": "From the lane with this turn arrow you may only go in the direction shown. A left arrow on the leftmost lane also allows a U-turn, unless B-23 forbids it or traffic is controlled by an S-3 signal."
+    }
+  },
+  "P-8c": {
+    "name": {
+      "ua": "Стрілка напрямку для розвороту",
+      "en": "U-turn arrow"
+    },
+    "description": {
+      "ua": "Зі смуги зі стрілкою розвороту дозволено лише розвертатися.",
+      "en": "From the lane with this arrow you may only make a U-turn."
+    }
+  },
+  "P-9": {
+    "name": {
+      "ua": "Напрямна стрілка",
+      "en": "Deflection arrow"
+    },
+    "description": {
+      "ua": "Напрямна стрілка означає обов'язок перейти на сусідню смугу, вказану стрілкою. Це не стосується водіїв, для яких призначена подальша ділянка цієї смуги.",
+      "en": "A deflection arrow means you must move into the adjacent lane indicated by the arrow. It does not apply to drivers for whom the rest of that lane is intended."
+    }
+  },
+  "S-1": {
+    "name": {
+      "ua": "Основний світлофор",
+      "en": "Basic traffic signal"
+    },
+    "description": {
+      "ua": "Для водіїв застосовують такі сигнали світлофора S-1: зелений — дозвіл в'їхати за світлофор (якщо це не заважає пішоходам чи велосипедистам і ви встигнете звільнити перехрестя); жовтий — заборона в'їзду, якщо можна зупинитися без різкого гальмування, і попередження, що скоро буде червоний; червоний — заборона в'їзду; червоний разом із жовтим — заборона в'їзду і сигнал, що скоро буде зелений.",
+      "en": "For drivers, S-1 signals mean: green — you may go beyond the signal (unless that would impede pedestrians or cyclists, or you could not clear the junction in time); yellow — do not go unless you cannot stop safely, and red is about to appear; red — do not go; red with yellow — do not go, and green is about to appear."
+    }
+  },
+  "S-2": {
+    "name": {
+      "ua": "Світлофор з умовним дозволом повороту",
+      "en": "Signal with a conditional turn permission"
+    },
+    "description": {
+      "ua": "Окрім загальних і напрямкових сигналів, на перехресті застосовують сигнал S-2: червоний загальний сигнал і зелена стрілка ліворуч або праворуч. Вона дозволяє поворот у вказаному напрямку на найближчу проїзну частину після зупинки перед світлофором і за умови, що ви не заважаєте іншим. Зелена стрілка ліворуч також дозволяє розворот з крайньої лівої смуги, якщо цього не забороняє знак B-23.",
+      "en": "Besides general and directional signals, junction signal S-2 shows a general red light with a green arrow left or right. You may turn that way onto the nearest carriageway after stopping at the signal and without impeding others. A green left arrow also allows a U-turn from the leftmost lane unless B-23 forbids it."
+    }
+  },
+  "S-3": {
+    "name": {
+      "ua": "Напрямковий світлофор",
+      "en": "Directional traffic signal"
+    },
+    "description": {
+      "ua": "Сигнали світлофора S-3 стосуються водіїв, які їдуть у напрямках, вказаних стрілкою (стрілками). Зелений сигнал S-3 додатково означає, що під час руху в цьому напрямку немає конфлікту з іншими учасниками руху. Світлофори S-3 лише для повороту ліворуч можуть не стояти праворуч від дороги.",
+      "en": "Signals from directional signal S-3 apply to drivers going in the direction(s) shown by the arrow(s). A green S-3 also means that movement in that direction does not conflict with other road users. S-3 signals only for left-turning vehicles need not be placed on the right-hand side of the road."
+    }
+  },
+  "S-4": {
+    "name": {
+      "ua": "Світлофор для смуг руху",
+      "en": "Lane-use signal"
+    },
+    "description": {
+      "ua": "Сигнали світлофора S-4 означають: зелений — дозвіл в'їхати на смугу, над якою стоїть світлофор; червоний — заборона в'їзду на цю смугу.",
+      "en": "Signals from S-4 mean: green — you may enter the lane the signal is placed over; red — you must not enter that lane."
+    }
+  },
+  "S-5": {
+    "name": {
+      "ua": "Світлофор для пішоходів",
+      "en": "Pedestrian signal"
+    },
+    "description": {
+      "ua": "Сигнали світлофора S-5 для пішоходів: зелений — дозвіл вийти на пішохідний перехід; зелений миготливий — скоро буде червоний, пішохід має якнайшвидше залишити перехід; червоний — заборона виходити на перехід.",
+      "en": "Pedestrian signals from S-5: green — you may step onto the crossing; flashing green — red is about to appear and the pedestrian must leave the crossing as soon as possible; red — do not step onto the crossing."
+    }
+  },
+  "S-6": {
+    "name": {
+      "ua": "Світлофор для велосипедистів",
+      "en": "Cyclist signal"
+    },
+    "description": {
+      "ua": "Сигнали світлофора S-6 для велосипедистів: зелений — дозвіл в'їхати на переїзд для велосипедистів; зелений миготливий — скоро буде червоний, велосипедист має якнайшвидше залишити переїзд; червоний — заборона в'їзду на переїзд.",
+      "en": "Cyclist signals from S-6: green — you may enter the cyclist crossing; flashing green — red is about to appear and the cyclist must leave the crossing as soon as possible; red — do not enter the crossing."
+    }
+  },
+  "S-7": {
+    "name": {
+      "ua": "Наказ залишити смугу",
+      "en": "Leave this lane"
+    },
+    "description": {
+      "ua": "Постійний або миготливий сигнал світлофора S-7 означає обов'язок залишити смугу, над якою стоїть світлофор, і в'їхати на частину проїзної частини з боку, вказаного стрілкою.",
+      "en": "A steady or flashing S-7 signal means you must leave the lane the signal is placed over and move onto the part of the carriageway indicated by the arrow."
+    }
+  },
+  "T-1": {
+    "name": {
+      "ua": "Відстань попереджувального знака до небезпечного місця",
+      "en": "Distance from the warning sign to the hazard"
+    },
+    "description": {
+      "ua": "Табличка під попереджувальним знаком показує відстань від знака до небезпечного місця. Її ставлять, коли знак установлено не на стандартній відстані від небезпеки.",
+      "en": "Plate under a warning sign showing how far it is from the hazard. Used when the sign is not placed at the standard distance."
+    }
+  },
+  "T-10": {
+    "name": {
+      "ua": "Залізнична гілка або подібна колія",
+      "en": "Railway siding or similar track"
+    },
+    "description": {
+      "ua": "Табличка попереджає про перетин дороги із залізничною гілкою, маневровою колією чи рідко використовуваною лінією. Під час маневрів поїзда рух на дорозі зупиняє працівник залізниці. Ставлять зі знаком A-30.",
+      "en": "Plate warning that the road crosses a railway siding, shunting track or a rarely used line. While a train is being moved, a railway worker stops road traffic. Used with A-30."
+    }
+  },
+  "T-11": {
+    "name": {
+      "ua": "Поромна переправа",
+      "en": "Ferry crossing"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 попереджає про наближення до поромної переправи.",
+      "en": "Plate used with A-30 warning that you are approaching a ferry crossing."
+    }
+  },
+  "T-12": {
+    "name": {
+      "ua": "Поздовжній уступ покриття",
+      "en": "Longitudinal pavement step"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 попереджає про поздовжній уступ покриття, що часто виникає під час укладання нової поверхні дороги.",
+      "en": "Plate used with A-30 warning of a longitudinal step in the pavement, often left while a new surface is being laid."
+    }
+  },
+  "T-13": {
+    "name": {
+      "ua": "Колії на покритті",
+      "en": "Ruts in the road surface"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 або A-11 попереджає про ділянку, де покриття деформоване коліями.",
+      "en": "Plate used with A-30 or A-11 warning of a section where the surface is deformed by ruts."
+    }
+  },
+  "T-14": {
+    "name": {
+      "ua": "Місце частих наїздів на пішоходів",
+      "en": "Place of frequent pedestrian collisions"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 позначає особливо небезпечне місце частих наїздів на пішоходів. Так позначають ділянки, де за рік сталося щонайменше чотири ДТП із потерпілими на 0,5 км у населеному пункті або 1 км поза ним.",
+      "en": "Plate used with A-30 marking a high-risk spot with frequent pedestrian collisions. Used where at least four injury crashes of this kind occurred in a year on 0.5 km in a built-up area or 1 km outside one."
+    }
+  },
+  "T-14a": {
+    "name": {
+      "ua": "Місце частих наїздів на автомобіль попереду",
+      "en": "Place of frequent rear-end collisions"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 позначає місце частих зіткнень із транспортними засобами, що їдуть попереду. Критерії такі самі, як для табличок серії T-14.",
+      "en": "Plate used with A-30 marking a place with frequent collisions with vehicles ahead. The same criteria apply as for other T-14 plates."
+    }
+  },
+  "T-14b": {
+    "name": {
+      "ua": "Місце частих лобових зіткнень",
+      "en": "Place of frequent head-on collisions"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 позначає місце частих лобових зіткнень транспортних засобів.",
+      "en": "Plate used with A-30 marking a place with frequent head-on collisions."
+    }
+  },
+  "T-14c": {
+    "name": {
+      "ua": "Місце частих зіткнень із трамваями",
+      "en": "Place of frequent collisions with trams"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 позначає місце частих зіткнень із трамваями.",
+      "en": "Plate used with A-30 marking a place with frequent collisions with trams."
+    }
+  },
+  "T-14d": {
+    "name": {
+      "ua": "Особливо небезпечний залізничний переїзд",
+      "en": "Especially hazardous railway crossing"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 позначає залізничний переїзд, де умови створюють особливу небезпеку ДТП. Для переїздів порогом є щонайменше два такі випадки на рік.",
+      "en": "Plate used with A-30 marking a railway crossing where conditions create a particular crash risk. For crossings the threshold is at least two such incidents a year."
+    }
+  },
+  "T-15": {
+    "name": {
+      "ua": "Слизька дорога під час дощу",
+      "en": "Slippery road in rain"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 попереджає про місце частих ДТП через слизьке покриття під час або після дощу.",
+      "en": "Plate used with A-30 warning of a place with frequent crashes caused by a slippery surface during or after rain."
+    }
+  },
+  "T-16": {
+    "name": {
+      "ua": "Виїзд пожежних автомобілів",
+      "en": "Fire engine exit"
+    },
+    "description": {
+      "ua": "Табличка позначає місце виїзду пожежних автомобілів на дорогу. Її можуть ставити самостійно безпосередньо перед виїздом або зі знаком A-30 на відстані, передбаченій для попереджувальних знаків, особливо якщо під час виїзду вмикається спеціальна світлова сигналізація.",
+      "en": "Plate marking where fire engines enter the road. It may stand alone just before the exit, or with A-30 at the usual warning-sign distance, especially if special lights come on when they leave."
+    }
+  },
+  "T-16a": {
+    "name": {
+      "ua": "Виїзд машин швидкої допомоги",
+      "en": "Ambulance exit"
+    },
+    "description": {
+      "ua": "Табличка позначає місце виїзду машин швидкої допомоги на дорогу. Може стояти самостійно безпосередньо перед виїздом або зі знаком A-30.",
+      "en": "Plate marking where ambulances enter the road. It may stand alone just before the exit or be used with A-30."
+    }
+  },
+  "T-17": {
+    "name": {
+      "ua": "Державний кордон",
+      "en": "National border"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 позначає місце, де дорога перетинає державний кордон, незалежно від того, чи кордон відкритий для руху.",
+      "en": "Plate used with A-30 marking where the road crosses a national border, whether or not the border is open to traffic."
+    }
+  },
+  "T-18": {
+    "name": {
+      "ua": "Неочікувана зміна напрямку: спочатку ліворуч, потім праворуч",
+      "en": "Unexpected direction change: first left, then right"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 попереджає про неочікувану зміну напрямку руху або траси дороги: спочатку ліворуч, потім праворуч. Часто через ремонт чи тимчасову організацію руху.",
+      "en": "Plate used with A-30 warning of an unexpected change in traffic direction or road alignment: first left, then right. Often due to roadworks or a temporary layout."
+    }
+  },
+  "T-18a": {
+    "name": {
+      "ua": "Неочікувана зміна напрямку: спочатку праворуч, потім ліворуч",
+      "en": "Unexpected direction change: first right, then left"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 попереджає про неочікувану зміну напрямку руху: спочатку праворуч, потім ліворуч.",
+      "en": "Plate used with A-30 warning of an unexpected change in traffic direction: first right, then left."
+    }
+  },
+  "T-18b": {
+    "name": {
+      "ua": "Неочікувана зміна напрямку ліворуч",
+      "en": "Unexpected direction change to the left"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 попереджає про неочікувану зміну напрямку руху ліворуч.",
+      "en": "Plate used with A-30 warning of an unexpected change in traffic direction to the left."
+    }
+  },
+  "T-18c": {
+    "name": {
+      "ua": "Неочікувана зміна напрямку праворуч",
+      "en": "Unexpected direction change to the right"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-30 попереджає про неочікувану зміну напрямку руху праворуч.",
+      "en": "Plate used with A-30 warning of an unexpected change in traffic direction to the right."
+    }
+  },
+  "T-19": {
+    "name": {
+      "ua": "Нанесення дорожньої розмітки",
+      "en": "Road marking work"
+    },
+    "description": {
+      "ua": "Табличка зі знаком A-14 попереджає, що на дорозі наносять або оновлюють горизонтальну розмітку.",
+      "en": "Plate used with A-14 warning that road markings are being painted or renewed."
+    }
+  },
+  "T-1a": {
+    "name": {
+      "ua": "Відстань інформаційного знака до початку або кінця дороги чи смуги",
+      "en": "Distance to the start or end of a road or lane"
+    },
+    "description": {
+      "ua": "Табличка показує відстань від інформаційного знака до початку або кінця дороги, ділянки дороги чи смуги руху. Ставлять зі знаками D-7, D-8, D-9, D-10, D-11, D-13, D-13a, D-14, D-51a.",
+      "en": "Plate showing how far it is from an information sign to the start or end of a road, road section or lane. Used with D-7, D-8, D-9, D-10, D-11, D-13, D-13a, D-14 or D-51a."
+    }
+  },
+  "T-1b": {
+    "name": {
+      "ua": "Довжина тунелю або відстань до його кінця",
+      "en": "Tunnel length or distance to the tunnel end"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-37 перед в'їздом у тунель довше ніж 500 м показує його довжину. У тунелі понад 3000 м її ставлять самостійно що 1000 м і показують відстань до кінця тунелю.",
+      "en": "Plate used with D-37 before a tunnel longer than 500 m to show its length. In a tunnel longer than 3000 m it is placed on its own every 1000 m and shows the remaining distance to the end."
+    }
+  },
+  "T-2": {
+    "name": {
+      "ua": "Довжина небезпечної ділянки",
+      "en": "Length of the hazardous section"
+    },
+    "description": {
+      "ua": "Табличка показує довжину ділянки дороги, на якій небезпека, зазначена попереджувальним знаком, триває або повторюється. Зазвичай застосовують, якщо ця ділянка довша ніж 500 м.",
+      "en": "Plate showing how long the hazard indicated by the warning sign lasts or keeps recurring. Typically used when that section is longer than 500 m."
+    }
+  },
+  "T-20": {
+    "name": {
+      "ua": "Довжина ділянки дії заборони",
+      "en": "Length of the prohibition"
+    },
+    "description": {
+      "ua": "Табличка показує довжину ділянки проїзної частини, на якій діє заборона. Ставлять під знаками на кшталт B-33, B-35, B-36, B-37, B-38, B-41, якщо ділянка не довша ніж 500 м.",
+      "en": "Plate showing how long the prohibition applies along the carriageway. Used under signs such as B-33, B-35, B-36, B-37, B-38 or B-41 when the section is no longer than 500 m."
+    }
+  },
+  "T-21": {
+    "name": {
+      "ua": "Відстань до місця дії заборони",
+      "en": "Distance to where the prohibition applies"
+    },
+    "description": {
+      "ua": "Табличка показує відстань від знака до місця, від якого або в якому починає діяти заборона. Ставлять під заборонним знаком, якщо його встановлено не в місці початку заборони.",
+      "en": "Plate showing how far it is from the sign to the place where the prohibition begins or applies. Used under a prohibitory sign that is not placed at the start of the restriction."
+    }
+  },
+  "T-22": {
+    "name": {
+      "ua": "Знак не стосується одноколійних велосипедів",
+      "en": "Sign does not apply to single-track bicycles"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак над нею не стосується одноколійних (двоколісних) велосипедів.",
+      "en": "Plate meaning the sign above does not apply to single-track (two-wheeled) bicycles."
+    }
+  },
+  "T-23a": {
+    "name": {
+      "ua": "Знак стосується мотоциклів",
+      "en": "Sign applies to motorcycles"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак над нею стосується мотоциклів.",
+      "en": "Plate meaning the sign above applies to motorcycles."
+    }
+  },
+  "T-23b": {
+    "name": {
+      "ua": "Знак стосується вантажівок і спецтранспорту понад 3,5 т",
+      "en": "Sign applies to trucks and special vehicles over 3.5 t"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак стосується вантажних автомобілів, спеціальних транспортних засобів і транспортних засобів, що використовуються зі спеціальною метою, з допустимою повною масою понад 3,5 т.",
+      "en": "Plate meaning the sign applies to goods vehicles, special vehicles and vehicles used for special purposes with a maximum authorised mass over 3.5 t."
+    }
+  },
+  "T-23c": {
+    "name": {
+      "ua": "Знак стосується сільгосптракторів і тихохідних ТЗ",
+      "en": "Sign applies to farm tractors and slow vehicles"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак стосується сільськогосподарських тракторів і тихохідних транспортних засобів.",
+      "en": "Plate meaning the sign applies to agricultural tractors and slow-moving vehicles."
+    }
+  },
+  "T-23d": {
+    "name": {
+      "ua": "Знак стосується ТЗ із причепом (крім одноосьового та напівпричепа)",
+      "en": "Sign applies to vehicles with a trailer, except single-axle or semi-trailer"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак стосується механічних транспортних засобів із причепом, за винятком транспортних засобів з одноосьовим причепом або напівпричепом.",
+      "en": "Plate meaning the sign applies to motor vehicles with a trailer, except vehicles with a single-axle trailer or a semi-trailer."
+    }
+  },
+  "T-23e": {
+    "name": {
+      "ua": "Знак стосується ТЗ із житловим причепом",
+      "en": "Sign applies to vehicles with a caravan"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак стосується транспортних засобів із житловим (кемпінговим) причепом.",
+      "en": "Plate meaning the sign applies to vehicles towing a caravan."
+    }
+  },
+  "T-23f": {
+    "name": {
+      "ua": "Знак стосується автобусів",
+      "en": "Sign applies to buses"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак стосується автобусів.",
+      "en": "Plate meaning the sign applies to buses."
+    }
+  },
+  "T-23g": {
+    "name": {
+      "ua": "Знак стосується тролейбусів",
+      "en": "Sign applies to trolleybuses"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак стосується тролейбусів.",
+      "en": "Plate meaning the sign applies to trolleybuses."
+    }
+  },
+  "T-23h": {
+    "name": {
+      "ua": "Транспорт із небезпечними вантажами",
+      "en": "Vehicles carrying dangerous goods"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак стосується транспортних засобів, які перевозять небезпечні вантажі (той самий обсяг, що й для знака B-13a).",
+      "en": "Plate meaning the sign applies to vehicles carrying dangerous goods (the same scope as sign B-13a)."
+    }
+  },
+  "T-23i": {
+    "name": {
+      "ua": "Транспорт із вибуховими або легкозаймистими вантажами",
+      "en": "Vehicles carrying explosive or flammable goods"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак стосується транспортних засобів із вибуховими або легкозаймистими вантажами (той самий обсяг, що й для знака B-13).",
+      "en": "Plate meaning the sign applies to vehicles carrying explosive or flammable goods (the same scope as sign B-13)."
+    }
+  },
+  "T-23j": {
+    "name": {
+      "ua": "Транспорт із вантажами, що можуть забруднити воду",
+      "en": "Vehicles carrying water-polluting goods"
+    },
+    "description": {
+      "ua": "Табличка означає, що знак стосується транспортних засобів із вантажами, які можуть забруднити воду (той самий обсяг, що й для знака B-14).",
+      "en": "Plate meaning the sign applies to vehicles carrying goods that may contaminate water (the same scope as sign B-14)."
+    }
+  },
+  "T-24": {
+    "name": {
+      "ua": "Автомобіль евакуюють за рахунок власника",
+      "en": "Vehicle will be towed at the owner's expense"
+    },
+    "description": {
+      "ua": "Табличка попереджає, що автомобіль, залишений там, де діє заборона стоянки (B-35) або зупинки (B-36), буде прибрано за рахунок власника. Часто біля банків, судів, військових об'єктів і там, де залишений автомобіль заважає чи загрожує безпеці.",
+      "en": "Plate warning that a vehicle left where no parking (B-35) or no stopping (B-36) applies will be removed at the owner's expense. Often used near banks, courts, military sites, and where a left vehicle would obstruct or endanger traffic."
+    }
+  },
+  "T-25a": {
+    "name": {
+      "ua": "Початок заборони стоянки або зупинки",
+      "en": "Start of no parking or no stopping"
+    },
+    "description": {
+      "ua": "Табличка позначає місце, з якого починає діяти заборона стоянки (B-35) або зупинки (B-36). Ставлять, коли заборона починається не безпосередньо за перехрестям.",
+      "en": "Plate marking where a no-parking (B-35) or no-stopping (B-36) rule begins. Used when the prohibition does not start immediately after a junction."
+    }
+  },
+  "T-25b": {
+    "name": {
+      "ua": "Продовження заборони стоянки або зупинки",
+      "en": "Continuation of no parking or no stopping"
+    },
+    "description": {
+      "ua": "Табличка підтверджує, що заборона стоянки або зупинки все ще діє. Ставлять після місця для розвороту, виїздів із внутрішніх доріг і придорожніх об'єктів, а також на ділянках між перехрестями довше ніж 400 м.",
+      "en": "Plate confirming that the no-parking or no-stopping rule still applies. Used after a U-turn place, exits from internal roads and roadside premises, and on sections between junctions longer than 400 m."
+    }
+  },
+  "T-25c": {
+    "name": {
+      "ua": "Скасування заборони стоянки або зупинки",
+      "en": "End of no parking or no stopping"
+    },
+    "description": {
+      "ua": "Табличка позначає місце, де припиняє діяти заборона стоянки (B-35) або зупинки (B-36).",
+      "en": "Plate marking where a no-parking (B-35) or no-stopping (B-36) rule ends."
+    }
+  },
+  "T-26": {
+    "name": {
+      "ua": "Заборона стосується всієї сторони площі",
+      "en": "Prohibition applies to the entire side of the square"
+    },
+    "description": {
+      "ua": "Табличка означає, що заборона стоянки або зупинки стосується всієї сторони площі. Знак ставлять посередині цієї сторони, паралельно до її краю.",
+      "en": "Plate meaning the no-parking or no-stopping rule applies to the entire side of the square. The sign is placed in the middle of that side, parallel to its edge."
+    }
+  },
+  "T-27": {
+    "name": {
+      "ua": "Перехід, яким часто користуються діти",
+      "en": "Crossing frequently used by children"
+    },
+    "description": {
+      "ua": "Табличка означає, що пішохідним переходом особливо часто користуються діти, насамперед біля шкіл. Ставлять зі знаками D-6 або D-6b.",
+      "en": "Plate meaning the pedestrian crossing is especially used by children, mainly near schools. Used with D-6 or D-6b."
+    }
+  },
+  "T-28": {
+    "name": {
+      "ua": "Платний проїзд",
+      "en": "Toll road"
+    },
+    "description": {
+      "ua": "Табличка означає, що за проїзд дорогою стягується плата. Ставлять під знаками швидкісної дороги D-7 або автостради D-9.",
+      "en": "Plate meaning a charge is collected for using the road. Used under expressway sign D-7 or motorway sign D-9."
+    }
+  },
+  "T-28a": {
+    "name": {
+      "ua": "Кінець платної ділянки",
+      "en": "End of the toll section"
+    },
+    "description": {
+      "ua": "Табличка позначає початок безкоштовної ділянки швидкісної дороги або автостради, що є продовженням платної дороги. За проїзд наступною ділянкою плату вже не стягують.",
+      "en": "Plate marking the start of a free section of expressway or motorway that continues after a toll road. No charge is collected for the section ahead."
+    }
+  },
+  "T-29": {
+    "name": {
+      "ua": "Місце для автомобіля особи з інвалідністю",
+      "en": "Parking for a person with reduced mobility"
+    },
+    "description": {
+      "ua": "Табличка інформує про місце, призначене для автомобіля уповноваженої особи з інвалідністю зі зниженою рухливістю. Ставлять зі знаками D-18, D-18a або D-18b.",
+      "en": "Plate marking a space for a motor vehicle of an authorised person with reduced mobility. Used with D-18, D-18a or D-18b."
+    }
+  },
+  "T-3": {
+    "name": {
+      "ua": "Кінець небезпечної ділянки",
+      "en": "End of the hazardous section"
+    },
+    "description": {
+      "ua": "Табличка під попереджувальним знаком позначає кінець ділянки, на якій небезпека повторювалася або тривала.",
+      "en": "Plate under a warning sign marking the end of the section where the hazard occurred or kept recurring."
+    }
+  },
+  "T-30": {
+    "name": {
+      "ua": "Спосіб постановки відносно краю проїзної частини",
+      "en": "How to park relative to the carriageway edge"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-18 показує, як ставити автомобіль відносно краю проїзної частини: сіра частина — проїзна частина, біла — тротуар. Водночас місце призначене для автомобілів із допустимою повною масою не більше 2,5 т.",
+      "en": "Plate used with D-18 showing how to park relative to the carriageway edge: grey is the carriageway, white is the pavement. The space is also limited to motor vehicles with a maximum authorised mass of 2.5 t or less."
+    }
+  },
+  "T-30a": {
+    "name": {
+      "ua": "Стоянка всім автомобілем на тротуарі паралельно",
+      "en": "Park fully on the pavement, parallel"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-18: ставте весь автомобіль на тротуарі паралельно до бордюра. Сіра частина — проїзна частина, біла — тротуар. Місце лише для автомобілів із допустимою повною масою не більше 2,5 т.",
+      "en": "Plate used with D-18: park the whole vehicle on the pavement, parallel to the kerb. Grey is the carriageway, white is the pavement. For motor vehicles of 2.5 t maximum authorised mass or less."
+    }
+  },
+  "T-30b": {
+    "name": {
+      "ua": "Стоянка всім автомобілем на тротуарі перпендикулярно",
+      "en": "Park fully on the pavement, perpendicular"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-18: ставте весь автомобіль на тротуарі перпендикулярно до бордюра. Сіра частина — проїзна частина, біла — тротуар. Місце лише для автомобілів до 2,5 т.",
+      "en": "Plate used with D-18: park the whole vehicle on the pavement, perpendicular to the kerb. Grey is the carriageway, white is the pavement. For motor vehicles of 2.5 t or less."
+    }
+  },
+  "T-30c": {
+    "name": {
+      "ua": "Стоянка всім автомобілем на тротуарі навскіс",
+      "en": "Park fully on the pavement, at an angle"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-18: ставте весь автомобіль на тротуарі навскіс до бордюра. Сіра частина — проїзна частина, біла — тротуар. Місце лише для автомобілів до 2,5 т.",
+      "en": "Plate used with D-18: park the whole vehicle on the pavement, at an angle to the kerb. Grey is the carriageway, white is the pavement. For motor vehicles of 2.5 t or less."
+    }
+  },
+  "T-30d": {
+    "name": {
+      "ua": "Передні колеса на тротуарі, перпендикулярно",
+      "en": "Front wheels on the pavement, perpendicular"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-18: ставте автомобіль перпендикулярно до бордюра, колесами передньої осі на тротуарі. Сіра частина — проїзна частина, біла — тротуар. Місце лише для автомобілів до 2,5 т.",
+      "en": "Plate used with D-18: park perpendicular to the kerb with the front-axle wheels on the pavement. Grey is the carriageway, white is the pavement. For motor vehicles of 2.5 t or less."
+    }
+  },
+  "T-30e": {
+    "name": {
+      "ua": "Передні колеса на тротуарі, навскіс",
+      "en": "Front wheels on the pavement, at an angle"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-18: ставте автомобіль навскіс до бордюра, колесами передньої осі на тротуарі. Сіра частина — проїзна частина, біла — тротуар. Місце лише для автомобілів до 2,5 т.",
+      "en": "Plate used with D-18: park at an angle to the kerb with the front-axle wheels on the pavement. Grey is the carriageway, white is the pavement. For motor vehicles of 2.5 t or less."
+    }
+  },
+  "T-30f": {
+    "name": {
+      "ua": "Стоянка всім автомобілем на проїзній частині перпендикулярно",
+      "en": "Park fully on the carriageway, perpendicular"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-18: ставте весь автомобіль на проїзній частині перпендикулярно до бордюра. Сіра частина — проїзна частина, біла — тротуар. Місце лише для автомобілів до 2,5 т.",
+      "en": "Plate used with D-18: park the whole vehicle on the carriageway, perpendicular to the kerb. Grey is the carriageway, white is the pavement. For motor vehicles of 2.5 t or less."
+    }
+  },
+  "T-30g": {
+    "name": {
+      "ua": "Стоянка всім автомобілем на проїзній частині навскіс",
+      "en": "Park fully on the carriageway, at an angle"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-18: ставте весь автомобіль на проїзній частині навскіс до бордюра. Сіра частина — проїзна частина, біла — тротуар. Місце лише для автомобілів до 2,5 т.",
+      "en": "Plate used with D-18: park the whole vehicle on the carriageway, at an angle to the kerb. Grey is the carriageway, white is the pavement. For motor vehicles of 2.5 t or less."
+    }
+  },
+  "T-30h": {
+    "name": {
+      "ua": "Колеса одного боку на тротуарі, паралельно",
+      "en": "Wheels on one side on the pavement, parallel"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-18: ставте автомобіль паралельно до бордюра, колесами одного боку на тротуарі. Сіра частина — проїзна частина, біла — тротуар. Місце лише для автомобілів до 2,5 т.",
+      "en": "Plate used with D-18: park parallel to the kerb with the wheels on one side on the pavement. Grey is the carriageway, white is the pavement. For motor vehicles of 2.5 t or less."
+    }
+  },
+  "T-30i": {
+    "name": {
+      "ua": "Стоянка всім автомобілем на проїзній частині паралельно",
+      "en": "Park fully on the carriageway, parallel"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-18: ставте весь автомобіль на проїзній частині паралельно до бордюра. Сіра частина — проїзна частина, біла — тротуар. Місце лише для автомобілів до 2,5 т.",
+      "en": "Plate used with D-18: park the whole vehicle on the carriageway, parallel to the kerb. Grey is the carriageway, white is the pavement. For motor vehicles of 2.5 t or less."
+    }
+  },
+  "T-31": {
+    "name": {
+      "ua": "Категорія тунелю",
+      "en": "Tunnel category"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-37 показує категорію тунелю для перевезення небезпечних вантажів (A–E).",
+      "en": "Plate used with D-37 showing the tunnel category for the transport of dangerous goods (A–E)."
+    }
+  },
+  "T-31a": {
+    "name": {
+      "ua": "Тунель категорії A",
+      "en": "Tunnel category A"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-37: тунель категорії A — без обмежень для транспортних засобів, що перевозять небезпечні вантажі.",
+      "en": "Plate used with D-37: tunnel category A — no restrictions on vehicles carrying dangerous goods."
+    }
+  },
+  "T-31b": {
+    "name": {
+      "ua": "Тунель категорії B",
+      "en": "Tunnel category B"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-37: тунель категорії B — заборонено в'їзд транспорту з вантажами, що загрожують вибухом дуже великого масштабу, наприклад вибухом розігрітої цистерни зі скрапленим горючим газом (LPG).",
+      "en": "Plate used with D-37: tunnel category B — no entry for vehicles carrying goods that pose a very large-scale explosion risk, for example a heated tanker of liquefied flammable gas (LPG)."
+    }
+  },
+  "T-31c": {
+    "name": {
+      "ua": "Тунель категорії C",
+      "en": "Tunnel category C"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-37: тунель категорії C — заборонено в'їзд транспорту з вантажами, що загрожують вибухом дуже великого масштабу (наприклад стиснені гази в цистернах), а також вантажами, що загрожують масовим отруєнням (наприклад отруйні гази в цистернах).",
+      "en": "Plate used with D-37: tunnel category C — no entry for vehicles carrying goods that pose a very large-scale explosion risk (for example compressed gases in tankers) or a mass-poisoning risk (for example toxic gases in tankers)."
+    }
+  },
+  "T-31d": {
+    "name": {
+      "ua": "Тунель категорії D",
+      "en": "Tunnel category D"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-37: тунель категорії D — додатково до обмежень категорії C заборонено в'їзд транспорту з вантажами, що загрожують пожежею дуже великого масштабу (наприклад горючі рідини в цистернах).",
+      "en": "Plate used with D-37: tunnel category D — in addition to category C restrictions, no entry for vehicles carrying goods that pose a very large-scale fire risk (for example flammable liquids in tankers)."
+    }
+  },
+  "T-31e": {
+    "name": {
+      "ua": "Тунель категорії E",
+      "en": "Tunnel category E"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-37: тунель категорії E — заборонено в'їзд транспорту з будь-якими небезпечними вантажами в кількостях, що потребують оранжевих табличок, за винятком деяких радіоактивних матеріалів, медичних відходів і діагностичних зразків.",
+      "en": "Plate used with D-37: tunnel category E — no entry for vehicles carrying any dangerous goods in quantities that require orange plates, except certain radioactive materials, medical waste and diagnostic samples."
+    }
+  },
+  "T-32": {
+    "name": {
+      "ua": "Мінімальна дистанція до автомобіля попереду",
+      "en": "Minimum distance to the vehicle ahead"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-37 вказує мінімальний інтервал, який треба тримати до транспортного засобу, що їде попереду, зокрема в тунелі.",
+      "en": "Plate used with D-37 showing the minimum gap you must keep from the vehicle in front, typically in a tunnel."
+    }
+  },
+  "T-33": {
+    "name": {
+      "ua": "Аварійний телефон і вогнегасник у заїзній кишені",
+      "en": "Emergency phone and fire extinguisher in the lay-by"
+    },
+    "description": {
+      "ua": "Табличка зі знаком D-50 повідомляє, що в заїзній кишені є аварійний телефон і вогнегасник.",
+      "en": "Plate used with D-50 showing that the lay-by has an emergency telephone and a fire extinguisher."
+    }
+  },
+  "T-34": {
+    "name": {
+      "ua": "Електронний збір плати за проїзд",
+      "en": "Electronic toll collection"
+    },
+    "description": {
+      "ua": "Табличка T-34 вказує, що за проїзд дорогою загального користування стягується електронна плата. Ставлять під знаками E-15a, E-15c, E-15d.",
+      "en": "Plate T-34 indicates that an electronic toll is collected for using a public road. Used under E-15a, E-15c or E-15d."
+    }
+  },
+  "T-3a": {
+    "name": {
+      "ua": "Кінець місця для стоянки",
+      "en": "End of the parking area"
+    },
+    "description": {
+      "ua": "Табличка зі знаками D-18 або D-18b позначає кінець місця, призначеного для стоянки, особливо якщо паркування виділено вздовж краю проїзної частини.",
+      "en": "Plate used with D-18 or D-18b marking the end of a parking area, especially where parking is provided along the carriageway edge."
+    }
+  },
+  "T-4": {
+    "name": {
+      "ua": "Кількість поворотів",
+      "en": "Number of bends"
+    },
+    "description": {
+      "ua": "Табличка показує кількість небезпечних поворотів. Ставлять зі знаками A-3 або A-4, якщо поворотів більше ніж два, а відстань між ними менша ніж 300 м.",
+      "en": "Plate showing how many bends there are. Used with A-3 or A-4 when more than two bends need marking and the gaps between them are under 300 m."
+    }
+  },
+  "T-5": {
+    "name": {
+      "ua": "Початок звивистої дороги",
+      "en": "Start of a winding road"
+    },
+    "description": {
+      "ua": "Табличка позначає початок звивистої дороги (звивистість понад 160°/км). Ставлять зі знаками A-3 або A-4.",
+      "en": "Plate marking the start of a winding road (curviness over 160°/km). Used with A-3 or A-4."
+    }
+  },
+  "T-6a": {
+    "name": {
+      "ua": "Напрямок головної дороги через перехрестя (на головній)",
+      "en": "Course of the priority road (on the priority road)"
+    },
+    "description": {
+      "ua": "Табличка на головній дорозі зі знаком D-1 показує фактичний напрямок дороги з перевагою через перехрестя (товстіша лінія). Ставлять, коли головна дорога не йде прямо.",
+      "en": "Plate on the priority road, used with D-1, showing the actual course of the priority road through the junction (thicker line). Used when the priority road does not go straight on."
+    }
+  },
+  "T-6b": {
+    "name": {
+      "ua": "Схема другорядних доріг (на головній)",
+      "en": "Layout of minor roads (on the priority road)"
+    },
+    "description": {
+      "ua": "Табличка на головній дорозі показує розташування другорядних доріг, зокрема несиметричне з обох боків. Ставлять зі знаками A-6a та D-1.",
+      "en": "Plate on the priority road showing the layout of minor roads, including an asymmetrical layout on both sides. Used with A-6a and D-1."
+    }
+  },
+  "T-6c": {
+    "name": {
+      "ua": "Напрямок головної дороги через перехрестя (на другорядній)",
+      "en": "Course of the priority road (on the minor road)"
+    },
+    "description": {
+      "ua": "Табличка на другорядній дорозі зі знаками A-7 або B-20 показує фактичний напрямок головної дороги через перехрестя (товстіша лінія), коли вона не йде прямо.",
+      "en": "Plate on the minor road, used with A-7 or B-20, showing the actual course of the priority road through the junction (thicker line) when it does not go straight on."
+    }
+  },
+  "T-6d": {
+    "name": {
+      "ua": "Перпендикулярна головна дорога і схема другорядних",
+      "en": "Perpendicular priority road and minor-road layout"
+    },
+    "description": {
+      "ua": "Табличка на другорядній дорозі зі знаками A-7 або B-20 показує перпендикулярний перебіг головної дороги через перехрестя та розташування другорядних доріг.",
+      "en": "Plate on the minor road, used with A-7 or B-20, showing a perpendicular course of the priority road through the junction and the layout of the minor roads."
+    }
+  },
+  "T-7": {
+    "name": {
+      "ua": "Схема колій і дороги на трамвайному переїзді",
+      "en": "Track and road layout at a tram crossing"
+    },
+    "description": {
+      "ua": "Табличка показує взаємне розташування колій і дороги на трамвайному або залізничному переїзді. Ставлять зі знаками A-9, A-10 або A-21, коли колія перетинає дорогу під гострим кутом або йде дугою.",
+      "en": "Plate showing how the tracks and the road meet at a tram or railway crossing. Used with A-9, A-10 or A-21 when the tracks cross at a sharp angle or run on a curve."
+    }
+  },
+  "T-8": {
+    "name": {
+      "ua": "Рух спрямовано на трамвайні колії",
+      "en": "Traffic directed onto tram tracks"
+    },
+    "description": {
+      "ua": "Табличка позначає місце, де смугу руху спрямовано на трамвайне полотно. Ставлять зі знаком A-21 або A-30.",
+      "en": "Plate marking the place where a traffic lane is directed onto the tram tracks. Used with A-21 or A-30."
+    }
+  },
+  "T-9": {
+    "name": {
+      "ua": "Фактичний ухил або підйом дороги",
+      "en": "Actual downhill or uphill gradient"
+    },
+    "description": {
+      "ua": "Табличка зі знаками A-22 або A-23 показує справжню величину спуску чи підйому у відсотках. Наприклад, 8% означає, що на 100 м дорога опускається або піднімається на 8 м.",
+      "en": "Plate used with A-22 or A-23 showing the real downhill or uphill gradient as a percentage. For example, 8% means the road drops or rises 8 m over 100 m."
+    }
+  },
+  "W-1": {
+    "name": {
+      "ua": "Клас навантаження моста з одностороннім рухом",
+      "en": "Bridge load class for one-way traffic"
+    },
+    "description": {
+      "ua": "Військовий знак для водіїв військової техніки: клас навантаження (MLC) моста з одностороннім рухом. Цивільним водіям не адресований.",
+      "en": "Military sign for drivers of armed-forces vehicles: the load class (MLC) of a one-way bridge. It is not addressed to civilian drivers."
+    }
+  },
+  "W-2": {
+    "name": {
+      "ua": "Клас навантаження моста з двостороннім рухом",
+      "en": "Bridge load class for two-way traffic"
+    },
+    "description": {
+      "ua": "Військовий знак для водіїв військової техніки: клас навантаження (MLC) моста з двостороннім рухом. Цивільним водіям не адресований.",
+      "en": "Military sign for drivers of armed-forces vehicles: the load class (MLC) of a two-way bridge. It is not addressed to civilian drivers."
+    }
+  },
+  "W-3": {
+    "name": {
+      "ua": "Клас навантаження одностороннього моста для колісних і гусеничних ТЗ",
+      "en": "One-way bridge load class for wheeled and tracked vehicles"
+    },
+    "description": {
+      "ua": "Військовий знак: клас навантаження моста з одностороннім рухом окремо для колісних і гусеничних транспортних засобів (піктограми автомобіля та танка з номерами MLC). Стосується лише військової техніки.",
+      "en": "Military sign: the load class of a one-way bridge, shown separately for wheeled and tracked vehicles (vehicle and tank pictograms with MLC numbers). Applies only to military vehicles."
+    }
+  },
+  "W-4": {
+    "name": {
+      "ua": "Клас навантаження двостороннього моста для колісних ТЗ",
+      "en": "Two-way bridge load class for wheeled vehicles"
+    },
+    "description": {
+      "ua": "Військовий знак: клас навантаження моста з двостороннім рухом для колісних транспортних засобів. Стосується лише військової техніки.",
+      "en": "Military sign: the load class of a two-way bridge for wheeled vehicles. Applies only to military vehicles."
+    }
+  },
+  "W-5": {
+    "name": {
+      "ua": "Клас навантаження двостороннього моста для гусеничних ТЗ",
+      "en": "Two-way bridge load class for tracked vehicles"
+    },
+    "description": {
+      "ua": "Військовий знак: клас навантаження моста з двостороннім рухом для гусеничних транспортних засобів. Стосується лише військової техніки.",
+      "en": "Military sign: the load class of a two-way bridge for tracked vehicles. Applies only to military vehicles."
+    }
+  },
+  "W-6": {
+    "name": {
+      "ua": "Ширина моста або переправного засобу",
+      "en": "Width of a bridge or crossing asset"
+    },
+    "description": {
+      "ua": "Військовий знак показує ширину моста або переправного засобу. Його ставлять, якщо мінімальна корисна ширина проїзної частини між бордюрами менша, ніж випливає з класу мостової споруди.",
+      "en": "Military sign showing the width of a bridge or crossing asset. Used when the minimum usable carriageway width between kerbs is less than that implied by the bridge class."
+    }
+  },
+  "W-7": {
+    "name": {
+      "ua": "Висота вертикального габариту на мосту або в тунелі",
+      "en": "Vertical clearance on a bridge or in a tunnel"
+    },
+    "description": {
+      "ua": "Військовий знак показує висоту вертикального габариту на мосту або в тунелі. Його ставлять, якщо цей розмір менший ніж 4,5 м.",
+      "en": "Military sign showing the vertical clearance on a bridge or in a tunnel. Used when that clearance is less than 4.5 m."
+    }
+  }
+}

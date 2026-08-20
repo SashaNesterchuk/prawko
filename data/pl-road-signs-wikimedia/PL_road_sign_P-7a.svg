@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.0"
+   width="82.23735"
+   height="227.09227"
+   id="svg4675">
+  <defs
+     id="defs4677" />
+  <rect
+     width="82.23735"
+     height="227.09227"
+     rx="0"
+     ry="0"
+     x="0"
+     y="0"
+     style="fill:#9d9d9d;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     id="rect4683" />
+  <g
+     id="layer5" />
+  <g
+     id="layer6">
+    <rect
+       width="11.090552"
+       height="86.611938"
+       x="59.866993"
+       y="134.14287"
+       style="fill:white;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect6457" />
+    <use
+       transform="translate(0,-116.1867)"
+       id="use7364"
+       x="0"
+       y="0"
+       width="82.23735"
+       height="227.09227"
+       xlink:href="#rect6457" />
+  </g>
+</svg>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.0"
+   width="136.63387"
+   height="227.09227"
+   id="svg4675"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   sodipodi:docname="Znak_P-8c.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   sodipodi:docbase="D:\Documents and Settings\Maciek\Pulpit">
+  <metadata
+     id="metadata9">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:window-height="579"
+     inkscape:window-width="840"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     showgrid="true"
+     inkscape:object-bbox="true"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:zoom="1"
+     inkscape:cx="-0.31104124"
+     inkscape:cy="170.74686"
+     inkscape:window-x="137"
+     inkscape:window-y="108"
+     inkscape:current-layer="svg4675" />
+  <defs
+     id="defs4677" />
+  <rect
+     width="136.63387"
+     height="227.09227"
+     rx="0"
+     ry="0"
+     x="0"
+     y="0"
+     style="fill: rgb(157, 157, 157); fill-opacity: 1; fill-rule: evenodd; stroke: none; stroke-width: 1px; stroke-linecap: butt; stroke-linejoin: miter; stroke-opacity: 1;"
+     id="rect4683" />
+  <g
+     transform="translate(54.3965)"
+     id="layer5" />
+  <g
+     transform="translate(77.826655,21.027062)"
+     id="layer6">
+    <path
+       d="M -40.825093,31.134492 C -40.734836,50.176392 -40.825069,72.039485 -40.829671,91.062268 C -38.150921,91.005312 -33.016098,91.194824 -32.730875,91.08641 C -32.792744,91.087644 -32.823184,91.052527 -32.823082,91.033257 C -32.78674,84.137178 -32.856676,66.737998 -32.821102,61.061677 L 2.1466249,26.264791 L 35.196928,61.038273 L 35.009428,186.72577 L 42.103178,186.72577 L 42.103178,61.569523 L 42.315227,31.380669 L 2.1699342,-9.002633 C -12.223712,5.1254797 -25.840276,18.180026 -40.825093,31.134492 z "
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:7.0999999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path7366"
+       sodipodi:nodetypes="cccsccccccccc" />
+  </g>
+  <path
+     style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.07815015px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="M 21.57815,112.09227 L 41.539075,179.10787 L 60,112.09227 L 21.57815,112.09227 z "
+     id="path2161"
+     sodipodi:nodetypes="cccc" />
+</svg>

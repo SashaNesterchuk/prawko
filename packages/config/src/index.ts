@@ -20,8 +20,29 @@ export function getContentLocale(locale: SupportedLocale): ContentLocale {
   return "en";
 }
 
-export const ACTIVE_CATEGORIES = ["B"] as const;
+export const ACTIVE_CATEGORIES = [
+  "AM",
+  "A1",
+  "A2",
+  "A",
+  "B1",
+  "B",
+  "C1",
+  "C",
+  "D1",
+  "D",
+  "T",
+] as const;
 export type DrivingCategory = (typeof ACTIVE_CATEGORIES)[number];
+
+export function isDrivingCategory(
+  value: string | null | undefined
+): value is DrivingCategory {
+  return (
+    typeof value === "string" &&
+    (ACTIVE_CATEGORIES as readonly string[]).includes(value)
+  );
+}
 
 export const PLAN_LEVELS = [
   "first_time",
@@ -102,8 +123,15 @@ export const MEDIA_STORAGE_BUCKETS = {
   pjm: "question-pjm",
 } as const;
 
+export const BLITZ_DURATION_MINUTES = [3, 5, 10] as const;
+export type BlitzDurationMinutes = (typeof BLITZ_DURATION_MINUTES)[number];
+export const DEFAULT_BLITZ_DURATION_MINUTES = 5;
+/** Upper bound so a timed run cannot load the whole catalog. */
+export const BLITZ_MAX_QUESTIONS = 120;
+
 export const QUESTION_SESSION_MODES = [
   "learning",
+  "blitz",
   "new_questions",
   "weak_spots",
   "hard_questions",
@@ -194,7 +222,7 @@ export const STUDY_PLAN_LIMITS = {
 } as const;
 
 export const FEATURE_FLAGS = {
-  enableCategoryBOnly: true,
+  enableCategoryBOnly: false,
   enableSchoolCodes: true,
   enableAiQuestionChat: true,
   enableExamSimulator: true,

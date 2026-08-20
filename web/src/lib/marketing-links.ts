@@ -1,6 +1,6 @@
 import { webEnv } from "./env";
 
-const FALLBACK_SUPPORT_EMAIL = "hello@prawko.app";
+const FALLBACK_SUPPORT_EMAIL = "mind.jar.app@gmail.com";
 
 export function getMarketingLinks() {
   const supportEmail =

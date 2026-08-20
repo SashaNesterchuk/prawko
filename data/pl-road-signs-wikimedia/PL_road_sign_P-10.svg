@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.0"
+   width="227.09227"
+   height="136.63387"
+   id="svg4675">
+  <defs
+     id="defs4677">
+    
+  </defs>
+  <g
+     id="layer5">
+    <rect
+       width="227.09227"
+       height="136.63387"
+       rx="0"
+       ry="0"
+       x="0"
+       y="0"
+       style="fill:#9d9d9d;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4683" />
+  </g>
+  <g
+     id="layer6">
+    <rect
+       width="20.434977"
+       height="127.41809"
+       x="4.8082299"
+       y="4.6078873"
+       style="fill:white;fill-rule:evenodd;stroke:white;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect8465" />
+    <use
+       transform="translate(31.05315,0)"
+       id="use8467"
+       x="0"
+       y="0"
+       width="227.09227"
+       height="136.63387"
+       xlink:href="#rect8465" />
+    <use
+       transform="translate(63.70905,0)"
+       id="use8469"
+       x="0"
+       y="0"
+       width="227.09227"
+       height="136.63387"
+       xlink:href="#rect8465" />
+    <use
+       transform="translate(95.76391,-6.443194e-7)"
+       id="use8471"
+       x="0"
+       y="0"
+       width="227.09227"
+       height="136.63387"
+       xlink:href="#rect8465" />
+    <use
+       transform="translate(95.76391,0)"
+       id="use8473"
+       x="0"
+       y="0"
+       width="227.09227"
+       height="136.63387"
+       xlink:href="#use8467" />
+    <use
+       transform="translate(95.76391,0)"
+       id="use8475"
+       x="0"
+       y="0"
+       width="227.09227"
+       height="136.63387"
+       xlink:href="#use8469" />
+    <use
+       transform="translate(32.65589,0)"
+       id="use8477"
+       x="0"
+       y="0"
+       width="227.09227"
+       height="136.63387"
+       xlink:href="#use8475" />
+  </g>
+</svg>

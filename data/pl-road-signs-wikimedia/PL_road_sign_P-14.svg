@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.0"
+   width="227.09227"
+   height="136.63387"
+   id="svg4675">
+  <defs
+     id="defs4677" />
+  <g
+     id="layer5">
+    <rect
+       width="227.09227"
+       height="136.63387"
+       rx="0"
+       ry="0"
+       x="0"
+       y="0"
+       style="fill:#9d9d9d;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4683" />
+  </g>
+  <g
+     id="layer6">
+    <path
+       d="M 95.04199,60.507311 L 94.57324,138.03856 L 97.35449,138.03856 L 97.35449,67.132311 L 100.16699,67.132311 L 100.16699,138.03856 L 102.57324,138.03856 L 102.57324,67.132311 L 114.38574,67.132311 L 114.38574,60.507311 L 95.04199,60.507311 z M 125.82324,60.507311 L 125.82324,67.132311 L 140.44824,67.132311 L 140.44824,60.507311 L 125.82324,60.507311 z M 151.85449,60.507311 L 151.85449,67.132311 L 167.29199,67.132311 L 167.29199,60.507311 L 151.85449,60.507311 z "
+       style="fill:white;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.99999976px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect10289" />
+    <rect
+       width="90.029015"
+       height="99.256584"
+       rx="14.424687"
+       ry="14.424686"
+       x="-29.608459"
+       y="54.659225"
+       style="fill:#cdcdcd;fill-opacity:1;fill-rule:evenodd;stroke:black;stroke-width:0.99999994;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8513" />
+    <rect
+       width="90.029015"
+       height="99.256584"
+       rx="14.424687"
+       ry="14.424686"
+       x="162.38135"
+       y="55.839531"
+       style="fill:#cdcdcd;fill-opacity:1;fill-rule:evenodd;stroke:black;stroke-width:0.99999994;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect9400" />
+  </g>
+</svg>

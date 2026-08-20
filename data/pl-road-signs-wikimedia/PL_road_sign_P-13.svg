@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.0"
+   width="227.09227"
+   height="136.63387"
+   id="svg4675">
+  <defs
+     id="defs4677" />
+  <g
+     id="layer5">
+    <rect
+       width="227.09227"
+       height="136.63387"
+       rx="0"
+       ry="0"
+       x="0"
+       y="0"
+       style="fill:#9d9d9d;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4683" />
+  </g>
+  <g
+     id="layer6">
+    <path
+       d="M 113.10145,71.940541 L 120.41395,60.507311 L 105.78895,60.507311 L 113.10145,71.940541 z "
+       style="fill:white;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.99999976px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="path11203" />
+    <path
+       d="M 95.04199,60.507311 L 94.57324,138.03856 L 97.35449,138.03856 L 97.35449,60.520995 L 100.16699,60.520995 L 100.16699,138.03856 L 102.57324,138.03856 L 102.71044,60.507311 L 95.04199,60.507311 z "
+       style="fill:white;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.99999976px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect10289" />
+    <rect
+       width="90.029015"
+       height="99.256584"
+       rx="14.424687"
+       ry="14.424686"
+       x="-29.608459"
+       y="54.659225"
+       style="fill:#cdcdcd;fill-opacity:1;fill-rule:evenodd;stroke:black;stroke-width:0.99999994;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8513" />
+    <rect
+       width="90.029015"
+       height="99.256584"
+       rx="14.424687"
+       ry="14.424686"
+       x="162.38135"
+       y="55.839531"
+       style="fill:#cdcdcd;fill-opacity:1;fill-rule:evenodd;stroke:black;stroke-width:0.99999994;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect9400" />
+    <use
+       transform="translate(18.83223,0)"
+       id="use11207"
+       x="0"
+       y="0"
+       width="227.09227"
+       height="136.63387"
+       xlink:href="#path11203" />
+    <use
+       transform="translate(18.63189,0)"
+       id="use11209"
+       x="0"
+       y="0"
+       width="227.09227"
+       height="136.63387"
+       xlink:href="#use11207" />
+  </g>
+</svg>

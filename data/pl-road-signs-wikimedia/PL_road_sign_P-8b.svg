@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.0"
+   width="136.63387"
+   height="227.09227"
+   id="svg4675"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   sodipodi:docname="Znak_P-8a.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   sodipodi:docbase="D:\Documents and Settings\Maciek\Pulpit">
+  <metadata
+     id="metadata9">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:window-height="579"
+     inkscape:window-width="840"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     showgrid="true"
+     inkscape:zoom="0.83226083"
+     inkscape:cx="-79.220865"
+     inkscape:cy="198.18026"
+     inkscape:window-x="287"
+     inkscape:window-y="72"
+     inkscape:current-layer="svg4675" />
+  <defs
+     id="defs4677" />
+  <rect
+     width="136.63387"
+     height="227.09227"
+     rx="0"
+     ry="0"
+     x="0"
+     y="0"
+     style="fill: rgb(157, 157, 157); fill-opacity: 1; fill-rule: evenodd; stroke: none; stroke-width: 1px; stroke-linecap: butt; stroke-linejoin: miter; stroke-opacity: 1;"
+     id="rect4683" />
+  <g
+     transform="translate(54.3965)"
+     id="layer5" />
+  <g
+     transform="translate(54.3965)"
+     id="layer6">
+    <path
+       d="M 0.95513791,64.366119 L 10.710492,97.50216 L 10.9785,75.988081 L 35.547989,89.955113 L 35.760394,187.02616 L 43.304724,187.02616 L 43.762851,70.581121 L 10.774634,52.257538 L 10.669992,32.20885 L 0.95513791,64.366119 z "
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:7.0999999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path7366"
+       sodipodi:nodetypes="cccccccccc" />
+  </g>
+</svg>
