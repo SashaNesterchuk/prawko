@@ -8,6 +8,8 @@ import {
 
 import { getInterstitialAdUnitId, isAdMobEnabled } from "./admob-config";
 
+type InterstitialShowingListener = (showing: boolean) => void;
+
 let interstitial: InterstitialAd | null = null;
 let unsubscribers: Array<() => void> = [];
 let sdkInitialized = false;
@@ -16,6 +18,19 @@ let isShowing = false;
 let isLoadInFlight = false;
 let loadWaiters: Array<(loaded: boolean) => void> = [];
 let autoRetryTimer: ReturnType<typeof setTimeout> | null = null;
+const showingListeners = new Set<InterstitialShowingListener>();
+
+function setShowing(next: boolean) {
+  if (isShowing === next) {
+    return;
+  }
+
+  isShowing = next;
+
+  for (const listener of [...showingListeners]) {
+    listener(next);
+  }
+}
 
 /** If the ad never opens, bail quickly so the result screen stays tappable. */
 const SHOW_OPEN_TIMEOUT_MS = 4_000;
@@ -35,6 +50,16 @@ export function isInterstitialLoaded() {
 
 export function isInterstitialShowing() {
   return isShowing;
+}
+
+/** Blitz / exam clocks subscribe so an overlay that never backgrounds still pauses. */
+export function subscribeInterstitialShowing(
+  listener: InterstitialShowingListener
+) {
+  showingListeners.add(listener);
+  return () => {
+    showingListeners.delete(listener);
+  };
 }
 
 function resolveLoadWaiters(loaded: boolean) {
@@ -94,7 +119,7 @@ export function resetInterstitialInstance() {
 
   unsubscribers = [];
   interstitial = null;
-  isShowing = false;
+  setShowing(false);
   isLoadInFlight = false;
   setLoaded(false);
   resolveLoadWaiters(false);
@@ -159,7 +184,7 @@ export function startInterstitialPreload() {
       console.warn("[AdMob] Interstitial ERROR", error);
       isLoadInFlight = false;
       setLoaded(false);
-      isShowing = false;
+      setShowing(false);
       resolveLoadWaiters(false);
 
       // One quiet background retry — never blocks UI.
@@ -173,7 +198,7 @@ export function startInterstitialPreload() {
   unsubscribers.push(
     interstitial.addAdEventListener(AdEventType.CLOSED, () => {
       logAd("Interstitial CLOSED");
-      isShowing = false;
+      setShowing(false);
       setLoaded(false);
       clearAutoRetry();
       autoRetryTimer = setTimeout(() => {
@@ -284,7 +309,7 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
   const current = interstitial;
 
   return new Promise<boolean>((resolve) => {
-    isShowing = true;
+    setShowing(true);
     let didOpen = false;
     let sawBackgroundDuringShow = false;
     let settled = false;
@@ -320,7 +345,7 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
       unsubscribeOpened();
       unsubscribeClosed();
       unsubscribeError();
-      isShowing = false;
+      setShowing(false);
       logAd(shown ? "show finished OK" : "show finished FAIL", {
         didOpen,
         reason,

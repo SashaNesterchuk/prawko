@@ -668,6 +668,51 @@ export function getQuestionSessionExpiresAt(
   return new Date(createdAt + timeLimitSeconds * 1000).toISOString();
 }
 
+export function pauseQuestionSessionTimer(
+  session: QuestionSession,
+  now: Date = new Date()
+): QuestionSession {
+  if (
+    session.finishedAt ||
+    session.timerPausedAt ||
+    !isTimedQuestionSession(session)
+  ) {
+    return session;
+  }
+
+  return {
+    ...session,
+    timerPausedAt: now.toISOString(),
+  };
+}
+
+export function resumeQuestionSessionTimer(
+  session: QuestionSession,
+  now: Date = new Date()
+): QuestionSession {
+  if (!session.timerPausedAt || session.finishedAt) {
+    return session;
+  }
+
+  const pausedAt = Date.parse(session.timerPausedAt);
+  const expiresAt = getQuestionSessionExpiresAt(session);
+
+  if (!expiresAt || !Number.isFinite(pausedAt)) {
+    return {
+      ...session,
+      timerPausedAt: null,
+    };
+  }
+
+  const pausedMs = Math.max(0, now.getTime() - pausedAt);
+
+  return {
+    ...session,
+    expiresAt: new Date(Date.parse(expiresAt) + pausedMs).toISOString(),
+    timerPausedAt: null,
+  };
+}
+
 export function getRemainingSessionSeconds(
   session: QuestionSession | null | undefined,
   now: Date = new Date()
@@ -682,7 +727,15 @@ export function getRemainingSessionSeconds(
     return null;
   }
 
-  return Math.max(0, Math.floor((Date.parse(expiresAt) - now.getTime()) / 1000));
+  const clockMs = session.timerPausedAt
+    ? Date.parse(session.timerPausedAt)
+    : now.getTime();
+
+  if (!Number.isFinite(clockMs)) {
+    return Math.max(0, Math.floor((Date.parse(expiresAt) - now.getTime()) / 1000));
+  }
+
+  return Math.max(0, Math.floor((Date.parse(expiresAt) - clockMs) / 1000));
 }
 
 export function isQuestionSessionExpired(
@@ -717,6 +770,7 @@ export function finishQuestionSession(
     return {
       ...session,
       finishedAt,
+      timerPausedAt: null,
     };
   }
 
@@ -729,6 +783,7 @@ export function finishQuestionSession(
     currentIndex: Math.max(0, answeredIds.length - 1),
     finishedAt,
     questionIds: answeredIds,
+    timerPausedAt: null,
   };
 }
 

@@ -52,6 +52,7 @@ import {
   showPreloadedInterstitial,
   startInterstitialPreload,
   stopInterstitialPreload,
+  subscribeInterstitialShowing,
   waitForInterstitialLoaded,
 } from "../interstitial-controller";
 
@@ -277,6 +278,23 @@ describe("interstitial-controller", () => {
     ad.emit(AdEventType.OPENED);
     ad.emit(AdEventType.CLOSED);
     await expect(first).resolves.toBe(true);
+  });
+
+  it("notifies showing subscribers when a show starts and finishes", async () => {
+    startInterstitialPreload();
+    const ad = loadCurrentAd();
+    const listener = jest.fn();
+    const stop = subscribeInterstitialShowing(listener);
+
+    const showPromise = showPreloadedInterstitial();
+    expect(listener).toHaveBeenCalledWith(true);
+
+    ad.emit(AdEventType.OPENED);
+    ad.emit(AdEventType.CLOSED);
+    await expect(showPromise).resolves.toBe(true);
+
+    expect(listener).toHaveBeenCalledWith(false);
+    stop();
   });
 
   it("initializeAdMobSdk is a no-op when ads disabled", async () => {

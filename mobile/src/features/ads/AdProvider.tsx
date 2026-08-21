@@ -1,5 +1,6 @@
 import { PropsWithChildren, useEffect } from "react";
 
+import { startTimedSessionClock } from "../questions/timed-session-clock";
 import { isAdMobEnabled } from "./admob-config";
 import {
   initializeAdMobSdk,
@@ -8,6 +9,8 @@ import {
 } from "./interstitial-controller";
 
 export function AdProvider({ children }: PropsWithChildren) {
+  useEffect(() => startTimedSessionClock(), []);
+
   useEffect(() => {
     if (!isAdMobEnabled()) {
       stopInterstitialPreload();

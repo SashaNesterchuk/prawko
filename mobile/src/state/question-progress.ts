@@ -19,7 +19,9 @@ import {
   getQuestionUserState,
   isQuestionSessionExpired,
   normalizeQuestionUserStateMap,
+  pauseQuestionSessionTimer,
   resumeQuestionSession,
+  resumeQuestionSessionTimer,
   seedTopicQuestionProgressFromUserState,
 } from "../features/questions/question-engine";
 import {
@@ -48,6 +50,9 @@ type PersistedQuestionProgress = Pick<
 >;
 
 const PERSIST_FLUSH_DELAY_MS = 800;
+
+/** Bound after the store exists so background persist can freeze the blitz clock. */
+let pauseTimedSessionForBackground: (() => void) | null = null;
 
 /**
  * Answering a question rewrites the whole progress blob, and serializing it is
@@ -93,6 +98,9 @@ function createDeferredProgressStorage(): PersistStorage<PersistedQuestionProgre
 
   AppState.addEventListener("change", (nextState) => {
     if (nextState !== "active") {
+      // Freeze the blitz clock before writing, so a backgrounded session
+      // snapshot does not keep spending wall-clock time.
+      pauseTimedSessionForBackground?.();
       flush();
     }
   });
@@ -169,6 +177,8 @@ type QuestionProgressState = {
   resetProgress: () => void;
   setHasHydrated: (value: boolean) => void;
   startOrResumeSession: (request: QuestionSessionRequest) => QuestionSession;
+  pauseActiveSessionTimer: () => void;
+  resumeActiveSessionTimer: () => void;
   toggleBookmark: (questionId: string) => boolean;
   toggleHard: (questionId: string) => boolean;
 };
@@ -440,6 +450,28 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           topicQuestionProgressSeeded: true,
         }),
       setHasHydrated: (value) => set({ hasHydrated: value }),
+      pauseActiveSessionTimer: () =>
+        set((state) => {
+          if (!state.activeSession) {
+            return state;
+          }
+
+          const nextSession = pauseQuestionSessionTimer(state.activeSession);
+          return nextSession === state.activeSession
+            ? state
+            : { activeSession: nextSession };
+        }),
+      resumeActiveSessionTimer: () =>
+        set((state) => {
+          if (!state.activeSession) {
+            return state;
+          }
+
+          const nextSession = resumeQuestionSessionTimer(state.activeSession);
+          return nextSession === state.activeSession
+            ? state
+            : { activeSession: nextSession };
+        }),
       startOrResumeSession: (request) => {
         const activeSession = get().activeSession;
 
@@ -595,6 +627,10 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
     }
   )
 );
+
+pauseTimedSessionForBackground = () => {
+  useQuestionProgressStore.getState().pauseActiveSessionTimer();
+};
 
 export function useActiveQuestionSession() {
   return useQuestionProgressStore((state) => state.activeSession);

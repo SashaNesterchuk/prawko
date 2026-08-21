@@ -3,7 +3,10 @@ import {
   createEmptyQuestionUserState,
   finishQuestionSession,
   getQuestionSessionSummary,
+  getRemainingSessionSeconds,
   isQuestionSessionExpired,
+  pauseQuestionSessionTimer,
+  resumeQuestionSessionTimer,
 } from "../question-engine";
 import {
   hydrateQuestionBankFromLocalQuestions,
@@ -197,5 +200,61 @@ describe("blitz session", () => {
     expect(
       isQuestionSessionExpired(session, new Date("2026-08-15T12:03:00.000Z"))
     ).toBe(true);
+  });
+
+  it("freezes remaining time while the session timer is paused", () => {
+    const session = buildQuestionSession(
+      {
+        currentCategory: "B",
+        mode: "blitz",
+        sessionKey: "blitz-pause",
+        timeLimitSeconds: 180,
+      },
+      {},
+      now
+    );
+    const pausedAt = new Date("2026-08-15T12:01:00.000Z");
+    const paused = pauseQuestionSessionTimer(session, pausedAt);
+
+    expect(getRemainingSessionSeconds(paused, pausedAt)).toBe(120);
+    expect(
+      getRemainingSessionSeconds(paused, new Date("2026-08-15T12:02:30.000Z"))
+    ).toBe(120);
+    expect(
+      isQuestionSessionExpired(paused, new Date("2026-08-15T12:05:00.000Z"))
+    ).toBe(false);
+
+    const resumedAt = new Date("2026-08-15T12:02:00.000Z");
+    const resumed = resumeQuestionSessionTimer(paused, resumedAt);
+
+    expect(resumed.timerPausedAt).toBeNull();
+    expect(getRemainingSessionSeconds(resumed, resumedAt)).toBe(120);
+    expect(
+      getRemainingSessionSeconds(resumed, new Date("2026-08-15T12:02:30.000Z"))
+    ).toBe(90);
+  });
+
+  it("clears a paused timer when the session finishes", () => {
+    const session = buildQuestionSession(
+      {
+        currentCategory: "B",
+        mode: "blitz",
+        sessionKey: "blitz-pause-finish",
+        timeLimitSeconds: 180,
+      },
+      {},
+      now
+    );
+    const paused = pauseQuestionSessionTimer(
+      session,
+      new Date("2026-08-15T12:01:00.000Z")
+    );
+    const finished = finishQuestionSession(
+      paused,
+      new Date("2026-08-15T12:02:00.000Z")
+    );
+
+    expect(finished.timerPausedAt).toBeNull();
+    expect(finished.finishedAt).toBe("2026-08-15T12:02:00.000Z");
   });
 });

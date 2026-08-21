@@ -127,7 +127,7 @@ export type QuestionSessionRequest = {
   questionLimit?: number | null;
   sessionKey: string;
   studyPlanTaskId?: string | null;
-  /** Wall-clock budget for blitz; omitted for untimed modes. */
+  /** Playable budget for blitz; omitted for untimed modes. */
   timeLimitSeconds?: number | null;
   topic?: LearningTopicId;
 };
@@ -141,6 +141,11 @@ export type QuestionSession = {
   createdAt: string;
   /** Absolute expiry for timed sessions; null when untimed. */
   expiresAt?: string | null;
+  /**
+   * When set, the blitz clock is frozen at this instant (interstitial or
+   * app inactive). Remaining time uses this instead of wall-clock `now`.
+   */
+  timerPausedAt?: string | null;
   finishedAt: string | null;
   emptyReason: QuestionSessionEmptyReason | null;
 };

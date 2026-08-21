@@ -199,9 +199,19 @@ export function useQuestionTrainingSession() {
     new Date(nowMs)
   );
   const isTimedSession = remainingSeconds !== null;
+  const isTimerPaused = Boolean(activeSession?.timerPausedAt);
 
   useEffect(() => {
-    if (!activeSession || activeSession.finishedAt || !isTimedSession) {
+    setNowMs(Date.now());
+  }, [activeSession?.timerPausedAt]);
+
+  useEffect(() => {
+    if (
+      !activeSession ||
+      activeSession.finishedAt ||
+      !isTimedSession ||
+      isTimerPaused
+    ) {
       return;
     }
 
@@ -210,7 +220,7 @@ export function useQuestionTrainingSession() {
     }, 250);
 
     return () => clearInterval(timer);
-  }, [activeSession, isTimedSession]);
+  }, [activeSession, isTimedSession, isTimerPaused]);
 
   useEffect(() => {
     if (
