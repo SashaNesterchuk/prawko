@@ -37,7 +37,7 @@ describe("mapSupabaseQuestionV2RecordToLocalQuestion", () => {
         question_media: [{ role: "primary", asset }],
         options: [
           { id: "A", text: { pl: "Nie" } },
-          { id: "B", text: { pl: "Tak" }, media: [{ role: "pjm-answer", asset }] },
+          { id: "B", text: { pl: "Tak" }, media: [{ role: "primary", asset }] },
         ],
       },
     });
@@ -48,6 +48,8 @@ describe("mapSupabaseQuestionV2RecordToLocalQuestion", () => {
     expect(question.prompt.ua).toBe("Питання");
     expect(question.explanation.pl).toBe("Wyjaśnienie");
     expect(question.choices?.map((option) => option.id)).toEqual(["A", "B"]);
+    expect(question.choices?.[1]?.mediaAsset?.storagePath).toBe("pl/q-1.jpg");
+    expect(getQuestionChoices(question, "pl")[1]?.mediaAsset?.mediaKey).toBe("q-1-image");
     expect(question.media?.asset.storagePath).toBe("pl/q-1.jpg");
     expect(question.primaryTopicId).toBe("signs_signals");
   });

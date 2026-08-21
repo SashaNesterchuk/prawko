@@ -1,0 +1,442 @@
+{
+  "A-1a": {
+    "id": "A-1a",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-1a"
+    },
+    "description": {
+      "cs": "A-1a"
+    }
+  },
+  "A-1b": {
+    "id": "A-1b",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-1b"
+    },
+    "description": {
+      "cs": "A-1b"
+    }
+  },
+  "A-2a": {
+    "id": "A-2a",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-2a"
+    },
+    "description": {
+      "cs": "A-2a"
+    }
+  },
+  "A-2b": {
+    "id": "A-2b",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-2b"
+    },
+    "description": {
+      "cs": "A-2b"
+    }
+  },
+  "A-3": {
+    "id": "A-3",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-3"
+    },
+    "description": {
+      "cs": "A-3"
+    }
+  },
+  "A-4": {
+    "id": "A-4",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-4"
+    },
+    "description": {
+      "cs": "A-4"
+    }
+  },
+  "A-5a": {
+    "id": "A-5a",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-5a"
+    },
+    "description": {
+      "cs": "A-5a"
+    }
+  },
+  "A-5b": {
+    "id": "A-5b",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-5b"
+    },
+    "description": {
+      "cs": "A-5b"
+    }
+  },
+  "A-6a": {
+    "id": "A-6a",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-6a"
+    },
+    "description": {
+      "cs": "A-6a"
+    }
+  },
+  "A-6b": {
+    "id": "A-6b",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-6b"
+    },
+    "description": {
+      "cs": "A-6b"
+    }
+  },
+  "A-7a": {
+    "id": "A-7a",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-7a"
+    },
+    "description": {
+      "cs": "A-7a"
+    }
+  },
+  "A-7b": {
+    "id": "A-7b",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-7b"
+    },
+    "description": {
+      "cs": "A-7b"
+    }
+  },
+  "A-8": {
+    "id": "A-8",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-8"
+    },
+    "description": {
+      "cs": "A-8"
+    }
+  },
+  "A-9": {
+    "id": "A-9",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-9"
+    },
+    "description": {
+      "cs": "A-9"
+    }
+  },
+  "A-10": {
+    "id": "A-10",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-10"
+    },
+    "description": {
+      "cs": "A-10"
+    }
+  },
+  "A-11": {
+    "id": "A-11",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-11"
+    },
+    "description": {
+      "cs": "A-11"
+    }
+  },
+  "A-12": {
+    "id": "A-12",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-12"
+    },
+    "description": {
+      "cs": "A-12"
+    }
+  },
+  "A-12a": {
+    "id": "A-12a",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-12a"
+    },
+    "description": {
+      "cs": "A-12a"
+    }
+  },
+  "A-12c": {
+    "id": "A-12c",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-12c"
+    },
+    "description": {
+      "cs": "A-12c"
+    }
+  },
+  "A-13": {
+    "id": "A-13",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-13"
+    },
+    "description": {
+      "cs": "A-13"
+    }
+  },
+  "A-14": {
+    "id": "A-14",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-14"
+    },
+    "description": {
+      "cs": "A-14"
+    }
+  },
+  "A-15": {
+    "id": "A-15",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-15"
+    },
+    "description": {
+      "cs": "A-15"
+    }
+  },
+  "A-16": {
+    "id": "A-16",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-16"
+    },
+    "description": {
+      "cs": "A-16"
+    }
+  },
+  "A-17": {
+    "id": "A-17",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-17"
+    },
+    "description": {
+      "cs": "A-17"
+    }
+  },
+  "A-18": {
+    "id": "A-18",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-18"
+    },
+    "description": {
+      "cs": "A-18"
+    }
+  },
+  "A-19": {
+    "id": "A-19",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-19"
+    },
+    "description": {
+      "cs": "A-19"
+    }
+  },
+  "A-20": {
+    "id": "A-20",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-20"
+    },
+    "description": {
+      "cs": "A-20"
+    }
+  },
+  "A-21": {
+    "id": "A-21",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-21"
+    },
+    "description": {
+      "cs": "A-21"
+    }
+  },
+  "A-22": {
+    "id": "A-22",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-22"
+    },
+    "description": {
+      "cs": "A-22"
+    }
+  },
+  "A-23": {
+    "id": "A-23",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-23"
+    },
+    "description": {
+      "cs": "A-23"
+    }
+  },
+  "A-24": {
+    "id": "A-24",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-24"
+    },
+    "description": {
+      "cs": "A-24"
+    }
+  },
+  "A-25": {
+    "id": "A-25",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-25"
+    },
+    "description": {
+      "cs": "A-25"
+    }
+  },
+  "A-26": {
+    "id": "A-26",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-26"
+    },
+    "description": {
+      "cs": "A-26"
+    }
+  },
+  "A-27": {
+    "id": "A-27",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-27"
+    },
+    "description": {
+      "cs": "A-27"
+    }
+  },
+  "A-28": {
+    "id": "A-28",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-28"
+    },
+    "description": {
+      "cs": "A-28"
+    }
+  },
+  "A-29": {
+    "id": "A-29",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-29"
+    },
+    "description": {
+      "cs": "A-29"
+    }
+  },
+  "A-30": {
+    "id": "A-30",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-30"
+    },
+    "description": {
+      "cs": "A-30"
+    }
+  },
+  "A-32a": {
+    "id": "A-32a",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-32a"
+    },
+    "description": {
+      "cs": "A-32a"
+    }
+  },
+  "A-33": {
+    "id": "A-33",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-33"
+    },
+    "description": {
+      "cs": "A-33"
+    }
+  },
+  "A-34": {
+    "id": "A-34",
+    "categoryId": "A",
+    "name": {
+      "cs": "A-34"
+    },
+    "description": {
+      "cs": "A-34"
+    }
+  },
+  "IP-24": {
+    "id": "IP-24",
+    "categoryId": "IP",
+    "name": {
+      "cs": "IP-24"
+    },
+    "description": {
+      "cs": "IP-24"
+    }
+  },
+  "P-1": {
+    "id": "P-1",
+    "categoryId": "P",
+    "name": {
+      "cs": "P-1"
+    },
+    "description": {
+      "cs": "P-1"
+    }
+  },
+  "P-4": {
+    "id": "P-4",
+    "categoryId": "P",
+    "name": {
+      "cs": "P-4"
+    },
+    "description": {
+      "cs": "P-4"
+    }
+  },
+  "P-6": {
+    "id": "P-6",
+    "categoryId": "P",
+    "name": {
+      "cs": "P-6"
+    },
+    "description": {
+      "cs": "P-6"
+    }
+  }
+}

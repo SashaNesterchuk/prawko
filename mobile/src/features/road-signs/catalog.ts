@@ -1,191 +1,25 @@
-import signUrls from "../../../../data/pl-road-signs-wikimedia/urls.json";
+import { roadSignCatalog } from "@app-road-sign-catalog";
 
 import type { GreenWaveAccent } from "../../theme/green-wave";
-import {
-  getSignDescription,
-  matchesSignSearch,
-} from "./content/registry";
+import { getSignDescription, matchesSignSearch } from "./content/registry";
 import type { RoadSign, RoadSignCategory, RoadSignCategoryId } from "./types";
 
-const CATEGORY_META: Record<
-  RoadSignCategoryId,
-  Omit<RoadSignCategory, "id" | "count">
-> = {
-  A: {
-    titlePl: "Znaki ostrzegawcze",
-    subtitlePl: "Ostrzegają o miejscach niebezpiecznych",
-    accent: "amber",
-    iconName: "warning-outline",
-  },
-  B: {
-    titlePl: "Znaki zakazu",
-    subtitlePl: "Zakazują określonych zachowań",
-    accent: "red",
-    iconName: "close-circle-outline",
-  },
-  C: {
-    titlePl: "Znaki nakazu",
-    subtitlePl: "Wskazują obowiązkowy sposób jazdy",
-    accent: "blue",
-    iconName: "arrow-forward-circle-outline",
-  },
-  D: {
-    titlePl: "Znaki informacyjne",
-    subtitlePl: "Informują o drodze i kierunkach",
-    accent: "green",
-    iconName: "information-circle-outline",
-  },
-  E: {
-    titlePl: "Znaki kierunku i miejscowości",
-    subtitlePl: "Wskazują kierunki i miejscowości",
-    accent: "blue",
-    iconName: "navigate-outline",
-  },
-  F: {
-    titlePl: "Znaki uzupełniające",
-    subtitlePl: "Doprecyzowują inne znaki",
-    accent: "green",
-    iconName: "add-circle-outline",
-  },
-  T: {
-    titlePl: "Tabliczki do znaków drogowych",
-    subtitlePl: "Uzupełniają znaki główne",
-    accent: "amber",
-    iconName: "document-text-outline",
-  },
-  G: {
-    titlePl: "Znaki dodatkowe",
-    subtitlePl: "Dotyczą przejazdów kolejowych",
-    accent: "blue",
-    iconName: "train-outline",
-  },
-  P: {
-    titlePl: "Znaki drogowe poziome",
-    subtitlePl: "Oznakowanie poziome jezdni",
-    accent: "green",
-    iconName: "git-network-outline",
-  },
-  S: {
-    titlePl: "Znaki świetlne",
-    subtitlePl: "Sygnalizacja świetlna na drodze",
-    accent: "red",
-    iconName: "traffic-light-outline",
-  },
-  W: {
-    titlePl: "Znaki wojskowe",
-    subtitlePl: "Stosowane na drogach wojskowych",
-    accent: "red",
-    iconName: "shield-outline",
-  },
-};
-
-const CATEGORY_ORDER: RoadSignCategoryId[] = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "T",
-  "G",
-  "P",
-  "S",
-  "W",
-];
-
-function parseCategoryId(filename: string): RoadSignCategoryId | null {
-  const match = filename.match(/^PL_road_sign_([A-Z])-/);
-  const categoryId = match?.[1] as RoadSignCategoryId | undefined;
-  return categoryId && CATEGORY_ORDER.includes(categoryId) ? categoryId : null;
-}
-
-function parseSignCode(filename: string): string {
-  return filename.replace(/^PL_road_sign_/, "").replace(/\.(svg|png|jpe?g)$/i, "");
-}
-
-function compareSignCodes(left: string, right: string): number {
-  const leftParts = left.split("-");
-  const rightParts = right.split("-");
-
-  for (let index = 0; index < Math.max(leftParts.length, rightParts.length); index += 1) {
-    const leftPart = leftParts[index] ?? "";
-    const rightPart = rightParts[index] ?? "";
-    const leftNumber = Number(leftPart);
-    const rightNumber = Number(rightPart);
-
-    if (!Number.isNaN(leftNumber) && !Number.isNaN(rightNumber) && leftPart !== "" && rightPart !== "") {
-      if (leftNumber !== rightNumber) {
-        return leftNumber - rightNumber;
-      }
-      continue;
-    }
-
-    const result = leftPart.localeCompare(rightPart, "pl", {
-      numeric: true,
-      sensitivity: "base",
-    });
-
-    if (result !== 0) {
-      return result;
-    }
-  }
-
-  return 0;
-}
-
-export function getRoadSignPreviewUrl(imageUrl: string, size = 256): string {
-  const commonsPrefix = "https://upload.wikimedia.org/wikipedia/commons/";
-
-  if (!imageUrl.startsWith(commonsPrefix)) {
-    return imageUrl;
-  }
-
-  const basePath = imageUrl.slice(commonsPrefix.length).split("?")[0] ?? "";
-  const filename = basePath.split("/").pop() ?? "";
-  return `${commonsPrefix}thumb/${basePath}/${size}px-${filename}.png`;
-}
-
-function buildSign(filename: string, imageUrl: string): RoadSign | null {
-  const categoryId = parseCategoryId(filename);
-  if (!categoryId) {
-    return null;
-  }
-
-  const code = parseSignCode(filename);
-
-  return {
-    id: code,
-    code,
-    categoryId,
-    filename,
-    imageUrl,
-    previewUrl: getRoadSignPreviewUrl(imageUrl, 256),
-    searchText: `${code} ${categoryId} ${filename}${
-      code === "E-19" ? " E-19a" : ""
-    }`.toLowerCase(),
-  };
-}
-
-const ALL_SIGNS: RoadSign[] = Object.entries(signUrls)
-  .map(([filename, imageUrl]) => buildSign(filename, imageUrl))
-  .filter((sign): sign is RoadSign => sign != null)
-  .sort((left, right) => compareSignCodes(left.code, right.code));
-
+const ALL_SIGNS = [...roadSignCatalog.signs];
 const SIGNS_BY_ID = new Map(ALL_SIGNS.map((sign) => [sign.id, sign]));
-
-const SIGNS_BY_CATEGORY = CATEGORY_ORDER.reduce(
-  (accumulator, categoryId) => {
-    accumulator[categoryId] = ALL_SIGNS.filter((sign) => sign.categoryId === categoryId);
-    return accumulator;
-  },
-  {} as Record<RoadSignCategoryId, RoadSign[]>
+const CATEGORY_IDS = roadSignCatalog.categories.map((category) => category.id);
+const SIGNS_BY_CATEGORY = new Map<RoadSignCategoryId, RoadSign[]>(
+  CATEGORY_IDS.map((categoryId) => [
+    categoryId,
+    ALL_SIGNS.filter((sign) => sign.categoryId === categoryId),
+  ])
 );
 
-export const ROAD_SIGN_CATEGORIES: RoadSignCategory[] = CATEGORY_ORDER.map((categoryId) => ({
-  id: categoryId,
-  ...CATEGORY_META[categoryId],
-  count: SIGNS_BY_CATEGORY[categoryId].length,
-}));
+export const ROAD_SIGN_CATEGORIES: RoadSignCategory[] = roadSignCatalog.categories.map(
+  (category) => ({
+    ...category,
+    count: SIGNS_BY_CATEGORY.get(category.id)?.length ?? 0,
+  })
+);
 
 export function getAllRoadSigns(): RoadSign[] {
   return ALL_SIGNS;
@@ -196,40 +30,33 @@ export function getRoadSignById(signId: string): RoadSign | undefined {
 }
 
 export function getRoadSignsByCategory(categoryId: RoadSignCategoryId): RoadSign[] {
-  return SIGNS_BY_CATEGORY[categoryId] ?? [];
+  return SIGNS_BY_CATEGORY.get(categoryId) ?? [];
 }
 
-export function getRoadSignCategory(
-  categoryId: string
-): RoadSignCategory | undefined {
+export function getRoadSignCategory(categoryId: string): RoadSignCategory | undefined {
   return ROAD_SIGN_CATEGORIES.find((category) => category.id === categoryId);
 }
 
 export function isRoadSignCategoryId(value: string): value is RoadSignCategoryId {
-  return CATEGORY_ORDER.includes(value as RoadSignCategoryId);
+  return CATEGORY_IDS.includes(value as RoadSignCategoryId);
 }
 
 export function searchRoadSigns(query: string): RoadSign[] {
   const normalized = query.trim().toLowerCase();
-
-  if (!normalized) {
-    return [];
-  }
+  if (!normalized) return [];
 
   return ALL_SIGNS.filter(
-    (sign) =>
-      sign.searchText.includes(normalized) ||
-      matchesSignSearch(sign.id, normalized)
+    (sign) => sign.searchText.includes(normalized) || matchesSignSearch(sign.id, normalized)
   );
 }
 
 export function getCategoryAccent(categoryId: RoadSignCategoryId): GreenWaveAccent {
-  return CATEGORY_META[categoryId].accent;
+  return getRoadSignCategory(categoryId)?.accent ?? "green";
 }
 
 export function getSignDescriptionPl(sign: RoadSign): string {
   return (
     getSignDescription(sign.id, "pl") ??
-    `${CATEGORY_META[sign.categoryId].titlePl}. Znak ${sign.code}.`
+    `${getRoadSignCategory(sign.categoryId)?.titlePl ?? "Znak drogowy"}. Znak ${sign.code}.`
   );
 }

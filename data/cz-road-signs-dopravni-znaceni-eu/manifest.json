@@ -1,0 +1,2892 @@
+{
+  "generatedAt": "2026-08-20T14:14:16.732Z",
+  "source": {
+    "indexUrl": "http://www.dopravni-znaceni.eu/znacky/",
+    "copyrightNotice": "Copyright People For Net a.s. No open licence was published on the source site."
+  },
+  "count": 360,
+  "downloaded": 360,
+  "skipped": 0,
+  "signs": [
+    {
+      "id": "A-1a",
+      "sourceCode": "A01a",
+      "name": "Zatáčka vpravo",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A01a.jpg",
+      "assetFile": "A01a.jpg"
+    },
+    {
+      "id": "A-1b",
+      "sourceCode": "A01b",
+      "name": "Zatáčka vlevo",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A01b.jpg",
+      "assetFile": "A01b.jpg"
+    },
+    {
+      "id": "A-2a",
+      "sourceCode": "A02a",
+      "name": "Dvojitá zatáčka, první vpravo",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A02a.jpg",
+      "assetFile": "A02a.jpg"
+    },
+    {
+      "id": "A-2b",
+      "sourceCode": "A02b",
+      "name": "Dvojitá zatáčka,první vlevo",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A02b.jpg",
+      "assetFile": "A02b.jpg"
+    },
+    {
+      "id": "A-3",
+      "sourceCode": "A03",
+      "name": "Křižovatka",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A03.jpg",
+      "assetFile": "A03.jpg"
+    },
+    {
+      "id": "A-4",
+      "sourceCode": "A04",
+      "name": "Pozor, kruhový objezd",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A04.jpg",
+      "assetFile": "A04.jpg"
+    },
+    {
+      "id": "A-5a",
+      "sourceCode": "A05a",
+      "name": "Nebezpečné klesání",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A05a.jpg",
+      "assetFile": "A05a.jpg"
+    },
+    {
+      "id": "A-5b",
+      "sourceCode": "A05b",
+      "name": "Nebezpečné stoupání",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A05b.jpg",
+      "assetFile": "A05b.jpg"
+    },
+    {
+      "id": "A-6a",
+      "sourceCode": "A06a",
+      "name": "Zúžená vozovka (zobou stran)",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A06a.jpg",
+      "assetFile": "A06a.jpg"
+    },
+    {
+      "id": "A-6b",
+      "sourceCode": "A06b",
+      "name": "Zúžená vozovka (zjedné strany)",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A06b.jpg",
+      "assetFile": "A06b.jpg"
+    },
+    {
+      "id": "A-7a",
+      "sourceCode": "A07a",
+      "name": "Nerovnost vozovky",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A07a.jpg",
+      "assetFile": "A07a.jpg"
+    },
+    {
+      "id": "A-7b",
+      "sourceCode": "A07b",
+      "name": "Pozor, zpomalovací práh",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A07b.jpg",
+      "assetFile": "A07b.jpg"
+    },
+    {
+      "id": "A-8",
+      "sourceCode": "A08",
+      "name": "Nebezpečí smyku",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A08.jpg",
+      "assetFile": "A08.jpg"
+    },
+    {
+      "id": "A-9",
+      "sourceCode": "A09",
+      "name": "Provoz v obou směrech",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A09.jpg",
+      "assetFile": "A09.jpg"
+    },
+    {
+      "id": "A-10",
+      "sourceCode": "A10",
+      "name": "Světelné signály",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A10.jpg",
+      "assetFile": "A10.jpg"
+    },
+    {
+      "id": "A-11",
+      "sourceCode": "A11",
+      "name": "Pozor, přechod prochodce",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A11.jpg",
+      "assetFile": "A11.jpg"
+    },
+    {
+      "id": "A-12",
+      "sourceCode": "A12",
+      "name": "Děti",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A12.jpg",
+      "assetFile": "A12.jpg"
+    },
+    {
+      "id": "A-13",
+      "sourceCode": "A13",
+      "name": "Zvířata",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A13.jpg",
+      "assetFile": "A13.jpg"
+    },
+    {
+      "id": "A-14",
+      "sourceCode": "A14",
+      "name": "Zvěř",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A14.jpg",
+      "assetFile": "A14.jpg"
+    },
+    {
+      "id": "A-15",
+      "sourceCode": "A15",
+      "name": "Práce",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A15.jpg",
+      "assetFile": "A15.jpg"
+    },
+    {
+      "id": "A-16",
+      "sourceCode": "A16",
+      "name": "Boční vítr",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A16.jpg",
+      "assetFile": "A16.jpg"
+    },
+    {
+      "id": "A-17",
+      "sourceCode": "A17",
+      "name": "Odlétávající štěrk",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A17.jpg",
+      "assetFile": "A17.jpg"
+    },
+    {
+      "id": "A-18",
+      "sourceCode": "A18",
+      "name": "Padající kamení",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A18.jpg",
+      "assetFile": "A18.jpg"
+    },
+    {
+      "id": "A-19",
+      "sourceCode": "A19",
+      "name": "Cyklisté",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A19.jpg",
+      "assetFile": "A19.jpg"
+    },
+    {
+      "id": "A-20",
+      "sourceCode": "A20",
+      "name": "Letadla",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A20.jpg",
+      "assetFile": "A20.jpg"
+    },
+    {
+      "id": "A-21",
+      "sourceCode": "A21",
+      "name": "Pozor, tunel",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A21.jpg",
+      "assetFile": "A21.jpg"
+    },
+    {
+      "id": "A-22",
+      "sourceCode": "A22",
+      "name": "Jiné nebezpečí",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A22.jpg",
+      "assetFile": "A22.jpg"
+    },
+    {
+      "id": "A-23",
+      "sourceCode": "A23",
+      "name": "Kolona",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A23.jpg",
+      "assetFile": "A23.jpg"
+    },
+    {
+      "id": "A-24",
+      "sourceCode": "A24",
+      "name": "Náledí",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A24.jpg",
+      "assetFile": "A24.jpg"
+    },
+    {
+      "id": "A-25",
+      "sourceCode": "A25",
+      "name": "Tramvaj",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A25.jpg",
+      "assetFile": "A25.jpg"
+    },
+    {
+      "id": "A-26",
+      "sourceCode": "A26",
+      "name": "Mlha",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A26.jpg",
+      "assetFile": "A26.jpg"
+    },
+    {
+      "id": "A-27",
+      "sourceCode": "A27",
+      "name": "Nehoda",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A27.jpg",
+      "assetFile": "A27.jpg"
+    },
+    {
+      "id": "A-28",
+      "sourceCode": "A28",
+      "name": "Nezpevněná krajnice",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A28.jpg",
+      "assetFile": "A28.jpg"
+    },
+    {
+      "id": "A-29",
+      "sourceCode": "A29",
+      "name": "Železniční přejezd se závorami",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A29.jpg",
+      "assetFile": "A29.jpg"
+    },
+    {
+      "id": "A-30",
+      "sourceCode": "A30",
+      "name": "Železniční přejezd bezzávor",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A30.jpg",
+      "assetFile": "A30.jpg"
+    },
+    {
+      "id": "A-31a",
+      "sourceCode": "A31a",
+      "name": "Návěstní deska (240m)",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A31a.jpg",
+      "assetFile": "A31a.jpg"
+    },
+    {
+      "id": "A-31b",
+      "sourceCode": "A31b",
+      "name": "Návěstní deska(160m)",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A31b.jpg",
+      "assetFile": "A31b.jpg"
+    },
+    {
+      "id": "A-31c",
+      "sourceCode": "A31c",
+      "name": "Návěstní deska(80 m)",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A31c.jpg",
+      "assetFile": "A31c.jpg"
+    },
+    {
+      "id": "A-32a",
+      "sourceCode": "A32a",
+      "name": "Výstražný kříž prožel. př. jednokolejný",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A32a.jpg",
+      "assetFile": "A32a.jpg"
+    },
+    {
+      "id": "A-32b",
+      "sourceCode": "A32b",
+      "name": "Výstražný kříž prožel. př. vícekolejný",
+      "categoryPath": "/znacky/vystrazne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/A32b.jpg",
+      "assetFile": "A32b.jpg"
+    },
+    {
+      "id": "B-1",
+      "sourceCode": "B01",
+      "name": "Zákaz vjezdu všech vozidel(v obou směrech)",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B01.jpg",
+      "assetFile": "B01.jpg"
+    },
+    {
+      "id": "B-2",
+      "sourceCode": "B02",
+      "name": "Zákaz vjezdu všech vozidel",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B02.jpg",
+      "assetFile": "B02.jpg"
+    },
+    {
+      "id": "B-3a",
+      "sourceCode": "B03a",
+      "name": "Zákaz vjezdu s vyj. motocyklů bez postr. voz.",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B03a.jpg",
+      "assetFile": "B03a.jpg"
+    },
+    {
+      "id": "B-3b",
+      "sourceCode": "B03b",
+      "name": "Zákaz vjezdu osobních automobilů",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B03b.jpg",
+      "assetFile": "B03b.jpg"
+    },
+    {
+      "id": "B-4",
+      "sourceCode": "B04",
+      "name": "Zákaz vjezdu nákladních automobilů",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B04.jpg",
+      "assetFile": "B04.jpg"
+    },
+    {
+      "id": "B-5",
+      "sourceCode": "B05",
+      "name": "Zákaz vjezdu autobusů",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B05.jpg",
+      "assetFile": "B05.jpg"
+    },
+    {
+      "id": "B-6",
+      "sourceCode": "B06",
+      "name": "Zákaz vjezdu traktorů",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B06.jpg",
+      "assetFile": "B06.jpg"
+    },
+    {
+      "id": "B-7",
+      "sourceCode": "B07",
+      "name": "Zákaz vjezdu motocyklů",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B07.jpg",
+      "assetFile": "B07.jpg"
+    },
+    {
+      "id": "B-8",
+      "sourceCode": "B08",
+      "name": "Zákaz vjezdu jízdních kol",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B08.jpg",
+      "assetFile": "B08.jpg"
+    },
+    {
+      "id": "B-9",
+      "sourceCode": "B09",
+      "name": "Zákaz vjezdu potahových vozidel",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B09.jpg",
+      "assetFile": "B09.jpg"
+    },
+    {
+      "id": "B-10",
+      "sourceCode": "B10",
+      "name": "Zákaz vjezdu ručních vozíků",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B10.jpg",
+      "assetFile": "B10.jpg"
+    },
+    {
+      "id": "B-11",
+      "sourceCode": "B11",
+      "name": "Zákaz vjezdu všech motorových vozidel",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B11.jpg",
+      "assetFile": "B11.jpg"
+    },
+    {
+      "id": "B-12",
+      "sourceCode": "B12",
+      "name": "Zákaz vjezdu vyznačených vozidel",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B12.jpg",
+      "assetFile": "B12.jpg"
+    },
+    {
+      "id": "B-13",
+      "sourceCode": "B13",
+      "name": "Zákaz vjezdu. voz., jejichž hmot. přesahuje vyznačenou mez",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B13.jpg",
+      "assetFile": "B13.jpg"
+    },
+    {
+      "id": "B-14",
+      "sourceCode": "B14",
+      "name": "Z. v. voz., hmot. na nápravu přes. vyz. mez",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B14.jpg",
+      "assetFile": "B14.jpg"
+    },
+    {
+      "id": "B-15",
+      "sourceCode": "B15",
+      "name": "Z. v. voz., jejichž šířka přesahuje vyznačenou mez",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B15.jpg",
+      "assetFile": "B15.jpg"
+    },
+    {
+      "id": "B-16",
+      "sourceCode": "B16",
+      "name": "Z. v. voz., jejichž výška přesahuje vyznačenou mez",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B16.jpg",
+      "assetFile": "B16.jpg"
+    },
+    {
+      "id": "B-17",
+      "sourceCode": "B17",
+      "name": "Z. v. voz. nebo souprav, jejichž délka přesahuje vyznačenou mez",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B17.jpg",
+      "assetFile": "B17.jpg"
+    },
+    {
+      "id": "B-18",
+      "sourceCode": "B18",
+      "name": "Z. v. voz. přep. nebezpečný náklad",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B18.jpg",
+      "assetFile": "B18.jpg"
+    },
+    {
+      "id": "B-19",
+      "sourceCode": "B19",
+      "name": "Z. v. voz. přep. náklad, který může znečištit vodu",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B19.jpg",
+      "assetFile": "B19.jpg"
+    },
+    {
+      "id": "B-20a",
+      "sourceCode": "B20a",
+      "name": "Nejvyšší povolená rychlost",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B20a.jpg",
+      "assetFile": "B20a.jpg"
+    },
+    {
+      "id": "B-20b",
+      "sourceCode": "B20b",
+      "name": "Konec nejvyšší povolené rychlosti",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B20b.jpg",
+      "assetFile": "B20b.jpg"
+    },
+    {
+      "id": "B-21a",
+      "sourceCode": "B21a",
+      "name": "Zákaz předjíždění",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B21a.jpg",
+      "assetFile": "B21a.jpg"
+    },
+    {
+      "id": "B-21b",
+      "sourceCode": "B21b",
+      "name": "Konec zákazu předjíždění",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B21b.jpg",
+      "assetFile": "B21b.jpg"
+    },
+    {
+      "id": "B-22a",
+      "sourceCode": "B22a",
+      "name": "Zákaz předjíždění pro nákladní automobily",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B22a.jpg",
+      "assetFile": "B22a.jpg"
+    },
+    {
+      "id": "B-22b",
+      "sourceCode": "B22b",
+      "name": "Konec zák. před. pro nákladní automobily",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B22b.jpg",
+      "assetFile": "B22b.jpg"
+    },
+    {
+      "id": "B-23a",
+      "sourceCode": "B23a",
+      "name": "Zákaz zvukových výstražných znamení",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B23a.jpg",
+      "assetFile": "B23a.jpg"
+    },
+    {
+      "id": "B-23b",
+      "sourceCode": "B23b",
+      "name": "Konec zákazu zvuk. výst. znamení",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B23b.jpg",
+      "assetFile": "B23b.jpg"
+    },
+    {
+      "id": "B-24a",
+      "sourceCode": "B24a",
+      "name": "Zákaz odbočování vpravo",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B24a.jpg",
+      "assetFile": "B24a.jpg"
+    },
+    {
+      "id": "B-24b",
+      "sourceCode": "B24b",
+      "name": "Zákaz odbočování vlevo",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B24b.jpg",
+      "assetFile": "B24b.jpg"
+    },
+    {
+      "id": "B-25",
+      "sourceCode": "B25",
+      "name": "Zákaz otáčení",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B25.jpg",
+      "assetFile": "B25.jpg"
+    },
+    {
+      "id": "B-26",
+      "sourceCode": "B26",
+      "name": "Konec všech zákazů",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B26.jpg",
+      "assetFile": "B26.jpg"
+    },
+    {
+      "id": "B-27",
+      "sourceCode": "B27",
+      "name": "Povinnost zastavit vozidlo",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B27.jpg",
+      "assetFile": "B27.jpg"
+    },
+    {
+      "id": "B-28",
+      "sourceCode": "B28",
+      "name": "Zákaz zastavení",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B28.jpg",
+      "assetFile": "B28.jpg"
+    },
+    {
+      "id": "B-29",
+      "sourceCode": "B29",
+      "name": "Zákaz stání",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B29.jpg",
+      "assetFile": "B29.jpg"
+    },
+    {
+      "id": "B-30",
+      "sourceCode": "B30",
+      "name": "Zákaz vstupu chodců",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B30.jpg",
+      "assetFile": "B30.jpg"
+    },
+    {
+      "id": "B-31",
+      "sourceCode": "B31",
+      "name": "Zákaz vjezdu pro jezdce na zvířeti",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B31.jpg",
+      "assetFile": "B31.jpg"
+    },
+    {
+      "id": "B-32",
+      "sourceCode": "B32",
+      "name": "Jiný zákaz",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B32.jpg",
+      "assetFile": "B32.jpg"
+    },
+    {
+      "id": "B-33",
+      "sourceCode": "B33",
+      "name": "Z. vjezdu mot.vozidel s přívěsem",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B33.jpg",
+      "assetFile": "B33.jpg"
+    },
+    {
+      "id": "B-34",
+      "sourceCode": "B34",
+      "name": "Nejmenší vzdálenost mezi vozidly",
+      "categoryPath": "/znacky/zakazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/B34.jpg",
+      "assetFile": "B34.jpg"
+    },
+    {
+      "id": "C-1",
+      "sourceCode": "C01",
+      "name": "Kruhový objezd",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C01.jpg",
+      "assetFile": "C01.jpg"
+    },
+    {
+      "id": "C-2a",
+      "sourceCode": "C02a",
+      "name": "Přikázaný směr jízdy přímo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C02a.jpg",
+      "assetFile": "C02a.jpg"
+    },
+    {
+      "id": "C-2b",
+      "sourceCode": "C02b",
+      "name": "Přikázaný směr jízdy vpravo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C02b.jpg",
+      "assetFile": "C02b.jpg"
+    },
+    {
+      "id": "C-2c",
+      "sourceCode": "C02c",
+      "name": "Přikázaný směr jízdy vlevo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C02c.jpg",
+      "assetFile": "C02c.jpg"
+    },
+    {
+      "id": "C-2d",
+      "sourceCode": "C02d",
+      "name": "Přikázaný směr jízdy přímo a vpravo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C02d.jpg",
+      "assetFile": "C02d.jpg"
+    },
+    {
+      "id": "C-2e",
+      "sourceCode": "C02e",
+      "name": "Přikázaný směr jízdy přímo a vlevo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C02e.jpg",
+      "assetFile": "C02e.jpg"
+    },
+    {
+      "id": "C-2f",
+      "sourceCode": "C02f",
+      "name": "Přikázaný směr jízdy vlevo a vpravo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C02f.jpg",
+      "assetFile": "C02f.jpg"
+    },
+    {
+      "id": "C-3a",
+      "sourceCode": "C03a",
+      "name": "Přikázaný směr jízdy zde vpravo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C03a.jpg",
+      "assetFile": "C03a.jpg"
+    },
+    {
+      "id": "C-3b",
+      "sourceCode": "C03b",
+      "name": "Přikázaný směr jízdy zde vlevo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C03b.jpg",
+      "assetFile": "C03b.jpg"
+    },
+    {
+      "id": "C-4a",
+      "sourceCode": "C04a",
+      "name": "Přikázaný směr objíždění vpravo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C04a.jpg",
+      "assetFile": "C04a.jpg"
+    },
+    {
+      "id": "C-4b",
+      "sourceCode": "C04b",
+      "name": "Přikázaný směr objíždění vlevo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C04b.jpg",
+      "assetFile": "C04b.jpg"
+    },
+    {
+      "id": "C-4c",
+      "sourceCode": "C04c",
+      "name": "Přikázaný směr objíždění vpravo a vlevo",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C04c.jpg",
+      "assetFile": "C04c.jpg"
+    },
+    {
+      "id": "C-5a",
+      "sourceCode": "C05a",
+      "name": "Sněhové řetězy",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C05a.jpg",
+      "assetFile": "C05a.jpg"
+    },
+    {
+      "id": "C-5b",
+      "sourceCode": "C05b",
+      "name": "Sněhové řetězy - konec",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C05b.jpg",
+      "assetFile": "C05b.jpg"
+    },
+    {
+      "id": "C-6a",
+      "sourceCode": "C06a",
+      "name": "Nejnižší dovolená rychlost",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C06a.jpg",
+      "assetFile": "C06a.jpg"
+    },
+    {
+      "id": "C-6b",
+      "sourceCode": "C06b",
+      "name": "Konec nejnižší dovolené rychlosti",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C06b.jpg",
+      "assetFile": "C06b.jpg"
+    },
+    {
+      "id": "C-7a",
+      "sourceCode": "C07a",
+      "name": "Stezka pro chodce",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C07a.jpg",
+      "assetFile": "C07a.jpg"
+    },
+    {
+      "id": "C-7b",
+      "sourceCode": "C07b",
+      "name": "Konec stezky pro chodce",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C07b.jpg",
+      "assetFile": "C07b.jpg"
+    },
+    {
+      "id": "C-8a",
+      "sourceCode": "C08a",
+      "name": "Stezka pro cyklisty",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C08a.jpg",
+      "assetFile": "C08a.jpg"
+    },
+    {
+      "id": "C-8b",
+      "sourceCode": "C08b",
+      "name": "Konec stezky pro cyklisty",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C08b.jpg",
+      "assetFile": "C08b.jpg"
+    },
+    {
+      "id": "C-9a",
+      "sourceCode": "C09a",
+      "name": "Stezka pro chodce a cyklisty",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C09a.jpg",
+      "assetFile": "C09a.jpg"
+    },
+    {
+      "id": "C-9b",
+      "sourceCode": "C09b",
+      "name": "Konec stezky pro chodce a cyklisty",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C09b.jpg",
+      "assetFile": "C09b.jpg"
+    },
+    {
+      "id": "C-10a",
+      "sourceCode": "C10a",
+      "name": "Stezka pro chodce a cyklisty",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C10a.jpg",
+      "assetFile": "C10a.jpg"
+    },
+    {
+      "id": "C-10b",
+      "sourceCode": "C10b",
+      "name": "Konec stezky pro chodce a cyklisty",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C10b.jpg",
+      "assetFile": "C10b.jpg"
+    },
+    {
+      "id": "C-11a",
+      "sourceCode": "C11a",
+      "name": "Stezka pro jezdce na zvířeti",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C11a.jpg",
+      "assetFile": "C11a.jpg"
+    },
+    {
+      "id": "C-11b",
+      "sourceCode": "C11b",
+      "name": "Konec stezka pro jezdce na zvířeti",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C11b.jpg",
+      "assetFile": "C11b.jpg"
+    },
+    {
+      "id": "C-12a",
+      "sourceCode": "C12a",
+      "name": "Přikázaný jízdní pruh",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C12a.jpg",
+      "assetFile": "C12a.jpg"
+    },
+    {
+      "id": "C-12b",
+      "sourceCode": "C12b",
+      "name": "Konec přikázaného jízdního pruhu",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C12b.jpg",
+      "assetFile": "C12b.jpg"
+    },
+    {
+      "id": "C-13a",
+      "sourceCode": "C13a",
+      "name": "Rozviť světla",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C13a.jpg",
+      "assetFile": "C13a.jpg"
+    },
+    {
+      "id": "C-13b",
+      "sourceCode": "C13b",
+      "name": "Rozviť světla - konec",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C13b.jpg",
+      "assetFile": "C13b.jpg"
+    },
+    {
+      "id": "C-14a",
+      "sourceCode": "C14a",
+      "name": "Jiný příkaz",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C14a.jpg",
+      "assetFile": "C14a.jpg"
+    },
+    {
+      "id": "C-14b",
+      "sourceCode": "C14b",
+      "name": "Konec jiného příkazu",
+      "categoryPath": "/znacky/prikazove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/C14b.jpg",
+      "assetFile": "C14b.jpg"
+    },
+    {
+      "id": "E-1",
+      "sourceCode": "E01",
+      "name": "Počet",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E01.jpg",
+      "assetFile": "E01.jpg"
+    },
+    {
+      "id": "E-2a",
+      "sourceCode": "E02a",
+      "name": "Tvar křižovatky",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E02a.jpg",
+      "assetFile": "E02a.jpg"
+    },
+    {
+      "id": "E-2b",
+      "sourceCode": "E02b",
+      "name": "Tvar křižovatky",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E02b.jpg",
+      "assetFile": "E02b.jpg"
+    },
+    {
+      "id": "E-2c",
+      "sourceCode": "E02c",
+      "name": "Tvar křižovatky",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E02c.jpg",
+      "assetFile": "E02c.jpg"
+    },
+    {
+      "id": "E-2d",
+      "sourceCode": "E02d",
+      "name": "Tvar dvou křižovatek",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E02d.jpg",
+      "assetFile": "E02d.jpg"
+    },
+    {
+      "id": "E-3a",
+      "sourceCode": "E03a",
+      "name": "Vzdálenost",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E03a.jpg",
+      "assetFile": "E03a.jpg"
+    },
+    {
+      "id": "E-3b",
+      "sourceCode": "E03b",
+      "name": "Vzdálenost",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E03b.jpg",
+      "assetFile": "E03b.jpg"
+    },
+    {
+      "id": "E-4",
+      "sourceCode": "E04",
+      "name": "Délka úseku",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E04.jpg",
+      "assetFile": "E04.jpg"
+    },
+    {
+      "id": "E-5",
+      "sourceCode": "E05",
+      "name": "Celková hmotnost",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E05.jpg",
+      "assetFile": "E05.jpg"
+    },
+    {
+      "id": "E-6",
+      "sourceCode": "E06",
+      "name": "Za mokra",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E06.jpg",
+      "assetFile": "E06.jpg"
+    },
+    {
+      "id": "E-7a",
+      "sourceCode": "E07a",
+      "name": "Směrová šipka",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E07a.jpg",
+      "assetFile": "E07a.jpg"
+    },
+    {
+      "id": "E-7b",
+      "sourceCode": "E07b",
+      "name": "Směrová šipka",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E07b.jpg",
+      "assetFile": "E07b.jpg"
+    },
+    {
+      "id": "E-8a",
+      "sourceCode": "E08a",
+      "name": "Začátek úseku",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E08a.jpg",
+      "assetFile": "E08a.jpg"
+    },
+    {
+      "id": "E-8b",
+      "sourceCode": "E08b",
+      "name": "Průběh úseku",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E08b.jpg",
+      "assetFile": "E08b.jpg"
+    },
+    {
+      "id": "E-8c",
+      "sourceCode": "E08c",
+      "name": "Konec úseku",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E08c.jpg",
+      "assetFile": "E08c.jpg"
+    },
+    {
+      "id": "E-8d",
+      "sourceCode": "E08d",
+      "name": "Úsek platnosti",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E08d.jpg",
+      "assetFile": "E08d.jpg"
+    },
+    {
+      "id": "E-8e",
+      "sourceCode": "E08e",
+      "name": "Úsek platnosti",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E08e.jpg",
+      "assetFile": "E08e.jpg"
+    },
+    {
+      "id": "E-9",
+      "sourceCode": "E09",
+      "name": "Druh vozidla",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E09.jpg",
+      "assetFile": "E09.jpg"
+    },
+    {
+      "id": "E-10",
+      "sourceCode": "E10",
+      "name": "Tvar křížení pozemní komunikace s dráhou",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E10.jpg",
+      "assetFile": "E10.jpg"
+    },
+    {
+      "id": "E-11",
+      "sourceCode": "E11",
+      "name": "Bez poplatku",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E11.jpg",
+      "assetFile": "E11.jpg"
+    },
+    {
+      "id": "E-12",
+      "sourceCode": "E12",
+      "name": "Text",
+      "categoryPath": "/znacky/dopravni-znacky-dodatkove-tabulky/",
+      "sourcePath": "/dopravni-znacky/E12.jpg",
+      "assetFile": "E12.jpg"
+    },
+    {
+      "id": "I-1",
+      "sourceCode": "I01",
+      "name": "Nápisy",
+      "categoryPath": "/znacky/zarizeni-pro-provozni-informace/",
+      "sourcePath": "/dopravni-znacky/I01.jpg",
+      "assetFile": "I01.jpg"
+    },
+    {
+      "id": "I-2",
+      "sourceCode": "I02",
+      "name": "Obsaditelnost parkoviště",
+      "categoryPath": "/znacky/zarizeni-pro-provozni-informace/",
+      "sourcePath": "/dopravni-znacky/I02.jpg",
+      "assetFile": "I02.jpg"
+    },
+    {
+      "id": "I-3",
+      "sourceCode": "I03",
+      "name": "Teploměr",
+      "categoryPath": "/znacky/zarizeni-pro-provozni-informace/",
+      "sourcePath": "/dopravni-znacky/I03.jpg",
+      "assetFile": "I03.jpg"
+    },
+    {
+      "id": "IJ-1",
+      "sourceCode": "IJ01",
+      "name": "Policie",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ01.jpg",
+      "assetFile": "IJ01.jpg"
+    },
+    {
+      "id": "IJ-2",
+      "sourceCode": "IJ02",
+      "name": "Nemocnice",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ02.jpg",
+      "assetFile": "IJ02.jpg"
+    },
+    {
+      "id": "IJ-3",
+      "sourceCode": "IJ03",
+      "name": "První pomoc",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ03.jpg",
+      "assetFile": "IJ03.jpg"
+    },
+    {
+      "id": "IJ-4a",
+      "sourceCode": "IJ04a",
+      "name": "Zastávka",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ04a.jpg",
+      "assetFile": "IJ04a.jpg"
+    },
+    {
+      "id": "IJ-4b",
+      "sourceCode": "IJ04b",
+      "name": "Zastávka",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ04b.jpg",
+      "assetFile": "IJ04b.jpg"
+    },
+    {
+      "id": "IJ-4c",
+      "sourceCode": "IJ04c",
+      "name": "Zastávka autobusu",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ04c.jpg",
+      "assetFile": "IJ04c.jpg"
+    },
+    {
+      "id": "IJ-4d",
+      "sourceCode": "IJ04d",
+      "name": "Zastávka tramvaje",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ04d.jpg",
+      "assetFile": "IJ04d.jpg"
+    },
+    {
+      "id": "IJ-4e",
+      "sourceCode": "IJ04e",
+      "name": "Zastávka trolejbusu",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ04e.jpg",
+      "assetFile": "IJ04e.jpg"
+    },
+    {
+      "id": "IJ-5",
+      "sourceCode": "IJ05",
+      "name": "Informace",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ05.jpg",
+      "assetFile": "IJ05.jpg"
+    },
+    {
+      "id": "IJ-6",
+      "sourceCode": "IJ06",
+      "name": "Telefon",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ06.jpg",
+      "assetFile": "IJ06.jpg"
+    },
+    {
+      "id": "IJ-7",
+      "sourceCode": "IJ07",
+      "name": "Čerpací stanice",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ07.jpg",
+      "assetFile": "IJ07.jpg"
+    },
+    {
+      "id": "IJ-8",
+      "sourceCode": "IJ08",
+      "name": "Opravna",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ08.jpg",
+      "assetFile": "IJ08.jpg"
+    },
+    {
+      "id": "IJ-9",
+      "sourceCode": "IJ09",
+      "name": "Stanice technické kontroly",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ09.jpg",
+      "assetFile": "IJ09.jpg"
+    },
+    {
+      "id": "IJ-10",
+      "sourceCode": "IJ10",
+      "name": "Hotel nebo motel",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ10.jpg",
+      "assetFile": "IJ10.jpg"
+    },
+    {
+      "id": "IJ-11a",
+      "sourceCode": "IJ11a",
+      "name": "Restaurace",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ11a.jpg",
+      "assetFile": "IJ11a.jpg"
+    },
+    {
+      "id": "IJ-11b",
+      "sourceCode": "IJ11b",
+      "name": "Občerstvení",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ11b.jpg",
+      "assetFile": "IJ11b.jpg"
+    },
+    {
+      "id": "IJ-12",
+      "sourceCode": "IJ12",
+      "name": "WC",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ12.jpg",
+      "assetFile": "IJ12.jpg"
+    },
+    {
+      "id": "IJ-13",
+      "sourceCode": "IJ13",
+      "name": "Místo pro odpočinek",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ13.jpg",
+      "assetFile": "IJ13.jpg"
+    },
+    {
+      "id": "IJ-14a",
+      "sourceCode": "IJ14a",
+      "name": "Tábořičtě pro stany",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ14a.jpg",
+      "assetFile": "IJ14a.jpg"
+    },
+    {
+      "id": "IJ-14b",
+      "sourceCode": "IJ14b",
+      "name": "Tábořiště pro obytné přívěsy",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ14b.jpg",
+      "assetFile": "IJ14b.jpg"
+    },
+    {
+      "id": "IJ-14c",
+      "sourceCode": "IJ14c",
+      "name": "Tábořiště pro stany a pro obytné přívěsy",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ14c.jpg",
+      "assetFile": "IJ14c.jpg"
+    },
+    {
+      "id": "IJ-15",
+      "sourceCode": "IJ15",
+      "name": "Dopravní vysílání",
+      "categoryPath": "/znacky/informativni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IJ15.jpg",
+      "assetFile": "IJ15.jpg"
+    },
+    {
+      "id": "IP-1a",
+      "sourceCode": "IP01a",
+      "name": "Okruh",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP01a.jpg",
+      "assetFile": "IP01a.jpg"
+    },
+    {
+      "id": "IP-1b",
+      "sourceCode": "IP01b",
+      "name": "Změna směru okruhu",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP01b.jpg",
+      "assetFile": "IP01b.jpg"
+    },
+    {
+      "id": "IP-2",
+      "sourceCode": "IP02",
+      "name": "Zpomalovací práh",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP02.jpg",
+      "assetFile": "IP02.jpg"
+    },
+    {
+      "id": "IP-3",
+      "sourceCode": "IP03",
+      "name": "Podchod nebo nadchod",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP03.jpg",
+      "assetFile": "IP03.jpg"
+    },
+    {
+      "id": "IP-4a",
+      "sourceCode": "IP04a",
+      "name": "Jednosměrný provoz",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP04a.jpg",
+      "assetFile": "IP04a.jpg"
+    },
+    {
+      "id": "IP-4b",
+      "sourceCode": "IP04b",
+      "name": "Jednosměrný provoz",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP04b.jpg",
+      "assetFile": "IP04b.jpg"
+    },
+    {
+      "id": "IP-5",
+      "sourceCode": "IP05",
+      "name": "Doporučená rychlost",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP05.jpg",
+      "assetFile": "IP05.jpg"
+    },
+    {
+      "id": "IP-6",
+      "sourceCode": "IP06",
+      "name": "Přechod pro chodce",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP06.jpg",
+      "assetFile": "IP06.jpg"
+    },
+    {
+      "id": "IP-7",
+      "sourceCode": "IP07",
+      "name": "Přejezd pro cyklisty",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP07.jpg",
+      "assetFile": "IP07.jpg"
+    },
+    {
+      "id": "IP-8a",
+      "sourceCode": "IP08a",
+      "name": "Tunel",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP08a.jpg",
+      "assetFile": "IP08a.jpg"
+    },
+    {
+      "id": "IP-8b",
+      "sourceCode": "IP08b",
+      "name": "Konec tunelu",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP08b.jpg",
+      "assetFile": "IP08b.jpg"
+    },
+    {
+      "id": "IP-9",
+      "sourceCode": "IP09",
+      "name": "Nouzové stání",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP09.jpg",
+      "assetFile": "IP09.jpg"
+    },
+    {
+      "id": "IP-10a",
+      "sourceCode": "IP10a",
+      "name": "Slepá pozemní komunikace",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP10a.jpg",
+      "assetFile": "IP10a.jpg"
+    },
+    {
+      "id": "IP-10b",
+      "sourceCode": "IP10b",
+      "name": "Návěst před slepou pozemní komunikací",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP10b.jpg",
+      "assetFile": "IP10b.jpg"
+    },
+    {
+      "id": "IP-11a",
+      "sourceCode": "IP11a",
+      "name": "Parkoviště",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP11a.jpg",
+      "assetFile": "IP11a.jpg"
+    },
+    {
+      "id": "IP-11b",
+      "sourceCode": "IP11b",
+      "name": "Parkoviště (kolmé nebo šikmé)",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP11b.jpg",
+      "assetFile": "IP11b.jpg"
+    },
+    {
+      "id": "IP-11c",
+      "sourceCode": "IP11c",
+      "name": "Parkoviště (podélné)",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP11c.jpg",
+      "assetFile": "IP11c.jpg"
+    },
+    {
+      "id": "IP-11d",
+      "sourceCode": "IP11d",
+      "name": "Parkoviště (stání na chodníku kolmé nebo šikmé)",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP11d.jpg",
+      "assetFile": "IP11d.jpg"
+    },
+    {
+      "id": "IP-11e",
+      "sourceCode": "IP11e",
+      "name": "Parkoviště (stání na chodníku podélné)",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP11e.jpg",
+      "assetFile": "IP11e.jpg"
+    },
+    {
+      "id": "IP-11f",
+      "sourceCode": "IP11f",
+      "name": "Parkoviště (částečné na chodníku kolmé nebo šikmé)",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP11f.jpg",
+      "assetFile": "IP11f.jpg"
+    },
+    {
+      "id": "IP-11g",
+      "sourceCode": "IP11g",
+      "name": "Parkoviště (částečné stání na chodníku podélné)",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP11g.jpg",
+      "assetFile": "IP11g.jpg"
+    },
+    {
+      "id": "IP-12",
+      "sourceCode": "IP12",
+      "name": "Vyhrazené parkoviště",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP12.jpg",
+      "assetFile": "IP12.jpg"
+    },
+    {
+      "id": "IP-13a",
+      "sourceCode": "IP13a",
+      "name": "Kryté parkoviště",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP13a.jpg",
+      "assetFile": "IP13a.jpg"
+    },
+    {
+      "id": "IP-13b",
+      "sourceCode": "IP13b",
+      "name": "Parkoviště s parkovacím kotoučem",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP13b.jpg",
+      "assetFile": "IP13b.jpg"
+    },
+    {
+      "id": "IP-13c",
+      "sourceCode": "IP13c",
+      "name": "Parkoviště s parkovacím automatem",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP13c.jpg",
+      "assetFile": "IP13c.jpg"
+    },
+    {
+      "id": "IP-13d",
+      "sourceCode": "IP13d",
+      "name": "Parkoviště P + R",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP13d.jpg",
+      "assetFile": "IP13d.jpg"
+    },
+    {
+      "id": "IP-14a",
+      "sourceCode": "IP14a",
+      "name": "Dálnice",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP14a.jpg",
+      "assetFile": "IP14a.jpg"
+    },
+    {
+      "id": "IP-14b",
+      "sourceCode": "IP14b",
+      "name": "Konec dálnice",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP14b.jpg",
+      "assetFile": "IP14b.jpg"
+    },
+    {
+      "id": "IP-15a",
+      "sourceCode": "IP15a",
+      "name": "Silnice pro motorová vozidla",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP15a.jpg",
+      "assetFile": "IP15a.jpg"
+    },
+    {
+      "id": "IP-15b",
+      "sourceCode": "IP15b",
+      "name": "Konec silnice pro motorová vozidla",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP15b.jpg",
+      "assetFile": "IP15b.jpg"
+    },
+    {
+      "id": "IP-16",
+      "sourceCode": "IP16",
+      "name": "Uspořádání jízdních pruhů",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP16.jpg",
+      "assetFile": "IP16.jpg"
+    },
+    {
+      "id": "IP-17",
+      "sourceCode": "IP17",
+      "name": "Uspořádání jízdních pruhů",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP17.jpg",
+      "assetFile": "IP17.jpg"
+    },
+    {
+      "id": "IP-18a",
+      "sourceCode": "IP18a",
+      "name": "Zvýšení počtu jízdních pruhů",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP18a.jpg",
+      "assetFile": "IP18a.jpg"
+    },
+    {
+      "id": "IP-18b",
+      "sourceCode": "IP18b",
+      "name": "Snížení počtu jízdních pruhů",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP18b.jpg",
+      "assetFile": "IP18b.jpg"
+    },
+    {
+      "id": "IP-18c",
+      "sourceCode": "IP18c",
+      "name": "Jízdní pruh pro pomalá vozidla",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP18c.jpg",
+      "assetFile": "IP18c.jpg"
+    },
+    {
+      "id": "IP-19",
+      "sourceCode": "IP19",
+      "name": "Řadící pruhy",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP19.jpg",
+      "assetFile": "IP19.jpg"
+    },
+    {
+      "id": "IP-20a",
+      "sourceCode": "IP20a",
+      "name": "Vyhrazený jízdní pruh",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP20a.jpg",
+      "assetFile": "IP20a.jpg"
+    },
+    {
+      "id": "IP-20b",
+      "sourceCode": "IP20b",
+      "name": "Konec vyhr. jízdního pruhu",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP20b.jpg",
+      "assetFile": "IP20b.jpg"
+    },
+    {
+      "id": "IP-21a",
+      "sourceCode": "IP21a",
+      "name": "Omezení v jízdním pruhu",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP21a.jpg",
+      "assetFile": "IP21a.jpg"
+    },
+    {
+      "id": "IP-22",
+      "sourceCode": "IP22",
+      "name": "Změna místní úpravy",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP22.jpg",
+      "assetFile": "IP22.jpg"
+    },
+    {
+      "id": "IP-23a",
+      "sourceCode": "IP23a",
+      "name": "Objíždění tramvaje",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP23a.jpg",
+      "assetFile": "IP23a.jpg"
+    },
+    {
+      "id": "IP-23b",
+      "sourceCode": "IP23b",
+      "name": "Ob. tram. (jízda podél tr. vlevo)",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP23b.jpg",
+      "assetFile": "IP23b.jpg"
+    },
+    {
+      "id": "IP-24",
+      "sourceCode": "IP24",
+      "name": "Únikový pruh",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP24.jpg",
+      "assetFile": "IP24.jpg"
+    },
+    {
+      "id": "IP-25a",
+      "sourceCode": "IP25a",
+      "name": "Zóna s dopr. omezením",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP25a.jpg",
+      "assetFile": "IP25a.jpg"
+    },
+    {
+      "id": "IP-25b",
+      "sourceCode": "IP25b",
+      "name": "Konec zóny s dopravním omezením",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP25b.jpg",
+      "assetFile": "IP25b.jpg"
+    },
+    {
+      "id": "IP-26a",
+      "sourceCode": "IP26a",
+      "name": "Obytná zóna",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP26a.jpg",
+      "assetFile": "IP26a.jpg"
+    },
+    {
+      "id": "IP-26b",
+      "sourceCode": "IP26b",
+      "name": "Konec obytné zóny",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP26b.jpg",
+      "assetFile": "IP26b.jpg"
+    },
+    {
+      "id": "IP-27a",
+      "sourceCode": "IP27a",
+      "name": "Pěší zóna",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP27a.jpg",
+      "assetFile": "IP27a.jpg"
+    },
+    {
+      "id": "IP-27b",
+      "sourceCode": "IP27b",
+      "name": "Konec pěší zóny",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP27b.jpg",
+      "assetFile": "IP27b.jpg"
+    },
+    {
+      "id": "IP-28",
+      "sourceCode": "IP28",
+      "name": "Nejvyšší dovolené rychlosti",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP28.jpg",
+      "assetFile": "IP28.jpg"
+    },
+    {
+      "id": "IP-29",
+      "sourceCode": "IP29",
+      "name": "Střídavé řazení",
+      "categoryPath": "/znacky/informativni-provozni-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IP29.jpg",
+      "assetFile": "IP29.jpg"
+    },
+    {
+      "id": "IS-1a",
+      "sourceCode": "IS01a",
+      "name": "Směrová tabule pro příjezd k dálnici (s jedním cílem)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS01a.jpg",
+      "assetFile": "IS01a.jpg"
+    },
+    {
+      "id": "IS-1b",
+      "sourceCode": "IS01b",
+      "name": "Směrová tabule pro příjezd k dálnici (s dvěma cíli)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS01b.jpg",
+      "assetFile": "IS01b.jpg"
+    },
+    {
+      "id": "IS-1c",
+      "sourceCode": "IS01c",
+      "name": "Směrová tabule pro příjezd k dálnici (s jedním cílem)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS01c.jpg",
+      "assetFile": "IS01c.jpg"
+    },
+    {
+      "id": "IS-1d",
+      "sourceCode": "IS01d",
+      "name": "Směrová tabule pro příjezd k dálnici (se dvěma cíli)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS01d.jpg",
+      "assetFile": "IS01d.jpg"
+    },
+    {
+      "id": "IS-2a",
+      "sourceCode": "IS02a",
+      "name": "Směrová tabule pro příjezd k silnici pro motorová vozidla (s jedním cílem)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS02a.jpg",
+      "assetFile": "IS02a.jpg"
+    },
+    {
+      "id": "IS-2b",
+      "sourceCode": "IS02b",
+      "name": "Směrová tabule pro příjezd k silnici pro motorová vozidla (s dvěma cíli)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS02b.jpg",
+      "assetFile": "IS02b.jpg"
+    },
+    {
+      "id": "IS-2c",
+      "sourceCode": "IS02c",
+      "name": "Směrová tabule pro příjezd k silnici pro motorová vozidla(s jedním cílem)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS02c.jpg",
+      "assetFile": "IS02c.jpg"
+    },
+    {
+      "id": "IS-2d",
+      "sourceCode": "IS02d",
+      "name": "Směrová tabule pro příjezd k silnici pro motorová vozidla(s dvěma cíli)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS02d.jpg",
+      "assetFile": "IS02d.jpg"
+    },
+    {
+      "id": "IS-3a",
+      "sourceCode": "IS03a",
+      "name": "Směrová tabule (s jedním cílem)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS03a.jpg",
+      "assetFile": "IS03a.jpg"
+    },
+    {
+      "id": "IS-3b",
+      "sourceCode": "IS03b",
+      "name": "Směrová tabule pro příjezd k silnici pro motorová vozidla (s dvěma cíli)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS03b.jpg",
+      "assetFile": "IS03b.jpg"
+    },
+    {
+      "id": "IS-3c",
+      "sourceCode": "IS03c",
+      "name": "Směrová tabule (s jedním cílem)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS03c.jpg",
+      "assetFile": "IS03c.jpg"
+    },
+    {
+      "id": "IS-3d",
+      "sourceCode": "IS03d",
+      "name": "Směrová tabule (s dvěma cíli)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS03d.jpg",
+      "assetFile": "IS03d.jpg"
+    },
+    {
+      "id": "IS-4a",
+      "sourceCode": "IS04a",
+      "name": "Směrová tabule (s jedním místním cílem)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS04a.jpg",
+      "assetFile": "IS04a.jpg"
+    },
+    {
+      "id": "IS-4b",
+      "sourceCode": "IS04b",
+      "name": "Směrová tabule (s dvěma místními cíli)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS04b.jpg",
+      "assetFile": "IS04b.jpg"
+    },
+    {
+      "id": "IS-4c",
+      "sourceCode": "IS04c",
+      "name": "Směrová tabule (s jedním místním cílem)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS04c.jpg",
+      "assetFile": "IS04c.jpg"
+    },
+    {
+      "id": "IS-4d",
+      "sourceCode": "IS04d",
+      "name": "Směrová tabule (s dvěma místními cíli)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS04d.jpg",
+      "assetFile": "IS04d.jpg"
+    },
+    {
+      "id": "IS-5",
+      "sourceCode": "IS05",
+      "name": "Směrová tabule k jinému cíli",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS05.jpg",
+      "assetFile": "IS05.jpg"
+    },
+    {
+      "id": "IS-9a",
+      "sourceCode": "IS09a",
+      "name": "Návěst před křižovatkou",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS09a.jpg",
+      "assetFile": "IS09a.jpg"
+    },
+    {
+      "id": "IS-9b",
+      "sourceCode": "IS09b",
+      "name": "Návěst před křižovatkou",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS09b.jpg",
+      "assetFile": "IS09b.jpg"
+    },
+    {
+      "id": "IS-9c",
+      "sourceCode": "IS09c",
+      "name": "Návěst před křižovatkou",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS09c.jpg",
+      "assetFile": "IS09c.jpg"
+    },
+    {
+      "id": "IS-9d",
+      "sourceCode": "IS09d",
+      "name": "Návěst před křižovatkou",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS09d.jpg",
+      "assetFile": "IS09d.jpg"
+    },
+    {
+      "id": "IS-9e",
+      "sourceCode": "IS09e",
+      "name": "Návěst před křižovatkou",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS09e.jpg",
+      "assetFile": "IS09e.jpg"
+    },
+    {
+      "id": "IS-10a",
+      "sourceCode": "IS10a",
+      "name": "Návěst změny směru jízdy",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS10a.jpg",
+      "assetFile": "IS10a.jpg"
+    },
+    {
+      "id": "IS-10b",
+      "sourceCode": "IS10b",
+      "name": "Návěst změny směru jízdy",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS10b.jpg",
+      "assetFile": "IS10b.jpg"
+    },
+    {
+      "id": "IS-10c",
+      "sourceCode": "IS10c",
+      "name": "Návěst změny směru jízdy",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS10c.jpg",
+      "assetFile": "IS10c.jpg"
+    },
+    {
+      "id": "IS-10d",
+      "sourceCode": "IS10d",
+      "name": "Návěst změny směru jízdy s omezením",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS10d.jpg",
+      "assetFile": "IS10d.jpg"
+    },
+    {
+      "id": "IS-11a",
+      "sourceCode": "IS11a",
+      "name": "Návěst před objížďkou",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS11a.jpg",
+      "assetFile": "IS11a.jpg"
+    },
+    {
+      "id": "IS-11b",
+      "sourceCode": "IS11b",
+      "name": "Směrová tabule pro vyznačení objížďky",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS11b.jpg",
+      "assetFile": "IS11b.jpg"
+    },
+    {
+      "id": "IS-11c",
+      "sourceCode": "IS11c",
+      "name": "Směrová tabule pro vyznačení objížďky",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS11c.jpg",
+      "assetFile": "IS11c.jpg"
+    },
+    {
+      "id": "IS-11d",
+      "sourceCode": "IS11d",
+      "name": "Směrová tabule pro vyznačení objížďky",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS11d.jpg",
+      "assetFile": "IS11d.jpg"
+    },
+    {
+      "id": "IS-12a",
+      "sourceCode": "IS12a",
+      "name": "Obec",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS12a.jpg",
+      "assetFile": "IS12a.jpg"
+    },
+    {
+      "id": "IS-12b",
+      "sourceCode": "IS12b",
+      "name": "Konec obce",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS12b.jpg",
+      "assetFile": "IS12b.jpg"
+    },
+    {
+      "id": "IS-13",
+      "sourceCode": "IS13",
+      "name": "Blízká návěst",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS13.jpg",
+      "assetFile": "IS13.jpg"
+    },
+    {
+      "id": "IS-14",
+      "sourceCode": "IS14",
+      "name": "Hranice územního celku",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS14.jpg",
+      "assetFile": "IS14.jpg"
+    },
+    {
+      "id": "IS-15a",
+      "sourceCode": "IS15a",
+      "name": "Jiný název",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS15a.jpg",
+      "assetFile": "IS15a.jpg"
+    },
+    {
+      "id": "IS-15b",
+      "sourceCode": "IS15b",
+      "name": "Jiný název",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS15b.jpg",
+      "assetFile": "IS15b.jpg"
+    },
+    {
+      "id": "IS-16a",
+      "sourceCode": "IS16a",
+      "name": "Dálnice",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS16a.jpg",
+      "assetFile": "IS16a.jpg"
+    },
+    {
+      "id": "IS-16b",
+      "sourceCode": "IS16b",
+      "name": "Silnice I. třídy",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS16b.jpg",
+      "assetFile": "IS16b.jpg"
+    },
+    {
+      "id": "IS-16d",
+      "sourceCode": "IS16d",
+      "name": "Silnice II. třídy",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS16d.jpg",
+      "assetFile": "IS16d.jpg"
+    },
+    {
+      "id": "IS-17",
+      "sourceCode": "IS17",
+      "name": "Silnice pro mezinárodní provoz",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS17.jpg",
+      "assetFile": "IS17.jpg"
+    },
+    {
+      "id": "IS-18a",
+      "sourceCode": "IS18a",
+      "name": "Kilometrovník",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS18a.jpg",
+      "assetFile": "IS18a.jpg"
+    },
+    {
+      "id": "IS-18b",
+      "sourceCode": "IS18b",
+      "name": "Kilometrovník",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS18b.jpg",
+      "assetFile": "IS18b.jpg"
+    },
+    {
+      "id": "IS-19a",
+      "sourceCode": "IS19a",
+      "name": "Směrová tabule pro cyklisty (s jedním cílem)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS19a.jpg",
+      "assetFile": "IS19a.jpg"
+    },
+    {
+      "id": "IS-19b",
+      "sourceCode": "IS19b",
+      "name": "Směrová tabule pro cyklisty (s dvěma cíli)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS19b.jpg",
+      "assetFile": "IS19b.jpg"
+    },
+    {
+      "id": "IS-19c",
+      "sourceCode": "IS19c",
+      "name": "Směrová tabule pro cyklisty (s jedním cílem)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS19c.jpg",
+      "assetFile": "IS19c.jpg"
+    },
+    {
+      "id": "IS-19d",
+      "sourceCode": "IS19d",
+      "name": "Směrová tabule pro cyklisty (s dvěma cíli)",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS19d.jpg",
+      "assetFile": "IS19d.jpg"
+    },
+    {
+      "id": "IS-20",
+      "sourceCode": "IS20",
+      "name": "Návěst před křižovatkou pro cyklisty",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS20.jpg",
+      "assetFile": "IS20.jpg"
+    },
+    {
+      "id": "IS-21a",
+      "sourceCode": "IS21a",
+      "name": "Směrová tabulka pro cyklisty",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS21a.jpg",
+      "assetFile": "IS21a.jpg"
+    },
+    {
+      "id": "IS-21b",
+      "sourceCode": "IS21b",
+      "name": "Směrová tabulka pro cyklisty",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS21b.jpg",
+      "assetFile": "IS21b.jpg"
+    },
+    {
+      "id": "IS-21c",
+      "sourceCode": "IS21c",
+      "name": "Směrová tabulka pro cyklisty",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS21c.jpg",
+      "assetFile": "IS21c.jpg"
+    },
+    {
+      "id": "IS-22a",
+      "sourceCode": "IS22a",
+      "name": "Označení názvu ulice",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS22a.jpg",
+      "assetFile": "IS22a.jpg"
+    },
+    {
+      "id": "IS-22b",
+      "sourceCode": "IS22b",
+      "name": "Označení názvu ulice",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS22b.jpg",
+      "assetFile": "IS22b.jpg"
+    },
+    {
+      "id": "IS-22c",
+      "sourceCode": "IS22c",
+      "name": "Označení názvu ulice",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS22c.jpg",
+      "assetFile": "IS22c.jpg"
+    },
+    {
+      "id": "IS-22d",
+      "sourceCode": "IS22d",
+      "name": "Označení názvu ulice",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS22d.jpg",
+      "assetFile": "IS22d.jpg"
+    },
+    {
+      "id": "IS-22e",
+      "sourceCode": "IS22e",
+      "name": "Označení názvu ulice",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS22e.jpg",
+      "assetFile": "IS22e.jpg"
+    },
+    {
+      "id": "IS-22f",
+      "sourceCode": "IS22f",
+      "name": "Označení názvu ulice",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS22f.jpg",
+      "assetFile": "IS22f.jpg"
+    },
+    {
+      "id": "IS-23",
+      "sourceCode": "IS23",
+      "name": "Kulturní nebo turistický cíl - návěst",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS23.jpg",
+      "assetFile": "IS23.jpg"
+    },
+    {
+      "id": "IS-24a",
+      "sourceCode": "IS24a",
+      "name": "Kulturní nebo turistický cíl",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS24a.jpg",
+      "assetFile": "IS24a.jpg"
+    },
+    {
+      "id": "IS-24b",
+      "sourceCode": "IS24b",
+      "name": "Kulturní nebo turistický cíl",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS24b.jpg",
+      "assetFile": "IS24b.jpg"
+    },
+    {
+      "id": "IS-24c",
+      "sourceCode": "IS24c",
+      "name": "Komunální cíl",
+      "categoryPath": "/znacky/informativni-smerove-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/IS24c.jpg",
+      "assetFile": "IS24c.jpg"
+    },
+    {
+      "id": "O-1",
+      "sourceCode": "O01",
+      "name": "Označení vozidla přepravujícího osobu postiženou a nebo osobu těžce pohyblivě postiženou",
+      "categoryPath": "/znacky/specialni-oznaceni-vozidel/",
+      "sourcePath": "/dopravni-znacky/O01.jpg",
+      "assetFile": "O01.jpg"
+    },
+    {
+      "id": "O-2",
+      "sourceCode": "O02",
+      "name": "Označení vozidla řízeného osobou sluchově postiženou",
+      "categoryPath": "/znacky/specialni-oznaceni-vozidel/",
+      "sourcePath": "/dopravni-znacky/O02.jpg",
+      "assetFile": "O02.jpg"
+    },
+    {
+      "id": "O-3",
+      "sourceCode": "O03",
+      "name": "Označení vozidla řízeného řídičem začátečníkem",
+      "categoryPath": "/znacky/specialni-oznaceni-vozidel/",
+      "sourcePath": "/dopravni-znacky/O03.jpg",
+      "assetFile": "O03.jpg"
+    },
+    {
+      "id": "O-4",
+      "sourceCode": "O04",
+      "name": "Označení autobusupřepravujícího děti",
+      "categoryPath": "/znacky/specialni-oznaceni-vozidel/",
+      "sourcePath": "/dopravni-znacky/O04.jpg",
+      "assetFile": "O04.jpg"
+    },
+    {
+      "id": "P-1",
+      "sourceCode": "P01",
+      "name": "Křižovatka s vedlejší pozemní komunikací",
+      "categoryPath": "/znacky/dopravni-znacky-upravujici-prednost/",
+      "sourcePath": "/dopravni-znacky/P01.jpg",
+      "assetFile": "P01.jpg"
+    },
+    {
+      "id": "P-2",
+      "sourceCode": "P02",
+      "name": "Hlavní pozemní komunikace",
+      "categoryPath": "/znacky/dopravni-znacky-upravujici-prednost/",
+      "sourcePath": "/dopravni-znacky/P02.jpg",
+      "assetFile": "P02.jpg"
+    },
+    {
+      "id": "P-3",
+      "sourceCode": "P03",
+      "name": "Konec hlavní pozemní komunikace",
+      "categoryPath": "/znacky/dopravni-znacky-upravujici-prednost/",
+      "sourcePath": "/dopravni-znacky/P03.jpg",
+      "assetFile": "P03.jpg"
+    },
+    {
+      "id": "P-4",
+      "sourceCode": "P04",
+      "name": "Dej přednost v jízdě",
+      "categoryPath": "/znacky/dopravni-znacky-upravujici-prednost/",
+      "sourcePath": "/dopravni-znacky/P04.jpg",
+      "assetFile": "P04.jpg"
+    },
+    {
+      "id": "P-5",
+      "sourceCode": "P05",
+      "name": "Dej přednost v jízdě tramvaji",
+      "categoryPath": "/znacky/dopravni-znacky-upravujici-prednost/",
+      "sourcePath": "/dopravni-znacky/P05.jpg",
+      "assetFile": "P05.jpg"
+    },
+    {
+      "id": "P-6",
+      "sourceCode": "P06",
+      "name": "Stůj, dej přednost v jízdě",
+      "categoryPath": "/znacky/dopravni-znacky-upravujici-prednost/",
+      "sourcePath": "/dopravni-znacky/P06.jpg",
+      "assetFile": "P06.jpg"
+    },
+    {
+      "id": "P-7",
+      "sourceCode": "P07",
+      "name": "Přednost protijedoucích vozidel",
+      "categoryPath": "/znacky/dopravni-znacky-upravujici-prednost/",
+      "sourcePath": "/dopravni-znacky/P07.jpg",
+      "assetFile": "P07.jpg"
+    },
+    {
+      "id": "P-8",
+      "sourceCode": "P08",
+      "name": "Přednost před protijedoucími vozidly",
+      "categoryPath": "/znacky/dopravni-znacky-upravujici-prednost/",
+      "sourcePath": "/dopravni-znacky/P08.jpg",
+      "assetFile": "P08.jpg"
+    },
+    {
+      "id": "S-4",
+      "sourceCode": "S04",
+      "name": "Signál žlutého světla ve tvaru chodce",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S04.jpg",
+      "assetFile": "S04.jpg"
+    },
+    {
+      "id": "S-5",
+      "sourceCode": "S05",
+      "name": "Doplňková směrová šipka",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S05.jpg",
+      "assetFile": "S05.jpg"
+    },
+    {
+      "id": "S-6",
+      "sourceCode": "S06",
+      "name": "Signál pro opuštění křižovatky",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S06.jpg",
+      "assetFile": "S06.jpg"
+    },
+    {
+      "id": "S-7",
+      "sourceCode": "S07",
+      "name": "přerušované žluté světlo",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S07.jpg",
+      "assetFile": "S07.jpg"
+    },
+    {
+      "id": "S-8a",
+      "sourceCode": "S08a",
+      "name": "Zakázaný vjezd vozidel do jízdního pruhu",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S08a.jpg",
+      "assetFile": "S08a.jpg"
+    },
+    {
+      "id": "S-8b",
+      "sourceCode": "S08b",
+      "name": "Volný vjezd vozidel do jízdního pruhu",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S08b.jpg",
+      "assetFile": "S08b.jpg"
+    },
+    {
+      "id": "S-8c",
+      "sourceCode": "S08c",
+      "name": "Světelná šipka vlevo",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S08c.jpg",
+      "assetFile": "S08c.jpg"
+    },
+    {
+      "id": "S-8d",
+      "sourceCode": "S08d",
+      "name": "Světelná šipka vpravo",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S08d.jpg",
+      "assetFile": "S08d.jpg"
+    },
+    {
+      "id": "S-12a",
+      "sourceCode": "S12a",
+      "name": "Rychlostní signál s proměnným znakem",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S12a.jpg",
+      "assetFile": "S12a.jpg"
+    },
+    {
+      "id": "S-12b",
+      "sourceCode": "S12b",
+      "name": "Rychlostní signál s více signálními znaky",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S12b.jpg",
+      "assetFile": "S12b.jpg"
+    },
+    {
+      "id": "S-13",
+      "sourceCode": "S13",
+      "name": "Signál dvou vedle sebe umístněných střídavě opřerušovaných světel",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S13.jpg",
+      "assetFile": "S13.jpg"
+    },
+    {
+      "id": "S-14a",
+      "sourceCode": "S14a",
+      "name": "Dvě červená střídavě přerušovaná světla signálu přejezdového zabepečovacího zařízení",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S14a.jpg",
+      "assetFile": "S14a.jpg"
+    },
+    {
+      "id": "S-14b",
+      "sourceCode": "S14b",
+      "name": "Přerušované bílé světlo signálu přejezdového zabezpečovacího zařízení",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S14b.jpg",
+      "assetFile": "S14b.jpg"
+    },
+    {
+      "id": "S-15a",
+      "sourceCode": "S15a",
+      "name": "Stůj",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S15a.jpg",
+      "assetFile": "S15a.jpg"
+    },
+    {
+      "id": "S-15b",
+      "sourceCode": "S15b",
+      "name": "Jízda přímo",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S15b.jpg",
+      "assetFile": "S15b.jpg"
+    },
+    {
+      "id": "S-15c",
+      "sourceCode": "S15c",
+      "name": "Jízda vlevo",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S15c.jpg",
+      "assetFile": "S15c.jpg"
+    },
+    {
+      "id": "S-15d",
+      "sourceCode": "S15d",
+      "name": "Jízda vpravo",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S15d.jpg",
+      "assetFile": "S15d.jpg"
+    },
+    {
+      "id": "S-15e",
+      "sourceCode": "S15e",
+      "name": "Jízda přímo a vpravo",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S15e.jpg",
+      "assetFile": "S15e.jpg"
+    },
+    {
+      "id": "S-15f",
+      "sourceCode": "S15f",
+      "name": "Jízda přímo a vlevo",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S15f.jpg",
+      "assetFile": "S15f.jpg"
+    },
+    {
+      "id": "S-15g",
+      "sourceCode": "S15g",
+      "name": "Jízda vpravo a vlevo",
+      "categoryPath": "/znacky/svetelne-signaly/",
+      "sourcePath": "/dopravni-znacky/S15g.jpg",
+      "assetFile": "S15g.jpg"
+    },
+    {
+      "id": "V-1a",
+      "sourceCode": "V01a",
+      "name": "Podélná čára souvislá",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V01a.jpg",
+      "assetFile": "V01a.jpg"
+    },
+    {
+      "id": "V-1b",
+      "sourceCode": "V01b",
+      "name": "Dvojitá podélná čára souvislá",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V01b.jpg",
+      "assetFile": "V01b.jpg"
+    },
+    {
+      "id": "V-2a",
+      "sourceCode": "V02a",
+      "name": "Podélná čára přerušovaná",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V02a.jpg",
+      "assetFile": "V02a.jpg"
+    },
+    {
+      "id": "V-2b",
+      "sourceCode": "V02b",
+      "name": "Podélná čára přerušovaná",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V02b.jpg",
+      "assetFile": "V02b.jpg"
+    },
+    {
+      "id": "V-2c",
+      "sourceCode": "V02c",
+      "name": "Dvojitá podélná čára přerušovaná",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V02c.jpg",
+      "assetFile": "V02c.jpg"
+    },
+    {
+      "id": "V-3",
+      "sourceCode": "V03",
+      "name": "Podélná čára souvislá doplněná čárou přerušovanou",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V03.jpg",
+      "assetFile": "V03.jpg"
+    },
+    {
+      "id": "V-4",
+      "sourceCode": "V04",
+      "name": "Vodící čára",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V04.jpg",
+      "assetFile": "V04.jpg"
+    },
+    {
+      "id": "V-5",
+      "sourceCode": "V05",
+      "name": "Příčná čára souvislá",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V05.jpg",
+      "assetFile": "V05.jpg"
+    },
+    {
+      "id": "V-6a",
+      "sourceCode": "V06a",
+      "name": "Příčná čára souvislá se symbolem Dej přednost v jízdě",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V06a.jpg",
+      "assetFile": "V06a.jpg"
+    },
+    {
+      "id": "V-6b",
+      "sourceCode": "V06b",
+      "name": "Příčná čára souvislá nápisem STOP",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V06b.jpg",
+      "assetFile": "V06b.jpg"
+    },
+    {
+      "id": "V-7",
+      "sourceCode": "V07",
+      "name": "Přechod pro chodce",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V07.jpg",
+      "assetFile": "V07.jpg"
+    },
+    {
+      "id": "V-8",
+      "sourceCode": "V08",
+      "name": "Přejezd pro cyklisty",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V08.jpg",
+      "assetFile": "V08.jpg"
+    },
+    {
+      "id": "V-9a",
+      "sourceCode": "V09a",
+      "name": "Směrové šipky",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V09a.jpg",
+      "assetFile": "V09a.jpg"
+    },
+    {
+      "id": "V-9b",
+      "sourceCode": "V09b",
+      "name": "Předběžné šipky",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V09b.jpg",
+      "assetFile": "V09b.jpg"
+    },
+    {
+      "id": "V-9c",
+      "sourceCode": "V09c",
+      "name": "Předběžné šipky",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V09c.jpg",
+      "assetFile": "V09c.jpg"
+    },
+    {
+      "id": "V-10a",
+      "sourceCode": "V10a",
+      "name": "Stání podélné",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V10a.jpg",
+      "assetFile": "V10a.jpg"
+    },
+    {
+      "id": "V-10b",
+      "sourceCode": "V10b",
+      "name": "Stání kolmé",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V10b.jpg",
+      "assetFile": "V10b.jpg"
+    },
+    {
+      "id": "V-10c",
+      "sourceCode": "V10c",
+      "name": "Stání šikmé",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V10c.jpg",
+      "assetFile": "V10c.jpg"
+    },
+    {
+      "id": "V-10d",
+      "sourceCode": "V10d",
+      "name": "Parkovací pruh",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V10d.jpg",
+      "assetFile": "V10d.jpg"
+    },
+    {
+      "id": "V-10e",
+      "sourceCode": "V10e",
+      "name": "Vyhrazené parkoviště",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V10e.jpg",
+      "assetFile": "V10e.jpg"
+    },
+    {
+      "id": "V-10f",
+      "sourceCode": "V10f",
+      "name": "Vyhrazené parkoviště pro vozidlopřepravující osobu těžce postiženou nebo osobu těžce pohyblivě posti",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V10f.jpg",
+      "assetFile": "V10f.jpg"
+    },
+    {
+      "id": "V-10g",
+      "sourceCode": "V10g",
+      "name": "Časově omezené stání",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V10g.jpg",
+      "assetFile": "V10g.jpg"
+    },
+    {
+      "id": "V-11a",
+      "sourceCode": "V11a",
+      "name": "Zastávka autobusu nebo trolejbusu",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V11a.jpg",
+      "assetFile": "V11a.jpg"
+    },
+    {
+      "id": "V-11b",
+      "sourceCode": "V11b",
+      "name": "Zastávka tramvaje",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V11b.jpg",
+      "assetFile": "V11b.jpg"
+    },
+    {
+      "id": "V-12a",
+      "sourceCode": "V12a",
+      "name": "Žlutá klikatá čára",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V12a.jpg",
+      "assetFile": "V12a.jpg"
+    },
+    {
+      "id": "V-12b",
+      "sourceCode": "V12b",
+      "name": "Žluté klikaté čáry",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V12b.jpg",
+      "assetFile": "V12b.jpg"
+    },
+    {
+      "id": "V-12c",
+      "sourceCode": "V12c",
+      "name": "Zákaz zastavení",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V12c.jpg",
+      "assetFile": "V12c.jpg"
+    },
+    {
+      "id": "V-12d",
+      "sourceCode": "V12d",
+      "name": "Zákaz stání",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V12d.jpg",
+      "assetFile": "V12d.jpg"
+    },
+    {
+      "id": "V-12e",
+      "sourceCode": "V12e",
+      "name": "Bílá klikatá čára",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V12e.jpg",
+      "assetFile": "V12e.jpg"
+    },
+    {
+      "id": "V-13a",
+      "sourceCode": "V13a",
+      "name": "Šikmé rovnoběžné čáry",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V13a.jpg",
+      "assetFile": "V13a.jpg"
+    },
+    {
+      "id": "V-13b",
+      "sourceCode": "V13b",
+      "name": "Křivky",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V13b.jpg",
+      "assetFile": "V13b.jpg"
+    },
+    {
+      "id": "V-14",
+      "sourceCode": "V14",
+      "name": "Jízdní pruh pro cyklisty",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V14.jpg",
+      "assetFile": "V14.jpg"
+    },
+    {
+      "id": "V-15",
+      "sourceCode": "V15",
+      "name": "Nápis na vozovce",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V15.jpg",
+      "assetFile": "V15.jpg"
+    },
+    {
+      "id": "V-16",
+      "sourceCode": "V16",
+      "name": "Bezpečný odstup",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V16.jpg",
+      "assetFile": "V16.jpg"
+    },
+    {
+      "id": "V-17",
+      "sourceCode": "V17",
+      "name": "Trojúhelníky",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V17.jpg",
+      "assetFile": "V17.jpg"
+    },
+    {
+      "id": "V-18",
+      "sourceCode": "V18",
+      "name": "Optická psychologická brzda",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V18.jpg",
+      "assetFile": "V18.jpg"
+    },
+    {
+      "id": "V-19",
+      "sourceCode": "V19",
+      "name": "Prostor pro cyklisty",
+      "categoryPath": "/znacky/vodorovne-dopravni-znacky/",
+      "sourcePath": "/dopravni-znacky/V19.jpg",
+      "assetFile": "V19.jpg"
+    },
+    {
+      "id": "Z-1",
+      "sourceCode": "Z01",
+      "name": "Dopravní kužel",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z01.jpg",
+      "assetFile": "Z01.jpg"
+    },
+    {
+      "id": "Z-2",
+      "sourceCode": "Z02",
+      "name": "Zábrana pro označení uzavírky",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z02.jpg",
+      "assetFile": "Z02.jpg"
+    },
+    {
+      "id": "Z-3",
+      "sourceCode": "Z03",
+      "name": "Vodící tabule",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z03.jpg",
+      "assetFile": "Z03.jpg"
+    },
+    {
+      "id": "Z-4a",
+      "sourceCode": "Z04a",
+      "name": "Směrová deska levá",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z04a.jpg",
+      "assetFile": "Z04a.jpg"
+    },
+    {
+      "id": "Z-4b",
+      "sourceCode": "Z04b",
+      "name": "Směrová deska pravá",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z04b.jpg",
+      "assetFile": "Z04b.jpg"
+    },
+    {
+      "id": "Z-4c",
+      "sourceCode": "Z04c",
+      "name": "Směrová deska středová",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z04c.jpg",
+      "assetFile": "Z04c.jpg"
+    },
+    {
+      "id": "Z-5a",
+      "sourceCode": "Z05a",
+      "name": "Vodící deska levá",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z05a.jpg",
+      "assetFile": "Z05a.jpg"
+    },
+    {
+      "id": "Z-5b",
+      "sourceCode": "Z05b",
+      "name": "Vodící deska pravá",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z05b.jpg",
+      "assetFile": "Z05b.jpg"
+    },
+    {
+      "id": "Z-5c",
+      "sourceCode": "Z05c",
+      "name": "Vodící deska středová",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z05c.jpg",
+      "assetFile": "Z05c.jpg"
+    },
+    {
+      "id": "Z-6a",
+      "sourceCode": "Z06a",
+      "name": "Velká zvýrazňovací deska",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z06a.jpg",
+      "assetFile": "Z06a.jpg"
+    },
+    {
+      "id": "Z-6b",
+      "sourceCode": "Z06b",
+      "name": "Malá zvýrazňovací deska",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z06b.jpg",
+      "assetFile": "Z06b.jpg"
+    },
+    {
+      "id": "Z-7",
+      "sourceCode": "Z07",
+      "name": "Pojízdná uzavírková tabule",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z07.jpg",
+      "assetFile": "Z07.jpg"
+    },
+    {
+      "id": "Z-8a",
+      "sourceCode": "Z08a",
+      "name": "Zastavovací terč",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z08a.jpg",
+      "assetFile": "Z08a.jpg"
+    },
+    {
+      "id": "Z-8b",
+      "sourceCode": "Z08b",
+      "name": "Zastavovací terč (pro jiné osoby)",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z08b.jpg",
+      "assetFile": "Z08b.jpg"
+    },
+    {
+      "id": "Z-8c",
+      "sourceCode": "Z08c",
+      "name": "Směrovka",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z08c.jpg",
+      "assetFile": "Z08c.jpg"
+    },
+    {
+      "id": "Z-9",
+      "sourceCode": "Z09",
+      "name": "Žluté a černé pruhy",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z09.jpg",
+      "assetFile": "Z09.jpg"
+    },
+    {
+      "id": "Z-10",
+      "sourceCode": "Z10",
+      "name": "Dopravní knoflíky",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z10.jpg",
+      "assetFile": "Z10.jpg"
+    },
+    {
+      "id": "Z-11a",
+      "sourceCode": "Z11a",
+      "name": "Směrový sloupek",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z11a.jpg",
+      "assetFile": "Z11a.jpg"
+    },
+    {
+      "id": "Z-11b",
+      "sourceCode": "Z11b",
+      "name": "Směrový sloupek",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z11b.jpg",
+      "assetFile": "Z11b.jpg"
+    },
+    {
+      "id": "Z-11c",
+      "sourceCode": "Z11c",
+      "name": "Směrový sloupek",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z11c.jpg",
+      "assetFile": "Z11c.jpg"
+    },
+    {
+      "id": "Z-11d",
+      "sourceCode": "Z11d",
+      "name": "Směrový sloupek",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z11d.jpg",
+      "assetFile": "Z11d.jpg"
+    },
+    {
+      "id": "Z-12",
+      "sourceCode": "Z12",
+      "name": "Krátký příčný práh",
+      "categoryPath": "/znacky/dopravni-zarizeni/",
+      "sourcePath": "/dopravni-znacky/Z12.jpg",
+      "assetFile": "Z12.jpg"
+    }
+  ]
+}

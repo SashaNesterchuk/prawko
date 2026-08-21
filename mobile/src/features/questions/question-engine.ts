@@ -599,6 +599,7 @@ export function getQuestionChoices(
 ): Array<{
   id: QuestionChoice["id"];
   label: string;
+  mediaAsset?: QuestionChoice["mediaAsset"];
 }> {
   const contentLocale = getContentLocale(locale);
 
@@ -618,6 +619,7 @@ export function getQuestionChoices(
   return (question.choices ?? []).map((choice) => ({
     id: choice.id,
     label: getLocalizedText(choice.text, locale),
+    mediaAsset: choice.mediaAsset,
   }));
 }
 

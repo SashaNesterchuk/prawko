@@ -1,0 +1,801 @@
+{
+  "generatedAt": "2026-08-20T13:46:17.786Z",
+  "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+  "count": 44,
+  "downloaded": 0,
+  "skipped": 44,
+  "signs": [
+    {
+      "id": "A-1a",
+      "code": "A-1a",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-1a"
+      },
+      "description": {
+        "cs": "A-1a"
+      },
+      "assetFile": "CZ_road_sign_A-1a.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_1a.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Czech_Republic_road_sign_A_1a.svg/250px-Czech_Republic_road_sign_A_1a.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-1b",
+      "code": "A-1b",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-1b"
+      },
+      "description": {
+        "cs": "A-1b"
+      },
+      "assetFile": "CZ_road_sign_A-1b.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_1b.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Czech_Republic_road_sign_A_1b.svg/250px-Czech_Republic_road_sign_A_1b.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-2a",
+      "code": "A-2a",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-2a"
+      },
+      "description": {
+        "cs": "A-2a"
+      },
+      "assetFile": "CZ_road_sign_A-2a.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_2a.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Czech_Republic_road_sign_A_2a.svg/250px-Czech_Republic_road_sign_A_2a.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-2b",
+      "code": "A-2b",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-2b"
+      },
+      "description": {
+        "cs": "A-2b"
+      },
+      "assetFile": "CZ_road_sign_A-2b.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_2b.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Czech_Republic_road_sign_A_2b.svg/250px-Czech_Republic_road_sign_A_2b.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-3",
+      "code": "A-3",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-3"
+      },
+      "description": {
+        "cs": "A-3"
+      },
+      "assetFile": "CZ_road_sign_A-3.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_3.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Czech_Republic_road_sign_A_3.svg/250px-Czech_Republic_road_sign_A_3.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-4",
+      "code": "A-4",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-4"
+      },
+      "description": {
+        "cs": "A-4"
+      },
+      "assetFile": "CZ_road_sign_A-4.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_4.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Czech_Republic_road_sign_A_4.svg/250px-Czech_Republic_road_sign_A_4.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-5a",
+      "code": "A-5a",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-5a"
+      },
+      "description": {
+        "cs": "A-5a"
+      },
+      "assetFile": "CZ_road_sign_A-5a.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_5a.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Czech_Republic_road_sign_A_5a.svg/250px-Czech_Republic_road_sign_A_5a.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-5b",
+      "code": "A-5b",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-5b"
+      },
+      "description": {
+        "cs": "A-5b"
+      },
+      "assetFile": "CZ_road_sign_A-5b.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_5b.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Czech_Republic_road_sign_A_5b.svg/250px-Czech_Republic_road_sign_A_5b.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-6a",
+      "code": "A-6a",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-6a"
+      },
+      "description": {
+        "cs": "A-6a"
+      },
+      "assetFile": "CZ_road_sign_A-6a.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_6a.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Czech_Republic_road_sign_A_6a.svg/250px-Czech_Republic_road_sign_A_6a.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-6b",
+      "code": "A-6b",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-6b"
+      },
+      "description": {
+        "cs": "A-6b"
+      },
+      "assetFile": "CZ_road_sign_A-6b.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_6b.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Czech_Republic_road_sign_A_6b.svg/250px-Czech_Republic_road_sign_A_6b.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-7a",
+      "code": "A-7a",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-7a"
+      },
+      "description": {
+        "cs": "A-7a"
+      },
+      "assetFile": "CZ_road_sign_A-7a.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_7a.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Czech_Republic_road_sign_A_7a.svg/250px-Czech_Republic_road_sign_A_7a.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-7b",
+      "code": "A-7b",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-7b"
+      },
+      "description": {
+        "cs": "A-7b"
+      },
+      "assetFile": "CZ_road_sign_A-7b.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_7b.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Czech_Republic_road_sign_A_7b.svg/250px-Czech_Republic_road_sign_A_7b.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-8",
+      "code": "A-8",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-8"
+      },
+      "description": {
+        "cs": "A-8"
+      },
+      "assetFile": "CZ_road_sign_A-8.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_8.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Czech_Republic_road_sign_A_8.svg/250px-Czech_Republic_road_sign_A_8.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-9",
+      "code": "A-9",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-9"
+      },
+      "description": {
+        "cs": "A-9"
+      },
+      "assetFile": "CZ_road_sign_A-9.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_9.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Czech_Republic_road_sign_A_9.svg/250px-Czech_Republic_road_sign_A_9.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-10",
+      "code": "A-10",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-10"
+      },
+      "description": {
+        "cs": "A-10"
+      },
+      "assetFile": "CZ_road_sign_A-10.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_10.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Czech_Republic_road_sign_A_10.svg/250px-Czech_Republic_road_sign_A_10.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-11",
+      "code": "A-11",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-11"
+      },
+      "description": {
+        "cs": "A-11"
+      },
+      "assetFile": "CZ_road_sign_A-11.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_11.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Czech_Republic_road_sign_A_11.svg/250px-Czech_Republic_road_sign_A_11.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-12",
+      "code": "A-12",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-12"
+      },
+      "description": {
+        "cs": "A-12"
+      },
+      "assetFile": "CZ_road_sign_A-12.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_12.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Czech_Republic_road_sign_A_12.svg/250px-Czech_Republic_road_sign_A_12.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-12a",
+      "code": "A-12a",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-12a"
+      },
+      "description": {
+        "cs": "A-12a"
+      },
+      "assetFile": "CZ_road_sign_A-12a.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_12a.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Czech_Republic_road_sign_A_12a.svg/250px-Czech_Republic_road_sign_A_12a.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-12c",
+      "code": "A-12c",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-12c"
+      },
+      "description": {
+        "cs": "A-12c"
+      },
+      "assetFile": "CZ_road_sign_A-12c.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_12c.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Czech_Republic_road_sign_A_12c.svg/250px-Czech_Republic_road_sign_A_12c.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-13",
+      "code": "A-13",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-13"
+      },
+      "description": {
+        "cs": "A-13"
+      },
+      "assetFile": "CZ_road_sign_A-13.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_13.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Czech_Republic_road_sign_A_13.svg/250px-Czech_Republic_road_sign_A_13.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-14",
+      "code": "A-14",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-14"
+      },
+      "description": {
+        "cs": "A-14"
+      },
+      "assetFile": "CZ_road_sign_A-14.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_14.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Czech_Republic_road_sign_A_14.svg/250px-Czech_Republic_road_sign_A_14.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-15",
+      "code": "A-15",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-15"
+      },
+      "description": {
+        "cs": "A-15"
+      },
+      "assetFile": "CZ_road_sign_A-15.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_15.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Czech_Republic_road_sign_A_15.svg/250px-Czech_Republic_road_sign_A_15.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-16",
+      "code": "A-16",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-16"
+      },
+      "description": {
+        "cs": "A-16"
+      },
+      "assetFile": "CZ_road_sign_A-16.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_16.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Czech_Republic_road_sign_A_16.svg/250px-Czech_Republic_road_sign_A_16.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-17",
+      "code": "A-17",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-17"
+      },
+      "description": {
+        "cs": "A-17"
+      },
+      "assetFile": "CZ_road_sign_A-17.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_17.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Czech_Republic_road_sign_A_17.svg/250px-Czech_Republic_road_sign_A_17.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-18",
+      "code": "A-18",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-18"
+      },
+      "description": {
+        "cs": "A-18"
+      },
+      "assetFile": "CZ_road_sign_A-18.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_18.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Czech_Republic_road_sign_A_18.svg/250px-Czech_Republic_road_sign_A_18.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-19",
+      "code": "A-19",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-19"
+      },
+      "description": {
+        "cs": "A-19"
+      },
+      "assetFile": "CZ_road_sign_A-19.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_19.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Czech_Republic_road_sign_A_19.svg/250px-Czech_Republic_road_sign_A_19.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-20",
+      "code": "A-20",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-20"
+      },
+      "description": {
+        "cs": "A-20"
+      },
+      "assetFile": "CZ_road_sign_A-20.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_20.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Czech_Republic_road_sign_A_20.svg/250px-Czech_Republic_road_sign_A_20.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-21",
+      "code": "A-21",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-21"
+      },
+      "description": {
+        "cs": "A-21"
+      },
+      "assetFile": "CZ_road_sign_A-21.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_21.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Czech_Republic_road_sign_A_21.svg/250px-Czech_Republic_road_sign_A_21.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-22",
+      "code": "A-22",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-22"
+      },
+      "description": {
+        "cs": "A-22"
+      },
+      "assetFile": "CZ_road_sign_A-22.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_22.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Czech_Republic_road_sign_A_22.svg/250px-Czech_Republic_road_sign_A_22.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-23",
+      "code": "A-23",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-23"
+      },
+      "description": {
+        "cs": "A-23"
+      },
+      "assetFile": "CZ_road_sign_A-23.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_23.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Czech_Republic_road_sign_A_23.svg/250px-Czech_Republic_road_sign_A_23.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-24",
+      "code": "A-24",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-24"
+      },
+      "description": {
+        "cs": "A-24"
+      },
+      "assetFile": "CZ_road_sign_A-24.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_24.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Czech_Republic_road_sign_A_24.svg/250px-Czech_Republic_road_sign_A_24.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-25",
+      "code": "A-25",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-25"
+      },
+      "description": {
+        "cs": "A-25"
+      },
+      "assetFile": "CZ_road_sign_A-25.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_25.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Czech_Republic_road_sign_A_25.svg/250px-Czech_Republic_road_sign_A_25.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-26",
+      "code": "A-26",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-26"
+      },
+      "description": {
+        "cs": "A-26"
+      },
+      "assetFile": "CZ_road_sign_A-26.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_26.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Czech_Republic_road_sign_A_26.svg/250px-Czech_Republic_road_sign_A_26.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-27",
+      "code": "A-27",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-27"
+      },
+      "description": {
+        "cs": "A-27"
+      },
+      "assetFile": "CZ_road_sign_A-27.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_27.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Czech_Republic_road_sign_A_27.svg/250px-Czech_Republic_road_sign_A_27.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-28",
+      "code": "A-28",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-28"
+      },
+      "description": {
+        "cs": "A-28"
+      },
+      "assetFile": "CZ_road_sign_A-28.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_28.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Czech_Republic_road_sign_A_28.svg/250px-Czech_Republic_road_sign_A_28.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-29",
+      "code": "A-29",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-29"
+      },
+      "description": {
+        "cs": "A-29"
+      },
+      "assetFile": "CZ_road_sign_A-29.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_29.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Czech_Republic_road_sign_A_29.svg/250px-Czech_Republic_road_sign_A_29.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-30",
+      "code": "A-30",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-30"
+      },
+      "description": {
+        "cs": "A-30"
+      },
+      "assetFile": "CZ_road_sign_A-30.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_30.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Czech_Republic_road_sign_A_30.svg/250px-Czech_Republic_road_sign_A_30.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-32a",
+      "code": "A-32a",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-32a"
+      },
+      "description": {
+        "cs": "A-32a"
+      },
+      "assetFile": "CZ_road_sign_A-32a.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_32a.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Czech_Republic_road_sign_A_32a.svg/250px-Czech_Republic_road_sign_A_32a.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-33",
+      "code": "A-33",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-33"
+      },
+      "description": {
+        "cs": "A-33"
+      },
+      "assetFile": "CZ_road_sign_A-33.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_33.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Czech_Republic_road_sign_A_33.svg/250px-Czech_Republic_road_sign_A_33.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "A-34",
+      "code": "A-34",
+      "categoryId": "A",
+      "name": {
+        "cs": "A-34"
+      },
+      "description": {
+        "cs": "A-34"
+      },
+      "assetFile": "CZ_road_sign_A-34.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_A_34.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Czech_Republic_road_sign_A_34.svg/250px-Czech_Republic_road_sign_A_34.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "IP-24",
+      "code": "IP-24",
+      "categoryId": "IP",
+      "name": {
+        "cs": "IP-24"
+      },
+      "description": {
+        "cs": "IP-24"
+      },
+      "assetFile": "CZ_road_sign_IP-24.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_IP_24.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Czech_Republic_road_sign_IP_24.svg/250px-Czech_Republic_road_sign_IP_24.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "P-1",
+      "code": "P-1",
+      "categoryId": "P",
+      "name": {
+        "cs": "P-1"
+      },
+      "description": {
+        "cs": "P-1"
+      },
+      "assetFile": "CZ_road_sign_P-1.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_P_1.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Czech_Republic_road_sign_P_1.svg/250px-Czech_Republic_road_sign_P_1.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "P-4",
+      "code": "P-4",
+      "categoryId": "P",
+      "name": {
+        "cs": "P-4"
+      },
+      "description": {
+        "cs": "P-4"
+      },
+      "assetFile": "CZ_road_sign_P-4.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_P_4.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Czech_Republic_road_sign_P_4.svg/250px-Czech_Republic_road_sign_P_4.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    },
+    {
+      "id": "P-6",
+      "code": "P-6",
+      "categoryId": "P",
+      "name": {
+        "cs": "P-6"
+      },
+      "description": {
+        "cs": "P-6"
+      },
+      "assetFile": "CZ_road_sign_P-6.png",
+      "source": {
+        "articleUrl": "https://en.wikipedia.org/wiki/Road_signs_in_the_Czech_Republic",
+        "filePageUrl": "https://en.wikipedia.org/wiki/File:Czech_Republic_road_sign_P_6.svg",
+        "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Czech_Republic_road_sign_P_6.svg/250px-Czech_Republic_road_sign_P_6.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+        "license": "See Wikimedia file page"
+      }
+    }
+  ]
+}

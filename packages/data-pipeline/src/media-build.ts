@@ -88,7 +88,45 @@ async function materializeSource(job: MediaBuildJob): Promise<MaterializedSource
 async function buildImage(job: MediaBuildJob, inputPath: string): Promise<void> {
   const outputPath = resolveRepoPath(job.outputPath);
   await ensureDir(path.dirname(outputPath));
+
+  // Delivery JPEGs are shown on-device and uploaded to remote storage. Recode
+  // them at a high visual quality instead of copying multi-megabyte originals.
+  // Other formats keep their original representation and content type.
+  if (
+    [".jpg", ".jpeg"].includes(path.extname(outputPath).toLowerCase()) &&
+    !(await hasAvifSignature(inputPath))
+  ) {
+    await runCommand("ffmpeg", [
+      "-y",
+      "-v",
+      "error",
+      "-i",
+      inputPath,
+      "-map_metadata",
+      "0",
+      "-q:v",
+      "2",
+      "-threads",
+      "1",
+      outputPath,
+    ]);
+    return;
+  }
+
   await fs.copyFile(inputPath, outputPath);
+}
+
+async function hasAvifSignature(filePath: string): Promise<boolean> {
+  const file = await fs.open(filePath, "r");
+  const header = Buffer.alloc(64);
+
+  try {
+    const { bytesRead } = await file.read(header, 0, header.length, 0);
+    const text = header.subarray(0, bytesRead).toString("ascii");
+    return text.includes("ftypavif") || text.includes("ftypavis");
+  } finally {
+    await file.close();
+  }
 }
 
 async function buildVideo(job: MediaBuildJob, inputPath: string): Promise<void> {

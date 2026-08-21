@@ -4,6 +4,10 @@ export function pickLocalized(
   value: LocalizedString,
   locale: string
 ): string {
+  if (locale === "cs") {
+    return value.cs ?? value.en;
+  }
+
   if (locale === "pl" || locale === "ua" || locale === "en") {
     return value[locale];
   }
@@ -22,9 +26,11 @@ export function buildSearchText(
     name.pl,
     name.ua,
     name.en,
+    name.cs,
     description?.pl,
     description?.ua,
     description?.en,
+    description?.cs,
   ]
     .filter(Boolean)
     .join(" ")

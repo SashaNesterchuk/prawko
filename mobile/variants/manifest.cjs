@@ -37,7 +37,7 @@ const czech = {
   questionSetKey: "cz-v2-current",
   defaultLocale: "cs",
   supportedLocales: ["cs", "en"],
-  features: { roadSigns: false },
+  features: { roadSigns: true },
   // Placeholder assets keep development builds usable. Production is blocked
   // until this variant receives its own native brand assets and EAS project.
   assets: sharedAssets,

@@ -27,6 +27,7 @@ export type LocalizedQuestionText = Record<
 export type QuestionChoice = {
   id: QuestionOptionValue;
   text: LocalizedQuestionText;
+  mediaAsset?: QuestionDeliveryAsset | null;
 };
 
 export type QuestionMedia = {

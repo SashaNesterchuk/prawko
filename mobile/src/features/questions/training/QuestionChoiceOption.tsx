@@ -1,12 +1,15 @@
-import { Pressable, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 
 import { Icon } from "../../../components/icons";
 import { CText, getFontFamily, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
+import { getQuestionDeliveryAssetUrl } from "../question-media";
+import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
 type QuestionChoice = {
   id: string;
   label: string;
+  mediaAsset?: QuestionDeliveryAsset | null;
 };
 
 export function QuestionChoiceOption({
@@ -39,6 +42,7 @@ export function QuestionChoiceOption({
     isCorrectChoice,
     revealCorrect,
   });
+  const mediaUrl = getQuestionDeliveryAssetUrl(choice.mediaAsset);
 
   return (
     <Pressable
@@ -64,7 +68,10 @@ export function QuestionChoiceOption({
           </View>
         )
       ) : null}
-      <CText style={styles.label}>{choice.label}</CText>
+      <View style={styles.content}>
+        {choice.label && choice.label !== "." ? <CText style={styles.label}>{choice.label}</CText> : null}
+        {mediaUrl ? <Image accessibilityLabel={choice.label} resizeMode="contain" source={{ uri: mediaUrl }} style={styles.media} /> : null}
+      </View>
     </Pressable>
   );
 }
@@ -137,12 +144,19 @@ function useQuestionChoiceStyles({
                 textAlign: "center",
               }
             : {
-                flex: 1,
                 fontSize: responsiveFont(14),
                 lineHeight: responsiveFont(20),
               }),
           color: labelColor,
           fontFamily: getFontFamily(filled || revealCorrect ? "semiBold" : "regular"),
+        },
+        content: {
+          flex: 1,
+          gap: spacing.exact(8),
+        },
+        media: {
+          width: "100%",
+          height: spacing.exact(104),
         },
       };
     }

@@ -16,7 +16,7 @@ describe("app variant manifest", () => {
       productionReady: false,
       defaultLocale: "cs",
       supportedLocales: ["cs", "en"],
-      features: { roadSigns: false },
+      features: { roadSigns: true },
     });
     expect(getVariant("greece")).toMatchObject({
       productionReady: false,

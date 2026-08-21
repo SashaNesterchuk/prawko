@@ -1,23 +1,7 @@
-import type { ComponentType } from "react";
-import type { ImageSourcePropType } from "react-native";
-import type { SvgProps } from "react-native-svg";
-
-import {
-  generatedSignAssets,
-  type SignAssetKey,
-} from "./generatedSignAssets";
-import { generatedRasterSignAssets } from "./generatedRasterSignAssets";
-
-export const signAssets = generatedSignAssets;
-
-export function getSignAssetComponent(
-  signId: string
-): ComponentType<SvgProps> | undefined {
-  return signAssets[signId as SignAssetKey];
-}
-
-export function getSignRasterSource(
-  signId: string
-): ImageSourcePropType | undefined {
-  return generatedRasterSignAssets[signId];
-}
+// Metro resolves this alias to the active app variant. This is deliberately an
+// asset-level boundary: importing Czech signs cannot make them part of Prawko.
+export {
+  getSignAssetComponent,
+  getSignRasterSource,
+  signAssets,
+} from "@app-road-sign-assets";

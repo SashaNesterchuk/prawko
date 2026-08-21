@@ -92,7 +92,11 @@ export function mapSupabaseQuestionV2RecordToLocalQuestion(record: SupabaseQuest
     prompt: localizedText(prompt.pl, prompt.ua, prompt.en, prompt.de, prompt.cs, prompt.el),
     explanation: localizedText(record.ai_explanations?.pl, record.ai_explanations?.ua, record.ai_explanations?.en, record.ai_explanations?.de, record.ai_explanations?.cs, record.ai_explanations?.el), answerType: record.answer_kind === "choice" ? "abc" : "boolean",
     correctAnswer: record.correct_option_id,
-    choices: record.answer_kind === "choice" ? options.map((option) => ({ id: option.id, text: localizedText(option.text?.pl, option.text?.ua, option.text?.en, option.text?.de, option.text?.cs, option.text?.el) })) : undefined,
+    choices: record.answer_kind === "choice" ? options.map((option) => ({
+      id: option.id,
+      text: localizedText(option.text?.pl, option.text?.ua, option.text?.en, option.text?.de, option.text?.cs, option.text?.el),
+      mediaAsset: option.media?.find((media) => media.role === "primary")?.asset ?? null,
+    })) : undefined,
     media: primary ? { type: primary.mediaType, asset: primary, pjm: questionAsset || Object.keys(answerAssets).length ? { questionAsset, answerAssets } : null } : null,
     points: record.points, scope: record.scope ?? "base", topicBlock,
     primaryTopicId: normalizeQuestionTopicId(record.primary_topic_id) ?? topicIds[0] ?? fallback.primaryTopicId,
