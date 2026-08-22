@@ -66,7 +66,10 @@ export type SupabaseQuestionV2Record = {
   primary_topic_id: string | null;
   topic_ids: string[] | null;
   difficulty_seed: number | null;
-  official_metadata?: { legacy_topic_block?: TopicBlockId } | null;
+  official_metadata?: {
+    legacy_topic_block?: TopicBlockId;
+    official_basket_scope_id?: number | string;
+  } | null;
   ai_explanations?: QuestionAiExplanationMap | null;
   content: {
     prompt?: Record<string, string>;
@@ -101,6 +104,7 @@ export function mapSupabaseQuestionV2RecordToLocalQuestion(record: SupabaseQuest
     points: record.points, scope: record.scope ?? "base", topicBlock,
     primaryTopicId: normalizeQuestionTopicId(record.primary_topic_id) ?? topicIds[0] ?? fallback.primaryTopicId,
     topicIds: topicIds.length ? topicIds : fallback.topicIds, difficultySeed: record.difficulty_seed ?? 1,
+    examBasketId: readExamBasketId(record.official_metadata),
   };
 }
 
@@ -110,6 +114,24 @@ function nonEmptyText(value: string | null | undefined) {
   }
 
   return value;
+}
+
+function readExamBasketId(
+  metadata: SupabaseQuestionV2Record["official_metadata"]
+): number | undefined {
+  const value = metadata?.official_basket_scope_id;
+  if (typeof value === "number" && Number.isInteger(value) && value > 0) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isInteger(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  return undefined;
 }
 
 function localizedText(

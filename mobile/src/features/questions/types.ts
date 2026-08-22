@@ -56,6 +56,7 @@ export type LocalQuestion = {
   primaryTopicId?: QuestionTopicId | null;
   topicIds?: QuestionTopicId[];
   difficultySeed: number;
+  examBasketId?: number;
 };
 
 export type QuestionAttempt = {

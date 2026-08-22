@@ -6,6 +6,7 @@ import { isMobileSupabaseConfigured } from "../../src/config/env";
 import { ExamRestartGateDialog } from "../../src/components/shell/ExamRestartGateDialog";
 import { ExamAnswersReviewView } from "../../src/features/exam/ExamAnswersReviewView";
 import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
+import { getExamProfile } from "../../src/features/exam/exam-profile";
 import {
   buildExamScopeSections,
   buildExamTopicStats,
@@ -262,7 +263,9 @@ export default function ExamResultScreen() {
   );
   const scopeSections = useMemo(
     () =>
-      snapshot ? buildExamScopeSections(snapshot, questionUserState) : [],
+      snapshot && getExamProfile().showWordScopes
+        ? buildExamScopeSections(snapshot, questionUserState)
+        : [],
     [questionUserState, snapshot]
   );
   const scoreDelta = useMemo(

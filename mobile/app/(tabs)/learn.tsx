@@ -181,7 +181,7 @@ export default function LearnTabScreen() {
           defaultValue: "Симуляція: 0/1",
         }),
       icon: <LearnActionIcon accent="green" name="exam" />,
-      onPress: () => openExam({ title: examTitle }),
+      onPress: () => openExam(),
     },
   ];
 

@@ -34,7 +34,7 @@ pnpm test:e2e:studio
 | `home_blitz_opens_duration_dialog.yaml` | Home → Quick session → duration picker → timed blitz training |
 | `home_readiness_assessment_starts_training.yaml` | Empty readiness CTA (no period-change badge, never stuck on the loading skeleton) → untimed mini_test training (not exam) |
 | `home_traps_opens_count_dialog.yaml` | Home → Traps tile → count picker → training |
-| `home_exam_opens_count_dialog.yaml` | Home → Exam tile → count picker → exam session |
+| `home_exam_starts_session.yaml` | Home → Exam tile → official 32-question simulator (no count picker) |
 | `exam_empty_close_then_start_is_fresh.yaml` | Unanswered exam close (miss-click) → start again at question 1 |
 | `exam_answer_exit_then_new_attempt_is_fresh.yaml` | Answer Q1 → Finish → new attempt starts at question 1 |
 | `exam_exit_continue_keeps_question.yaml` | Answer Q1 → Close → Continue stays on question 2 |
@@ -87,7 +87,7 @@ Shared steps live in:
 - `subflows/complete_onboarding.yaml` for the real first-run onboarding smoke
 - `subflows/launch_onboarded_destination.yaml` for fast bootstrap into an onboarded state
 - `subflows/start_default_question_count.yaml` for accepting the default count picker
-- `subflows/start_exam_mini_from_home.yaml` for Home → Exam → mini-test size → session
+- `subflows/start_exam_from_home.yaml` for Home → Exam tile → official simulator session
 - `subflows/confirm_training_exit_to_home.yaml` for Finish on the training/exam exit dialog
 - `subflows/answer_first_available_option.yaml` for generic “answer first option” steps
 

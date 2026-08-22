@@ -6,7 +6,6 @@ import type {
 import {
   BLITZ_DURATION_MINUTES,
   DEFAULT_BLITZ_DURATION_MINUTES,
-  EXAM_RULES,
 } from "@prawko/config";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
@@ -22,7 +21,6 @@ import { useAppShellStore } from "../../state/app-shell";
 import { useQuestionProgressStore } from "../../state/question-progress";
 import { ANALYTICS_EVENTS } from "../../analytics/catalog";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
-import { resolveExamLaunchFromQuestionCount } from "../exam/exam-config";
 import { buildExamRouteParams } from "../exam/exam-routes";
 import { getQuestionCountForMode } from "./question-engine";
 import { buildQuestionRouteParams } from "./question-routes";
@@ -34,21 +32,17 @@ type PendingQuestionMode = {
   topic?: LearningTopicId;
 };
 
-type PendingExamMode = {
-  kind: "exam";
-  title: string;
-};
-
 type PendingBlitzMode = {
   kind: "blitz";
   title: string;
 };
 
-type PendingMode = PendingQuestionMode | PendingExamMode | PendingBlitzMode;
+type PendingMode = PendingQuestionMode | PendingBlitzMode;
 
 /**
- * Shared "pick count → start session" flow used by Learn / Home / Statistics
- * for modes that auto-select questions (mistakes, smart review, traps, exam).
+ * Shared "pick count → start session" flow used by Learn / Home
+ * for modes that auto-select questions (mistakes, smart review, traps).
+ * Official exam always starts at the country size — no 10/20 picker.
  */
 export function useQuestionModeCountDialog() {
   const { t } = useTranslation();
@@ -68,10 +62,6 @@ export function useQuestionModeCountDialog() {
   const pendingModeCount = useMemo(() => {
     if (!pending) {
       return 0;
-    }
-
-    if (pending.kind === "exam") {
-      return EXAM_RULES.totalQuestions;
     }
 
     if (pending.kind === "blitz") {
@@ -110,11 +100,10 @@ export function useQuestionModeCountDialog() {
     });
   }
 
-  function startExam(count: QuestionCountSelection) {
-    const launch = resolveExamLaunchFromQuestionCount(count);
+  function startExam() {
     router.navigate({
       pathname: "/exam",
-      params: buildExamRouteParams(launch),
+      params: buildExamRouteParams({ mode: "exam" }),
     });
   }
 
@@ -161,18 +150,8 @@ export function useQuestionModeCountDialog() {
     setPending({ kind: "question", ...input });
   }
 
-  function openExam(input: { title: string }) {
-    const { shouldShowDialog } = resolveQuestionCountDialog(
-      EXAM_RULES.totalQuestions
-    );
-
-    if (!shouldShowDialog) {
-      startExam("all");
-      return;
-    }
-
-    setSelectedCount("all");
-    setPending({ kind: "exam", title: input.title });
+  function openExam() {
+    startExam();
   }
 
   function openBlitz(input: { title: string }) {
@@ -182,12 +161,6 @@ export function useQuestionModeCountDialog() {
 
   function startPendingMode() {
     if (!pending) {
-      return;
-    }
-
-    if (pending.kind === "exam") {
-      setPending(null);
-      startExam(selectedCount);
       return;
     }
 

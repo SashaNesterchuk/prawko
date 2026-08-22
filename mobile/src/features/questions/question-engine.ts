@@ -31,6 +31,12 @@ import type {
   TopicQuestionProgress,
   TopicQuestionProgressMap,
 } from "./types";
+import {
+  getExamProfile,
+  type ExamBasketSlot,
+  type ExamProfile,
+} from "../exam/exam-profile";
+import type { ExamSimulatorMode } from "../exam/types";
 
 const EXAM_PREVIEW_TOTAL = 12;
 const SAVED_SPRINT_TOTAL = 10;
@@ -1193,9 +1199,94 @@ export function getTopicProgress(
 export function getExamQuestionIds(
   userStates: QuestionUserStateMap,
   desiredTotal: number,
-  now: Date = new Date()
+  now: Date = new Date(),
+  profile: ExamProfile = getExamProfile(),
+  mode: ExamSimulatorMode = "exam"
 ) {
+  if (profile.id === "etesty") {
+    const questionBank = getQuestionBank();
+    if (
+      mode === "exam" &&
+      desiredTotal >= profile.totalQuestions &&
+      profile.baskets.length > 0
+    ) {
+      return pickCzechBasketQuestionIds(
+        questionBank,
+        profile.baskets,
+        profile.totalQuestions
+      );
+    }
+
+    return shuffleIds(questionBank.map((question) => question.id)).slice(
+      0,
+      Math.max(0, desiredTotal)
+    );
+  }
+
   return getExamPreviewQuestionIds(userStates, now, desiredTotal);
+}
+
+function pickCzechBasketQuestionIds(
+  questionBank: LocalQuestion[],
+  baskets: ExamBasketSlot[],
+  desiredTotal: number
+) {
+  const used = new Set<string>();
+  const selected: string[] = [];
+
+  function takeFrom(pool: string[], need: number) {
+    let remaining = need;
+    for (const questionId of pool) {
+      if (remaining <= 0) {
+        break;
+      }
+      if (used.has(questionId)) {
+        continue;
+      }
+      used.add(questionId);
+      selected.push(questionId);
+      remaining -= 1;
+    }
+    return remaining;
+  }
+
+  for (const basket of baskets) {
+    const matching = shuffleIds(
+      questionBank
+        .filter(
+          (question) =>
+            question.examBasketId === basket.scopeId &&
+            question.points === basket.points &&
+            !used.has(question.id)
+        )
+        .map((question) => question.id)
+    );
+    const sameBasket = shuffleIds(
+      questionBank
+        .filter(
+          (question) =>
+            question.examBasketId === basket.scopeId && !used.has(question.id)
+        )
+        .map((question) => question.id)
+    );
+
+    let need = basket.count;
+    need = takeFrom(matching, need);
+    takeFrom(sameBasket, need);
+  }
+
+  if (selected.length < desiredTotal) {
+    takeFrom(
+      shuffleIds(
+        questionBank
+          .filter((question) => !used.has(question.id))
+          .map((question) => question.id)
+      ),
+      desiredTotal - selected.length
+    );
+  }
+
+  return shuffleIds(selected).slice(0, desiredTotal);
 }
 
 export function buildQuestionSession(

@@ -1,8 +1,8 @@
+import { type QuestionScope } from "@prawko/config";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppState, type AppStateStatus } from "react-native";
 
-import { EXAM_RULES, type QuestionScope } from "@prawko/config";
-
+import { getExamProfile } from "./exam-profile";
 import {
   getExamQuestionPhaseDuration,
   getExamQuestionTiming,
@@ -184,13 +184,14 @@ export function useExamQuestionTimer({
       return;
     }
 
-    const bonusMs = EXAM_RULES.baseVideoResumeBonusSeconds * 1000;
+    const bonusMs = (timing ? getExamProfile().baseVideoResumeBonusSeconds : 0) * 1000;
     const resumedMs = remainingMsWhenPausedRef.current + bonusMs;
     const resumedSeconds = Math.max(0, Math.ceil(resumedMs / 1000));
     // Soft cap: never more than the original read window + bonus.
+    const profile = getExamProfile();
     const maxSeconds =
-      (timing?.readSeconds || EXAM_RULES.baseReadSeconds) +
-      EXAM_RULES.baseVideoResumeBonusSeconds;
+      (timing?.readSeconds || profile.baseReadSeconds) +
+      profile.baseVideoResumeBonusSeconds;
     enterAnswerPhase(Math.min(resumedSeconds, maxSeconds));
   }, [enterAnswerPhase, timing?.readSeconds]);
 

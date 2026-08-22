@@ -1,0 +1,15 @@
+# Reusable steps: Home → Exam tile → official simulator session.
+appId: com.mindjar.prawko
+env:
+  TARGET_ID: ${TARGET_ID || "screen-exam-session"}
+---
+- tapOn:
+    id: "action-tile-exam"
+
+- extendedWaitUntil:
+    visible:
+      id: "${TARGET_ID}"
+    timeout: 20000
+
+- assertVisible:
+    id: "${TARGET_ID}"

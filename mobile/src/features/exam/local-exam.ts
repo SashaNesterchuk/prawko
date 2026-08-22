@@ -9,6 +9,12 @@ import {
   getScaledExamPassPoints,
 } from "./exam-config";
 import {
+  getExamProfile,
+  isFreeExamSessionMetadata,
+  readExamFlaggedOrders,
+  type ExamProfile,
+} from "./exam-profile";
+import {
   getExamQuestionIds,
   getQuestionById,
 } from "../questions/question-engine";
@@ -29,6 +35,7 @@ type StartLocalExamInput = {
   category: DrivingCategory;
   locale: SupportedLocale;
   mode: ExamSimulatorMode;
+  profile?: ExamProfile;
   replaceExisting?: boolean;
   requestedTotalQuestions?: number | null;
   studyPlanId?: string | null;
@@ -40,6 +47,7 @@ type SubmitLocalExamAnswerInput = {
   answerGiven: string;
   locale: SupportedLocale;
   metadata?: Record<string, unknown>;
+  questionOrder?: number | null;
   sessionId: string;
 };
 
@@ -68,16 +76,24 @@ export function startLocalExamSession(
     abandonActiveLocalExamSessions(input.mode);
   }
 
+  const profile = input.profile ?? getExamProfile();
   const totalQuestionsTarget = getExamQuestionTarget(
     input.mode,
-    input.requestedTotalQuestions
+    input.requestedTotalQuestions,
+    profile
   );
   const userStates = useQuestionProgressStore.getState().questionUserState;
-  const questionIds = getExamQuestionIds(userStates, totalQuestionsTarget);
+  const questionIds = getExamQuestionIds(
+    userStates,
+    totalQuestionsTarget,
+    new Date(),
+    profile,
+    input.mode
+  );
   const questions = buildQuestionRefs(questionIds);
   const totalPointsTarget = questions.reduce((sum, question) => sum + question.points, 0);
-  const passPoints = getScaledExamPassPoints(totalPointsTarget);
-  const durationMinutes = getExamDurationMinutes(totalQuestionsTarget);
+  const passPoints = getScaledExamPassPoints(totalPointsTarget, profile);
+  const durationMinutes = getExamDurationMinutes(totalQuestionsTarget, profile);
   const startedAt = new Date();
   const expiresAt = new Date(startedAt.getTime() + durationMinutes * 60 * 1000);
   const sessionId = createLocalExamSessionId();
@@ -95,6 +111,8 @@ export function startLocalExamSession(
       metadata: {
         source: "mobile_local_exam",
         study_plan_task_id: input.studyPlanTaskId ?? null,
+        navigation: profile.navigation,
+        flaggedOrders: [],
       },
       mode: input.mode,
       passPoints,
@@ -195,71 +213,74 @@ function findActiveLocalExamSessionInMemory(mode?: ExamSimulatorMode | null) {
 export function submitLocalExamAnswer(
   input: SubmitLocalExamAnswerInput
 ): RemoteExamSnapshot {
-  const snapshot = sessions.get(input.sessionId);
-
-  if (!snapshot) {
-    throw new Error("Local exam session not found.");
-  }
-
-  if (snapshot.session.status !== "active") {
-    throw new Error("This exam session is no longer active.");
-  }
-
-  const currentQuestionRef = snapshot.questions.find(
-    (question) => question.order === snapshot.session.currentQuestionIndex
+  const snapshot = requireActiveSnapshot(input.sessionId);
+  const isFreeNav = isFreeExamSessionMetadata(snapshot.session.metadata);
+  const questionOrder =
+    input.questionOrder ?? snapshot.session.currentQuestionIndex;
+  const questionRef = snapshot.questions.find(
+    (question) => question.order === questionOrder
   );
 
-  if (!currentQuestionRef) {
+  if (!questionRef) {
     throw new Error("Current exam question not found.");
   }
 
-  const question = getQuestionById(currentQuestionRef.questionSourceId);
+  const question = getQuestionById(questionRef.questionSourceId);
 
   if (!question) {
     throw new Error("Question catalog entry not found.");
   }
 
+  if (
+    !isFreeNav &&
+    snapshot.answers.some((answer) => answer.order === questionRef.order)
+  ) {
+    return cloneSnapshot(snapshot);
+  }
+
   const isCorrect = question.correctAnswer === input.answerGiven;
-  const pointsAwarded = isCorrect ? currentQuestionRef.points : 0;
   const answer: RemoteExamAnswer = {
     answerGiven: input.answerGiven,
     answeredAt: new Date().toISOString(),
     isCorrect,
-    order: currentQuestionRef.order,
-    pointsAwarded,
+    order: questionRef.order,
+    pointsAwarded: isCorrect ? questionRef.points : 0,
     questionAttemptId: null,
-    questionId: currentQuestionRef.questionId,
-    questionSourceId: currentQuestionRef.questionSourceId,
+    questionId: questionRef.questionId,
+    questionSourceId: questionRef.questionSourceId,
   };
-  const nextAnswers = [...snapshot.answers, answer];
-  const nextQuestionIndex = currentQuestionRef.order + 1;
+  const nextAnswers = isFreeNav
+    ? upsertAnswer(snapshot.answers, answer)
+    : [...snapshot.answers, answer];
+
+  if (isFreeNav) {
+    const nextSnapshot = withRecomputedAnswers(snapshot, nextAnswers, {
+      metadata: {
+        ...snapshot.session.metadata,
+        ...input.metadata,
+      },
+    });
+    sessions.set(input.sessionId, nextSnapshot);
+    cacheExamSnapshot(nextSnapshot);
+    return cloneSnapshot(nextSnapshot);
+  }
+
+  const nextQuestionIndex = questionRef.order + 1;
   const hasMoreQuestions = snapshot.questions.some(
-    (question) => question.order === nextQuestionIndex
+    (entry) => entry.order === nextQuestionIndex
   );
+  const stats = summarizeAnswers(nextAnswers);
   const nextStatus: RemoteExamSessionStatus = hasMoreQuestions
     ? "active"
     : "completed";
-  const nextScorePoints = snapshot.session.scorePoints + pointsAwarded;
-  const nextCorrectCount =
-    snapshot.session.correctAnswersCount + (isCorrect ? 1 : 0);
-  const nextWrongCount =
-    snapshot.session.wrongAnswersCount + (isCorrect ? 0 : 1);
-  const nextWrongQuestionSourceIds = isCorrect
-    ? snapshot.wrongQuestionSourceIds
-    : [...snapshot.wrongQuestionSourceIds, currentQuestionRef.questionSourceId];
   const finishedAt =
     nextStatus === "completed" ? new Date().toISOString() : null;
-  const passed =
-    nextStatus === "completed"
-      ? nextScorePoints >= snapshot.session.passPoints
-      : null;
-
   const nextSnapshot: RemoteExamSnapshot = {
     answers: nextAnswers,
     questions: snapshot.questions,
     session: {
       ...snapshot.session,
-      correctAnswersCount: nextCorrectCount,
+      correctAnswersCount: stats.correctAnswersCount,
       currentQuestionIndex: hasMoreQuestions
         ? nextQuestionIndex
         : snapshot.session.currentQuestionIndex,
@@ -268,14 +289,121 @@ export function submitLocalExamAnswer(
         ...snapshot.session.metadata,
         ...input.metadata,
       },
-      passed,
+      passed:
+        nextStatus === "completed"
+          ? stats.scorePoints >= snapshot.session.passPoints
+          : null,
       remainingSeconds: getRemainingExamSeconds(snapshot.session.expiresAt),
-      scorePoints: nextScorePoints,
+      scorePoints: stats.scorePoints,
       status: nextStatus,
       totalQuestionsAnswered: nextAnswers.length,
-      wrongAnswersCount: nextWrongCount,
+      wrongAnswersCount: stats.wrongAnswersCount,
     },
-    wrongQuestionSourceIds: nextWrongQuestionSourceIds,
+    wrongQuestionSourceIds: stats.wrongQuestionSourceIds,
+  };
+
+  sessions.set(input.sessionId, nextSnapshot);
+  cacheExamSnapshot(nextSnapshot);
+  return cloneSnapshot(nextSnapshot);
+}
+
+export function setLocalExamCurrentIndex(input: {
+  questionOrder: number;
+  sessionId: string;
+}): RemoteExamSnapshot {
+  const snapshot = requireActiveSnapshot(input.sessionId);
+  const hasQuestion = snapshot.questions.some(
+    (question) => question.order === input.questionOrder
+  );
+
+  if (!hasQuestion) {
+    throw new Error("Exam question order is out of range.");
+  }
+
+  const nextSnapshot: RemoteExamSnapshot = {
+    ...snapshot,
+    session: {
+      ...snapshot.session,
+      currentQuestionIndex: input.questionOrder,
+      remainingSeconds: getRemainingExamSeconds(snapshot.session.expiresAt),
+    },
+  };
+
+  sessions.set(input.sessionId, nextSnapshot);
+  cacheExamSnapshot(nextSnapshot);
+  return cloneSnapshot(nextSnapshot);
+}
+
+export function setLocalExamFlaggedOrders(input: {
+  flaggedOrders: number[];
+  sessionId: string;
+}): RemoteExamSnapshot {
+  const snapshot = requireActiveSnapshot(input.sessionId);
+  const allowed = new Set(snapshot.questions.map((question) => question.order));
+  const flaggedOrders = [
+    ...new Set(
+      input.flaggedOrders.filter((order) => allowed.has(order))
+    ),
+  ].sort((left, right) => left - right);
+
+  const nextSnapshot: RemoteExamSnapshot = {
+    ...snapshot,
+    session: {
+      ...snapshot.session,
+      metadata: {
+        ...snapshot.session.metadata,
+        flaggedOrders,
+      },
+      remainingSeconds: getRemainingExamSeconds(snapshot.session.expiresAt),
+    },
+  };
+
+  sessions.set(input.sessionId, nextSnapshot);
+  cacheExamSnapshot(nextSnapshot);
+  return cloneSnapshot(nextSnapshot);
+}
+
+export function toggleLocalExamFlag(input: {
+  questionOrder: number;
+  sessionId: string;
+}): RemoteExamSnapshot {
+  const snapshot = requireActiveSnapshot(input.sessionId);
+  const current = readExamFlaggedOrders(snapshot.session.metadata);
+  const next = current.includes(input.questionOrder)
+    ? current.filter((order) => order !== input.questionOrder)
+    : [...current, input.questionOrder];
+
+  return setLocalExamFlaggedOrders({
+    flaggedOrders: next,
+    sessionId: input.sessionId,
+  });
+}
+
+export function finishLocalExamSession(input: {
+  metadata?: Record<string, unknown>;
+  sessionId: string;
+}): RemoteExamSnapshot {
+  const snapshot = requireActiveSnapshot(input.sessionId);
+  const stats = summarizeAnswers(snapshot.answers);
+  const finishedAt = new Date().toISOString();
+  const nextSnapshot: RemoteExamSnapshot = {
+    ...snapshot,
+    session: {
+      ...snapshot.session,
+      finishedAt,
+      metadata: {
+        ...snapshot.session.metadata,
+        ...input.metadata,
+      },
+      passed: stats.scorePoints >= snapshot.session.passPoints,
+      remainingSeconds: getRemainingExamSeconds(snapshot.session.expiresAt),
+      scorePoints: stats.scorePoints,
+      status: "completed",
+      totalQuestionsAnswered: snapshot.answers.length,
+      correctAnswersCount: stats.correctAnswersCount,
+      wrongAnswersCount: stats.wrongAnswersCount,
+    },
+    wrongQuestionSourceIds: stats.wrongQuestionSourceIds,
   };
 
   sessions.set(input.sessionId, nextSnapshot);
@@ -316,6 +444,68 @@ export function setLocalExamSessionStatus(
   sessions.set(input.sessionId, nextSnapshot);
   cacheExamSnapshot(nextSnapshot);
   return cloneSnapshot(nextSnapshot);
+}
+
+function requireActiveSnapshot(sessionId: string) {
+  const snapshot = sessions.get(sessionId);
+
+  if (!snapshot) {
+    throw new Error("Local exam session not found.");
+  }
+
+  if (snapshot.session.status !== "active") {
+    throw new Error("This exam session is no longer active.");
+  }
+
+  return snapshot;
+}
+
+function upsertAnswer(
+  answers: RemoteExamAnswer[],
+  nextAnswer: RemoteExamAnswer
+) {
+  const index = answers.findIndex((answer) => answer.order === nextAnswer.order);
+  if (index < 0) {
+    return [...answers, nextAnswer].sort((left, right) => left.order - right.order);
+  }
+
+  const next = [...answers];
+  next[index] = nextAnswer;
+  return next;
+}
+
+function summarizeAnswers(answers: RemoteExamAnswer[]) {
+  return {
+    scorePoints: answers.reduce((sum, answer) => sum + answer.pointsAwarded, 0),
+    correctAnswersCount: answers.filter((answer) => answer.isCorrect).length,
+    wrongAnswersCount: answers.filter((answer) => !answer.isCorrect).length,
+    wrongQuestionSourceIds: answers
+      .filter((answer) => !answer.isCorrect)
+      .map((answer) => answer.questionSourceId),
+  };
+}
+
+function withRecomputedAnswers(
+  snapshot: RemoteExamSnapshot,
+  answers: RemoteExamAnswer[],
+  extras: { metadata?: Record<string, unknown> }
+): RemoteExamSnapshot {
+  const stats = summarizeAnswers(answers);
+
+  return {
+    answers,
+    questions: snapshot.questions,
+    session: {
+      ...snapshot.session,
+      correctAnswersCount: stats.correctAnswersCount,
+      metadata: extras.metadata ?? snapshot.session.metadata,
+      remainingSeconds: getRemainingExamSeconds(snapshot.session.expiresAt),
+      scorePoints: stats.scorePoints,
+      totalQuestionsAnswered: answers.length,
+      wrongAnswersCount: stats.wrongAnswersCount,
+    },
+    wrongQuestionSourceIds: stats.wrongQuestionSourceIds,
+  };
 }
 
 function buildQuestionRefs(questionIds: string[]): RemoteExamQuestionRef[] {

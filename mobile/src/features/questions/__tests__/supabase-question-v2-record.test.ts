@@ -52,6 +52,7 @@ describe("mapSupabaseQuestionV2RecordToLocalQuestion", () => {
     expect(getQuestionChoices(question, "pl")[1]?.mediaAsset?.mediaKey).toBe("q-1-image");
     expect(question.media?.asset.storagePath).toBe("pl/q-1.jpg");
     expect(question.primaryTopicId).toBe("signs_signals");
+    expect(question.examBasketId).toBeUndefined();
   });
 
   it("keeps a two-option choice payload valid for future Czech sets", () => {
@@ -59,6 +60,7 @@ describe("mapSupabaseQuestionV2RecordToLocalQuestion", () => {
       id: "cz-id", source_id: "CZ-001", source_row_number: 1, points: 1,
       answer_kind: "choice", correct_option_id: "A", scope: null,
       primary_topic_id: null, topic_ids: [], difficulty_seed: null,
+      official_metadata: { official_basket_scope_id: 11 },
       content: { prompt: { cs: "Dotaz" }, options: [{ id: "A", text: { cs: "Ano" } }, { id: "B", text: { cs: "Ne" } }] },
     });
 
@@ -71,6 +73,7 @@ describe("mapSupabaseQuestionV2RecordToLocalQuestion", () => {
     expect(getQuestionChoices(question, "ua").map((choice) => choice.label)).toEqual(
       ["Ano", "Ne"]
     );
+    expect(question.examBasketId).toBe(11);
   });
 
   it("keeps Prawko Ukrainian copy when Czech is absent", () => {

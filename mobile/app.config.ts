@@ -87,7 +87,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         id: variant.id,
         name: variant.name,
         questionSetKey: variant.questionSetKey,
-        mediaBaseUrl: process.env.EXPO_PUBLIC_MEDIA_BASE_URL ?? "",
+        mediaBaseUrl: variant.mediaBaseUrl,
         defaultLocale: variant.defaultLocale,
         supportedLocales: variant.supportedLocales,
         features: variant.features,

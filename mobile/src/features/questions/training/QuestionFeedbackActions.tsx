@@ -16,7 +16,9 @@ type QuestionFeedbackActionsProps = {
    */
   navigationMode?: "next" | "previousNext";
   nextLabel: string;
+  nextTestID?: string;
   previousLabel?: string;
+  previousTestID?: string;
   onNext: () => void;
   onPrevious?: () => void;
 };
@@ -31,7 +33,9 @@ export function QuestionFeedbackActions({
   isCorrectAnswer,
   navigationMode = "next",
   nextLabel,
+  nextTestID,
   previousLabel,
+  previousTestID,
   onNext,
   onPrevious,
 }: QuestionFeedbackActionsProps) {
@@ -44,7 +48,7 @@ export function QuestionFeedbackActions({
       <AppButton
         label={nextLabel}
         onPress={onNext}
-        testID="question-feedback-next"
+        testID={nextTestID ?? "question-feedback-next"}
         variant={isCorrectAnswer ? "primary" : "danger"}
       />
     );
@@ -59,6 +63,7 @@ export function QuestionFeedbackActions({
         accessibilityState={{ disabled: !canGoPrevious }}
         disabled={!canGoPrevious}
         onPress={onPrevious}
+        testID={previousTestID}
         style={({ pressed }) => [
           styles.navButton,
           !canGoPrevious ? styles.navButtonDisabled : null,
@@ -78,7 +83,7 @@ export function QuestionFeedbackActions({
           !canGoNext ? styles.navButtonDisabled : null,
           pressed && canGoNext ? styles.navButtonPressed : null,
         ]}
-        testID="question-feedback-next"
+        testID={nextTestID ?? "question-feedback-next"}
       >
         <CText style={styles.navButtonText}>{nextLabel}</CText>
         <Icon name="chevron" size={20} color={colors.ink2} />

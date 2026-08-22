@@ -4,6 +4,10 @@ import {
   type QuestionScope,
 } from "@prawko/config";
 
+import {
+  getExamProfile,
+  type ExamProfile,
+} from "./exam-profile";
 import type { ExamSimulatorMode } from "./types";
 
 export { getExamBaseVideoMinTarget };
@@ -49,19 +53,21 @@ export function isExamSimulatorMode(
 }
 
 /**
- * Map a count-picker choice onto an exam launch.
- * Full pool ("all" or ≥ official size) stays the WORD simulator;
- * smaller picks become a timed mini test so the 0/1 official slot is unchanged.
+ * Map a numeric size onto an exam launch (study-plan mini tests, scaled runs).
+ * The Home / Learn Exam tile does not use this — it always starts the official
+ * country simulator. Full size stays `exam`; smaller picks become `mini_test`
+ * so the 0/1 official slot is unchanged.
  */
 export function resolveExamLaunchFromQuestionCount(
-  selectedCount: number | "all"
+  selectedCount: number | "all",
+  profile: ExamProfile = getExamProfile()
 ): {
   mode: ExamSimulatorMode;
   questionLimit?: number;
 } {
   if (
     selectedCount === "all" ||
-    selectedCount >= EXAM_RULES.totalQuestions
+    selectedCount >= profile.totalQuestions
   ) {
     return { mode: "exam" };
   }
@@ -74,13 +80,15 @@ export function resolveExamLaunchFromQuestionCount(
 
 export function getExamQuestionTarget(
   mode: ExamSimulatorMode,
-  requestedTotalQuestions?: number | null
+  requestedTotalQuestions?: number | null,
+  profile: ExamProfile = getExamProfile()
 ) {
-  // Official simulator is always WORD-sized. Custom limits are only for mini tests
-  // (study-plan scaling). Ignoring request here also guards against sticky
-  // `questionLimit` params left over from a previous /exam navigation.
+  // Official simulator is always the country-sized exam. Custom limits are
+  // only for mini tests (study-plan scaling). Ignoring request here also
+  // guards against sticky `questionLimit` params left over from a previous
+  // /exam navigation.
   if (mode !== "mini_test") {
-    return EXAM_RULES.totalQuestions;
+    return profile.totalQuestions;
   }
 
   if (
@@ -97,11 +105,14 @@ export function getExamQuestionTarget(
   return DEFAULT_MINI_TEST_QUESTIONS;
 }
 
-export function getExamDurationMinutes(totalQuestions: number) {
+export function getExamDurationMinutes(
+  totalQuestions: number,
+  profile: ExamProfile = getExamProfile()
+) {
   const normalized = Math.max(1, Math.floor(totalQuestions));
   return Math.max(
     5,
-    Math.ceil((normalized * EXAM_RULES.durationMinutes) / EXAM_RULES.totalQuestions)
+    Math.ceil((normalized * profile.durationMinutes) / profile.totalQuestions)
   );
 }
 
@@ -201,10 +212,15 @@ export function getExamBaseVideoTargetsByPoints(
     .sort((left, right) => right.points - left.points);
 }
 
-export function getScaledExamPassPoints(totalPointsTarget: number) {
+export function getScaledExamPassPoints(
+  totalPointsTarget: number,
+  profile: ExamProfile = getExamProfile()
+) {
   return Math.max(
     1,
-    Math.round((Math.max(1, totalPointsTarget) * EXAM_RULES.passingPoints) / EXAM_RULES.maxPoints)
+    Math.round(
+      (Math.max(1, totalPointsTarget) * profile.passingPoints) / profile.maxPoints
+    )
   );
 }
 
@@ -223,17 +239,20 @@ export function formatQuestionCountdown(totalSeconds: number | null | undefined)
   return `${normalized}s`;
 }
 
-export function getExamQuestionTiming(scope: QuestionScope): ExamQuestionTiming {
+export function getExamQuestionTiming(
+  scope: QuestionScope,
+  profile: ExamProfile = getExamProfile()
+): ExamQuestionTiming {
   if (scope === "specialist") {
     return {
       readSeconds: 0,
-      answerSeconds: EXAM_RULES.specialistSeconds,
+      answerSeconds: profile.specialistSeconds,
     };
   }
 
   return {
-    readSeconds: EXAM_RULES.baseReadSeconds,
-    answerSeconds: EXAM_RULES.baseAnswerSeconds,
+    readSeconds: profile.baseReadSeconds,
+    answerSeconds: profile.baseAnswerSeconds,
   };
 }
 

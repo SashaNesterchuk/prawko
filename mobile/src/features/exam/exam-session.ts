@@ -4,16 +4,24 @@ import { isLocalExamSessionId } from "./exam-session-id";
 import {
   fetchLatestActiveLocalExamSession,
   fetchLocalExamSessionSnapshot,
+  finishLocalExamSession,
+  setLocalExamCurrentIndex,
+  setLocalExamFlaggedOrders,
   setLocalExamSessionStatus,
   startLocalExamSession,
   submitLocalExamAnswer,
+  toggleLocalExamFlag,
 } from "./local-exam";
 import {
   fetchExamSessionSnapshot as fetchRemoteExamSessionSnapshot,
   fetchLatestActiveExamSession as fetchRemoteLatestActiveExamSession,
+  finishRemoteExamSession,
+  setRemoteExamCurrentIndex,
+  setRemoteExamFlaggedOrders,
   setRemoteExamSessionStatus,
   startRemoteExamSession,
   submitRemoteExamAnswer,
+  toggleRemoteExamFlag,
 } from "./supabase-exam";
 import type {
   ExamSimulatorMode,
@@ -38,6 +46,7 @@ type SubmitExamAnswerInput = {
   answerGiven: string;
   locale: SupportedLocale;
   metadata?: Record<string, unknown>;
+  questionOrder?: number | null;
   sessionId: string;
 };
 
@@ -91,4 +100,48 @@ export function setExamSessionStatus(input: SetExamSessionStatusInput) {
   }
 
   return setRemoteExamSessionStatus(input);
+}
+
+export function setExamCurrentIndex(input: {
+  questionOrder: number;
+  sessionId: string;
+}) {
+  if (isLocalExamSessionId(input.sessionId)) {
+    return Promise.resolve(setLocalExamCurrentIndex(input));
+  }
+
+  return setRemoteExamCurrentIndex(input);
+}
+
+export function setExamFlaggedOrders(input: {
+  flaggedOrders: number[];
+  sessionId: string;
+}) {
+  if (isLocalExamSessionId(input.sessionId)) {
+    return Promise.resolve(setLocalExamFlaggedOrders(input));
+  }
+
+  return setRemoteExamFlaggedOrders(input);
+}
+
+export function toggleExamFlag(input: {
+  questionOrder: number;
+  sessionId: string;
+}) {
+  if (isLocalExamSessionId(input.sessionId)) {
+    return Promise.resolve(toggleLocalExamFlag(input));
+  }
+
+  return toggleRemoteExamFlag(input);
+}
+
+export function finishExamSession(input: {
+  metadata?: Record<string, unknown>;
+  sessionId: string;
+}) {
+  if (isLocalExamSessionId(input.sessionId)) {
+    return Promise.resolve(finishLocalExamSession(input));
+  }
+
+  return finishRemoteExamSession(input);
 }

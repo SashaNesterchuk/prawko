@@ -14,9 +14,8 @@ tags:
       TARGET_ID: screen-home
 
 - runFlow:
-    file: subflows/start_exam_mini_from_home.yaml
+    file: subflows/start_exam_from_home.yaml
     env:
-      COUNT: "10"
       TARGET_ID: screen-exam-session
 
 - tapOn:
@@ -28,7 +27,7 @@ tags:
 - extendedWaitUntil:
     visible:
       id: "exam-session-counter"
-      text: "Питання 2 з 10"
+      text: "Питання 2 з 32"
     timeout: 15000
 
 - tapOn:
@@ -57,7 +56,7 @@ tags:
 
 - assertVisible:
     id: "exam-session-counter"
-    text: "Питання 1 з 10"
+    text: "Питання 1 з 32"
 - assertNotVisible:
     id: "exam-session-counter"
-    text: "Питання 2 з 10"
+    text: "Питання 2 з 32"

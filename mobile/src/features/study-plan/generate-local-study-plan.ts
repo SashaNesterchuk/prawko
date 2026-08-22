@@ -1,5 +1,4 @@
 import {
-  EXAM_RULES,
   STUDY_PLAN_LIMITS,
   QUESTION_TOPIC_IDS,
   getContentLocale,
@@ -15,6 +14,7 @@ import type {
   GeneratedStudyPlanTask,
   StudyPlanSetupInput,
 } from "@prawko/schemas";
+import { getExamProfile } from "../exam/exam-profile";
 
 const MINIMUM_MODE_THRESHOLD = 20;
 const FULL_EXAM_THRESHOLD = 25;
@@ -249,7 +249,7 @@ function buildDayBlueprints({
         ? {
             countsForMinimum: true,
             estimatedMinutes: primaryMinutes,
-            questionCountTarget: EXAM_RULES.totalQuestions,
+            questionCountTarget: getExamProfile().totalQuestions,
             taskType: "full_exam",
           }
         : {
@@ -377,7 +377,7 @@ function buildDayBlueprints({
           ? {
               countsForMinimum: true,
               estimatedMinutes: primaryMinutes,
-              questionCountTarget: EXAM_RULES.totalQuestions,
+              questionCountTarget: getExamProfile().totalQuestions,
               taskType: "full_exam",
             }
           : {
@@ -407,7 +407,7 @@ function buildDayBlueprints({
         questionCountTarget: clamp(
           Math.round((primaryTask.questionCountTarget ?? 12) * 0.75),
           8,
-          EXAM_RULES.totalQuestions
+          getExamProfile().totalQuestions
         ),
       },
     ];

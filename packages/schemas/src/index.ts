@@ -136,7 +136,7 @@ export const questionChatContextSchema = z.object({
   /** @deprecated Prefer topicId; kept for older clients during rollout. */
   topicBlock: topicBlockSchema.optional(),
   scope: questionScopeSchema,
-  points: z.number().int().min(1).max(3),
+        points: z.number().int().min(1).max(4),
   options: z.array(questionChatOptionSchema).max(3),
   mediaType: mediaTypeSchema,
 });
@@ -200,7 +200,7 @@ export const normalizedQuestionSchema = z.object({
   pjmAnswerBMediaFilename: z.string().nullable(),
   pjmAnswerCMediaFilename: z.string().nullable(),
   mediaType: mediaTypeSchema,
-  points: z.number().int().min(1).max(3),
+        points: z.number().int().min(1).max(4),
   scope: questionScopeSchema,
   categories: z.array(z.string().min(1)).min(1),
   topicBlock: topicBlockSchema,

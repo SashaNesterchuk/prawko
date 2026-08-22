@@ -22,6 +22,8 @@ import {
 import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
 import { useTheme } from "../../providers/ThemeProvider";
 import { useAppShellStore } from "../../state/app-shell";
+import { appVariant } from "../../app-config/runtime";
+import { getQuestionStillImageResizeMode } from "./question-image-fit";
 import {
   getQuestionDeliveryAssetUrl,
   getQuestionDeliveryPosterUrl,
@@ -73,6 +75,7 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
 
   const previewUrl = getQuestionMediaPreviewUrl(media);
   const assetUrl = getQuestionDeliveryAssetUrl(media.asset);
+  const imageResizeMode = getQuestionStillImageResizeMode(appVariant.id);
   const pjmActions = useMemo(
     () => (enablePjmTracks ? buildPjmActions(media, t) : []),
     [enablePjmTracks, media, t]
@@ -208,7 +211,7 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
         <Image
           key={reloadKey}
           source={{ uri: previewUrl ?? undefined }}
-          resizeMode="cover"
+          resizeMode={imageResizeMode}
           style={styles.preview}
           onLoad={() => setIsLoaded(true)}
           onError={() => {

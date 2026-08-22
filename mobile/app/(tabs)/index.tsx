@@ -292,7 +292,7 @@ export default function HomeTabScreen() {
           defaultValue: "Симуляція 0/1",
         }),
       icon: <HomeActionIcon accent="green" name="exam" />,
-      onPress: () => openExam({ title: examTitle }),
+      onPress: () => openExam(),
     },
     {
       key: "mistakes",

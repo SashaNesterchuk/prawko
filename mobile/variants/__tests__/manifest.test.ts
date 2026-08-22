@@ -30,4 +30,60 @@ describe("app variant manifest", () => {
     expect(getVariantId()).toBe("prawko");
     expect(getVariantId("unknown-country")).toBe("prawko");
   });
+
+  it("does not point Czech media at the Prawko CDN", () => {
+    const previousPrawko = process.env.EXPO_PUBLIC_MEDIA_BASE_URL;
+    const previousCzech = process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL;
+    process.env.EXPO_PUBLIC_MEDIA_BASE_URL = "https://media.mind-jar.com";
+    process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL =
+      "https://czech-media.example.com";
+
+    try {
+      expect(getVariant("prawko").mediaBaseUrl).toBe(
+        "https://media.mind-jar.com"
+      );
+      expect(getVariant("czech").mediaBaseUrl).toBe(
+        "https://czech-media.example.com"
+      );
+      expect(getVariant("czech").mediaBaseUrl).not.toBe(
+        getVariant("prawko").mediaBaseUrl
+      );
+    } finally {
+      if (previousPrawko === undefined) {
+        delete process.env.EXPO_PUBLIC_MEDIA_BASE_URL;
+      } else {
+        process.env.EXPO_PUBLIC_MEDIA_BASE_URL = previousPrawko;
+      }
+      if (previousCzech === undefined) {
+        delete process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL;
+      } else {
+        process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL = previousCzech;
+      }
+    }
+  });
+
+  it("leaves Czech media origin empty when its own env is unset", () => {
+    const previousPrawko = process.env.EXPO_PUBLIC_MEDIA_BASE_URL;
+    const previousCzech = process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL;
+    process.env.EXPO_PUBLIC_MEDIA_BASE_URL = "https://media.mind-jar.com";
+    delete process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL;
+
+    try {
+      expect(getVariant("czech").mediaBaseUrl).toBe("");
+      expect(getVariant("prawko").mediaBaseUrl).toBe(
+        "https://media.mind-jar.com"
+      );
+    } finally {
+      if (previousPrawko === undefined) {
+        delete process.env.EXPO_PUBLIC_MEDIA_BASE_URL;
+      } else {
+        process.env.EXPO_PUBLIC_MEDIA_BASE_URL = previousPrawko;
+      }
+      if (previousCzech === undefined) {
+        delete process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL;
+      } else {
+        process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL = previousCzech;
+      }
+    }
+  });
 });

@@ -24,6 +24,7 @@ type SubmitRemoteExamAnswerInput = {
   answerGiven: string;
   locale: SupportedLocale;
   metadata?: Record<string, unknown>;
+  questionOrder?: number | null;
   sessionId: string;
 };
 
@@ -124,6 +125,7 @@ export async function submitRemoteExamAnswer(
     p_question_locale: input.locale,
     p_answer_duration_ms: input.answerDurationMs ?? null,
     p_metadata: toRpcJsonObject(input.metadata ?? {}),
+    p_question_order: input.questionOrder ?? null,
   });
 
   if (error) {
@@ -142,6 +144,84 @@ export async function setRemoteExamSessionStatus(
   const { data, error } = await client.rpc("set_exam_session_status_v2", {
     p_exam_session_id: input.sessionId,
     p_status: input.status,
+    p_metadata: toRpcJsonObject(input.metadata ?? {}),
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return parseRemoteExamSnapshot(data);
+}
+
+export async function setRemoteExamCurrentIndex(input: {
+  questionOrder: number;
+  sessionId: string;
+}): Promise<RemoteExamSnapshot> {
+  assertMobileSupabaseConfigured();
+
+  const client = getMobileSupabaseClient();
+  const { data, error } = await client.rpc("set_exam_session_current_index_v2", {
+    p_exam_session_id: input.sessionId,
+    p_question_order: input.questionOrder,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return parseRemoteExamSnapshot(data);
+}
+
+export async function setRemoteExamFlaggedOrders(input: {
+  flaggedOrders: number[];
+  sessionId: string;
+}): Promise<RemoteExamSnapshot> {
+  assertMobileSupabaseConfigured();
+
+  const client = getMobileSupabaseClient();
+  const { data, error } = await client.rpc("set_exam_session_flags_v2", {
+    p_exam_session_id: input.sessionId,
+    p_flagged_orders: input.flaggedOrders,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return parseRemoteExamSnapshot(data);
+}
+
+export async function toggleRemoteExamFlag(input: {
+  questionOrder: number;
+  sessionId: string;
+}): Promise<RemoteExamSnapshot> {
+  const snapshot = await fetchExamSessionSnapshot(input.sessionId);
+  const current = Array.isArray(snapshot.session.metadata.flaggedOrders)
+    ? snapshot.session.metadata.flaggedOrders.filter(
+        (entry): entry is number =>
+          typeof entry === "number" && Number.isInteger(entry)
+      )
+    : [];
+  const flaggedOrders = current.includes(input.questionOrder)
+    ? current.filter((order) => order !== input.questionOrder)
+    : [...current, input.questionOrder];
+
+  return setRemoteExamFlaggedOrders({
+    flaggedOrders,
+    sessionId: input.sessionId,
+  });
+}
+
+export async function finishRemoteExamSession(input: {
+  metadata?: Record<string, unknown>;
+  sessionId: string;
+}): Promise<RemoteExamSnapshot> {
+  assertMobileSupabaseConfigured();
+
+  const client = getMobileSupabaseClient();
+  const { data, error } = await client.rpc("finish_exam_session_v2", {
+    p_exam_session_id: input.sessionId,
     p_metadata: toRpcJsonObject(input.metadata ?? {}),
   });
 

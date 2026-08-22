@@ -3,7 +3,12 @@ export type VisibleQuestionStep = {
   questionId: string;
 };
 
-export type QuestionStepState = "correct" | "current" | "upcoming" | "wrong";
+export type QuestionStepState =
+  | "answered"
+  | "correct"
+  | "current"
+  | "upcoming"
+  | "wrong";
 
 export function getVisibleQuestionSteps(
   questionIds: string[],

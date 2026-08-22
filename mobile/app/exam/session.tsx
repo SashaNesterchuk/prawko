@@ -18,12 +18,20 @@ import {
   formatQuestionCountdown,
   getRemainingExamSeconds,
 } from "../../src/features/exam/exam-config";
+import { ExamFreeNavigationChrome, ExamQuestionIndexStrip } from "../../src/features/exam/ExamFreeNavigationChrome";
 import { ExamQuestionProgressBar } from "../../src/features/exam/ExamQuestionProgressBar";
 import {
+  getExamProfile,
+  readExamFlaggedOrders,
+} from "../../src/features/exam/exam-profile";
+import {
   fetchExamSessionSnapshot,
+  finishExamSession,
   isExamSessionId,
+  setExamCurrentIndex,
   setExamSessionStatus,
   submitExamAnswer,
+  toggleExamFlag,
 } from "../../src/features/exam/exam-session";
 import {
   cacheExamSnapshot,
@@ -116,6 +124,9 @@ export default function ExamSessionScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [showFinishDialog, setShowFinishDialog] = useState(false);
+  const examProfile = getExamProfile();
+  const isFreeNav = examProfile.navigation === "free";
   // Keep exam questions even if the preferred-category catalog reloads/replaces
   // the in-memory bank (e.g. after switching back to the session category).
   const [sessionQuestionCache, setSessionQuestionCache] = useState<
@@ -194,7 +205,8 @@ export default function ExamSessionScreen() {
   const remainingSeconds = snapshot?.session.remainingSeconds ?? null;
   const hasVideo = currentQuestion?.media?.type === "video";
   const questionTimer = useExamQuestionTimer({
-    enabled: snapshot?.session.status === "active",
+    enabled:
+      snapshot?.session.status === "active" && examProfile.perQuestionTimer,
     hasVideo: Boolean(hasVideo),
     questionId: currentQuestion?.id ?? null,
     scope: currentQuestion?.scope ?? null,
@@ -352,8 +364,15 @@ export default function ExamSessionScreen() {
     }
 
     questionStartedAtRef.current = Date.now();
-    setSelectedAnswerId(null);
-  }, [currentQuestionRef?.questionSourceId, snapshot?.session.status]);
+    const existingAnswer = snapshot.answers.find(
+      (answer) => answer.order === snapshot.session.currentQuestionIndex
+    );
+    setSelectedAnswerId(existingAnswer?.answerGiven ?? null);
+  }, [
+    currentQuestionRef?.questionSourceId,
+    snapshot?.session.status,
+    snapshot?.session.currentQuestionIndex,
+  ]);
 
   useEffect(() => {
     if (!snapshot || snapshot.session.status !== "active") {
@@ -435,6 +454,10 @@ export default function ExamSessionScreen() {
     answer?: string | null;
     timedOut?: boolean;
   }) => {
+    if (isFreeNav) {
+      return;
+    }
+
     if (
       !sessionId ||
       !snapshot ||
@@ -508,6 +531,155 @@ export default function ExamSessionScreen() {
     }
   };
 
+  const applySnapshotAttempts = (examSnapshot: RemoteExamSnapshot) => {
+    for (const answer of examSnapshot.answers) {
+      applyQuestionAttemptOutcome(answer.questionSourceId, {
+        answeredAt: answer.answeredAt,
+        isCorrect: answer.isCorrect,
+      });
+    }
+  };
+
+  const handleSaveFreeNavAnswer = async (answerGiven: string) => {
+    if (
+      !isFreeNav ||
+      !sessionId ||
+      !snapshot ||
+      !currentQuestionRef ||
+      !currentQuestion ||
+      isSubmitting ||
+      isEnding
+    ) {
+      return;
+    }
+
+    setSelectedAnswerId(answerGiven);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const answerDurationMs = Math.max(
+        0,
+        Date.now() - questionStartedAtRef.current
+      );
+      const nextSnapshot = await submitExamAnswer({
+        answerDurationMs,
+        answerGiven,
+        locale: displayLocale,
+        metadata: {
+          source: "mobile_exam_session",
+          question_order: currentQuestionRef.order,
+          question_source_id: currentQuestionRef.questionSourceId,
+          timed_out: false,
+        },
+        questionOrder: currentQuestionRef.order,
+        sessionId,
+      });
+      track(ANALYTICS_EVENTS.examQuestionAnswered.key, {
+        answer_duration_ms: answerDurationMs,
+        answer_type: currentQuestion.answerType,
+        is_correct: currentQuestion.correctAnswer === answerGiven,
+        media_type: currentQuestion.media?.type ?? "none",
+        mode: snapshot.session.mode,
+        points: currentQuestionRef.points,
+        question_id: currentQuestionRef.questionSourceId,
+        question_index: currentQuestionRef.order,
+        question_total: snapshot.session.totalQuestionsTarget,
+        scope: currentQuestionRef.scope,
+        timed_out: false,
+        topic_block: currentQuestion.topicBlock,
+      });
+      setSnapshot(nextSnapshot);
+    } catch (error) {
+      console.warn("Failed to save exam answer.", error);
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoToOrder = async (questionOrder: number) => {
+    if (!sessionId || !snapshot || isSubmitting || isEnding) {
+      return;
+    }
+
+    if (questionOrder === snapshot.session.currentQuestionIndex) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    try {
+      const nextSnapshot = await setExamCurrentIndex({
+        questionOrder,
+        sessionId,
+      });
+      setSnapshot(nextSnapshot);
+    } catch (error) {
+      console.warn("Failed to change exam question.", error);
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleToggleExamFlag = async () => {
+    if (!sessionId || !currentQuestionRef || isSubmitting || isEnding) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    try {
+      const nextSnapshot = await toggleExamFlag({
+        questionOrder: currentQuestionRef.order,
+        sessionId,
+      });
+      setSnapshot(nextSnapshot);
+    } catch (error) {
+      console.warn("Failed to flag exam question.", error);
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleConfirmFinishExam = async () => {
+    if (!sessionId || isEnding) {
+      return;
+    }
+
+    setShowFinishDialog(false);
+    setIsEnding(true);
+    setErrorMessage(null);
+
+    try {
+      const nextSnapshot = await finishExamSession({
+        metadata: {
+          source: "mobile_exam_session",
+          reason: "learner_finish",
+        },
+        sessionId,
+      });
+      applySnapshotAttempts(nextSnapshot);
+      track(ANALYTICS_EVENTS.examSessionEnded.key, {
+        answered_count: nextSnapshot.session.totalQuestionsAnswered,
+        correct_count: nextSnapshot.session.correctAnswersCount,
+        end_reason: "learner_finish",
+        mode: nextSnapshot.session.mode,
+        question_total: nextSnapshot.session.totalQuestionsTarget,
+        status: "completed",
+        wrong_count: nextSnapshot.session.wrongAnswersCount,
+      });
+      navigateToResult(nextSnapshot.session.id, nextSnapshot);
+    } catch (error) {
+      console.warn("Failed to finish exam session.", error);
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setIsEnding(false);
+    }
+  };
+
   useEffect(() => {
     questionTimeoutHandledRef.current = false;
   }, [currentQuestion?.id]);
@@ -562,6 +734,9 @@ export default function ExamSessionScreen() {
         status,
         wrong_count: nextSnapshot.session.wrongAnswersCount,
       });
+      if (isFreeNav && status === "expired") {
+        applySnapshotAttempts(nextSnapshot);
+      }
       navigateToResult(nextSnapshot.session.id, nextSnapshot);
     } catch (error) {
       console.warn("Failed to end exam session.", error);
@@ -584,6 +759,48 @@ export default function ExamSessionScreen() {
 
     try {
       let current = snapshot;
+
+      if (isFreeNav) {
+        for (const questionRef of current.questions) {
+          const question =
+            sessionQuestionCache[questionRef.questionSourceId] ??
+            getQuestionById(questionRef.questionSourceId);
+
+          if (!question) {
+            continue;
+          }
+
+          const choices = getQuestionChoices(question, displayLocale);
+          const answerGiven =
+            mode === "success"
+              ? question.correctAnswer
+              : choices[Math.floor(Math.random() * Math.max(1, choices.length))]
+                ?.id ?? question.correctAnswer;
+
+          current = await submitExamAnswer({
+            answerDurationMs: 50,
+            answerGiven,
+            locale: displayLocale,
+            metadata: {
+              source: "mobile_exam_session_dev",
+              question_order: questionRef.order,
+              question_source_id: questionRef.questionSourceId,
+              timed_out: false,
+              fill_mode: mode,
+            },
+            questionOrder: questionRef.order,
+            sessionId,
+          });
+        }
+
+        current = await finishExamSession({
+          metadata: { source: "mobile_exam_session_dev", fill_mode: mode },
+          sessionId,
+        });
+        applySnapshotAttempts(current);
+        setSnapshot(current);
+        return;
+      }
 
       while (current.session.status === "active") {
         const questionRef = current.questions.find(
@@ -686,7 +903,9 @@ export default function ExamSessionScreen() {
   };
 
   const hasStartedExam =
-    (snapshot?.answers.length ?? 0) > 0 || selectedAnswerId != null;
+    (snapshot?.answers.length ?? 0) > 0 ||
+    selectedAnswerId != null ||
+    readExamFlaggedOrders(snapshot?.session.metadata).length > 0;
   hasStartedExamRef.current = hasStartedExam;
 
   const dismissEmptyExamAsMissClick = async () => {
@@ -930,6 +1149,15 @@ export default function ExamSessionScreen() {
   const totalQuestions = snapshot.session.totalQuestionsTarget;
   const isLastQuestion = questionNumber >= totalQuestions;
   const isBoolean = currentQuestion.answerType === "boolean";
+  const useCompactChoices =
+    isBoolean || (isFreeNav && questionChoices.length === 2);
+  const flaggedOrders = readExamFlaggedOrders(snapshot.session.metadata);
+  const answeredOrders = new Set(snapshot.answers.map((answer) => answer.order));
+  const isCurrentFlagged = flaggedOrders.includes(currentQuestionRef.order);
+  const unansweredCount = Math.max(
+    0,
+    totalQuestions - snapshot.answers.length
+  );
   const isCurrentBookmarked = Boolean(
     getQuestionUserState(questionUserState, currentQuestionRef.questionSourceId)
       .isBookmarked
@@ -1040,10 +1268,25 @@ export default function ExamSessionScreen() {
             </View>
           </View>
 
+          {isFreeNav ? (
+            <ExamQuestionIndexStrip
+              answeredOrders={answeredOrders}
+              currentOrder={questionNumber}
+              flaggedOrders={new Set(flaggedOrders)}
+              isBusy={isBusy}
+              onSelectOrder={(order) => void handleGoToOrder(order)}
+              total={totalQuestions}
+            />
+          ) : null}
+
           <View style={styles.scopeRow}>
-            <CText style={styles.scopeText}>
-              {t(`question.scopes.${currentQuestion.scope}`)}
-            </CText>
+            {examProfile.showWordScopes ? (
+              <CText style={styles.scopeText}>
+                {t(`question.scopes.${currentQuestion.scope}`)}
+              </CText>
+            ) : (
+              <View />
+            )}
             <CText style={styles.scopeText}>
               {t("question.pointsLabel", { points: currentQuestion.points })}
             </CText>
@@ -1061,16 +1304,28 @@ export default function ExamSessionScreen() {
                 autoPlayVideo={false}
                 locale={displayLocale}
                 media={currentQuestion.media}
-                onVideoEnded={questionTimer.handleVideoEnded}
-                onVideoStarted={questionTimer.handleVideoStarted}
-                // Manual play once; lock after the learner has started the film.
-                playbackLocked={Boolean(hasVideo && questionTimer.hasPlayedVideo)}
+                onVideoEnded={
+                  examProfile.perQuestionTimer
+                    ? questionTimer.handleVideoEnded
+                    : undefined
+                }
+                onVideoStarted={
+                  examProfile.perQuestionTimer
+                    ? questionTimer.handleVideoStarted
+                    : undefined
+                }
+                playbackLocked={Boolean(
+                  hasVideo &&
+                    examProfile.perQuestionTimer &&
+                    questionTimer.hasPlayedVideo
+                )}
               />
             ) : (
               <QuestionMediaEmptyPlaceholder />
             )}
           </View>
 
+          {examProfile.perQuestionTimer ? (
           <View style={styles.timerBlock}>
             <View style={styles.timerLabelRow}>
               <CText style={styles.timerLabel}>{questionTimerLabel}</CText>
@@ -1084,12 +1339,13 @@ export default function ExamSessionScreen() {
               timedDurationMs={timedProgressMs}
             />
           </View>
+          ) : null}
 
           <CText style={styles.promptText}>
             {getLocalizedText(currentQuestion.prompt, displayLocale)}
           </CText>
 
-          {isBoolean ? (
+          {useCompactChoices ? (
             <View style={styles.optionsRow}>
               {questionChoices.map((choice, choiceIndex) => {
                 const selected = selectedAnswerId === choice.id;
@@ -1100,7 +1356,13 @@ export default function ExamSessionScreen() {
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
                     disabled={answersDisabled}
-                    onPress={() => setSelectedAnswerId(choice.id)}
+                    onPress={() => {
+                      if (isFreeNav) {
+                        void handleSaveFreeNavAnswer(choice.id);
+                        return;
+                      }
+                      setSelectedAnswerId(choice.id);
+                    }}
                     style={[
                       styles.booleanOption,
                       selected ? styles.optionSelected : null,
@@ -1131,7 +1393,13 @@ export default function ExamSessionScreen() {
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
                     disabled={answersDisabled}
-                    onPress={() => setSelectedAnswerId(choice.id)}
+                    onPress={() => {
+                      if (isFreeNav) {
+                        void handleSaveFreeNavAnswer(choice.id);
+                        return;
+                      }
+                      setSelectedAnswerId(choice.id);
+                    }}
                     style={[
                       styles.multiOption,
                       selected ? styles.optionSelected : null,
@@ -1173,6 +1441,17 @@ export default function ExamSessionScreen() {
           {errorMessage ? (
             <CText style={styles.errorText}>{errorMessage}</CText>
           ) : null}
+          {isFreeNav ? (
+            <ExamFreeNavigationChrome
+              canGoBack={questionNumber > 1}
+              canGoForward={questionNumber < totalQuestions}
+              isBusy={isBusy}
+              isLastQuestion={isLastQuestion}
+              onBack={() => void handleGoToOrder(questionNumber - 1)}
+              onFinish={() => setShowFinishDialog(true)}
+              onNext={() => void handleGoToOrder(questionNumber + 1)}
+            />
+          ) : (
           <Pressable
             accessibilityRole="button"
             disabled={primaryDisabled}
@@ -1190,6 +1469,7 @@ export default function ExamSessionScreen() {
                 : t("exam.nextQuestionCta")}
             </CText>
           </Pressable>
+          )}
 
           <View style={styles.ghostRow}>
             <Pressable
@@ -1204,6 +1484,31 @@ export default function ExamSessionScreen() {
               <CText style={styles.ghostButtonLabel}>{t("exam.reportCta")}</CText>
               <Icon name="problem" size={20} color={colors.ink2} />
             </Pressable>
+
+            {isFreeNav ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  isCurrentFlagged ? t("exam.unflagCta") : t("exam.flagCta")
+                }
+                disabled={isBusy}
+                onPress={() => void handleToggleExamFlag()}
+                style={({ pressed }) => [
+                  styles.ghostButton,
+                  pressed ? styles.pressed : null,
+                ]}
+                testID="exam-flag-question"
+              >
+                <CText style={styles.ghostButtonLabel}>
+                  {isCurrentFlagged ? t("exam.unflagCta") : t("exam.flagCta")}
+                </CText>
+                <Icon
+                  name="flag"
+                  size={20}
+                  color={isCurrentFlagged ? accents.amber.fill : colors.ink2}
+                />
+              </Pressable>
+            ) : null}
 
             <Pressable
               accessibilityRole="button"
@@ -1237,6 +1542,19 @@ export default function ExamSessionScreen() {
         onFinish={handleConfirmExit}
         title={t("exam.exitConfirmTitle")}
         visible={showExitDialog}
+      />
+      <TrainingExitDialog
+        body={
+          unansweredCount > 0
+            ? t("exam.finishConfirmBodyUnanswered", { count: unansweredCount })
+            : t("exam.finishConfirmBody")
+        }
+        continueLabel={t("exam.finishConfirmContinue")}
+        finishLabel={t("exam.finishConfirmFinish")}
+        onContinue={() => setShowFinishDialog(false)}
+        onFinish={() => void handleConfirmFinishExam()}
+        title={t("exam.finishConfirmTitle")}
+        visible={showFinishDialog}
       />
     </ExamSessionShell>
   );

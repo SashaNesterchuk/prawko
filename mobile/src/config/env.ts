@@ -1,3 +1,19 @@
+import { appVariant } from "../app-config/runtime";
+
+function resolveMediaBaseUrl() {
+  if (appVariant.id === "prawko") {
+    return process.env.EXPO_PUBLIC_MEDIA_BASE_URL ?? appVariant.mediaBaseUrl;
+  }
+
+  // Country builds must not inherit Prawko's EXPO_PUBLIC_MEDIA_BASE_URL.
+  // That origin is the Polish R2 bucket; Czech files (Q_W_*.webp) are not there.
+  if (appVariant.id === "czech") {
+    return process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL || "";
+  }
+
+  return appVariant.mediaBaseUrl || "";
+}
+
 function parseBooleanEnv(value: string | undefined, fallback = false) {
   if (value === undefined) {
     return fallback;
@@ -18,7 +34,7 @@ function parseBooleanEnv(value: string | undefined, fallback = false) {
 
 export const mobileEnv = {
   questionSetKey: process.env.EXPO_PUBLIC_QUESTION_SET_KEY ?? appVariant.questionSetKey,
-  mediaBaseUrl: process.env.EXPO_PUBLIC_MEDIA_BASE_URL ?? appVariant.mediaBaseUrl,
+  mediaBaseUrl: resolveMediaBaseUrl(),
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "",
   enableE2ETestMode: parseBooleanEnv(
@@ -64,4 +80,3 @@ export const isMobileSupabaseConfigured = Boolean(
 );
 
 export const isMockAuthEnabled = mobileEnv.enableMockAuth;
-import { appVariant } from "../app-config/runtime";

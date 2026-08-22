@@ -64,12 +64,30 @@ const greece = {
 
 const variants = { prawko, czech, greece };
 
+function resolveMediaBaseUrl(variant) {
+  // Prawko keeps the existing Polish CDN. Czech media lives in the separate
+  // `czech-media-prod` R2 bucket; those objects 404 on media.mind-jar.com.
+  if (variant.id === "prawko") {
+    return process.env.EXPO_PUBLIC_MEDIA_BASE_URL || "";
+  }
+
+  if (variant.id === "czech") {
+    return process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL || "";
+  }
+
+  return "";
+}
+
 function getVariantId(value) {
   return value && Object.hasOwn(variants, value) ? value : "prawko";
 }
 
 function getVariant(value) {
-  return variants[getVariantId(value)];
+  const variant = variants[getVariantId(value)];
+  return {
+    ...variant,
+    mediaBaseUrl: resolveMediaBaseUrl(variant),
+  };
 }
 
-module.exports = { variants, getVariant, getVariantId };
+module.exports = { variants, getVariant, getVariantId, resolveMediaBaseUrl };

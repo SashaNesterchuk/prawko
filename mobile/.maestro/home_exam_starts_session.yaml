@@ -1,0 +1,27 @@
+# Feature: Home
+# Scenario: Exam tile starts the official simulator with no question-count picker
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+  - exam
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      TARGET_ID: screen-home
+
+- tapOn:
+    id: "action-tile-exam"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-session"
+    timeout: 20000
+
+- assertVisible:
+    id: "screen-exam-session"
+- assertVisible:
+    id: "exam-session-counter"
+    text: "Питання 1 з 32"
