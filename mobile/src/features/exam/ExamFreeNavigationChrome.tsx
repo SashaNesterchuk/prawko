@@ -95,10 +95,13 @@ export function ExamFreeNavigationChrome({
       canGoPrevious={!isBusy && canGoBack}
       isCorrectAnswer
       navigationMode="previousNext"
-      nextLabel={t("question.nextShort")}
+      nextLabel={
+        isLastQuestion ? t("question.finish") : t("question.nextShort")
+      }
       nextTestID="exam-next-question"
       previousLabel={t("question.previousShort")}
       previousTestID="exam-prev-question"
+      showNextIcon={!isLastQuestion}
       onNext={isLastQuestion ? onFinish : onNext}
       onPrevious={onBack}
     />

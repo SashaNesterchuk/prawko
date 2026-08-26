@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@prawko/config";
-import { AD_POLICY, QUESTION_MASTERY_RULES } from "@prawko/config";
+import { AD_POLICY } from "@prawko/config";
 
 import { isMobileSupabaseConfigured } from "../../../config/env";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
@@ -21,7 +21,6 @@ import {
 } from "../../../state/question-progress";
 import {
   getLocalizedText,
-  getMasteryProgress,
   getQuestionById,
   getQuestionChoices,
   getQuestionSessionSummary,
@@ -183,12 +182,6 @@ export function useQuestionTrainingSession() {
   const currentQuestionState = currentQuestionId
     ? getQuestionUserState(questionUserState, currentQuestionId)
     : null;
-  const masteryProgress = currentQuestionState
-    ? getMasteryProgress(currentQuestionState)
-    : {
-        current: 0,
-        target: QUESTION_MASTERY_RULES.consecutiveCorrect,
-      };
   const questionChoices = currentQuestion
     ? getQuestionChoices(currentQuestion, displayLocale)
     : [];
@@ -594,7 +587,6 @@ export function useQuestionTrainingSession() {
     isCompleted,
     isEmptyState,
     isReady: questionProgressHydrated && Boolean(activeSession),
-    masteryProgress,
     premiumIconSize,
     questionChoices,
     remainingSeconds,

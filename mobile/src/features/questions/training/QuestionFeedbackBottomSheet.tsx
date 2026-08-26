@@ -11,9 +11,6 @@ type QuestionFeedbackBottomSheetProps = {
   visible: boolean;
   isCorrectAnswer: boolean;
   explanationText: string | null;
-  showMasteryProgress: boolean;
-  masteryCurrent: number;
-  masteryTarget: number;
   isBookmarked: boolean;
   feedbackAccentFill: string;
   feedbackAccentInk: string;
@@ -31,9 +28,6 @@ export function QuestionFeedbackBottomSheet({
   visible,
   isCorrectAnswer,
   explanationText,
-  showMasteryProgress,
-  masteryCurrent,
-  masteryTarget,
   isBookmarked,
   feedbackAccentFill,
   feedbackAccentInk,
@@ -115,19 +109,6 @@ export function QuestionFeedbackBottomSheet({
         text={explanationText}
       />
 
-      {showMasteryProgress ? (
-        <>
-          <View style={styles.gapXs} />
-          <CText style={styles.masteryProgress}>
-            {t("question.masteryProgress", {
-              current: masteryCurrent,
-              target: masteryTarget,
-              defaultValue: "Закріплення: {{current}}/{{target}}",
-            })}
-          </CText>
-        </>
-      ) : null}
-
       {showExplain ? (
         <>
           <View style={styles.gapMd} />
@@ -197,20 +178,11 @@ function useStyles({ feedbackTitleColor }: { feedbackTitleColor: string }) {
       gapMd: {
         height: spacing.exact(16),
       },
-      gapXs: {
-        height: spacing.exact(8),
-      },
       body: {
         alignSelf: "stretch",
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
         color: colors.textSecondary,
-      },
-      masteryProgress: {
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        fontFamily: getFontFamily("semiBold"),
-        color: accents.green.ink,
       },
       explainRow: {
         flexDirection: "row",

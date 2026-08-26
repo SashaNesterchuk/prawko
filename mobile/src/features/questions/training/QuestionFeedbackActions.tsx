@@ -19,6 +19,8 @@ type QuestionFeedbackActionsProps = {
   nextTestID?: string;
   previousLabel?: string;
   previousTestID?: string;
+  /** Hide the trailing chevron when Next is replaced by Finish. */
+  showNextIcon?: boolean;
   onNext: () => void;
   onPrevious?: () => void;
 };
@@ -36,6 +38,7 @@ export function QuestionFeedbackActions({
   nextTestID,
   previousLabel,
   previousTestID,
+  showNextIcon = true,
   onNext,
   onPrevious,
 }: QuestionFeedbackActionsProps) {
@@ -86,7 +89,9 @@ export function QuestionFeedbackActions({
         testID={nextTestID ?? "question-feedback-next"}
       >
         <CText style={styles.navButtonText}>{nextLabel}</CText>
-        <Icon name="chevron" size={20} color={colors.ink2} />
+        {showNextIcon ? (
+          <Icon name="chevron" size={20} color={colors.ink2} />
+        ) : null}
       </Pressable>
     </View>
   );

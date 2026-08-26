@@ -167,12 +167,6 @@ export function useTrainerStyles({
         lineHeight: responsiveFont(20),
         color: colors.textSecondary,
       },
-      masteryProgress: {
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        fontFamily: getFontFamily("semiBold"),
-        color: accents.green.ink,
-      },
       explainRow: {
         flexDirection: "row",
         alignItems: "center",

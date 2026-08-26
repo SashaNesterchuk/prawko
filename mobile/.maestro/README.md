@@ -65,7 +65,8 @@ pnpm test:e2e:studio
 | `exam_offline_ready_pack_starts_session.yaml` | Practice exam → offline start with ready pack |
 | `exam_session_category_mismatch_switches_category.yaml` | Direct active exam session → category mismatch → switch and continue |
 | `exam_result_category_mismatch_switches_category.yaml` | Direct exam result → category mismatch → switch and load result |
-| `trainer_result_screen_opens.yaml` | Direct finished training → result screen → answers review |
+| `trainer_result_screen_opens.yaml` | Direct finished training → result screen → answers review → last question Finish returns to result |
+| `trainer_result_work_on_mistakes.yaml` | Failed training result → Work on mistakes opens the mistakes monitor (does not freeze on the question spinner) |
 | `exam_answers_category_mismatch_switches_category.yaml` | Direct exam answer review → category mismatch → switch and load review |
 | `trainer_random_mode_starts_questions.yaml` | Trainer modes → count picker → first question |
 | `trainer_first_answer_shows_feedback.yaml` | Trainer question → first answer → feedback sheet (wrong → Зрозуміло / correct → Наступне питання); question, options and explanation scroll as one block while the CTA stays pinned; sign codes in the explanation open the sign plate popup |
@@ -91,7 +92,7 @@ Shared steps live in:
 - `subflows/confirm_training_exit_to_home.yaml` for Finish on the training/exam exit dialog
 - `subflows/answer_first_available_option.yaml` for generic “answer first option” steps
 
-Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `statistics`, `signs`, `signs-category`, `topic`, `topics`, `trainer-modes`, `exam-session`, `exam-result`, `exam-answers`, `question-result`.
+Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `statistics`, `signs`, `signs-category`, `topic`, `topics`, `trainer-modes`, `exam-session`, `exam-result`, `exam-answers`, `question-result`, `question-result-failed`.
 
 ## Writing new flows
 

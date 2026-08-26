@@ -33,8 +33,8 @@ const CONTENT_GAP = 12;
 const FADE_RAMP = 24;
 
 /**
- * Panel header height. The panel is scrolled up by at least this much above the
- * pinned actions, so the verdict is readable without touching the scroll.
+ * Minimum panel peek above the pinned actions. Used until the explanation has
+ * been measured, so the verdict is readable even on the first frame.
  */
 const PANEL_HEADER_REVEAL = 64;
 
@@ -89,6 +89,7 @@ export function QuestionFeedbackPushStage({
   const progress = useSharedValue(0);
   const stageHeight = useSharedValue(0);
   const panelTop = useSharedValue(0);
+  const panelContentHeight = useSharedValue(0);
   const actionsHeight = useSharedValue(0);
   const [actionsHeightPx, setActionsHeightPx] = useState(0);
   const [mounted, setMounted] = useState(visible);
@@ -115,19 +116,31 @@ export function QuestionFeedbackPushStage({
     clearFallbackTimer();
 
     const maxScroll = Math.max(0, contentHeightRef.current - stageHeight.value);
+    // Show as much of the explanation as fits above the pinned actions,
+    // lifting the question only as far as the text needs. Never scroll the
+    // panel header off-screen — longer copy stays reachable by hand.
+    const reveal = Math.max(PANEL_HEADER_REVEAL, panelContentHeight.value);
     const target = Math.min(
       maxScroll,
+      Math.max(0, panelTop.value),
       Math.max(
         0,
         panelTop.value +
           actionsHeight.value +
-          PANEL_HEADER_REVEAL -
+          reveal -
           stageHeight.value
       )
     );
 
     scrollRef.current?.scrollTo({ y: target, animated: true });
-  }, [actionsHeight, clearFallbackTimer, panelTop, scrollRef, stageHeight]);
+  }, [
+    actionsHeight,
+    clearFallbackTimer,
+    panelContentHeight,
+    panelTop,
+    scrollRef,
+    stageHeight,
+  ]);
 
   useEffect(() => {
     if (visible) {
@@ -136,6 +149,7 @@ export function QuestionFeedbackPushStage({
     }
 
     pendingRevealRef.current = false;
+    panelContentHeight.value = 0;
     clearFallbackTimer();
     scrollRef.current?.scrollTo({ y: 0, animated: true });
     progress.value = withTiming(
@@ -242,7 +256,20 @@ export function QuestionFeedbackPushStage({
               flushPendingReveal();
             }}
           >
-            {feedback}
+            <View
+              onLayout={(event) => {
+                const nextHeight = event.nativeEvent.layout.height;
+                if (nextHeight === panelContentHeight.value) {
+                  return;
+                }
+
+                panelContentHeight.value = nextHeight;
+                pendingRevealRef.current = true;
+                flushPendingReveal();
+              }}
+            >
+              {feedback}
+            </View>
             {/* Continues the panel gradient's white end down to the screen
                 edge, both behind the pinned actions and on questions whose
                 content is shorter than the viewport. */}

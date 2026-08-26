@@ -1,5 +1,6 @@
 # Feature: Training session result
-# Scenario: Finished non-exam training opens the Figma-style result screen
+# Scenario: Finished training result → answers review → last question Finish
+# returns to the result screen (never a disabled Next on the last answer)
 appId: com.mindjar.prawko
 tags:
   - training
@@ -39,3 +40,31 @@ tags:
 
 - assertVisible:
     id: "screen-question-answers-review"
+
+- assertVisible:
+    id: "question-answers-review-next"
+
+# E2E seed is a 5-question finished session (see seedE2EFinishedQuestionSession).
+- repeat:
+    times: 4
+    commands:
+      - tapOn:
+          id: "question-answers-review-next"
+      - waitForAnimationToEnd:
+          timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: "question-answers-review-finish"
+    timeout: 10000
+
+- tapOn:
+    id: "question-answers-review-finish"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-result"
+    timeout: 10000
+
+- assertVisible:
+    id: "screen-question-result"

@@ -63,6 +63,7 @@ export function ExamAnswersReviewView({
   const insets = useSafeAreaInsets();
   const styles = useStyles();
   const reviewTitle = title ?? t("exam.answersReviewTitle");
+  const isLastQuestion = currentIndex >= totalQuestions - 1;
 
   const question = getQuestionById(questionRef.questionSourceId);
   const questionChoices = question
@@ -214,9 +215,6 @@ export function ExamAnswersReviewView({
                 visible
                 isCorrectAnswer={isCorrectAnswer}
                 explanationText={explanationText || null}
-                showMasteryProgress={false}
-                masteryCurrent={0}
-                masteryTarget={0}
                 isBookmarked={isBookmarked}
                 feedbackAccentFill={feedbackAccent.fill}
                 feedbackAccentInk={feedbackAccent.ink}
@@ -228,12 +226,23 @@ export function ExamAnswersReviewView({
             }
             feedbackActions={
               <QuestionFeedbackActions
-                canGoNext={canGoNext}
+                canGoNext={canGoNext || isLastQuestion}
                 canGoPrevious={canGoPrevious}
                 isCorrectAnswer={isCorrectAnswer}
                 navigationMode="previousNext"
-                nextLabel={t("question.nextShort")}
+                nextLabel={
+                  isLastQuestion
+                    ? t("question.finish")
+                    : t("question.nextShort")
+                }
+                nextTestID={
+                  isLastQuestion
+                    ? "question-answers-review-finish"
+                    : "question-answers-review-next"
+                }
                 previousLabel={t("question.previousShort")}
+                previousTestID="question-answers-review-previous"
+                showNextIcon={!isLastQuestion}
                 onNext={onNext}
                 onPrevious={onPrevious}
               />

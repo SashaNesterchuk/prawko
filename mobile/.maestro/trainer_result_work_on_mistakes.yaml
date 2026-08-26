@@ -1,0 +1,28 @@
+# Feature: Training session result
+# Scenario: Failed training result → Work on mistakes opens the mistakes
+# monitor (must not freeze on the question loading spinner)
+appId: com.mindjar.prawko
+tags:
+  - training
+  - result
+  - mistakes
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: question-result-failed
+      TARGET_ID: screen-question-result
+
+- assertVisible:
+    id: "screen-question-result"
+
+- tapOn:
+    id: "question-result-primary"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-mistakes"
+    timeout: 15000
+
+- assertNotVisible:
+    id: "screen-question-result"

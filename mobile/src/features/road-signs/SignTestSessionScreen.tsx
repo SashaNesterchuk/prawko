@@ -323,9 +323,6 @@ export function SignTestSessionScreen({
               visible
               isCorrectAnswer={Boolean(isCorrect)}
               explanationText={explanationText}
-              showMasteryProgress={false}
-              masteryCurrent={0}
-              masteryTarget={0}
               isBookmarked={isBookmarked}
               feedbackAccentFill={feedbackAccent.fill}
               feedbackAccentInk={feedbackAccent.ink}

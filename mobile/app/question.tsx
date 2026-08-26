@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
@@ -110,12 +110,23 @@ function QuestionTrainingScreen() {
     handleRequestExit: () => undefined,
   });
 
-  const exitToTabs = () => {
+  const leaveQuestionScreen = (href: Href) => {
+    // beforeRemove intercepts every leave from /question. Set this before
+    // replace(), or the stack freezes on the loading spinner (session already
+    // cleared, new session never starts because the effect does not watch it).
     allowNavigationRef.current = true;
     // Ads are scheduled inside handleConfirmExit after a short delay so
     // navigation is never blocked on AdMob load/show.
     exitHandlersRef.current.handleConfirmExit();
-    router.replace("/(tabs)");
+    router.replace(href);
+  };
+
+  const exitToTabs = () => {
+    leaveQuestionScreen("/(tabs)");
+  };
+
+  const exitToMistakes = () => {
+    leaveQuestionScreen("/mistakes");
   };
 
   // Empty open + close / completed / empty pool = leave without warning.
@@ -248,6 +259,7 @@ function QuestionTrainingScreen() {
       <QuestionSessionResultView
         activeSession={session.activeSession}
         onClose={exitToTabs}
+        onWorkOnMistakes={exitToMistakes}
         sessionMode={session.sessionMode}
         sessionResultPercent={session.sessionResultPercent}
         summary={session.summary}
@@ -288,7 +300,6 @@ function QuestionTrainingScreen() {
       handleDismissExitDialog={session.handleDismissExitDialog}
       handleRequestExit={requestExit}
       handleToggleBookmark={session.handleToggleBookmark}
-      masteryProgress={session.masteryProgress}
       premiumIconSize={session.premiumIconSize}
       questionChoices={session.questionChoices}
       remainingSeconds={session.remainingSeconds}

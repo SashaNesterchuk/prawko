@@ -13,9 +13,11 @@ import {
   getQuestionBank,
   hydrateQuestionBankFromLocalQuestions,
 } from "../../features/questions/question-bank";
+import { createEmptyQuestionUserState } from "../../features/questions/question-engine";
 import type {
   QuestionOptionValue,
   QuestionSession,
+  QuestionUserStateMap,
 } from "../../features/questions/types";
 import { createLocalExamSessionId } from "../../features/exam/exam-session-id";
 import { seedPersistedExamSnapshot } from "../../features/exam/exam-snapshot-cache";
@@ -54,7 +56,8 @@ export type E2EDestination =
   | "exam-session"
   | "exam-result"
   | "exam-answers"
-  | "question-result";
+  | "question-result"
+  | "question-result-failed";
 
 type PrepareE2EAppStateInput = {
   category?: string | null;
@@ -68,6 +71,7 @@ type PrepareE2EAppStateInput = {
   questionScenario?: E2EQuestionScenario | null;
   reachability?: boolean | null;
   seedQuestionResult?: boolean | null;
+  seedQuestionResultOutcome?: "good" | "poor" | null;
 };
 
 type ResolveE2EDestinationInput = {
@@ -140,6 +144,7 @@ export async function prepareE2EAppState(
   const seededQuestionSessionKey = input.seedQuestionResult
     ? seedE2EFinishedQuestionSession({
         category: preferredCategory,
+        outcome: input.seedQuestionResultOutcome === "poor" ? "poor" : "good",
       })
     : null;
 
@@ -210,6 +215,7 @@ export function resolveE2EDestination(
           }
         : "/(tabs)";
     case "question-result":
+    case "question-result-failed":
       return input.seededQuestionSessionKey
         ? {
             pathname: "/question",
@@ -245,6 +251,7 @@ function normalizeDestination(
     case "exam-result":
     case "exam-answers":
     case "question-result":
+    case "question-result-failed":
       return normalized;
     case "home":
     default:
@@ -439,7 +446,9 @@ function pickWrongAnswer(correctAnswer: QuestionOptionValue): QuestionOptionValu
 /** Finished 5-question learning session so `/question` opens the result screen. */
 function seedE2EFinishedQuestionSession(input: {
   category: DrivingCategory;
+  outcome?: "good" | "poor";
 }) {
+  const isPoor = input.outcome === "poor";
   const routeSessionKey = `e2e-question-result-${Date.now().toString(36)}`;
   // `useQuestionRouteParams` prefixes the `session` query with the category.
   const sessionKey = `${input.category}:${routeSessionKey}`;
@@ -452,7 +461,7 @@ function seedE2EFinishedQuestionSession(input: {
   const questionIds = sourceQuestions.map((question) => question.id);
   const answers = Object.fromEntries(
     sourceQuestions.map((question, index) => {
-      const isCorrect = index !== 2;
+      const isCorrect = isPoor ? false : index !== 2;
       const selectedAnswer = isCorrect
         ? question.correctAnswer
         : pickWrongAnswer(question.correctAnswer);
@@ -487,11 +496,28 @@ function seedE2EFinishedQuestionSession(input: {
     emptyReason: null,
   };
 
+  const now = new Date().toISOString();
+  const questionUserState: QuestionUserStateMap | undefined = isPoor
+    ? Object.fromEntries(
+        sourceQuestions.map((question) => [
+          question.id,
+          {
+            ...createEmptyQuestionUserState(question.id),
+            timesSeen: 1,
+            timesWrong: 1,
+            lastSeenAt: now,
+            lastWrongAt: now,
+          },
+        ])
+      )
+    : undefined;
+
   useQuestionProgressStore.setState({
     activeSession: session,
     lastTrainingSessionPercents: {
       "learning:all": 100,
     },
+    ...(questionUserState ? { questionUserState } : {}),
   });
 
   return routeSessionKey;

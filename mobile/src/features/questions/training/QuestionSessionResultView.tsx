@@ -51,6 +51,7 @@ const TOP_FADE_RAMP = 16;
 export function QuestionSessionResultView({
   activeSession,
   onClose,
+  onWorkOnMistakes,
   sessionMode,
   sessionResultPercent,
   summary,
@@ -62,6 +63,7 @@ export function QuestionSessionResultView({
   | "summary"
 > & {
   onClose: () => void;
+  onWorkOnMistakes: () => void;
 }) {
   const { t } = useTranslation();
   const { accents, background, colors } = useTheme();
@@ -200,7 +202,7 @@ export function QuestionSessionResultView({
     return (
       <ExamAnswersReviewView
         answer={reviewAnswer}
-        canGoNext={reviewIndex < reviewQuestionIds.length - 1}
+        canGoNext
         canGoPrevious={reviewIndex > 0}
         currentIndex={reviewIndex}
         displayLocale={preferredLocale}
@@ -209,11 +211,17 @@ export function QuestionSessionResultView({
         }
         onBack={() => setReviewIndex(null)}
         onNext={() =>
-          setReviewIndex((current) =>
-            current === null
-              ? null
-              : Math.min(current + 1, reviewQuestionIds.length - 1)
-          )
+          setReviewIndex((current) => {
+            if (current === null) {
+              return null;
+            }
+
+            if (current >= reviewQuestionIds.length - 1) {
+              return null;
+            }
+
+            return current + 1;
+          })
         }
         onPrevious={() =>
           setReviewIndex((current) =>
@@ -253,8 +261,7 @@ export function QuestionSessionResultView({
       return;
     }
 
-    clearActiveSession();
-    router.replace("/mistakes");
+    onWorkOnMistakes();
   }
 
   function handleNewAttempt() {

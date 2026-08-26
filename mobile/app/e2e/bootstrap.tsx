@@ -82,7 +82,11 @@ export default function E2EBootstrapScreen() {
         plusAccess,
         questionScenario,
         reachability,
-        seedQuestionResult: destination === "question-result",
+        seedQuestionResult:
+          destination === "question-result" ||
+          destination === "question-result-failed",
+        seedQuestionResultOutcome:
+          destination === "question-result-failed" ? "poor" : "good",
       });
 
       router.replace(

@@ -254,8 +254,6 @@ export default function HomeTabScreen() {
   const wrongAnswers = stats.wrongAnswers;
   const examPassed =
     readinessSummary != null && readinessSummary.daysUntilExam <= 0;
-  const recentExamPassed =
-    readinessSummary?.recentExamStatus === "completed";
 
   const readinessLevelLabel = t(`dash.readinessLevel.${readinessLevel}`, {
     defaultValue:
@@ -284,13 +282,9 @@ export default function HomeTabScreen() {
       key: "exam",
       accent: "green",
       title: examTitle,
-      subtitle: recentExamPassed
-        ? t("dash.tileExamSubtitlePassed", {
-          defaultValue: "Симуляція 1/1",
-        })
-        : t("dash.tileExamSubtitlePending", {
-          defaultValue: "Симуляція 0/1",
-        }),
+      subtitle: t("dash.tileExamSubtitle", {
+        defaultValue: "Симуляція з таймером",
+      }),
       icon: <HomeActionIcon accent="green" name="exam" />,
       onPress: () => openExam(),
     },

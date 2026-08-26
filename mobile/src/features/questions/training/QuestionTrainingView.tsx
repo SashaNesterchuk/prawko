@@ -10,7 +10,6 @@ import { TrainingExitDialog } from "../../../components/shell/TrainingExitDialog
 import {
   formatSessionCountdown,
   getLocalizedText,
-  isQuestionMastered,
 } from "../question-engine";
 import { QuestionMediaCard } from "../QuestionMediaCard";
 import { QuestionMediaEmptyPlaceholder } from "../QuestionMediaEmptyPlaceholder";
@@ -44,7 +43,6 @@ type QuestionTrainingViewProps = Pick<
   | "handleDismissExitDialog"
   | "handleRequestExit"
   | "handleToggleBookmark"
-  | "masteryProgress"
   | "premiumIconSize"
   | "questionChoices"
   | "remainingSeconds"
@@ -77,7 +75,6 @@ export function QuestionTrainingView({
   handleDismissExitDialog,
   handleRequestExit,
   handleToggleBookmark,
-  masteryProgress,
   premiumIconSize,
   questionChoices,
   remainingSeconds,
@@ -134,10 +131,6 @@ export function QuestionTrainingView({
     displayLocale
   );
   const scopeLabel = t(`question.scopes.${currentQuestion.scope}`);
-  const showMasteryProgress =
-    isCorrectAnswer &&
-    !isQuestionMastered(currentQuestionState) &&
-    currentQuestionState.timesWrong > 0;
   const handleReportProblem = () => {
     track(ANALYTICS_EVENTS.questionProblemReportRequested.key, {
       question_id: currentQuestionId,
@@ -278,9 +271,6 @@ export function QuestionTrainingView({
                 visible
                 isCorrectAnswer={isCorrectAnswer}
                 explanationText={explanationText || null}
-                showMasteryProgress={showMasteryProgress}
-                masteryCurrent={masteryProgress.current}
-                masteryTarget={masteryProgress.target}
                 isBookmarked={currentQuestionState.isBookmarked}
                 feedbackAccentFill={feedbackAccent.fill}
                 feedbackAccentInk={feedbackAccent.ink}

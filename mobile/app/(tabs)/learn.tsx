@@ -142,7 +142,6 @@ export default function LearnTabScreen() {
   ]);
   const displayTopicCards = topicCards;
 
-  const recentExamPassed = readinessSummary?.recentExamStatus === "completed";
   const dueReviews = readinessSummary?.dueReviews ?? stats.reviewDue;
 
   const openQuestionMode = (
@@ -173,13 +172,9 @@ export default function LearnTabScreen() {
       key: "exam",
       accent: "green",
       title: examTitle,
-      subtitle: recentExamPassed
-        ? t("learn.tileExamSubtitlePassed", {
-          defaultValue: "Симуляція: 1/1",
-        })
-        : t("learn.tileExamSubtitlePending", {
-          defaultValue: "Симуляція: 0/1",
-        }),
+      subtitle: t("learn.tileExamSubtitle", {
+        defaultValue: "Симуляція з таймером",
+      }),
       icon: <LearnActionIcon accent="green" name="exam" />,
       onPress: () => openExam(),
     },

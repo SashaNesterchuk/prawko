@@ -10,13 +10,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   if (isProductionVariantBuild && !variant.productionReady) {
     throw new Error(
-      `Variant "${variant.id}" is not production-ready. Add its own native assets, EAS project ID and store identity first.`
+      `Variant "${variant.id}" is not production-ready. Add its own native assets, EAS project ID and store identity first.`,
     );
   }
 
   if (process.env.EAS_BUILD && !variant.easProjectId) {
     throw new Error(
-      `Variant "${variant.id}" has no EAS project yet. Create a separate EAS project and add its ID before building.`
+      `Variant "${variant.id}" has no EAS project yet. Create a separate EAS project and add its ID before building.`,
     );
   }
 
@@ -25,7 +25,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: variant.name,
     slug: variant.slug,
     scheme: variant.scheme,
-    version: "1.0.18",
+    version: "1.0.19",
     orientation: "portrait",
     icon: variant.assets.icon,
     userInterfaceStyle: "light",
@@ -69,7 +69,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       bundleIdentifier: variant.iosBundleIdentifier,
       supportsTablet: false,
       appleTeamId: "6ZQHZ3FP75",
-      ...(variant.iosAppStoreUrl ? { appStoreUrl: variant.iosAppStoreUrl } : {}),
+      ...(variant.iosAppStoreUrl
+        ? { appStoreUrl: variant.iosAppStoreUrl }
+        : {}),
       config: { usesNonExemptEncryption: false },
       infoPlist: {
         CFBundleDisplayName: variant.name,
@@ -82,7 +84,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     extra: {
       router: { origin: false },
-      ...(variant.easProjectId ? { eas: { projectId: variant.easProjectId } } : {}),
+      ...(variant.easProjectId
+        ? { eas: { projectId: variant.easProjectId } }
+        : {}),
       variant: {
         id: variant.id,
         name: variant.name,
