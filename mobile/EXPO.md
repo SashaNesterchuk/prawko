@@ -12,10 +12,17 @@ pnpm start:prawko
 
 Нативный запуск:
 
-```bash
-APP_VARIANT=prawko npx expo run:android
+# 1. Native под Czech → появится Řidičák (com.mindjar.ridicak)
+
+APP_VARIANT=czech npx expo prebuild
+APP_VARIANT=czech npx expo run:ios
+
+# 2. Вернуть Prawko native и поставить снова
+
+# Czech останется на симуляторе: другой bundle id
+
+APP_VARIANT=prawko npx expo prebuild
 APP_VARIANT=prawko npx expo run:ios
-```
 
 ## Будущие приложения
 

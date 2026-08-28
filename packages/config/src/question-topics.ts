@@ -13,6 +13,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Signs & Signals",
     titleDe: "Verkehrszeichen und Signale",
     titleEs: "Señalización vial",
+    titleCs: "Značky a signalizace",
     sourceLabelUa:
       "Дорожні знаки, таблички, дорожня розмітка, світлофори та сигнали регулювальника.",
   },
@@ -24,6 +25,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Intersections & Right of Way",
     titleDe: "Kreuzungen und Vorfahrt",
     titleEs: "Intersecciones y prioridad",
+    titleCs: "Křižovatky a přednost",
     sourceLabelUa:
       "Черговість проїзду, рівнозначні й нерівнозначні перехрестя, круговий рух і правила пріоритету.",
   },
@@ -35,6 +37,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Driving & Maneuvers",
     titleDe: "Fahren und Manövrieren",
     titleEs: "Conducción y maniobras",
+    titleCs: "Jízda a manévry",
     sourceLabelUa:
       "Розташування на дорозі, смуги, початок руху, повороти, розвороти, зміна смуги, обгін, об’їзд, рух заднім ходом, зупинка та стоянка.",
   },
@@ -46,6 +49,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Speed & Distance",
     titleDe: "Geschwindigkeit und Abstand",
     titleEs: "Velocidad y distancia",
+    titleCs: "Rychlost a odstup",
     sourceLabelUa:
       "Обмеження та вибір швидкості, інтервали, дистанція, шлях реакції, гальмівний і зупинний шлях.",
   },
@@ -57,6 +61,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Vulnerable Road Users",
     titleDe: "Ungeschützte Verkehrsteilnehmer",
     titleEs: "Usuarios vulnerables",
+    titleCs: "Chodci, cyklisté a MHD",
     sourceLabelUa:
       "Пішоходи, велосипедисти, електросамокати, діти, люди з інвалідністю та правила взаємодії з ними.",
   },
@@ -68,6 +73,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Roads, Zones & Rail Crossings",
     titleDe: "Straßen, Zonen und Bahnübergänge",
     titleEs: "Vías, zonas y pasos a nivel",
+    titleCs: "Dálnice, zóny a přejezdy",
     sourceLabelUa:
       "Автомагістралі, швидкісні дороги, тунелі, житлові та інші спеціальні зони, автобусні смуги, залізничні й трамвайні переїзди.",
   },
@@ -79,6 +85,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Vehicle & Equipment",
     titleDe: "Fahrzeug und Ausstattung",
     titleEs: "Vehículo y equipamiento",
+    titleCs: "Vozidlo a výbava",
     sourceLabelUa:
       "Будова, шини, гальма, рідини, системи безпеки, контрольні лампи, освітлення, сигнали та обов’язкове обладнання транспортного засобу.",
   },
@@ -90,6 +97,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Awareness & Hazards",
     titleDe: "Aufmerksamkeit und Gefahren",
     titleEs: "Atención y riesgos",
+    titleCs: "Bezpečná jízda",
     sourceLabelUa:
       "Погода, видимість, стан покриття, алкоголь, ліки, втома, відволікання, час реакції та розпізнавання небезпек.",
   },
@@ -101,6 +109,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Accidents & First Aid",
     titleDe: "Unfälle und Erste Hilfe",
     titleEs: "Accidentes y primeros auxilios",
+    titleCs: "Nehody a první pomoc",
     sourceLabelUa:
       "Дії при ДТП, поломці чи пожежі, захист місця події, виклик служб, евакуація та домедична допомога.",
   },
@@ -112,6 +121,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Passengers & Cargo",
     titleDe: "Personen- und Gütertransport",
     titleEs: "Pasajeros, carga y remolque",
+    titleCs: "Přeprava a náklad",
     sourceLabelUa:
       "Пасажири, ремені, дитячі крісла, вантажі, причепи, буксирування, маси, габарити та правила професійних перевезень.",
   },
@@ -123,6 +133,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleEn: "Documents & Responsibility",
     titleDe: "Dokumente und Pflichten",
     titleEs: "Documentos y obligaciones",
+    titleCs: "Doklady a povinnosti",
     sourceLabelUa:
       "Посвідчення, право керування, реєстрація, страхування, техогляд, санкції, дозволи, тахограф і час роботи водія.",
   },
@@ -134,6 +145,33 @@ export type QuestionTopicId = QuestionTopicCatalogEntry["id"];
 export const QUESTION_TOPIC_IDS = QUESTION_TOPIC_CATALOG.map(
   (topic) => topic.id
 ) as QuestionTopicId[];
+
+/**
+ * Learner-facing Czech catalogue. Official eTesty baskets stay on
+ * `official_metadata.official_basket_scope_id` and are not Learn topics.
+ * Keep this a subset of QUESTION_TOPIC_IDS so Prawko's 11-topic catalog
+ * and TypeScript contract stay unchanged.
+ */
+export const CZECH_QUESTION_TOPIC_IDS = [
+  "signs_signals",
+  "intersections_priority",
+  "driving_maneuvers",
+  "other_road_users",
+  "attention_risks",
+  "vehicle_equipment",
+  "documents_responsibility",
+  "accidents_first_aid",
+] as const satisfies readonly QuestionTopicId[];
+
+export type CzechQuestionTopicId = (typeof CZECH_QUESTION_TOPIC_IDS)[number];
+
+export function getQuestionTopicIdsForVariant(
+  variantId: string | null | undefined
+): QuestionTopicId[] {
+  return variantId === "czech"
+    ? [...CZECH_QUESTION_TOPIC_IDS]
+    : QUESTION_TOPIC_IDS;
+}
 
 export type LearningTopicId = TopicBlockId | QuestionTopicId;
 

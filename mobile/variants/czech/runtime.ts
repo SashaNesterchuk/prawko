@@ -19,5 +19,15 @@ export const variantRuntime: AppVariantRuntime = {
   ),
   // This is injected only into the Czech build. Prawko keeps its own resource
   // set untouched; any newly added shared key safely falls back to English.
-  translations: { cs: { translation: czechTranslations } },
+  translations: {
+    cs: { translation: czechTranslations },
+    en: {
+      translation: {
+        profile: {
+          shareMessage: "Prepare for the Czech driving exam with Řidičák.",
+          supportEmailSubject: "Řidičák support",
+        },
+      },
+    },
+  },
 };

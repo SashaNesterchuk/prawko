@@ -127,7 +127,7 @@ function useStyles({
         overflow: "visible",
       },
       fade: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
       },
       menu: {
         flexDirection: "row",

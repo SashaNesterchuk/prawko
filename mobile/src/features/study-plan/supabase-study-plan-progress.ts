@@ -153,14 +153,23 @@ export async function fetchRemoteTodayPlan(
 export async function fetchRemoteHomeProgress(
   planDate: string = getWarsawIsoDate()
 ) {
-  const [readinessSummary, todayPlan] = await Promise.all([
+  const [readinessResult, todayPlanResult] = await Promise.allSettled([
     fetchRemoteReadinessSummary(),
     fetchRemoteTodayPlan(planDate),
   ]);
 
+  if (readinessResult.status === "rejected") {
+    throw readinessResult.reason;
+  }
+
+  if (todayPlanResult.status === "rejected") {
+    console.warn("Failed to fetch today's study plan.", todayPlanResult.reason);
+  }
+
   return {
-    readinessSummary,
-    todayPlan,
+    readinessSummary: readinessResult.value,
+    todayPlan:
+      todayPlanResult.status === "fulfilled" ? todayPlanResult.value : null,
   };
 }
 

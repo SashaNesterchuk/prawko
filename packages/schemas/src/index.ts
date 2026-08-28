@@ -145,6 +145,7 @@ export const questionChatRequestSchema = z.object({
   conversationId: z.string().min(1),
   locale: localeSchema,
   prompt: z.string().trim().min(1).max(AI_LIMITS.maxPromptChars),
+  questionSetKey: z.string().trim().min(1).optional(),
   question: questionChatContextSchema,
   history: z.array(questionChatMessageSchema).max(AI_LIMITS.maxHistoryMessages),
 });

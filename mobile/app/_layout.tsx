@@ -3,13 +3,24 @@ import "react-native-reanimated";
 
 import { useEffect } from "react";
 import { useFonts } from "expo-font";
+import { Observe, ObserveRoot, useObserve } from "expo-observe";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 
 import { configureFonts } from "../src/portable-ui";
 import { AnalyticsScreenTracker } from "../src/analytics/AnalyticsScreenTracker";
+import { mobileEnv } from "../src/config/env";
 import { AppProviders } from "../src/providers/AppProviders";
+import {
+  useAppShellStore,
+  useHasHydrated,
+} from "../src/state/app-shell";
 import "../src/testing/e2e/setup";
+
+Observe.configure({
+  dispatchingEnabled: !mobileEnv.enableE2ETestMode,
+  integrations: { "expo-router": true },
+});
 
 const appFonts = {
   "Roboto-Regular": require("../assets/fonts/Roboto/Roboto-Regular.ttf"),
@@ -31,7 +42,23 @@ configureFonts({
 
 void SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function ObserveAppReadyMarker() {
+  const { markInteractive } = useObserve();
+  const hasHydrated = useHasHydrated();
+  const sessionResolved = useAppShellStore((state) => state.sessionResolved);
+
+  useEffect(() => {
+    if (!hasHydrated || !sessionResolved) {
+      return;
+    }
+
+    markInteractive();
+  }, [hasHydrated, markInteractive, sessionResolved]);
+
+  return null;
+}
+
+function RootLayout() {
   const [loaded, error] = useFonts(appFonts);
 
   useEffect(() => {
@@ -52,6 +79,7 @@ export default function RootLayout() {
 
   return (
     <AppProviders>
+      <ObserveAppReadyMarker />
       <AnalyticsScreenTracker />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
@@ -193,3 +221,5 @@ export default function RootLayout() {
     </AppProviders>
   );
 }
+
+export default ObserveRoot.wrap(RootLayout);

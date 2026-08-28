@@ -1,4 +1,4 @@
-import type { SupportedLocale } from "@prawko/config";
+import type { ContentLocale, SupportedLocale } from "@prawko/config";
 import { getContentLocale } from "@prawko/config";
 
 import { resolveLocalReadinessPercent } from "../questions/readiness-assessment";
@@ -27,6 +27,14 @@ const WEEKDAY_LABELS: Record<"pl" | "ua" | "en" | "de", string[]> = {
   en: ["M", "T", "W", "T", "F", "S", "S"],
   de: ["M", "D", "M", "D", "F", "S", "S"],
 };
+
+function weekdayLabelsFor(locale: ContentLocale): string[] {
+  if (locale === "pl" || locale === "ua" || locale === "en" || locale === "de") {
+    return WEEKDAY_LABELS[locale];
+  }
+
+  return WEEKDAY_LABELS.en;
+}
 
 export function getLearningDaysCount(attempts: QuestionAttempt[]) {
   return collectActivityDates(attempts).size;
@@ -234,7 +242,7 @@ export function buildWeekActivity(
   const activityDates = collectActivityDates(attempts);
   const streakDates = getStreakDateSet(activityDates, getWarsawIsoDate(referenceDate));
   const weekStart = getMondayOfWeek(referenceDate);
-  const labels = WEEKDAY_LABELS[getContentLocale(locale)];
+  const labels = weekdayLabelsFor(getContentLocale(locale));
   const todayIso = getWarsawIsoDate(referenceDate);
 
   return labels.map((weekdayLabel, index) => {

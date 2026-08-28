@@ -10,8 +10,8 @@ const CORS_HEADERS = {
 
 const PREGENERATED_EXPLANATION_MODEL = "pre-generated-explanation-v1";
 
-type SupportedLocale = "pl" | "ua" | "en" | "de" | "es";
-type ContentLocale = "pl" | "ua" | "en" | "de";
+type SupportedLocale = "pl" | "ua" | "en" | "de" | "es" | "cs" | "el";
+type ContentLocale = "pl" | "ua" | "en" | "de" | "cs" | "el";
 type AiProviderId = "mock" | "openai" | "anthropic";
 type AppLogSeverity = "info" | "warning" | "error" | "critical";
 type QuestionChatMessage = {
@@ -28,6 +28,8 @@ type QuestionChatRequest = {
   locale: SupportedLocale;
   prompt: string;
   history: QuestionChatMessage[];
+  questionSetKey?: string;
+  studyContext?: string;
   question: {
     questionId: string;
     locale: SupportedLocale;
@@ -46,6 +48,18 @@ type QuestionChatRequest = {
     }>;
     mediaType: "image" | "video" | "none";
   };
+};
+
+type QuestionV2Resources = {
+  contextSummary: string | null;
+  correctAnswer: string | null;
+  explanation: string | null;
+  mediaType: "image" | "video" | "none" | null;
+  options: Array<{ id: string; text: string }> | null;
+  prompt: string | null;
+  questionId: string;
+  questionSetKey: string;
+  sourceId: string;
 };
 
 type ProviderResponse = {
@@ -84,11 +98,10 @@ Deno.serve(async (request) => {
     const payload = validateRequest(await request.json());
     const normalizedConversationId =
       normalizeUuid(payload.conversationId) ?? crypto.randomUUID();
-    const normalizedQuestionId = normalizeUuid(payload.question.questionId);
 
     conversationId = normalizedConversationId;
     locale = payload.locale;
-    questionId = normalizedQuestionId;
+    questionId = payload.question.questionId;
     const supabaseUrl = getRequiredEnv("SUPABASE_URL");
     const supabaseAnonKey = getRequiredEnv("SUPABASE_ANON_KEY");
     const serviceRoleKey = getRequiredEnv("SUPABASE_SERVICE_ROLE_KEY");
@@ -135,6 +148,15 @@ Deno.serve(async (request) => {
       );
     }
 
+    const v2Resources = await loadQuestionV2Resources(serviceClient, {
+      locale: payload.locale,
+      questionSetKey: payload.questionSetKey ?? null,
+      sourceId: payload.question.questionId,
+    });
+    const resolvedPayload = applyQuestionV2Resources(payload, v2Resources);
+    const resolvedQuestionId = v2Resources?.questionId ?? null;
+    questionId = resolvedQuestionId ?? payload.question.questionId;
+
     const nextMessageOrder = await getNextMessageOrder(
       serviceClient,
       user.id,
@@ -142,19 +164,21 @@ Deno.serve(async (request) => {
     );
 
     await insertAiMessage(serviceClient, {
-      content: payload.prompt,
+      content: resolvedPayload.prompt,
       conversationId: normalizedConversationId,
       messageKind: "question_chat",
       messageOrder: nextMessageOrder,
       messageRole: "user",
       metadata: {
-        locale: payload.locale,
+        locale: resolvedPayload.locale,
+        questionSetKey: resolvedPayload.questionSetKey ?? null,
         rawQuestionId: payload.question.questionId,
-        selectedAnswer: payload.question.selectedAnswer ?? null,
-        topicId: payload.question.topicId,
-        topicBlock: payload.question.topicBlock ?? null,
+        selectedAnswer: resolvedPayload.question.selectedAnswer ?? null,
+        topicId: resolvedPayload.question.topicId,
+        topicBlock: resolvedPayload.question.topicBlock ?? null,
+        v2QuestionId: resolvedQuestionId,
       },
-      questionId: normalizedQuestionId,
+      questionId: resolvedQuestionId,
       userId: user.id,
     });
 
@@ -162,7 +186,7 @@ Deno.serve(async (request) => {
     let providerResponse: ProviderResponse;
 
     try {
-      providerResponse = await provider(payload);
+      providerResponse = await provider(resolvedPayload);
     } catch (providerError) {
       console.error("question-chat provider fallback", providerError);
       await logAppError(serviceClient, {
@@ -174,15 +198,17 @@ Deno.serve(async (request) => {
         metadata: {
           conversation_id: normalizedConversationId,
           fallback_kind: "pre_generated_explanation",
-          locale: payload.locale,
+          locale: resolvedPayload.locale,
           preferred_provider: Deno.env.get("AI_PROVIDER") ?? null,
-          question_id: normalizedQuestionId,
+          question_id: resolvedQuestionId,
+          question_set_key: resolvedPayload.questionSetKey ?? null,
+          question_source_id: payload.question.questionId,
         },
         severity: "warning",
         source: "supabase_edge",
         userId: user.id,
       });
-      providerResponse = createMockProviderResponse(payload);
+      providerResponse = createMockProviderResponse(resolvedPayload);
     }
     const assistantMessage: QuestionChatMessage = {
       id: `assistant-${Date.now().toString(36)}`,
@@ -208,18 +234,20 @@ Deno.serve(async (request) => {
             ? "pre_generated_explanation"
             : null,
         fallbackUsed: providerResponse.fallbackUsed,
-        locale: payload.locale,
+        locale: resolvedPayload.locale,
         preGeneratedExplanation:
           providerResponse.model === PREGENERATED_EXPLANATION_MODEL,
+        questionSetKey: resolvedPayload.questionSetKey ?? null,
         rawQuestionId: payload.question.questionId,
-        selectedAnswer: payload.question.selectedAnswer ?? null,
-        topicId: payload.question.topicId,
-        topicBlock: payload.question.topicBlock ?? null,
+        selectedAnswer: resolvedPayload.question.selectedAnswer ?? null,
+        topicId: resolvedPayload.question.topicId,
+        topicBlock: resolvedPayload.question.topicBlock ?? null,
+        v2QuestionId: resolvedQuestionId,
       },
       model: providerResponse.model,
       outputTokens: providerResponse.outputTokens ?? null,
       provider: providerResponse.provider,
-      questionId: normalizedQuestionId,
+      questionId: resolvedQuestionId,
       userId: user.id,
     });
 
@@ -304,7 +332,20 @@ function validateRequest(value: unknown): QuestionChatRequest {
     throw new Error("question.options must be an array.");
   }
 
-  return request as QuestionChatRequest;
+  if (
+    request.questionSetKey !== undefined &&
+    (typeof request.questionSetKey !== "string" || !request.questionSetKey.trim())
+  ) {
+    throw new Error("questionSetKey is invalid.");
+  }
+
+  return {
+    ...(request as QuestionChatRequest),
+    questionSetKey:
+      typeof request.questionSetKey === "string"
+        ? request.questionSetKey.trim()
+        : undefined,
+  };
 }
 
 function isSupportedLocale(value: unknown): value is SupportedLocale {
@@ -313,16 +354,18 @@ function isSupportedLocale(value: unknown): value is SupportedLocale {
     value === "ua" ||
     value === "en" ||
     value === "de" ||
-    value === "es"
+    value === "es" ||
+    value === "cs" ||
+    value === "el"
   );
 }
 
 function getContentLocale(locale: SupportedLocale): ContentLocale {
-  if (locale === "pl" || locale === "ua" || locale === "en" || locale === "de") {
-    return locale;
+  if (locale === "es") {
+    return "en";
   }
 
-  return "en";
+  return locale;
 }
 
 function getRequiredEnv(name: string) {
@@ -355,6 +398,308 @@ function jsonResponse(body: unknown, status = 200) {
     status,
     headers: CORS_HEADERS,
   });
+}
+
+async function loadQuestionV2Resources(
+  serviceClient: ReturnType<typeof createClient>,
+  input: {
+    locale: SupportedLocale;
+    questionSetKey: string | null;
+    sourceId: string;
+  }
+): Promise<QuestionV2Resources | null> {
+  if (!input.questionSetKey) {
+    return null;
+  }
+
+  try {
+    const { data: questionSet, error: questionSetError } = await serviceClient
+      .from("question_sets")
+      .select("id, key")
+      .eq("key", input.questionSetKey)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (questionSetError || !questionSet?.id) {
+      return null;
+    }
+
+    const { data: question, error: questionError } = await serviceClient
+      .from("questions_v2")
+      .select("id, source_id, correct_option_id, content")
+      .eq("question_set_id", questionSet.id)
+      .eq("source_id", input.sourceId)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (questionError || !question?.id) {
+      return null;
+    }
+
+    const [explanationResult, contextResult] = await Promise.all([
+      serviceClient
+        .from("question_ai_explanations_v2")
+        .select("explanations")
+        .eq("question_id", question.id)
+        .maybeSingle(),
+      serviceClient
+        .from("question_ai_contexts_v2")
+        .select("context")
+        .eq("question_id", question.id)
+        .maybeSingle(),
+    ]);
+
+    const content =
+      question.content &&
+      typeof question.content === "object" &&
+      !Array.isArray(question.content)
+        ? (question.content as {
+            prompt?: Record<string, string>;
+            options?: Array<{
+              id: string;
+              text?: Record<string, string>;
+            }>;
+            question_media?: Array<{
+              role?: string;
+              asset?: { mediaType?: string };
+            }>;
+          })
+        : {};
+    const options = (content.options ?? [])
+      .map((option) => {
+        const text = pickLocalizedText(option.text, input.locale);
+
+        if (!option.id || !text) {
+          return null;
+        }
+
+        return {
+          id: option.id,
+          text,
+        };
+      })
+      .filter((option): option is { id: string; text: string } => option !== null);
+
+    return {
+      contextSummary: formatStudyContext(contextResult.data?.context, input.locale),
+      correctAnswer:
+        typeof question.correct_option_id === "string" &&
+        question.correct_option_id.trim()
+          ? question.correct_option_id.trim()
+          : null,
+      explanation: pickLocalizedText(
+        explanationResult.data?.explanations as Record<string, string> | undefined,
+        input.locale
+      ),
+      mediaType: inferMediaType(content.question_media),
+      options: options.length > 0 ? options : null,
+      prompt: pickLocalizedText(content.prompt, input.locale),
+      questionId: question.id,
+      questionSetKey: questionSet.key,
+      sourceId: question.source_id,
+    };
+  } catch (error) {
+    console.error("question-chat questions_v2 lookup failed", error);
+    return null;
+  }
+}
+
+function applyQuestionV2Resources(
+  request: QuestionChatRequest,
+  resources: QuestionV2Resources | null
+): QuestionChatRequest {
+  if (!resources) {
+    return request;
+  }
+
+  return {
+    ...request,
+    questionSetKey: resources.questionSetKey,
+    studyContext: resources.contextSummary ?? undefined,
+    question: {
+      ...request.question,
+      prompt: resources.prompt ?? request.question.prompt,
+      explanation: resources.explanation ?? request.question.explanation,
+      correctAnswer: resources.correctAnswer ?? request.question.correctAnswer,
+      options: resources.options ?? request.question.options,
+      mediaType: resources.mediaType ?? request.question.mediaType,
+    },
+  };
+}
+
+function pickLocalizedText(
+  value: Record<string, string> | null | undefined,
+  locale: SupportedLocale
+) {
+  if (!value) {
+    return null;
+  }
+
+  const contentLocale = getContentLocale(locale);
+  const candidates = [contentLocale, locale, "en", "pl", "cs", "ua", "de", "el"];
+
+  for (const key of candidates) {
+    const text = value[key];
+
+    if (typeof text === "string" && text.trim()) {
+      return text.trim();
+    }
+  }
+
+  return null;
+}
+
+function inferMediaType(
+  media: Array<{ role?: string; asset?: { mediaType?: string } }> | undefined
+): "image" | "video" | "none" | null {
+  if (!media || media.length === 0) {
+    return "none";
+  }
+
+  const primary =
+    media.find((item) => item.role === "primary") ?? media[0];
+  const mediaType = primary?.asset?.mediaType;
+
+  if (mediaType === "image" || mediaType === "video") {
+    return mediaType;
+  }
+
+  return "image";
+}
+
+function formatStudyContext(context: unknown, locale: SupportedLocale) {
+  if (!context || typeof context !== "object" || Array.isArray(context)) {
+    return null;
+  }
+
+  const record = context as Record<string, unknown>;
+  const lines: string[] = [];
+  const aiContext = asNonEmptyString(record.ai_context);
+
+  if (aiContext) {
+    lines.push(aiContext);
+  }
+
+  const decisiveFacts = pickLocalizedStringList(record, "decisive_facts", locale);
+
+  if (decisiveFacts.length > 0) {
+    lines.push(
+      `Decisive facts:\n${decisiveFacts.map((fact) => `- ${fact}`).join("\n")}`
+    );
+  }
+
+  const signs = formatVerifiedSigns(record.verified_signs);
+
+  if (signs) {
+    lines.push(`Verified signs: ${signs}`);
+  }
+
+  const visual = formatVisualAnalysis(record.visual_analysis);
+
+  if (visual) {
+    lines.push(`Visual analysis: ${visual}`);
+  }
+
+  if (lines.length === 0) {
+    return null;
+  }
+
+  return truncateText(lines.join("\n\n"), 1500);
+}
+
+function pickLocalizedStringList(
+  record: Record<string, unknown>,
+  prefix: string,
+  locale: SupportedLocale
+) {
+  const contentLocale = getContentLocale(locale);
+  const keys = [
+    `${prefix}_${contentLocale}`,
+    `${prefix}_${locale}`,
+    `${prefix}_en`,
+    `${prefix}_pl`,
+    `${prefix}_cs`,
+    prefix,
+  ];
+
+  for (const key of keys) {
+    const values = asStringList(record[key]);
+
+    if (values.length > 0) {
+      return values;
+    }
+  }
+
+  return [];
+}
+
+function formatVerifiedSigns(value: unknown) {
+  if (!Array.isArray(value) || value.length === 0) {
+    return null;
+  }
+
+  const labels = value.flatMap((item) => {
+    if (typeof item === "string") {
+      return item.trim() ? [item.trim()] : [];
+    }
+
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+
+    const record = item as Record<string, unknown>;
+    const label =
+      asNonEmptyString(record.code) ??
+      asNonEmptyString(record.id) ??
+      asNonEmptyString(record.name);
+
+    return label ? [label] : [];
+  });
+
+  return labels.length > 0 ? labels.join(", ") : null;
+}
+
+function formatVisualAnalysis(value: unknown) {
+  if (typeof value === "string") {
+    return asNonEmptyString(value);
+  }
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const summary =
+    asNonEmptyString(record.summary) ??
+    asNonEmptyString(record.description) ??
+    asNonEmptyString(record.status);
+
+  return summary && summary !== "not_applicable" && summary !== "pending_vision"
+    ? summary
+    : null;
+}
+
+function asStringList(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    const text = asNonEmptyString(item);
+    return text ? [text] : [];
+  });
+}
+
+function asNonEmptyString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function truncateText(value: string, maxLength: number) {
+  if (value.length <= maxLength) {
+    return value;
+  }
+
+  return `${value.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
 async function checkPlusAiEntitlement(userClient: ReturnType<typeof createClient>) {
@@ -678,14 +1023,22 @@ function buildSystemPrompt(request: QuestionChatRequest) {
   }
 
   if (contentLocale === "en") {
-    return "You are a driving-exam study coach for the Polish theory exam. Be concise, practical, and calm. Explain why the correct answer is right, avoid inventing rules, and give one short memory rule when helpful.";
+    return "You are a driving-exam study coach. Be concise, practical, and calm. Explain why the correct answer is right, avoid inventing rules, and give one short memory rule when helpful.";
   }
 
   if (contentLocale === "de") {
-    return "Du bist ein Lerncoach fuer die polnische Theoriepruefung. Antworte knapp, praxisnah und ruhig. Erklaere, warum die richtige Antwort richtig ist, erfinde keine Regeln und gib bei Bedarf eine kurze Merkregel.";
+    return "Du bist ein Lerncoach fuer die Theoriepruefung. Antworte knapp, praxisnah und ruhig. Erklaere, warum die richtige Antwort richtig ist, erfinde keine Regeln und gib bei Bedarf eine kurze Merkregel.";
   }
 
-  return "Ти помічник для підготовки до теоретичного іспиту на права в Польщі. Відповідай коротко, чітко і практично. Пояснюй, чому правильна відповідь правильна, не вигадуй нових правил, і якщо студент помилився, спокійно покажи логіку та дай одну коротку підказку для запам'ятовування.";
+  if (contentLocale === "cs") {
+    return "Jsi učitel k teoretické zkoušce z řízení. Odpovídej jasně, stručně a prakticky. Vysvětli, proč je správná odpověď správná, nevymýšlej předpisy. Pokud student zvolil špatně, klidně ukaž chybu a dej jedno pravidlo k zapamatování.";
+  }
+
+  if (contentLocale === "el") {
+    return "Είσαι δάσκαλος για τις θεωρητικές εξετάσεις οδήγησης. Απάντα σύντομα, πρακτικά και ήρεμα. Εξήγησε γιατί η σωστή απάντηση είναι σωστή, μην επινοείς κανόνες και δώσε έναν σύντομο κανόνα απομνημόνευσης όταν βοηθά.";
+  }
+
+  return "Ти помічник для підготовки до теоретичного іспиту на права. Відповідай коротко, чітко і практично. Пояснюй, чому правильна відповідь правильна, не вигадуй нових правил, і якщо студент помилився, спокійно покажи логіку та дай одну коротку підказку для запам'ятовування.";
 }
 
 function buildUserPrompt(request: QuestionChatRequest) {
@@ -705,6 +1058,9 @@ function buildUserPrompt(request: QuestionChatRequest) {
       : null,
     officialExplanation
       ? `Official explanation: ${officialExplanation}`
+      : null,
+    request.studyContext
+      ? `Authoritative study context:\n${request.studyContext}`
       : null,
     `Student prompt: ${request.prompt}`,
     "Keep the response focused on this question only.",
@@ -750,8 +1106,9 @@ function buildPreGeneratedExplanationContent(
     context.explanation.trim() || getMissingExplanationFallback(context.locale);
   const memoryRule = getMemoryRule(context.locale);
   const mistakeLine = getMistakeLine(context.locale);
+  const contentLocale = getContentLocale(context.locale);
 
-  if (context.locale === "pl") {
+  if (contentLocale === "pl") {
     if (intent === "memory") {
       return `${statusLine} Regula do zapamietania: ${memoryRule} Dlaczego tak: ${explanation}`;
     }
@@ -763,7 +1120,7 @@ function buildPreGeneratedExplanationContent(
     return `${statusLine} Dlaczego tak: ${explanation} Regula do zapamietania: ${memoryRule}`;
   }
 
-  if (context.locale === "en") {
+  if (contentLocale !== "ua") {
     if (intent === "memory") {
       return `${statusLine} Memory rule: ${memoryRule} Why this is correct: ${explanation}`;
     }
@@ -792,8 +1149,9 @@ function buildStatusLine(context: QuestionChatRequest["question"]) {
     ? getOptionText(context, context.selectedAnswer)
     : null;
   const selectedIsCorrect = context.selectedAnswer === context.correctAnswer;
+  const contentLocale = getContentLocale(context.locale);
 
-  if (context.locale === "pl") {
+  if (contentLocale === "pl") {
     if (context.selectedAnswer) {
       return selectedIsCorrect
         ? `Wybrales poprawna odpowiedz: ${selectedAnswerText}.`
@@ -803,7 +1161,7 @@ function buildStatusLine(context: QuestionChatRequest["question"]) {
     return `Poprawna odpowiedz to ${correctAnswerText}.`;
   }
 
-  if (context.locale === "en") {
+  if (contentLocale !== "ua") {
     if (context.selectedAnswer) {
       return selectedIsCorrect
         ? `You chose the correct answer: ${selectedAnswerText}.`
@@ -894,7 +1252,7 @@ function getMemoryRule(locale: SupportedLocale) {
     return "Patrz na dokladna zasade z pytania i wybieraj odpowiedz, ktora pasuje do niej 1:1, a nie tylko brzmi bezpiecznie.";
   }
 
-  if (contentLocale === "en") {
+  if (contentLocale === "en" || contentLocale === "cs" || contentLocale === "el") {
     return "Look for the exact rule being tested and choose the option that matches it 1:1, not the one that merely sounds safe.";
   }
 
@@ -912,7 +1270,7 @@ function getMistakeLine(locale: SupportedLocale) {
     return "Zgadywanie po intuicji albo wybieranie odpowiedzi, ktora brzmi ogolnie najbezpieczniej.";
   }
 
-  if (contentLocale === "en") {
+  if (contentLocale === "en" || contentLocale === "cs" || contentLocale === "el") {
     return "Guessing from intuition or choosing the option that sounds generally safest.";
   }
 
@@ -930,7 +1288,7 @@ function getMissingExplanationFallback(locale: SupportedLocale) {
     return "Brak oficjalnego wyjasnienia w bazie. Odpowiedz opiera sie na poprawnej odpowiedzi i logice pytania.";
   }
 
-  if (contentLocale === "en") {
+  if (contentLocale === "en" || contentLocale === "cs" || contentLocale === "el") {
     return "The official explanation is missing in the dataset, so this answer is based on the correct option and the question logic.";
   }
 

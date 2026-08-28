@@ -531,23 +531,38 @@ pnpm test:e2e:smoke
 
 ---
 
-## 9. Фактические версии (заполнить после фазы 2)
+## 9. Фактические версии (после фазы 2–5, 2026-08-26)
 
 ```
-expo:
-react:
-react-native:
-expo-router:
-reanimated / worklets / gesture-handler / screens / safe-area:
-google-mobile-ads:
-purchases / purchases-ui:
-typescript:
+expo: ^57.0.16
+react: 19.2.3
+react-native: 0.86.2
+expo-router: ~57.0.16
+reanimated ~4.5.1 / worklets 0.10.1 / gesture-handler ~2.32.0 / screens ~4.26.2 / safe-area ~5.7.0
+google-mobile-ads: 16.3.4
+purchases / purchases-ui: ^10.7.0
+typescript: ^6.0.3
+@types/react: ^19.2.15
+@expo/metro-runtime: ~57.0.13
+react-dom: 19.2.3
+@react-native/metro-config: ^0.86.2
 ```
 
-Doctor summary:
+Doctor: 20/21. Единственный fail — hybrid CNG (`ios/`+`android/` закоммичены, EAS не синкает plugins из app.config). Это было и на 54; prebuild 57 перегенерировал native.
 
-```
-```
+Typecheck: зелёный после
+- `tsconfig`: убран `types: ["expo-router/types"]` (нет в SDK 57), `ignoreDeprecations: "6.0"`, `exclude: **/__tests__/**`
+- `StyleSheet.absoluteFillObject` → `absoluteFill` (RN 0.86)
+- fallback copy для `cs`/`el` в study-plan и weekday labels
+
+Jest: 41 suites / 243 tests pass.
+
+Prebuild: `APP_VARIANT=prawko expo prebuild` — iOS 16.4, CocoaPods ок, mmkv нет.
+AdMob: пустой `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID` записался как `android:value=""`; `envOr()` + fallback test id.
+
+Xcode локально 26.0.1, SDK 56+ хочет 26.4 — локальный `run:ios` падает в `expo-modules-jsi` (`weak let` = Swift 6.3). Не патчить JSI. Сборка iOS: обновить Xcode до 26.4 или EAS (image с 26.4).
+
+Maestro: нужен новый e2e-билд, не гонялся.
 
 ---
 

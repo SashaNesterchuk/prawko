@@ -14,7 +14,7 @@
     "questions:sync": "tsx src/cli.ts questions:sync",
     "questions:v2:import-v1": "tsx src/cli.ts questions:v2:import-v1",
     "questions:v2:import-czech": "tsx src/cli.ts questions:v2:import-czech",
-    "test:questions:v2:import-czech": "tsx --test src/czech-question-v2-import.test.ts",
+    "test:questions:v2:import-czech": "tsx --test src/czech-question-v2-import.test.ts src/czech-question-topics.test.ts",
     "question-ai-explanations:rewrite": "tsx src/cli.ts question-ai-explanations:rewrite",
     "question-ai-explanations:verify": "tsx src/cli.ts question-ai-explanations:verify",
     "question-ai-explanations:keep-ua": "tsx src/cli.ts question-ai-explanations:keep-ua",

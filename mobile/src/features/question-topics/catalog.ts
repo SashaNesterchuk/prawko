@@ -1,9 +1,10 @@
+import { variantRuntime } from "@app-variant";
 import type { TFunction } from "i18next";
 
 import {
   QUESTION_TOPIC_CATALOG,
-  QUESTION_TOPIC_IDS,
   getQuestionTopicCatalogEntry,
+  getQuestionTopicIdsForVariant,
   isQuestionTopicId,
   isTopicBlockId,
   type LearningTopicId,
@@ -16,7 +17,7 @@ export function getQuestionTopicCatalog() {
 }
 
 export function getQuestionTopicIds() {
-  return QUESTION_TOPIC_IDS;
+  return getQuestionTopicIdsForVariant(variantRuntime.id);
 }
 
 export function getQuestionTopicTitle(
@@ -39,6 +40,10 @@ export function getQuestionTopicTitle(
 
   if (locale === "en") {
     return topic.titleEn;
+  }
+
+  if (locale === "cs") {
+    return topic.titleCs;
   }
 
   return topic.titleUa;

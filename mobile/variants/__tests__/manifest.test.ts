@@ -14,6 +14,13 @@ describe("app variant manifest", () => {
   it("keeps new country variants as non-production templates", () => {
     expect(getVariant("czech")).toMatchObject({
       productionReady: false,
+      name: "Řidičák: Autoškola Testy 2026",
+      displayName: "Řidičák",
+      slug: "ridicak",
+      scheme: "ridicak",
+      iosBundleIdentifier: "com.mindjar.ridicak",
+      androidPackage: "com.mindjar.ridicak",
+      iosSku: "ridicak-cz-ios",
       defaultLocale: "cs",
       supportedLocales: ["cs", "en"],
       features: { roadSigns: true },

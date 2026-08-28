@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { type LearningTopicId } from "@prawko/config";
 import { router } from "expo-router";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused } from "expo-router/react-navigation";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";

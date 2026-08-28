@@ -6,7 +6,7 @@ import {
 import {
   DefaultTheme,
   ThemeProvider as NavigationThemeProvider,
-} from "@react-navigation/native";
+} from "expo-router/react-navigation";
 
 import {
   appTheme,

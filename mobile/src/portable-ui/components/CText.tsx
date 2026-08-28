@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, type TextProps, type TextStyle } from "react-native";
-import { useTheme } from "@react-navigation/native";
+import { useTheme } from "expo-router/react-navigation";
 
 import { useResponsiveFonts } from "../hooks/useResponsiveFonts";
 import { useResponsiveStyles } from "../hooks/useResponsiveStyles";

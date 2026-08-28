@@ -199,7 +199,7 @@ function useStyles({ safeBottom }: { safeBottom: number }) {
       overflow: "visible",
     },
     footerFade: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
     },
   }));
 }

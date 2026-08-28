@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { createClient } from "@supabase/supabase-js";
 
+import { classifyCzechQuestionTopic, getCzechQuestionTopicCatalogRows } from "./czech-question-topics";
 import { loadLocalEnvFiles } from "./env";
 import type { PipelineOptions } from "./types";
 import { readJsonFile, resolveRepoPath } from "./utils";
@@ -44,7 +45,7 @@ type CzechV2QuestionRow = {
   answer_kind: "choice";
   correct_option_id: "A" | "B" | "C";
   category_codes: string[];
-  primary_topic_id: null;
+  primary_topic_id: string;
   topic_ids: string[];
   scope: null;
   difficulty_seed: null;
@@ -185,6 +186,12 @@ export function toCzechV2Question(
     throw new Error(`Czech import: ${question.question_source_id} has inconsistent correct-answer data.`);
   }
 
+  const topicId = classifyCzechQuestionTopic({
+    promptCs: question.question_cs,
+    answersCs: sortedOptions.map((option) => option.text_cs),
+    basketScopeId: question.official_basket_scope_id,
+  });
+
   return {
     question_set_id: questionSetId,
     source_id: question.question_source_id,
@@ -194,11 +201,11 @@ export function toCzechV2Question(
     correct_option_id: question.correct_option_key,
     // The official published collection at id=99 is the Czech B catalogue.
     category_codes: ["B"],
-    // Basket scopes are preserved below exactly as received. They have no
-    // verified one-to-one mapping to Prawko topics, so no synthetic topics or
-    // Polish exam scopes are introduced here.
-    primary_topic_id: null,
-    topic_ids: [],
+    // Learner topics are classified from the Czech prompt/answers/basket.
+    // Official exam baskets stay in official_metadata and are not copied into
+    // Polish Prawko topic rows.
+    primary_topic_id: topicId,
+    topic_ids: [topicId],
     scope: null,
     difficulty_seed: null,
     is_active: question.is_active,
@@ -326,6 +333,18 @@ export async function importCzechQuestionsToV2(options: PipelineOptions = {}) {
   const questionSetId = String(questionSet.id);
   const rowsWithSetId = rows.map((row) => ({ ...row, question_set_id: questionSetId }));
   const batchSize = options.batchSize ?? 200;
+  const topicRows = getCzechQuestionTopicCatalogRows().map((topic) => ({
+    ...topic,
+    question_set_id: questionSetId,
+  }));
+  for (let index = 0; index < topicRows.length; index += batchSize) {
+    const { error } = await supabase
+      .from("question_topic_catalog_v2")
+      .upsert(topicRows.slice(index, index + batchSize), {
+        onConflict: "question_set_id,topic_id",
+      });
+    if (error) throw error;
+  }
   await upsertInBatches(supabase, rowsWithSetId, batchSize);
 
   const importedRows = await fetchAll<Record<string, unknown>>(async (from, to) => {
@@ -348,7 +367,7 @@ export async function importCzechQuestionsToV2(options: PipelineOptions = {}) {
     totalOptions: prepared.options.length,
     importedQuestionCount: rows.length - missingSourceIds.length,
     missingSourceIds,
-    topicCount: 0,
+    topicCount: topicRows.length,
     deferredMediaQuestionCount,
     mediaReferences: 0,
     dryRun: false,

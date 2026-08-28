@@ -7,7 +7,7 @@ test("maps Czech text-only questions without creating media references", () => {
   const row = toCzechV2Question({
     question_source_id: "cz:TEST-1",
     source_row_number: 1,
-    question_cs: "Je to správně?",
+    question_cs: "Řidičský průkaz je neplatný, jestliže:",
     answer_type: "choice",
     correct_option_key: "B",
     option_count: 2,
@@ -23,7 +23,7 @@ test("maps Czech text-only questions without creating media references", () => {
   ], "set-id");
 
   assert.deepEqual(row.content, {
-    prompt: { cs: "Je to správně?" },
+    prompt: { cs: "Řidičský průkaz je neplatný, jestliže:" },
     options: [
       { id: "A", text: { cs: "Ne" }, media: [] },
       { id: "B", text: { cs: "Ano" }, media: [] },
@@ -33,4 +33,6 @@ test("maps Czech text-only questions without creating media references", () => {
   assert.equal(row.correct_option_id, "B");
   assert.equal(row.official_metadata.official_media_available, true);
   assert.equal(row.category_codes[0], "B");
+  assert.equal(row.primary_topic_id, "documents_responsibility");
+  assert.deepEqual(row.topic_ids, ["documents_responsibility"]);
 });

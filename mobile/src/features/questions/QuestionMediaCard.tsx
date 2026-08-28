@@ -409,7 +409,6 @@ function InlineQuestionVideo({
         ]}
       >
         <VideoView
-          allowsFullscreen={false}
           allowsVideoFrameAnalysis={false}
           contentFit="cover"
           fullscreenOptions={{ enable: false }}

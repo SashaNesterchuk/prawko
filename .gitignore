@@ -12,6 +12,7 @@ build
 .env.local
 supabase/.branches
 supabase/.temp
+supabase/backups/
 data/questions/raw/**/*.xlsx
 data/questions/raw/**/*.xls
 data/questions/raw/**/*.zip

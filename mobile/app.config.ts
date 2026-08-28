@@ -4,6 +4,14 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { getVariant } = require("./variants/manifest.cjs");
 
+const ADMOB_ANDROID_APP_ID = "ca-app-pub-3940256099942544~3347511713";
+const ADMOB_IOS_APP_ID = "ca-app-pub-4994877133367352~1533006266";
+
+function envOr(value: string | undefined, fallback: string) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : fallback;
+}
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const variant = getVariant(process.env.APP_VARIANT);
   const isProductionVariantBuild = process.env.APP_VARIANT_PRODUCTION === "1";
@@ -20,16 +28,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     );
   }
 
+  const displayName = variant.displayName ?? variant.name;
+
   return {
     ...config,
-    name: variant.name,
+    name: displayName,
     slug: variant.slug,
     scheme: variant.scheme,
     version: "1.0.19",
     orientation: "portrait",
     icon: variant.assets.icon,
     userInterfaceStyle: "light",
-    newArchEnabled: true,
     splash: {
       image: variant.assets.splash,
       resizeMode: "contain",
@@ -38,6 +47,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       "expo-router",
       "expo-font",
+      "expo-splash-screen",
       "expo-localization",
       "expo-secure-store",
       ["expo-notifications", { icon: variant.assets.icon, color: "#1FB574" }],
@@ -45,12 +55,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         "react-native-google-mobile-ads",
         {
-          androidAppId:
-            process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID ??
-            "ca-app-pub-3940256099942544~3347511713",
-          iosAppId:
-            process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID ??
-            "ca-app-pub-4994877133367352~1533006266",
+          androidAppId: envOr(
+            process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID,
+            ADMOB_ANDROID_APP_ID,
+          ),
+          iosAppId: envOr(
+            process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID,
+            ADMOB_IOS_APP_ID,
+          ),
         },
       ],
     ],
@@ -74,10 +86,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         : {}),
       config: { usesNonExemptEncryption: false },
       infoPlist: {
-        CFBundleDisplayName: variant.name,
+        CFBundleDisplayName: displayName,
         GADApplicationIdentifier:
-          process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID ??
-          "ca-app-pub-4994877133367352~1533006266",
+          envOr(
+            process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID,
+            ADMOB_IOS_APP_ID,
+          ),
         NSUserNotificationUsageDescription:
           "This app uses notifications to remind you about study sessions.",
       },
@@ -89,7 +103,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         : {}),
       variant: {
         id: variant.id,
-        name: variant.name,
+        name: displayName,
         questionSetKey: variant.questionSetKey,
         mediaBaseUrl: variant.mediaBaseUrl,
         defaultLocale: variant.defaultLocale,
@@ -99,12 +113,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     owner: "mindjar",
     "react-native-google-mobile-ads": {
-      android_app_id:
-        process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID ??
-        "ca-app-pub-3940256099942544~3347511713",
-      ios_app_id:
-        process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID ??
-        "ca-app-pub-4994877133367352~1533006266",
+      android_app_id: envOr(
+        process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID,
+        ADMOB_ANDROID_APP_ID,
+      ),
+      ios_app_id: envOr(
+        process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID,
+        ADMOB_IOS_APP_ID,
+      ),
     },
   };
 };

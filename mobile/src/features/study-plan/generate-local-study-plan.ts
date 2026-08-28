@@ -1,8 +1,7 @@
 import {
   STUDY_PLAN_LIMITS,
-  QUESTION_TOPIC_IDS,
   getContentLocale,
-  getQuestionTopicCatalogEntry,
+  type ContentLocale,
   type DrivingCategory,
   type QuestionTopicId,
   type StudyPlanTaskType,
@@ -15,8 +14,28 @@ import type {
   StudyPlanSetupInput,
 } from "@prawko/schemas";
 import { getExamProfile } from "../exam/exam-profile";
+import {
+  getQuestionTopicIds,
+  getQuestionTopicTitle,
+} from "../question-topics/catalog";
 
 const MINIMUM_MODE_THRESHOLD = 20;
+
+function copyFor(
+  locale: ContentLocale,
+  copy: Record<"pl" | "ua" | "en" | "de", string> & { cs?: string }
+): string {
+  if (locale === "cs") {
+    return copy.cs ?? copy.en;
+  }
+
+  if (locale === "el") {
+    return copy.en;
+  }
+
+  return copy[locale];
+}
+
 const FULL_EXAM_THRESHOLD = 25;
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
@@ -146,8 +165,8 @@ function buildPlanDay({
   input: LocalPlanInput;
 }): GeneratedStudyPlanDay {
   const planDate = toIsoDate(addDays(startOfDay(fromDate), dayNumber - 1));
-  const focusTopic =
-    QUESTION_TOPIC_IDS[(dayNumber - 1) % QUESTION_TOPIC_IDS.length];
+  const topicIds = getQuestionTopicIds();
+  const focusTopic = topicIds[(dayNumber - 1) % topicIds.length];
   const minimumMode = input.minutesPerDay <= MINIMUM_MODE_THRESHOLD;
   const remainingDays = daysPlanned - dayNumber + 1;
   const blueprints = buildDayBlueprints({
@@ -447,105 +466,99 @@ function getTaskCopy(
   topicId?: QuestionTopicId
 ) {
   const contentLocale = getContentLocale(locale);
-  const topicEntry = topicId ? getQuestionTopicCatalogEntry(topicId) : null;
-  const topic = topicEntry
-    ? contentLocale === "pl"
-      ? topicEntry.titlePl
-      : contentLocale === "ua"
-        ? topicEntry.titleUa
-        : topicEntry.titleEn
-    : null;
+  const topic = topicId ? getQuestionTopicTitle(topicId, locale) : null;
 
   switch (taskType) {
     case "learn_topic":
       return {
-        title: {
-          pl: `Nauka: ${topic}`,
-          ua: `Вчити: ${topic}`,
-          en: `Learn: ${topic}`,
-          de: `Lernen: ${topic}`,
-        }[contentLocale],
-        description: {
+        title: copyFor(contentLocale, {
+          pl: `Nauka: ${topic ?? ""}`,
+          ua: `Вчити: ${topic ?? ""}`,
+          en: `Learn: ${topic ?? ""}`,
+          de: `Lernen: ${topic ?? ""}`,
+          cs: `Učit: ${topic ?? ""}`,
+        }),
+        description: copyFor(contentLocale, {
           pl: "Przejdz nowy blok pytan i utrwal zasady.",
           ua: "Пройди новий тематичний блок і закріпи правила.",
           en: "Work through a new topic block and lock in the rules.",
           de: "Arbeite einen neuen Themenblock durch und festige die Regeln.",
-        }[contentLocale],
+        }),
       };
     case "review_weak_spots":
       return {
-        title: {
+        title: copyFor(contentLocale, {
           pl: "Slabe miejsca",
           ua: "Слабкі місця",
           en: "Weak spots",
           de: "Schwachstellen",
-        }[contentLocale],
-        description: {
+        }),
+        description: copyFor(contentLocale, {
           pl: "Powtorz pytania, na ktorych najlatwiej tracisz punkty.",
           ua: "Повтори питання, на яких ти найчастіше втрачаєш бали.",
           en: "Replay the questions most likely to cost you points.",
           de: "Wiederhole die Fragen, bei denen du am leichtesten Punkte verlierst.",
-        }[contentLocale],
+        }),
       };
     case "mini_test":
       return {
-        title: {
+        title: copyFor(contentLocale, {
           pl: "Mini test",
           ua: "Міні тест",
           en: "Mini test",
           de: "Minittest",
-        }[contentLocale],
-        description: {
+        }),
+        description: copyFor(contentLocale, {
           pl: "Krotki egzamin kontrolny, zeby sprawdzic tempo i uwage.",
           ua: "Короткий контрольний тест, щоб перевірити темп і уважність.",
           en: "A short controlled exam block to test pace and focus.",
           de: "Ein kurzer Kontrolltest fuer Tempo und Konzentration.",
-        }[contentLocale],
+        }),
       };
     case "full_exam":
       return {
-        title: {
+        title: copyFor(contentLocale, {
           pl: "Pelny egzamin",
           ua: "Повний іспит",
           en: "Full exam",
           de: "Volle Pruefung",
-        }[contentLocale],
-        description: {
+        }),
+        description: copyFor(contentLocale, {
           pl: "Symulacja calego egzaminu przed finalnym sprintem.",
           ua: "Симуляція повного іспиту перед фінальним спринтом.",
           en: "A full exam simulation before the final sprint.",
           de: "Eine volle Pruefungssimulation vor dem finalen Sprint.",
-        }[contentLocale],
+        }),
       };
     case "review_wrong_answers":
       return {
-        title: {
+        title: copyFor(contentLocale, {
           pl: "Powtorka bledow",
           ua: "Повтор помилок",
           en: "Wrong answer review",
           de: "Fehlerwiederholung",
-        }[contentLocale],
-        description: {
+        }),
+        description: copyFor(contentLocale, {
           pl: "Wroc do pytan, ktore juz raz zabraly Ci punkty.",
           ua: "Повернись до питань, які вже забрали в тебе бали.",
           en: "Return to the questions that already cost you points.",
           de: "Kehre zu Fragen zurueck, die dir schon Punkte gekostet haben.",
-        }[contentLocale],
+        }),
       };
     case "review_saved":
       return {
-        title: {
+        title: copyFor(contentLocale, {
           pl: "Saved questions",
           ua: "Збережені питання",
           en: "Saved questions",
           de: "Gespeicherte Fragen",
-        }[contentLocale],
-        description: {
+        }),
+        description: copyFor(contentLocale, {
           pl: "Osobista kolejka pytan zapisanych na pozniej.",
           ua: "Персональна черга питань, які ти відклав на потім.",
           en: "A personal queue of questions you saved for later.",
           de: "Eine persoenliche Warteschlange gespeicherter Fragen.",
-        }[contentLocale],
+        }),
       };
   }
 
@@ -556,12 +569,12 @@ function getTaskCopy(
 }
 
 function getPlanTitle(locale: SupportedLocale, daysPlanned: number) {
-  return {
+  return copyFor(getContentLocale(locale), {
     pl: `Plan nauki na ${daysPlanned} dni`,
     ua: `План підготовки на ${daysPlanned} днів`,
     en: `${daysPlanned}-day exam plan`,
     de: `${daysPlanned}-Tage-Pruefungsplan`,
-  }[getContentLocale(locale)];
+  });
 }
 
 function countTasks(

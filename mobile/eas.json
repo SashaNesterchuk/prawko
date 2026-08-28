@@ -35,6 +35,7 @@
       }
     },
     "e2e-test": {
+      "environment": "development",
       "env": {
         "APP_VARIANT": "prawko",
         "EXPO_PUBLIC_E2E_TEST_MODE": "1"
@@ -52,6 +53,15 @@
     "production": {
       "ios": {
         "ascAppId": "6795258105"
+      }
+    },
+    "czech": {
+      "ios": {
+        "sku": "ridicak-cz-ios",
+        "language": "cs",
+        "appName": "Řidičák: Autoškola Testy 2026",
+        "bundleIdentifier": "com.mindjar.ridicak",
+        "appleTeamId": "6ZQHZ3FP75"
       }
     }
   }

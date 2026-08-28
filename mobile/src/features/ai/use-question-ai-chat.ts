@@ -2,6 +2,7 @@ import { AI_LIMITS, type SupportedLocale } from "@prawko/config";
 import type { QuestionChatRequest } from "@prawko/schemas";
 import { useEffect, useMemo, useState } from "react";
 
+import { mobileEnv } from "../../config/env";
 import { useAiConversation, useAiChatHydrated, useAiChatStore } from "../../state/ai-chat";
 import { useQuestionCatalogVersion } from "../../state/question-catalog";
 import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
@@ -113,6 +114,7 @@ export function useQuestionAiChat(input: {
       conversationId: targetConversation.conversationId,
       locale: input.locale,
       prompt,
+      questionSetKey: mobileEnv.questionSetKey,
       question: questionContext,
       history,
     };
