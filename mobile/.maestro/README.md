@@ -35,6 +35,9 @@ pnpm test:e2e:studio
 | `home_readiness_assessment_starts_training.yaml` | Empty readiness CTA (no period-change badge, never stuck on the loading skeleton) → untimed mini_test training (not exam) |
 | `home_traps_opens_count_dialog.yaml` | Home → Traps tile → count picker → training |
 | `home_exam_starts_session.yaml` | Home → Exam tile → official 32-question simulator (no count picker) |
+| `profile_exam_country_screen_opens.yaml` | Profile → Exam country screen with PL and CZ tiles |
+| `profile_exam_country_switch_cz_exam.yaml` | Profile → CZ → language tiles only cs/en → official 25-question eTesty exam |
+| `profile_exam_country_switch_back_keeps_pl.yaml` | PL exam progress stays namespaced: CZ exam starts at 25 questions, switching back restores the 32-question WORD exam |
 | `exam_empty_close_then_start_is_fresh.yaml` | Unanswered exam close (miss-click) → start again at question 1 |
 | `exam_answer_exit_then_new_attempt_is_fresh.yaml` | Answer Q1 → Finish → new attempt starts at question 1 |
 | `exam_exit_continue_keeps_question.yaml` | Answer Q1 → Close → Continue stays on question 2 |
@@ -100,8 +103,9 @@ Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `stati
 2. Describe the scenario in a short comment (`Feature` / `Scenario`).
 3. Use `subflows/launch_onboarded_destination.yaml` for any scenario that does not need to re-test onboarding itself.
 4. Pass `DESTINATION` / `TARGET_ID` through `runFlow.env` so each new flow lands on the screen it cares about.
-5. Override `LOCALE`, `CATEGORY`, `DAYS_UNTIL_EXAM`, `SIGN_CATEGORY_ID`, and `TOPIC_ID` only when the scenario needs them.
+5. Override `LOCALE`, `CATEGORY`, `DAYS_UNTIL_EXAM`, `EXAM_COUNTRY` (`PL` / `CZ`), `SIGN_CATEGORY_ID`, and `TOPIC_ID` only when the scenario needs them.
 6. Use `PLUS_ACCESS`, `QUESTION_SCENARIO` (`topic-progress`), `REACHABILITY`, `OFFLINE_PACK_STATUS` (`missing` / `ready` / `incomplete` / `downloading`), `OFFLINE_PACK_CATEGORY`, `EXAM_SESSION_STATUS`, `EXAM_SESSION_CATEGORY`, and `EXAM_START_ORDER` for deterministic E2E-only state overrides.
 7. Reuse `subflows/start_default_question_count.yaml` anywhere a trainer or signs picker opens before practice starts.
 8. Practice answers can use generic selectors like `question-choice-index-0` and `sign-test-option-index-0`, so flows do not depend on catalog data.
 9. Keep `subflows/complete_onboarding.yaml` only for fresh-install onboarding coverage.
+10. The native App Store / Play review sheet is skipped in e2e builds (`EXPO_PUBLIC_E2E_TEST_MODE`). Do not assert that system dialog. Result flows (`trainer_result_screen_opens`, `exam_result_*`) are the regression that a prompt cannot cover the result UI.

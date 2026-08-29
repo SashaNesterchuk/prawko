@@ -23,6 +23,7 @@ type BootstrapParams = {
   examSessionCategory?: string | string[];
   examSessionStatus?: string | string[];
   examStartOrder?: string | string[];
+  examCountry?: string | string[];
   locale?: string | string[];
   offlinePackCategory?: string | string[];
   offlinePackStatus?: string | string[];
@@ -53,6 +54,7 @@ export default function E2EBootstrapScreen() {
   const examSessionStatus = parseExamSessionStatus(
     getSingleParam(params.examSessionStatus)
   );
+  const examCountry = getSingleParam(params.examCountry);
   const reviewStartOrder = parsePositiveInteger(
     getSingleParam(params.examStartOrder)
   );
@@ -76,6 +78,7 @@ export default function E2EBootstrapScreen() {
         daysUntilExam,
         examSessionCategory,
         examSessionStatus,
+        examCountry,
         locale,
         offlinePackCategory,
         offlinePackStatus,
@@ -106,6 +109,7 @@ export default function E2EBootstrapScreen() {
     destination,
     examSessionCategory,
     examSessionStatus,
+    examCountry,
     hasHydrated,
     locale,
     offlinePackCategory,

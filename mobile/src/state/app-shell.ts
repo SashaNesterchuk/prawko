@@ -1,7 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DEFAULT_CATEGORY,
+  DEFAULT_COUNTRY_CODE,
+  clampLocaleForCountry,
+  getCountryConfig,
+  isCountryCode,
   isDrivingCategory,
+  type CountryCode,
   type DrivingCategory,
   type PlanLevel,
   type SupportedLocale,
@@ -11,7 +16,6 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { isMockAuthEnabled } from "../config/env";
-import { appVariant } from "../app-config/runtime";
 import {
   getSupportedDeviceLocale,
   normalizeSupportedLocale,
@@ -59,10 +63,19 @@ export type OnboardingRoute =
   | "/(onboarding)/access"
   | "/(onboarding)/preview";
 
-type AppShellState = {
-  authMode: AuthMode;
+type CountrySessionSnapshot = {
   currentStudyPlan: GeneratedStudyPlan | null;
   currentStudyPlanRemoteId: string | null;
+  preferredCategory: DrivingCategory;
+  studyPlanSetup: StudyPlanSetupDraft;
+};
+
+type AppShellState = {
+  authMode: AuthMode;
+  countrySessions: Partial<Record<CountryCode, CountrySessionSnapshot>>;
+  currentStudyPlan: GeneratedStudyPlan | null;
+  currentStudyPlanRemoteId: string | null;
+  examCountry: CountryCode | null;
   hasHydrated: boolean;
   mockUser: AppUser | null;
   onboardingCompleted: boolean;
@@ -92,6 +105,7 @@ type AppShellState = {
     remoteId: string | null;
   }) => void;
   resetShell: () => void;
+  resolveExamCountry: (country: CountryCode) => void;
   saveCurrentStudyPlan: (plan: GeneratedStudyPlan) => void;
   setExamSchedule: (payload: {
     daysUntilExam: number;
@@ -112,6 +126,7 @@ type AppShellState = {
   setScheduleNotificationEnabled: (enabled: boolean) => void;
   setScheduledNotificationIds: (ids: string[]) => void;
   setEnablePjmTracks: (enabled: boolean) => void;
+  setExamCountry: (country: CountryCode) => void;
   setSchoolCode: (schoolCode: string) => void;
   setSessionResolved: (value: boolean) => void;
   setSupabaseUser: (user: AppUser | null) => void;
@@ -122,8 +137,10 @@ type AppShellState = {
 type PersistedAppShellState = Pick<
   AppShellState,
   | "authMode"
+  | "countrySessions"
   | "currentStudyPlan"
   | "currentStudyPlanRemoteId"
+  | "examCountry"
   | "mockUser"
   | "onboardingCompleted"
   | "onboardingProgress"
@@ -179,8 +196,13 @@ function createMockUser(): AppUser {
   };
 }
 
-function getDefaultPreferredLocale(): SupportedLocale {
-  return normalizePersistedLocale(getSupportedDeviceLocale());
+function getDefaultPreferredLocale(
+  country: CountryCode | null | undefined,
+): SupportedLocale {
+  return clampLocaleForCountry(
+    country ?? DEFAULT_COUNTRY_CODE,
+    getSupportedDeviceLocale(),
+  );
 }
 
 function getSignedOutAuthMode(): AuthMode {
@@ -192,18 +214,94 @@ function getNextMockUser(mockUser: AppUser | null) {
 }
 
 function normalizePersistedLocale(
+  country: CountryCode | null | undefined,
   locale: SupportedLocale | null | undefined,
 ): SupportedLocale {
   const normalized = normalizeSupportedLocale(locale ?? null);
-  return normalized && appVariant.supportedLocales.includes(normalized)
-    ? normalized
-    : (appVariant.defaultLocale as SupportedLocale);
+  return clampLocaleForCountry(country ?? DEFAULT_COUNTRY_CODE, normalized);
 }
 
 function normalizePersistedCategory(
+  country: CountryCode | null | undefined,
   category: string | null | undefined,
 ): DrivingCategory {
-  return isDrivingCategory(category) ? category : DEFAULT_CATEGORY;
+  const config = getCountryConfig(country);
+  const resolved = isDrivingCategory(category) ? category : DEFAULT_CATEGORY;
+  return config.categories.includes(resolved) ? resolved : DEFAULT_CATEGORY;
+}
+
+function captureCountrySession(state: {
+  currentStudyPlan: GeneratedStudyPlan | null;
+  currentStudyPlanRemoteId: string | null;
+  preferredCategory: DrivingCategory;
+  studyPlanSetup: StudyPlanSetupDraft;
+}): CountrySessionSnapshot {
+  return {
+    currentStudyPlan: state.currentStudyPlan,
+    currentStudyPlanRemoteId: state.currentStudyPlanRemoteId,
+    preferredCategory: state.preferredCategory,
+    studyPlanSetup: state.studyPlanSetup,
+  };
+}
+
+function emptyCountrySession(): CountrySessionSnapshot {
+  return {
+    currentStudyPlan: null,
+    currentStudyPlanRemoteId: null,
+    preferredCategory: DEFAULT_CATEGORY,
+    studyPlanSetup: defaultStudyPlanSetup,
+  };
+}
+
+function applyExamCountryChange(
+  state: PersistedAppShellState,
+  country: CountryCode,
+): Pick<
+  PersistedAppShellState,
+  | "countrySessions"
+  | "currentStudyPlan"
+  | "currentStudyPlanRemoteId"
+  | "examCountry"
+  | "preferredCategory"
+  | "preferredLocale"
+  | "studyPlanSetup"
+> {
+  const countrySessions = { ...state.countrySessions };
+
+  if (state.examCountry && state.examCountry !== country) {
+    countrySessions[state.examCountry] = captureCountrySession(state);
+  }
+
+  const restored =
+    countrySessions[country] ??
+    (state.examCountry ? emptyCountrySession() : captureCountrySession(state));
+
+  return {
+    countrySessions,
+    currentStudyPlan: restored.currentStudyPlan,
+    currentStudyPlanRemoteId: restored.currentStudyPlanRemoteId,
+    examCountry: country,
+    preferredCategory: normalizePersistedCategory(
+      country,
+      restored.preferredCategory,
+    ),
+    preferredLocale: normalizePersistedLocale(country, state.preferredLocale),
+    studyPlanSetup: restored.studyPlanSetup,
+  };
+}
+
+function normalizePersistedExamCountry(
+  persistedState: Partial<PersistedAppShellState> | undefined,
+): CountryCode | null {
+  if (isCountryCode(persistedState?.examCountry)) {
+    return persistedState.examCountry;
+  }
+
+  if (persistedState?.onboardingCompleted) {
+    return DEFAULT_COUNTRY_CODE;
+  }
+
+  return null;
 }
 
 function normalizePersistedShellState(
@@ -216,20 +314,24 @@ function normalizePersistedShellState(
     persistedState?.hasChosenPreferredLocale ??
     persistedState?.onboardingProgress?.languageDone ??
     false;
+  const examCountry = normalizePersistedExamCountry(persistedState);
   const resolvedPreferredLocale = hasChosenPreferredLocale
-    ? normalizePersistedLocale(persistedState?.preferredLocale)
-    : normalizePersistedLocale(getSupportedDeviceLocale());
+    ? normalizePersistedLocale(examCountry, persistedState?.preferredLocale)
+    : getDefaultPreferredLocale(examCountry);
 
   return {
     authMode,
+    countrySessions: persistedState?.countrySessions ?? {},
     currentStudyPlan: persistedState?.currentStudyPlan ?? null,
     currentStudyPlanRemoteId: persistedState?.currentStudyPlanRemoteId ?? null,
+    examCountry,
     mockUser: authMode === "mock" ? nextMockUser : null,
     onboardingCompleted: persistedState?.onboardingCompleted ?? false,
     onboardingProgress:
       persistedState?.onboardingProgress ?? defaultOnboardingProgress,
     preferredCategory: normalizePersistedCategory(
-      persistedState?.preferredCategory
+      examCountry,
+      persistedState?.preferredCategory,
     ),
     preferredLocale: resolvedPreferredLocale,
     hasChosenPreferredLocale,
@@ -249,14 +351,16 @@ export const useAppShellStore = create<AppShellState>()(
   persist(
     (set) => ({
       authMode: getSignedOutAuthMode(),
+      countrySessions: {},
       currentStudyPlan: null,
       currentStudyPlanRemoteId: null,
+      examCountry: null,
       hasHydrated: false,
       mockUser: null,
       onboardingCompleted: false,
       onboardingProgress: defaultOnboardingProgress,
       preferredCategory: DEFAULT_CATEGORY,
-      preferredLocale: getDefaultPreferredLocale(),
+      preferredLocale: getDefaultPreferredLocale(null),
       hasChosenPreferredLocale: false,
       enablePjmTracks: false,
       isScheduleNotificationEnabled: false,
@@ -294,8 +398,14 @@ export const useAppShellStore = create<AppShellState>()(
           onboardingProgress: onboardingCompleted
             ? createCompletedOnboardingProgress()
             : state.onboardingProgress,
-          preferredCategory: normalizePersistedCategory(preferredCategory),
-          preferredLocale: normalizePersistedLocale(preferredLocale),
+          preferredCategory: normalizePersistedCategory(
+            state.examCountry,
+            preferredCategory,
+          ),
+          preferredLocale: normalizePersistedLocale(
+            state.examCountry,
+            preferredLocale,
+          ),
           hasChosenPreferredLocale: true,
         })),
       hydrateRemoteStudyPlan: ({ plan, remoteId }) =>
@@ -319,14 +429,16 @@ export const useAppShellStore = create<AppShellState>()(
       resetShell: () =>
         set({
           authMode: getSignedOutAuthMode(),
+          countrySessions: {},
           currentStudyPlan: null,
           currentStudyPlanRemoteId: null,
+          examCountry: null,
           hasHydrated: true,
           mockUser: null,
           onboardingCompleted: false,
           onboardingProgress: defaultOnboardingProgress,
           preferredCategory: DEFAULT_CATEGORY,
-          preferredLocale: getDefaultPreferredLocale(),
+          preferredLocale: getDefaultPreferredLocale(null),
           hasChosenPreferredLocale: false,
           enablePjmTracks: false,
           isScheduleNotificationEnabled: false,
@@ -337,6 +449,10 @@ export const useAppShellStore = create<AppShellState>()(
           studyPlanSetup: defaultStudyPlanSetup,
           supabaseUser: null,
         }),
+      resolveExamCountry: (country) =>
+        set((state) =>
+          state.examCountry ? state : applyExamCountryChange(state, country),
+        ),
       saveCurrentStudyPlan: (currentStudyPlan) => set({ currentStudyPlan }),
       setExamSchedule: ({ daysUntilExam, examDate }) =>
         set((state) => ({
@@ -390,17 +506,27 @@ export const useAppShellStore = create<AppShellState>()(
           },
         })),
       setPreferredCategory: (preferredCategory) =>
-        set((state) => ({
-          preferredCategory,
-          currentStudyPlan: state.currentStudyPlan
-            ? { ...state.currentStudyPlan, category: preferredCategory }
-            : null,
-        })),
-      setPreferredLocale: (preferredLocale) =>
-        set({
-          preferredLocale: normalizePersistedLocale(preferredLocale),
-          hasChosenPreferredLocale: true,
+        set((state) => {
+          const nextCategory = normalizePersistedCategory(
+            state.examCountry,
+            preferredCategory,
+          );
+
+          return {
+            preferredCategory: nextCategory,
+            currentStudyPlan: state.currentStudyPlan
+              ? { ...state.currentStudyPlan, category: nextCategory }
+              : null,
+          };
         }),
+      setPreferredLocale: (preferredLocale) =>
+        set((state) => ({
+          preferredLocale: normalizePersistedLocale(
+            state.examCountry,
+            preferredLocale,
+          ),
+          hasChosenPreferredLocale: true,
+        })),
       setPushNotificationToken: (pushNotificationToken) =>
         set({ pushNotificationToken }),
       setScheduleNotificationEnabled: (isScheduleNotificationEnabled) =>
@@ -408,6 +534,8 @@ export const useAppShellStore = create<AppShellState>()(
       setScheduledNotificationIds: (scheduledNotificationIds) =>
         set({ scheduledNotificationIds }),
       setEnablePjmTracks: (enablePjmTracks) => set({ enablePjmTracks }),
+      setExamCountry: (country) =>
+        set((state) => applyExamCountryChange(state, country)),
       setSchoolCode: (schoolCode) =>
         set((state) => ({
           currentStudyPlan: null,
@@ -459,7 +587,7 @@ export const useAppShellStore = create<AppShellState>()(
           onboardingCompleted: false,
           onboardingProgress: defaultOnboardingProgress,
           studyPlanSetup: defaultStudyPlanSetup,
-          preferredLocale: getDefaultPreferredLocale(),
+          preferredLocale: getDefaultPreferredLocale(null),
           hasChosenPreferredLocale: false,
           isScheduleNotificationEnabled: false,
           notificationHours: DEFAULT_NOTIFICATION_HOURS,
@@ -471,7 +599,7 @@ export const useAppShellStore = create<AppShellState>()(
     {
       name: "prawko-mobile-shell",
       storage: createJSONStorage(() => AsyncStorage),
-      version: 4,
+      version: 5,
       migrate: (persistedState) =>
         normalizePersistedShellState(
           (persistedState as Partial<PersistedAppShellState> | undefined) ??
@@ -485,8 +613,10 @@ export const useAppShellStore = create<AppShellState>()(
       }),
       partialize: (state) => ({
         authMode: state.authMode,
+        countrySessions: state.countrySessions,
         currentStudyPlan: state.currentStudyPlan,
         currentStudyPlanRemoteId: state.currentStudyPlanRemoteId,
+        examCountry: state.examCountry,
         mockUser: state.mockUser,
         onboardingCompleted: state.onboardingCompleted,
         onboardingProgress: state.onboardingProgress,
@@ -510,6 +640,10 @@ export const useAppShellStore = create<AppShellState>()(
     },
   ),
 );
+
+export function getExamCountry(): CountryCode {
+  return useAppShellStore.getState().examCountry ?? DEFAULT_COUNTRY_CODE;
+}
 
 export function getCurrentUserFromState(state: AppShellState) {
   return state.authMode === "supabase" ? state.supabaseUser : state.mockUser;

@@ -1,11 +1,10 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
-// Node-compatible source shared with Metro; do not import React/runtime code here.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { getVariant } = require("./variants/manifest.cjs");
-
-const ADMOB_ANDROID_APP_ID = "ca-app-pub-3940256099942544~3347511713";
+const ADMOB_ANDROID_APP_ID = "ca-app-pub-4994877133367352~7730175532";
 const ADMOB_IOS_APP_ID = "ca-app-pub-4994877133367352~1533006266";
+const EAS_PROJECT_ID = "db4df591-0771-4d6f-a7bf-3fd1304bb080";
+const ICON = "./assets/images/icon.png";
+const SPLASH = "./assets/images/splash-icon.png";
 
 function envOr(value: string | undefined, fallback: string) {
   const trimmed = value?.trim();
@@ -13,34 +12,17 @@ function envOr(value: string | undefined, fallback: string) {
 }
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const variant = getVariant(process.env.APP_VARIANT);
-  const isProductionVariantBuild = process.env.APP_VARIANT_PRODUCTION === "1";
-
-  if (isProductionVariantBuild && !variant.productionReady) {
-    throw new Error(
-      `Variant "${variant.id}" is not production-ready. Add its own native assets, EAS project ID and store identity first.`,
-    );
-  }
-
-  if (process.env.EAS_BUILD && !variant.easProjectId) {
-    throw new Error(
-      `Variant "${variant.id}" has no EAS project yet. Create a separate EAS project and add its ID before building.`,
-    );
-  }
-
-  const displayName = variant.displayName ?? variant.name;
-
   return {
     ...config,
-    name: displayName,
-    slug: variant.slug,
-    scheme: variant.scheme,
+    name: "Prawko",
+    slug: "prawko",
+    scheme: "prawko",
     version: "1.0.19",
     orientation: "portrait",
-    icon: variant.assets.icon,
+    icon: ICON,
     userInterfaceStyle: "light",
     splash: {
-      image: variant.assets.splash,
+      image: SPLASH,
       resizeMode: "contain",
       backgroundColor: "#EEF4F2",
     },
@@ -50,7 +32,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "expo-splash-screen",
       "expo-localization",
       "expo-secure-store",
-      ["expo-notifications", { icon: variant.assets.icon, color: "#1FB574" }],
+      ["expo-notifications", { icon: ICON, color: "#1FB574" }],
       "expo-video",
       [
         "react-native-google-mobile-ads",
@@ -68,48 +50,34 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ],
     experiments: { typedRoutes: true },
     android: {
-      package: variant.androidPackage,
-      ...(variant.androidPlayStoreUrl
-        ? { playStoreUrl: variant.androidPlayStoreUrl }
-        : {}),
+      package: "com.mindjar.prawko",
+      playStoreUrl:
+        "https://play.google.com/store/apps/details?id=com.mindjar.prawko",
       adaptiveIcon: {
-        foregroundImage: variant.assets.icon,
+        foregroundImage: ICON,
         backgroundColor: "#EEF4F2",
       },
     },
     ios: {
-      bundleIdentifier: variant.iosBundleIdentifier,
+      bundleIdentifier: "com.mindjar.prawko",
       supportsTablet: false,
       appleTeamId: "6ZQHZ3FP75",
-      ...(variant.iosAppStoreUrl
-        ? { appStoreUrl: variant.iosAppStoreUrl }
-        : {}),
+      deploymentTarget: "16.4",
+      appStoreUrl: "https://apps.apple.com/app/id6795258105",
       config: { usesNonExemptEncryption: false },
       infoPlist: {
-        CFBundleDisplayName: displayName,
-        GADApplicationIdentifier:
-          envOr(
-            process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID,
-            ADMOB_IOS_APP_ID,
-          ),
+        CFBundleDisplayName: "Prawko",
+        GADApplicationIdentifier: envOr(
+          process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID,
+          ADMOB_IOS_APP_ID,
+        ),
         NSUserNotificationUsageDescription:
           "This app uses notifications to remind you about study sessions.",
       },
     },
     extra: {
       router: { origin: false },
-      ...(variant.easProjectId
-        ? { eas: { projectId: variant.easProjectId } }
-        : {}),
-      variant: {
-        id: variant.id,
-        name: displayName,
-        questionSetKey: variant.questionSetKey,
-        mediaBaseUrl: variant.mediaBaseUrl,
-        defaultLocale: variant.defaultLocale,
-        supportedLocales: variant.supportedLocales,
-        features: variant.features,
-      },
+      eas: { projectId: EAS_PROJECT_ID },
     },
     owner: "mindjar",
     "react-native-google-mobile-ads": {

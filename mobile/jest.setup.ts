@@ -1,6 +1,10 @@
 // jest-expo provides RN mocks; keep a stable __DEV__ for ad unit selection.
 (globalThis as { __DEV__?: boolean }).__DEV__ = true;
 
+jest.mock("@react-native-async-storage/async-storage", () =>
+  require("@react-native-async-storage/async-storage/jest/async-storage-mock"),
+);
+
 const originalWarn = console.warn;
 const originalLog = console.log;
 

@@ -6,6 +6,7 @@ import type {
 } from "@prawko/schemas";
 
 import { isMobileSupabaseConfigured } from "../../config/env";
+import { getQuestionSetKey } from "../../countries/runtime";
 import type {
   ExamSimulatorMode,
   RemoteExamSessionStatus,
@@ -139,6 +140,7 @@ export async function fetchRemoteTodayPlan(
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("get_today_plan", {
     p_plan_date: planDate,
+    p_question_set_key: getQuestionSetKey(),
   });
 
   if (error) {
@@ -181,7 +183,9 @@ export async function fetchRemoteReadinessSummary() {
   }
 
   const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("get_readiness_summary");
+  const { data, error } = await client.rpc("get_readiness_summary", {
+    p_question_set_key: getQuestionSetKey(),
+  });
 
   if (error) {
     throw error;
@@ -254,6 +258,7 @@ export async function skipTodayPlanDayRemotely(
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("skip_today_plan_day", {
     p_plan_date: planDate,
+    p_question_set_key: getQuestionSetKey(),
   });
 
   if (error) {

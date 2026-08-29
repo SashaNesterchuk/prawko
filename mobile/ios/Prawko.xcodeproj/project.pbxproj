@@ -7,29 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		090C2E6BC46CC88CA4EDF0A2 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4255E55DACEB65F89D7DD3B /* ExpoModulesProvider.swift */; };
+		0A9AEA646F0D156DA1905E6B /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB7BF890BB073DCD5028CA31 /* ExpoModulesProvider.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		7A94301EE432B3F77024C9FE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6CBF09779A13BF4DDD9B9C5D /* PrivacyInfo.xcprivacy */; };
-		7C341B8224D9F7A4CFA54D38 /* libPods-idik.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B86049F575C7FF43DA1909 /* libPods-idik.a */; };
+		8224A4ED6250277BC563A93D /* libPods-Prawko.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B86B779A7AEB3C94FB81293 /* libPods-Prawko.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		F9A6552C7AA37F8E447B6430 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8FF796A1591FC44EA6FFCE93 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0CDCAD5DACD4C0D7F3372353 /* Pods-idik.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-idik.release.xcconfig"; path = "Target Support Files/Pods-idik/Pods-idik.release.xcconfig"; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* idik.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = idik.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = idik/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = idik/Info.plist; sourceTree = "<group>"; };
-		17B86049F575C7FF43DA1909 /* libPods-idik.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-idik.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		55E13C2A6C89FE43BF5460D4 /* Pods-idik.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-idik.debug.xcconfig"; path = "Target Support Files/Pods-idik/Pods-idik.debug.xcconfig"; sourceTree = "<group>"; };
-		6CBF09779A13BF4DDD9B9C5D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = idik/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = idik/SplashScreen.storyboard; sourceTree = "<group>"; };
-		B4255E55DACEB65F89D7DD3B /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-idik/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* Prawko.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Prawko.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Prawko/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Prawko/Info.plist; sourceTree = "<group>"; };
+		5B86B779A7AEB3C94FB81293 /* libPods-Prawko.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Prawko.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8FF796A1591FC44EA6FFCE93 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Prawko/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Prawko/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		C55F0371CF5ACDA0EAE8C5FF /* Pods-Prawko.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Prawko.debug.xcconfig"; path = "Target Support Files/Pods-Prawko/Pods-Prawko.debug.xcconfig"; sourceTree = "<group>"; };
+		DB7BF890BB073DCD5028CA31 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Prawko/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = idik/AppDelegate.swift; sourceTree = "<group>"; };
-		F11748442D0722820044C1D9 /* idik-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "idik-Bridging-Header.h"; path = "idik/idik-Bridging-Header.h"; sourceTree = "<group>"; };
+		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Prawko/AppDelegate.swift; sourceTree = "<group>"; };
+		F11748442D0722820044C1D9 /* Prawko-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Prawko-Bridging-Header.h"; path = "Prawko/Prawko-Bridging-Header.h"; sourceTree = "<group>"; };
+		F4C1C50663A2D68827AEBD00 /* Pods-Prawko.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Prawko.release.xcconfig"; path = "Target Support Files/Pods-Prawko/Pods-Prawko.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,42 +37,52 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7C341B8224D9F7A4CFA54D38 /* libPods-idik.a in Frameworks */,
+				8224A4ED6250277BC563A93D /* libPods-Prawko.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* idik */ = {
+		13B07FAE1A68108700A75B9A /* Prawko */ = {
 			isa = PBXGroup;
 			children = (
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
-				F11748442D0722820044C1D9 /* idik-Bridging-Header.h */,
+				F11748442D0722820044C1D9 /* Prawko-Bridging-Header.h */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				6CBF09779A13BF4DDD9B9C5D /* PrivacyInfo.xcprivacy */,
+				8FF796A1591FC44EA6FFCE93 /* PrivacyInfo.xcprivacy */,
 			);
-			name = idik;
+			name = Prawko;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				17B86049F575C7FF43DA1909 /* libPods-idik.a */,
+				5B86B779A7AEB3C94FB81293 /* libPods-Prawko.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		7FAE4976FB936A40713F9396 /* idik */ = {
+		3859C5BF78FF4CEE2727988A /* Prawko */ = {
 			isa = PBXGroup;
 			children = (
-				B4255E55DACEB65F89D7DD3B /* ExpoModulesProvider.swift */,
+				DB7BF890BB073DCD5028CA31 /* ExpoModulesProvider.swift */,
 			);
-			name = idik;
+			name = Prawko;
+			sourceTree = "<group>";
+		};
+		3F78F4FC5231D7E39FC72B0F /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C55F0371CF5ACDA0EAE8C5FF /* Pods-Prawko.debug.xcconfig */,
+				F4C1C50663A2D68827AEBD00 /* Pods-Prawko.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -85,12 +95,12 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* idik */,
+				13B07FAE1A68108700A75B9A /* Prawko */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				EA90F8CEF0A3B2CA2848A64F /* Pods */,
-				8FDA9FE27D12805821050929 /* ExpoModulesProviders */,
+				3F78F4FC5231D7E39FC72B0F /* Pods */,
+				EAB83E061E1A312F29570756 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -100,17 +110,9 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* idik.app */,
+				13B07F961A680F5B00A75B9A /* Prawko.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		8FDA9FE27D12805821050929 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				7FAE4976FB936A40713F9396 /* idik */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -119,43 +121,41 @@
 				BB2F792C24A3F905000567C9 /* Expo.plist */,
 			);
 			name = Supporting;
-			path = idik/Supporting;
+			path = Prawko/Supporting;
 			sourceTree = "<group>";
 		};
-		EA90F8CEF0A3B2CA2848A64F /* Pods */ = {
+		EAB83E061E1A312F29570756 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				55E13C2A6C89FE43BF5460D4 /* Pods-idik.debug.xcconfig */,
-				0CDCAD5DACD4C0D7F3372353 /* Pods-idik.release.xcconfig */,
+				3859C5BF78FF4CEE2727988A /* Prawko */,
 			);
-			name = Pods;
-			path = Pods;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* idik */ = {
+		13B07F861A680F5B00A75B9A /* Prawko */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "idik" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Prawko" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				0CEB84DC15AB4B03EFA322EF /* [Expo] Configure project */,
+				41C1562C7575A7E32244A219 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				C7C2C4FF9D98E43A871E4725 /* [CP] Embed Pods Frameworks */,
-				ED3CEECBBC0E5BC245F5C287 /* [CP-User] [RNGoogleMobileAds] Configuration */,
+				8B12F4A6A8EC37F480EB58CC /* [CP] Embed Pods Frameworks */,
+				D65F75C5266C6912A443A55A /* [CP-User] [RNGoogleMobileAds] Configuration */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = idik;
-			productName = idik;
-			productReference = 13B07F961A680F5B00A75B9A /* idik.app */;
+			name = Prawko;
+			productName = Prawko;
+			productReference = 13B07F961A680F5B00A75B9A /* Prawko.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -171,7 +171,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "idik" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Prawko" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -184,7 +184,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* idik */,
+				13B07F861A680F5B00A75B9A /* Prawko */,
 			);
 		};
 /* End PBXProject section */
@@ -197,7 +197,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				7A94301EE432B3F77024C9FE /* PrivacyInfo.xcprivacy in Resources */,
+				F9A6552C7AA37F8E447B6430 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,14 +236,14 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-idik-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Prawko-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		0CEB84DC15AB4B03EFA322EF /* [Expo] Configure project */ = {
+		41C1562C7575A7E32244A219 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -254,18 +254,18 @@
 			inputPaths = (
 				"$(SRCROOT)/.xcode.env",
 				"$(SRCROOT)/.xcode.env.local",
-				"$(SRCROOT)/idik/idik.entitlements",
-				"$(SRCROOT)/Pods/Target Support Files/Pods-idik/expo-configure-project.sh",
+				"$(SRCROOT)/Prawko/Prawko.entitlements",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-Prawko/expo-configure-project.sh",
 			);
 			name = "[Expo] Configure project";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/Pods/Target Support Files/Pods-idik/ExpoModulesProvider.swift",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-Prawko/ExpoModulesProvider.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-idik/expo-configure-project.sh\"\n";
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Prawko/expo-configure-project.sh\"\n";
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -273,7 +273,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-idik/Pods-idik-resources.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-Prawko/Pods-Prawko-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXApplication/ExpoApplication_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
@@ -312,16 +312,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-idik/Pods-idik-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Prawko/Pods-Prawko-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C7C2C4FF9D98E43A871E4725 /* [CP] Embed Pods Frameworks */ = {
+		8B12F4A6A8EC37F480EB58CC /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-idik/Pods-idik-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-Prawko/Pods-Prawko-frameworks.sh",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem.framework/ExpoFileSystem",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoFont/ExpoFont.framework/ExpoFont",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoModulesCore/ExpoModulesCore.framework/ExpoModulesCore",
@@ -346,10 +346,10 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-idik/Pods-idik-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Prawko/Pods-Prawko-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		ED3CEECBBC0E5BC245F5C287 /* [CP-User] [RNGoogleMobileAds] Configuration */ = {
+		D65F75C5266C6912A443A55A /* [CP-User] [RNGoogleMobileAds] Configuration */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -370,7 +370,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				090C2E6BC46CC88CA4EDF0A2 /* ExpoModulesProvider.swift in Sources */,
+				0A9AEA646F0D156DA1905E6B /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -379,11 +379,11 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 55E13C2A6C89FE43BF5460D4 /* Pods-idik.debug.xcconfig */;
+			baseConfigurationReference = C55F0371CF5ACDA0EAE8C5FF /* Pods-Prawko.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = idik/idik.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Prawko/Prawko.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6ZQHZ3FP75;
 				ENABLE_BITCODE = NO;
@@ -391,7 +391,7 @@
 					"$(inherited)",
 					"FB_SONARKIT_ENABLED=1",
 				);
-				INFOPLIST_FILE = idik/Info.plist;
+				INFOPLIST_FILE = Prawko/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -405,9 +405,9 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.mindjar.ridicak;
-				PRODUCT_NAME = idik;
-				SWIFT_OBJC_BRIDGING_HEADER = "idik/idik-Bridging-Header.h";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mindjar.prawko;
+				PRODUCT_NAME = Prawko;
+				SWIFT_OBJC_BRIDGING_HEADER = "Prawko/Prawko-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -417,14 +417,14 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0CDCAD5DACD4C0D7F3372353 /* Pods-idik.release.xcconfig */;
+			baseConfigurationReference = F4C1C50663A2D68827AEBD00 /* Pods-Prawko.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = idik/idik.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Prawko/Prawko.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6ZQHZ3FP75;
-				INFOPLIST_FILE = idik/Info.plist;
+				INFOPLIST_FILE = Prawko/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -438,9 +438,9 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.mindjar.ridicak;
-				PRODUCT_NAME = idik;
-				SWIFT_OBJC_BRIDGING_HEADER = "idik/idik-Bridging-Header.h";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mindjar.prawko;
+				PRODUCT_NAME = Prawko;
+				SWIFT_OBJC_BRIDGING_HEADER = "Prawko/Prawko-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -586,7 +586,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "idik" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Prawko" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -595,7 +595,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "idik" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Prawko" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,

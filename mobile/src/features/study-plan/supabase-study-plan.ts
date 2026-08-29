@@ -1,6 +1,7 @@
 import type { GeneratedStudyPlan } from "@prawko/schemas";
 
 import { isMobileSupabaseConfigured } from "../../config/env";
+import { getQuestionSetKey } from "../../countries/runtime";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 
 type SaveGeneratedStudyPlanInput = {
@@ -34,6 +35,7 @@ export async function saveGeneratedStudyPlanRemotely(
       source: "mobile_onboarding_preview",
       ...input.generationContext,
     }),
+    p_question_set_key: getQuestionSetKey(),
   });
 
   if (error) {

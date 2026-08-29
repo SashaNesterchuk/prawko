@@ -10,6 +10,9 @@ appId: com.mindjar.prawko
       id: "screen-onboarding-category"
     timeout: 30000
 
+- assertNotVisible:
+    id: "exam-country-list"
+
 - tapOn:
     id: "onboarding-category-B"
 - tapOn:

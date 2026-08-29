@@ -37,7 +37,7 @@ import {
   getProfileStatMetrics,
 } from "../../src/features/profile/profile-stats";
 import {
-  ROAD_SIGN_CATEGORIES,
+  getRoadSignCategories,
 } from "../../src/features/road-signs/catalog";
 import { buildAllSignTestQuestions } from "../../src/features/road-signs/category-test";
 import {
@@ -263,7 +263,7 @@ export default function StatisticsScreen() {
 
   const signCategoryRows = useMemo(
     () =>
-      ROAD_SIGN_CATEGORIES.map((category) => ({
+      getRoadSignCategories().map((category) => ({
         category,
         progress: getCategorySignProgress(category.id, signPracticeRecords),
       })).filter((row) => row.progress.total > 0),

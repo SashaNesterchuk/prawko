@@ -17,7 +17,7 @@ import {
 } from "../../portable-ui";
 import { useSignPracticeProgressStore } from "../../state/sign-practice-progress";
 import {
-  ROAD_SIGN_CATEGORIES,
+  getRoadSignCategories,
 } from "./catalog";
 import { buildAllSignTestQuestions } from "./category-test";
 import {
@@ -59,7 +59,7 @@ export function SignsHomeContent({
 
   const categoryPreviews = useMemo(
     () =>
-      ROAD_SIGN_CATEGORIES.map((category) => ({
+      getRoadSignCategories().map((category) => ({
         category,
         progress: getCategorySignProgress(category.id, signPracticeRecords),
       })),

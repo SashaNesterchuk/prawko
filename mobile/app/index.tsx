@@ -8,20 +8,20 @@ import {
   useNextOnboardingRoute,
   useAppShellStore,
 } from "../src/state/app-shell";
-import { appVariant } from "../src/app-config/runtime";
 
 export default function IndexScreen() {
   const { t } = useTranslation();
   const hasHydrated = useHasHydrated();
   const sessionResolved = useAppShellStore((state) => state.sessionResolved);
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const onboardingCompleted = useAppShellStore(
     (state) => state.onboardingCompleted
   );
   const nextOnboardingRoute = useNextOnboardingRoute();
 
-  if (!hasHydrated || !sessionResolved) {
+  if (!hasHydrated || !sessionResolved || !examCountry) {
     return (
-      <AppScreen scroll={false} title={appVariant.name}>
+      <AppScreen scroll={false} title="Prawko">
         <LoadingStateView
           title={t("states.loadingTitle")}
           description={t("states.loadingSubtitle")}

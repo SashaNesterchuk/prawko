@@ -1,7 +1,7 @@
 export const variantLanguageOptions = {
   cs: {
     label: "Čeština",
-    description: "Czech interface and driving theory content.",
+    description: "České rozhraní a české otázky k teorii řízení.",
   },
   el: {
     label: "Ελληνικά",

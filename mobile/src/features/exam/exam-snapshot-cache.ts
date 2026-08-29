@@ -1,12 +1,22 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { getExamCountry } from "../../state/app-shell";
 import type { RemoteExamSnapshot } from "./types";
 
-const LAST_SNAPSHOT_PREFIX = "prawko.exam.lastSnapshot:";
-const ACTIVE_SESSION_ID_KEY = "prawko.exam.activeSessionId";
+function getLastSnapshotPrefix() {
+  return `prawko.exam.${getExamCountry()}.lastSnapshot:`;
+}
+
+function getActiveSessionIdKey() {
+  return `prawko.exam.${getExamCountry()}.activeSessionId`;
+}
 
 let cachedSnapshot: RemoteExamSnapshot | null = null;
 let persistChain: Promise<void> = Promise.resolve();
+
+export function clearExamSnapshotMemory() {
+  cachedSnapshot = null;
+}
 
 /**
  * Keep the latest exam snapshot in memory and on disk so both the live session
@@ -52,7 +62,7 @@ export async function loadPersistedExamSnapshot(
   }
 
   try {
-    const raw = await AsyncStorage.getItem(`${LAST_SNAPSHOT_PREFIX}${sessionId}`);
+    const raw = await AsyncStorage.getItem(`${getLastSnapshotPrefix()}${sessionId}`);
     if (!raw) {
       return null;
     }
@@ -73,7 +83,7 @@ export async function loadPersistedExamSnapshot(
 /** Resolve the exam that was still running when the app was last torn down. */
 export async function loadPersistedActiveExamSnapshot(): Promise<RemoteExamSnapshot | null> {
   try {
-    const sessionId = await AsyncStorage.getItem(ACTIVE_SESSION_ID_KEY);
+    const sessionId = await AsyncStorage.getItem(getActiveSessionIdKey());
     if (!sessionId) {
       return null;
     }
@@ -115,17 +125,17 @@ export async function seedPersistedExamSnapshot(snapshot: RemoteExamSnapshot) {
 
 async function persistExamSnapshot(snapshot: RemoteExamSnapshot) {
   await AsyncStorage.setItem(
-    `${LAST_SNAPSHOT_PREFIX}${snapshot.session.id}`,
+    `${getLastSnapshotPrefix()}${snapshot.session.id}`,
     JSON.stringify(snapshot)
   );
 
   if (snapshot.session.status === "active") {
-    await AsyncStorage.setItem(ACTIVE_SESSION_ID_KEY, snapshot.session.id);
+    await AsyncStorage.setItem(getActiveSessionIdKey(), snapshot.session.id);
     return;
   }
 
-  const activeSessionId = await AsyncStorage.getItem(ACTIVE_SESSION_ID_KEY);
+  const activeSessionId = await AsyncStorage.getItem(getActiveSessionIdKey());
   if (activeSessionId === snapshot.session.id) {
-    await AsyncStorage.removeItem(ACTIVE_SESSION_ID_KEY);
+    await AsyncStorage.removeItem(getActiveSessionIdKey());
   }
 }

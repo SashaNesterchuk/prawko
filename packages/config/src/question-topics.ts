@@ -165,10 +165,10 @@ export const CZECH_QUESTION_TOPIC_IDS = [
 
 export type CzechQuestionTopicId = (typeof CZECH_QUESTION_TOPIC_IDS)[number];
 
-export function getQuestionTopicIdsForVariant(
-  variantId: string | null | undefined
+export function getQuestionTopicIdsForCountry(
+  countryCode: string | null | undefined
 ): QuestionTopicId[] {
-  return variantId === "czech"
+  return countryCode === "CZ"
     ? [...CZECH_QUESTION_TOPIC_IDS]
     : QUESTION_TOPIC_IDS;
 }

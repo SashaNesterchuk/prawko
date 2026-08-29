@@ -1,5 +1,6 @@
 const mockFeatureFlags = { enableAds: true };
 const mockMobileEnv = {
+  enableE2ETestMode: false,
   admobIosAppId: "ios-app-id",
   admobAndroidAppId: "android-app-id",
   admobIosInterstitialUnitId: "ios-unit",
@@ -33,6 +34,7 @@ describe("admob-config", () => {
   afterEach(() => {
     (globalThis as { __DEV__?: boolean }).__DEV__ = originalDev;
     mockFeatureFlags.enableAds = true;
+    mockMobileEnv.enableE2ETestMode = false;
   });
 
   it("reports enabled from FEATURE_FLAGS.enableAds", async () => {
@@ -61,6 +63,15 @@ describe("admob-config", () => {
   it("uses Google test interstitial ids in __DEV__", async () => {
     (globalThis as { __DEV__?: boolean }).__DEV__ = true;
     const { getInterstitialAdUnitId } = await loadConfigForOs("ios");
+    expect(getInterstitialAdUnitId()).toBe(
+      "ca-app-pub-3940256099942544/4411468910"
+    );
+  });
+
+  it("uses Google test interstitial ids in e2e builds", async () => {
+    (globalThis as { __DEV__?: boolean }).__DEV__ = false;
+    mockMobileEnv.enableE2ETestMode = true;
+    const { getInterstitialAdUnitId } = await loadConfigForOs("android");
     expect(getInterstitialAdUnitId()).toBe(
       "ca-app-pub-3940256099942544/4411468910"
     );

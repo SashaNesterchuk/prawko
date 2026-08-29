@@ -53,6 +53,11 @@ const PERSIST_FLUSH_DELAY_MS = 800;
 
 /** Bound after the store exists so background persist can freeze the blitz clock. */
 let pauseTimedSessionForBackground: (() => void) | null = null;
+let flushDeferredProgressPersist: (() => Promise<void>) | null = null;
+
+export function flushQuestionProgressPersist() {
+  return flushDeferredProgressPersist?.() ?? Promise.resolve();
+}
 
 /**
  * Answering a question rewrites the whole progress blob, and serializing it is
@@ -71,7 +76,7 @@ function createDeferredProgressStorage(): PersistStorage<PersistedQuestionProgre
     }
 
     if (pendingWrites.size === 0 || isFlushQueued) {
-      return;
+      return Promise.resolve();
     }
 
     // Snapshot now, stringify on a later turn so tab presses / navigation are
@@ -80,21 +85,28 @@ function createDeferredProgressStorage(): PersistStorage<PersistedQuestionProgre
     pendingWrites.clear();
     isFlushQueued = true;
 
-    setTimeout(() => {
-      isFlushQueued = false;
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        isFlushQueued = false;
 
-      try {
-        const entries = pendingEntries.map(
-          ([name, value]) => [name, JSON.stringify(value)] as [string, string]
-        );
-        void AsyncStorage.multiSet(entries).catch((error) => {
-          console.warn("Failed to persist question progress.", error);
-        });
-      } catch (error) {
-        console.warn("Failed to serialize question progress.", error);
-      }
-    }, 0);
+        try {
+          const entries = pendingEntries.map(
+            ([name, value]) => [name, JSON.stringify(value)] as [string, string]
+          );
+          void AsyncStorage.multiSet(entries)
+            .catch((error) => {
+              console.warn("Failed to persist question progress.", error);
+            })
+            .finally(resolve);
+        } catch (error) {
+          console.warn("Failed to serialize question progress.", error);
+          resolve();
+        }
+      }, 0);
+    });
   };
+
+  flushDeferredProgressPersist = () => flush();
 
   AppState.addEventListener("change", (nextState) => {
     if (nextState !== "active") {
@@ -547,7 +559,8 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
       },
     }),
     {
-      name: "prawko-question-progress",
+      name: "prawko-question-progress:PL",
+      skipHydration: true,
       storage: createDeferredProgressStorage(),
       partialize: (state) => ({
         activeSession: state.activeSession,

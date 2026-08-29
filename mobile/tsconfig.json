@@ -2,14 +2,7 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
-    "paths": {
-      "@app-variant": ["variants/prawko/runtime.ts"],
-      "@app-road-sign-assets": ["variants/prawko/road-sign-assets.ts"],
-      "@app-road-sign-content": ["variants/prawko/road-sign-content.ts"],
-      "@app-road-sign-catalog": ["variants/prawko/road-sign-catalog.ts"]
-    }
+    "ignoreDeprecations": "6.0"
   },
   "include": [
     "app/**/*.tsx",

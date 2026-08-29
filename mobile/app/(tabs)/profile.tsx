@@ -23,6 +23,7 @@ import {
 } from "../../src/components/shell/ProfileSettingsGroup";
 import { ProfileStatsCard } from "../../src/components/shell/ProfileStatsCard";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { CountryFlag } from "../../src/components/shell/CountryFlag";
 import { TrainingExitDialog } from "../../src/components/shell/TrainingExitDialog";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
@@ -68,6 +69,7 @@ import {
   useResponsiveStyles,
 } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
+import { useCountryConfig } from "../../src/countries/use-country";
 import {
   useHasPlusAccess,
   useRevenueCatOfferings,
@@ -78,6 +80,7 @@ import {
 } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
+import { useReviewPromptStore } from "../../src/state/review-prompt";
 import { resetAppToFreshStart } from "../../src/state/reset-app";
 import {
   ANALYTICS_EVENTS,
@@ -98,6 +101,7 @@ export default function ProfileTabScreen() {
     (state) => state.isScheduleNotificationEnabled
   );
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const countryConfig = useCountryConfig();
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const currentStudyPlanRemoteId = useAppShellStore(
@@ -372,8 +376,18 @@ export default function ProfileTabScreen() {
     track(ANALYTICS_EVENTS.profileActionSelected.key, {
       action: "leave_review",
     });
+    useReviewPromptStore.getState().markPrompted();
+    track(ANALYTICS_EVENTS.appReviewRequested.key, {
+      mode: null,
+      source: "profile",
+    });
     void openStoreReview().catch((error) => {
       console.warn("Failed to open store review.", error);
+      track(ANALYTICS_EVENTS.appReviewFailed.key, {
+        mode: null,
+        reason: "store_unavailable",
+        source: "profile",
+      });
       Alert.alert(
         t("profile.reviewUnavailableTitle"),
         t("profile.reviewUnavailableMessage")
@@ -471,6 +485,18 @@ export default function ProfileTabScreen() {
               onPress={() =>
                 router.navigate({
                   pathname: "/(onboarding)/category",
+                  params: { mode: "settings" },
+                })
+              }
+            />
+            <ProfileSettingsRow
+              title={t("profile.examCountryTitle")}
+              value={t(`countries.${countryConfig.code}.name`)}
+              testID="profile-row-exam-country"
+              icon={<CountryFlag country={countryConfig.code} size={iconSize} />}
+              onPress={() =>
+                router.navigate({
+                  pathname: "/(onboarding)/exam-country",
                   params: { mode: "settings" },
                 })
               }

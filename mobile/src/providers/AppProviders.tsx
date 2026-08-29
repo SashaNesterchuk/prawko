@@ -9,6 +9,8 @@ import { useResponsiveStyles } from "../portable-ui";
 import { AnalyticsProvider } from "./AnalyticsProvider";
 import { ErrorLoggingProvider } from "./ErrorLoggingProvider";
 import { LocaleSyncProvider } from "./LocaleSyncProvider";
+import { ExamCountryBootstrap } from "../countries/ExamCountryBootstrap";
+import { CountryScopedStores } from "../countries/CountryScopedStores";
 import { NotificationSetupProvider } from "./NotificationSetupProvider";
 import { QuestionCatalogProvider } from "./QuestionCatalogProvider";
 import { RevenueCatProvider } from "./RevenueCatProvider";
@@ -33,15 +35,19 @@ export function AppProviders({ children }: PropsWithChildren) {
                     <RevenueCatProvider>
                       <RemoteLearningStateProvider>
                         <NotificationSetupProvider>
-                          <LocaleSyncProvider>
-                            <UserProvider>
-                              <QuestionCatalogProvider>
-                                <AdProvider>
-                                  {children}
-                                </AdProvider>
-                              </QuestionCatalogProvider>
-                            </UserProvider>
-                          </LocaleSyncProvider>
+                          <ExamCountryBootstrap>
+                            <CountryScopedStores>
+                              <LocaleSyncProvider>
+                                <UserProvider>
+                                  <QuestionCatalogProvider>
+                                    <AdProvider>
+                                      {children}
+                                    </AdProvider>
+                                  </QuestionCatalogProvider>
+                                </UserProvider>
+                              </LocaleSyncProvider>
+                            </CountryScopedStores>
+                          </ExamCountryBootstrap>
                         </NotificationSetupProvider>
                       </RemoteLearningStateProvider>
                     </RevenueCatProvider>

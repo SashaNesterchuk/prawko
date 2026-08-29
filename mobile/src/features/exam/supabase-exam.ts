@@ -1,6 +1,7 @@
 import type { DrivingCategory, SupportedLocale } from "@prawko/config";
 
-import { isMobileSupabaseConfigured, mobileEnv } from "../../config/env";
+import { isMobileSupabaseConfigured } from "../../config/env";
+import { getQuestionSetKey } from "../../countries/runtime";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 import type {
   ExamSimulatorMode,
@@ -41,7 +42,7 @@ export async function startRemoteExamSession(
 
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("start_exam_session_v2", {
-    p_question_set_key: mobileEnv.questionSetKey,
+    p_question_set_key: getQuestionSetKey(),
     p_mode: input.mode,
     p_session_locale: input.locale,
     p_current_category: input.category,
@@ -80,7 +81,7 @@ export async function fetchLatestActiveExamSession(mode?: ExamSimulatorMode | nu
 
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("get_latest_active_exam_session_v2", {
-    p_question_set_key: mobileEnv.questionSetKey,
+    p_question_set_key: getQuestionSetKey(),
     p_mode: mode ?? null,
   });
 
@@ -102,7 +103,7 @@ export async function fetchRecentExamSessions(
 
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("list_recent_exam_sessions_v2", {
-    p_question_set_key: mobileEnv.questionSetKey,
+    p_question_set_key: getQuestionSetKey(),
     p_limit: limit,
   });
 

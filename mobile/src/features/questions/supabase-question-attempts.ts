@@ -1,6 +1,7 @@
 import type { QuestionSessionMode, SupportedLocale } from "@prawko/config";
 
-import { isMobileSupabaseConfigured, mobileEnv } from "../../config/env";
+import { isMobileSupabaseConfigured } from "../../config/env";
+import { getQuestionSetKey } from "../../countries/runtime";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 import type { QuestionOptionValue } from "./types";
 
@@ -28,7 +29,7 @@ export async function recordQuestionAttemptBySourceId(
 
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("record_question_attempt_by_source_id_v2", {
-    p_question_set_key: mobileEnv.questionSetKey,
+    p_question_set_key: getQuestionSetKey(),
     p_question_source_id: input.questionSourceId,
     p_mode: input.mode,
     p_answer_given: input.selectedAnswer,

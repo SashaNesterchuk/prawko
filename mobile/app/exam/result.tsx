@@ -36,6 +36,7 @@ import type {
   RemoteExamSnapshot,
 } from "../../src/features/exam/types";
 import { useAdInterstitialActions } from "../../src/features/ads/show-interstitial";
+import { maybeRequestInAppReview } from "../../src/features/profile/request-in-app-review";
 import { getQuestionTopicTitle } from "../../src/features/question-topics/catalog";
 import { getQuestionUserState } from "../../src/features/questions/question-engine";
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
@@ -92,7 +93,7 @@ export default function ExamResultScreen() {
   const [reviewIndex, setReviewIndex] = useState<number | null>(null);
   const modalHideResolverRef = useRef<(() => void) | null>(null);
   const isReviewingRef = useRef(false);
-  const didAttemptResultInterstitialRef = useRef(false);
+  const didAttemptResultFollowUpForSessionRef = useRef<string | null>(null);
   const didTrackCompletionRef = useRef<string | null>(null);
 
   const canFetchRecent =
@@ -110,7 +111,6 @@ export default function ExamResultScreen() {
     }
 
     let cancelled = false;
-    didAttemptResultInterstitialRef.current = false;
     setErrorMessage(null);
     setReviewIndex(null);
 
@@ -197,20 +197,35 @@ export default function ExamResultScreen() {
     if (
       !snapshot ||
       snapshot.session.status === "active" ||
-      hasPlusAccess ||
-      didAttemptResultInterstitialRef.current
+      didAttemptResultFollowUpForSessionRef.current === snapshot.session.id
     ) {
       return;
     }
 
-    didAttemptResultInterstitialRef.current = true;
+    didAttemptResultFollowUpForSessionRef.current = snapshot.session.id;
+    const passed = getExamResultOutcome(snapshot.session) === "passed";
+    const examMode = snapshot.session.mode;
 
-    // Fire-and-forget: ensure → show → retry → skip. Hard timeouts in the
-    // interstitial controller keep this screen tappable even if the ad dies.
-    void showInterstitialForTrigger("after_exam_complete").catch((error) => {
-      console.warn("Exam result interstitial failed open.", error);
-    });
-  }, [hasPlusAccess, showInterstitialForTrigger, snapshot]);
+    // Ad first (free users), then a native review sheet on a pass — never
+    // while the exam session is still live. Timeouts in the interstitial
+    // controller keep this screen tappable if the creative dies.
+    void (async () => {
+      if (!hasPlusAccess) {
+        try {
+          await showInterstitialForTrigger("after_exam_complete");
+        } catch (error) {
+          console.warn("Exam result interstitial failed open.", error);
+        }
+      }
+
+      await maybeRequestInAppReview({
+        mode: examMode,
+        positiveOutcome: passed,
+        source: "exam_passed",
+        track,
+      });
+    })();
+  }, [hasPlusAccess, showInterstitialForTrigger, snapshot, track]);
 
   // Only bounce an *active* session back to the player — never while reviewing
   // answers, and never for finished sessions (completed/abandoned/expired).

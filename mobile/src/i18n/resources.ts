@@ -1,3 +1,5 @@
+import { czechTranslations } from "./cs";
+
 const resourcesBase = {
   pl: {
     translation: {
@@ -73,6 +75,16 @@ const resourcesBase = {
         es: {
           label: "Espanol",
           description: "Interfejs po hiszpansku. Pytania egzaminacyjne po angielsku.",
+        },
+      },
+      countries: {
+        PL: {
+          name: "Polska",
+          description: "Oficjalny egzamin WORD, 32 pytania.",
+        },
+        CZ: {
+          name: "Czesko",
+          description: "Czeski egzamin eTesty, 25 pytan.",
         },
       },
       onboarding: {
@@ -449,6 +461,7 @@ const resourcesBase = {
         examDateMissing: "Ustaw date",
         categoryTitle: "Kategoria",
         languageTitle: "Jezyk",
+        examCountryTitle: "Kraj egzaminu",
         notificationsTitle: "Powiadomienia",
         offlineModeTitle: "Tryb offline",
         notificationsDisableTitle: "Wylacz powiadomienia",
@@ -1357,6 +1370,16 @@ const resourcesBase = {
           description: "Інтерфейс іспанською. Питання іспиту англійською.",
         },
       },
+      countries: {
+        PL: {
+          name: "Польща",
+          description: "Офіційний іспит WORD, 32 питання.",
+        },
+        CZ: {
+          name: "Чехія",
+          description: "Чеський іспит eTesty, 25 питань.",
+        },
+      },
       onboarding: {
         languageTitle: "Оберіть мову",
         languageSubtitle: "Shell збереже цю мову і підніме її при наступному запуску.",
@@ -1732,6 +1755,7 @@ const resourcesBase = {
         examDateMissing: "Встановити дату",
         categoryTitle: "Категорія",
         languageTitle: "Мова",
+        examCountryTitle: "Країна іспиту",
         notificationsTitle: "Сповіщення",
         offlineModeTitle: "Офлайн режим",
         notificationsDisableTitle: "Вимкнути сповіщення",
@@ -2640,6 +2664,16 @@ const resourcesBase = {
           description: "Spanish interface. Exam questions are in English.",
         },
       },
+      countries: {
+        PL: {
+          name: "Poland",
+          description: "Official WORD exam, 32 questions.",
+        },
+        CZ: {
+          name: "Czechia",
+          description: "Czech eTesty exam, 25 questions.",
+        },
+      },
       onboarding: {
         languageTitle: "Choose a language",
         languageSubtitle: "The shell will persist this preference between launches.",
@@ -3015,6 +3049,7 @@ const resourcesBase = {
         examDateMissing: "Set date",
         categoryTitle: "Category",
         languageTitle: "Language",
+        examCountryTitle: "Exam country",
         notificationsTitle: "Notifications",
         offlineModeTitle: "Offline mode",
         notificationsDisableTitle: "Turn off notifications",
@@ -3883,6 +3918,9 @@ const sharedLanguageOptions = {
 
 export const resources = {
   ...resourcesBase,
+  cs: {
+    translation: czechTranslations,
+  },
   de: {
     translation: {
       ...enTranslation,
@@ -3915,6 +3953,7 @@ export const resources = {
         ...enTranslation.profile,
         languageTitle: "Sprache",
         categoryTitle: "Kategorie",
+        examCountryTitle: "Pruefungsland",
       },
     },
   },
@@ -3950,6 +3989,7 @@ export const resources = {
         ...enTranslation.profile,
         languageTitle: "Idioma",
         categoryTitle: "Categoria",
+        examCountryTitle: "Pais del examen",
       },
     },
   },

@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "idik.app"
-               BlueprintName = "idik"
-               ReferencedContainer = "container:idik.xcodeproj">
+               BuildableName = "Prawko.app"
+               BlueprintName = "Prawko"
+               ReferencedContainer = "container:Prawko.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "idikTests.xctest"
-               BlueprintName = "idikTests"
-               ReferencedContainer = "container:idik.xcodeproj">
+               BuildableName = "PrawkoTests.xctest"
+               BlueprintName = "PrawkoTests"
+               ReferencedContainer = "container:Prawko.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "idik.app"
-            BlueprintName = "idik"
-            ReferencedContainer = "container:idik.xcodeproj">
+            BuildableName = "Prawko.app"
+            BlueprintName = "Prawko"
+            ReferencedContainer = "container:Prawko.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "idik.app"
-            BlueprintName = "idik"
-            ReferencedContainer = "container:idik.xcodeproj">
+            BuildableName = "Prawko.app"
+            BlueprintName = "Prawko"
+            ReferencedContainer = "container:Prawko.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

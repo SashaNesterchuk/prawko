@@ -4,6 +4,7 @@ import {
   isMobileSupabaseConfigured,
   mobileEnv,
 } from "../config/env";
+import { getQuestionSetKey } from "../countries/runtime";
 import {
   getQuestionBank,
   hydrateQuestionBankFromLocalQuestions,
@@ -238,6 +239,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
   const preferredCategory = useAppShellStore(
     (state) => state.preferredCategory
   );
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const { captureError, captureFallback } = useErrorLogger();
   const captureErrorRef = useRef(captureError);
   const captureFallbackRef = useRef(captureFallback);
@@ -259,7 +261,12 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
   const setRemote = useQuestionCatalogStore((state) => state.setRemote);
 
   useEffect(() => {
-    if (!appShellHydrated || !questionProgressHydrated || !sessionResolved) {
+    if (
+      !appShellHydrated ||
+      !questionProgressHydrated ||
+      !sessionResolved ||
+      !examCountry
+    ) {
       return;
     }
 
@@ -410,7 +417,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
       let questionSetId: string | null = null;
 
       try {
-        questionSetId = await fetchQuestionSetId(mobileEnv.questionSetKey);
+        questionSetId = await fetchQuestionSetId(getQuestionSetKey());
         signature = await fetchQuestionCatalogSignature(
           questionSetId,
           preferredCategory
@@ -467,7 +474,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
 
         try {
           if (!questionSetId) {
-            throw new Error(`Active question set "${mobileEnv.questionSetKey}" was not found.`);
+            throw new Error(`Active question set "${getQuestionSetKey()}" was not found.`);
           }
           records = await fetchAllActiveQuestionsForCategory(
             questionSetId,
@@ -732,6 +739,7 @@ export function QuestionCatalogProvider({ children }: PropsWithChildren) {
     authMode,
     currentUserId,
     ensureTopicQuestionProgressSeeded,
+    examCountry,
     preferredCategory,
     questionProgressHydrated,
     reconcileCatalog,

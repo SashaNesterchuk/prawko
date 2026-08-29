@@ -3,6 +3,7 @@ import { Directory, File, Paths } from "expo-file-system";
 import { Platform } from "react-native";
 
 import { mobileEnv } from "../../config/env";
+import { getQuestionSetKey } from "../../countries/runtime";
 import type { LocalQuestion } from "./types";
 
 /**
@@ -209,7 +210,7 @@ function getCatalogCacheDirectory() {
 }
 
 function getCatalogCacheFileName(category: DrivingCategory) {
-  const setKey = mobileEnv.questionSetKey.replace(/[^a-z0-9_-]/gi, "_");
+  const setKey = getQuestionSetKey().replace(/[^a-z0-9_-]/gi, "_");
   return `${setKey}-${category}.json`;
 }
 

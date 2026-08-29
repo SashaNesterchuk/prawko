@@ -11,6 +11,7 @@ import { useEntitlementStore } from "./entitlements";
 import { useFreeTierQuestionUsageStore } from "./free-tier-usage";
 import { useQuestionProgressStore } from "./question-progress";
 import { useReadinessSnapshotStore } from "./readiness-snapshot";
+import { useReviewPromptStore } from "./review-prompt";
 import { useSignBookmarksStore } from "./sign-bookmarks";
 import { useSignPracticeProgressStore } from "./sign-practice-progress";
 
@@ -39,6 +40,7 @@ export async function resetAppToFreshStart() {
   useSignBookmarksStore.getState().resetSaved();
   useSignPracticeProgressStore.getState().resetProgress();
   useFreeTierQuestionUsageStore.setState({ answeredQuestionsByDate: {} });
+  useReviewPromptStore.getState().resetPrompt();
   useAiChatStore.setState({
     conversations: {},
     latestConversationByQuestionId: {},

@@ -3,6 +3,7 @@ import { AD_POLICY } from "@prawko/config";
 import {
   clearAppBackgroundMark,
   createFreshSessionState,
+  getLastAdShownAt,
   isAppResumeAdsSuppressed,
   isExamSessionActive,
   markAppBackgrounded,
@@ -32,6 +33,7 @@ describe("ad-session-policy", () => {
 
       expect(state.adsShownThisSession).toBe(0);
       expect(state.lastAdShownAt).toBeNull();
+      expect(getLastAdShownAt()).toBeNull();
       expect(state.questionsAnsweredSinceLastAd).toBe(0);
       expect(state.lastActivityAt).toBe(Date.now());
       expect(state.sessionStartedAt).toBe(Date.now());

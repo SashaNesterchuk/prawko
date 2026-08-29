@@ -3,8 +3,7 @@ import type { ComponentType } from "react";
 import type { ImageSourcePropType } from "react-native";
 import type { SvgProps } from "react-native-svg";
 
-// This registry is resolved only in APP_VARIANT=czech, so none of these files
-// are reachable from a Prawko build.
+// Bundled into the shared Prawko app and selected at runtime by exam country.
 export const signAssets: Record<string, ComponentType<SvgProps>> = {};
 
 const rasterSignAssets: Record<string, ImageSourcePropType> = {

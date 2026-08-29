@@ -1,5 +1,7 @@
 import {
   ANALYTICS_EVENTS,
+  ANALYTICS_EXAM_COUNTRY_SOURCES,
+  ANALYTICS_PROPERTIES,
   ANALYTICS_SCREENS,
   getAnalyticsErrorCode,
   sanitizeAnalyticsProperties,
@@ -24,6 +26,21 @@ describe("analytics catalog", () => {
     expect(ANALYTICS_SCREENS.questionTraining).toBe("question_training");
     expect(ANALYTICS_SCREENS.examSession).toBe("exam_session");
     expect(ANALYTICS_SCREENS.paywall).toBe("paywall");
+    expect(ANALYTICS_SCREENS.examCountry).toBe("exam_country");
+    expect(ANALYTICS_EVENTS.examCountryResolved.key).toBe(
+      "exam_country_resolved"
+    );
+    expect(ANALYTICS_EVENTS.examCountryChanged.key).toBe(
+      "exam_country_changed"
+    );
+    expect(ANALYTICS_PROPERTIES.examCountry).toBe("exam_country");
+    expect(ANALYTICS_PROPERTIES.previous).toBe("previous");
+    expect(ANALYTICS_PROPERTIES.source).toBe("source");
+    expect(ANALYTICS_EXAM_COUNTRY_SOURCES.storefront).toBe("storefront");
+    expect(ANALYTICS_EXAM_COUNTRY_SOURCES.deviceRegion).toBe("device_region");
+    expect(ANALYTICS_EXAM_COUNTRY_SOURCES.legacyOnboarded).toBe(
+      "legacy_onboarded"
+    );
   });
 
   it("normalizes unknown errors without sending their message", () => {
@@ -60,6 +77,14 @@ describe("analytics catalog", () => {
     expect(resolveScreenRoute("/signs/category/A/test")).toMatchObject({
       routePattern: "/signs/category/[categoryId]/test",
       screenName: "sign_test",
+    });
+    expect(resolveScreenRoute("/exam-country")).toMatchObject({
+      routePattern: "/exam-country",
+      screenName: "exam_country",
+    });
+    expect(resolveScreenRoute("/(onboarding)/exam-country")).toMatchObject({
+      routePattern: "/(onboarding)/exam-country",
+      screenName: "exam_country",
     });
   });
 });

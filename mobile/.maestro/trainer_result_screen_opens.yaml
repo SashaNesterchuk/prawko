@@ -1,6 +1,7 @@
 # Feature: Training session result
 # Scenario: Finished training result → answers review → last question Finish
-# returns to the result screen (never a disabled Next on the last answer)
+# returns to the result screen (never a disabled Next on the last answer).
+# Native in-app review is suppressed in e2e builds so this screen stays tappable.
 appId: com.mindjar.prawko
 tags:
   - training

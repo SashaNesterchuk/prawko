@@ -6,10 +6,13 @@ import { FEATURE_FLAGS } from "@prawko/config";
 import { mobileEnv } from "../../config/env";
 
 /**
- * AdMob App ID (iOS): ca-app-pub-4994877133367352~1533006266
+ * AdMob App IDs:
+ *   iOS     ca-app-pub-4994877133367352~1533006266
+ *   Android ca-app-pub-4994877133367352~7730175532
  * Product ads use Interstitial units only (not Rewarded).
- * Create `ios_interstitial_main` in AdMob and set EXPO_PUBLIC_ADMOB_IOS_INTERSTITIAL_UNIT_ID.
- * In __DEV__ we always use Google test interstitial IDs.
+ * iOS unit:     ios_interstitial_main     ca-app-pub-4994877133367352/9403561308
+ * Android unit: android_interstitial_main ca-app-pub-4994877133367352/1525071282
+ * __DEV__ and e2e builds always use Google test interstitial IDs.
  */
 export function isAdMobEnabled() {
   return FEATURE_FLAGS.enableAds;
@@ -34,7 +37,7 @@ export function getInterstitialAdUnitId() {
       ? "ca-app-pub-3940256099942544/4411468910"
       : "ca-app-pub-3940256099942544/1033173712";
 
-  if (__DEV__) {
+  if (__DEV__ || mobileEnv.enableE2ETestMode) {
     return TestIds.INTERSTITIAL || googleTestInterstitial;
   }
 

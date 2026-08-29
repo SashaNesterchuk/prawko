@@ -1,9 +1,12 @@
 import {
   DEFAULT_CATEGORY,
+  DEFAULT_COUNTRY_CODE,
+  isCountryCode,
   QUESTION_TOPIC_IDS,
   STUDY_PLAN_LIMITS,
   isDrivingCategory,
   normalizeQuestionTopicId,
+  type CountryCode,
   type DrivingCategory,
   type SupportedLocale,
 } from "@prawko/config";
@@ -31,6 +34,7 @@ import type {
 import { finalizeLocalOnboarding } from "../../features/onboarding/finalize-local-onboarding";
 import { isRoadSignCategoryId } from "../../features/road-signs/catalog";
 import { getExamDateFromDays } from "../../features/study-plan/generate-local-study-plan";
+import { rehydrateCountryScopedStores } from "../../countries/CountryScopedStores";
 import { useAppShellStore } from "../../state/app-shell";
 import { useQuestionCatalogStore } from "../../state/question-catalog";
 import { useQuestionProgressStore } from "../../state/question-progress";
@@ -62,6 +66,7 @@ export type E2EDestination =
 type PrepareE2EAppStateInput = {
   category?: string | null;
   daysUntilExam?: number | null;
+  examCountry?: string | null;
   examSessionCategory?: string | null;
   examSessionStatus?: RemoteExamSessionStatus | null;
   locale?: SupportedLocale | null;
@@ -93,6 +98,7 @@ export async function prepareE2EAppState(
   const preferredCategory = resolveCategory(input.category);
   const daysUntilExam = resolveDaysUntilExam(input.daysUntilExam);
   const preferredLocale = input.locale ?? store.preferredLocale;
+  const examCountry = resolveExamCountry(input.examCountry);
 
   resetE2ETestOverrides();
   configureE2ETestOverrides({
@@ -112,6 +118,8 @@ export async function prepareE2EAppState(
   }
 
   store.setSessionResolved(true);
+  store.setExamCountry(examCountry);
+  await rehydrateCountryScopedStores(examCountry);
   store.setPreferredCategory(preferredCategory);
   store.completeCategoryStep();
 
@@ -262,6 +270,11 @@ function normalizeDestination(
 function resolveCategory(value: string | null | undefined): DrivingCategory {
   const candidate = value?.trim().toUpperCase();
   return isDrivingCategory(candidate) ? candidate : DEFAULT_CATEGORY;
+}
+
+function resolveExamCountry(value: string | null | undefined): CountryCode {
+  const normalized = value?.trim().toUpperCase();
+  return isCountryCode(normalized) ? normalized : DEFAULT_COUNTRY_CODE;
 }
 
 function resolveDaysUntilExam(value: number | null | undefined) {

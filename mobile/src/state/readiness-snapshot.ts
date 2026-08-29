@@ -42,7 +42,8 @@ export const useReadinessSnapshotStore = create<ReadinessSnapshotState>()(
       setHasHydrated: (value) => set({ hasHydrated: value }),
     }),
     {
-      name: "prawko-readiness-snapshot",
+      name: "prawko-readiness-snapshot:PL",
+      skipHydration: true,
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         snapshot: state.snapshot,

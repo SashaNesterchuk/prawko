@@ -2,7 +2,6 @@ import { DefaultTheme } from "expo-router/react-navigation";
 
 import { darkTheme } from "./dark";
 import { lightTheme, type AppTheme, type AppThemeColors, type ThemeMode } from "./light";
-import { appVariant } from "../app-config/runtime";
 
 export type { AppTheme, AppThemeColors, ThemeMode };
 export type AppThemeAccent = keyof AppTheme["accents"];
@@ -13,7 +12,7 @@ export const themes = {
 } as const;
 
 export { darkTheme, lightTheme };
-export const appTheme = appVariant.theme;
+export const appTheme = lightTheme;
 
 export function createNavigationTheme(theme: AppTheme) {
   return {

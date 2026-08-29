@@ -173,40 +173,10 @@ export type AiMessageKind = (typeof AI_MESSAGE_KINDS)[number];
 export const DEFAULT_LOCALE: SupportedLocale = "ua";
 export const DEFAULT_CATEGORY: DrivingCategory = "B";
 
-export const EXAM_RULES = {
-  totalQuestions: 32,
-  baseQuestions: 20,
-  specialistQuestions: 12,
-  durationMinutes: 25,
-  maxPoints: 74,
-  passingPoints: 68,
-  /** WORD: time to read a base (TAK/NIE) question before media/answer. */
-  baseReadSeconds: 20,
-  /** WORD: time to answer a base (TAK/NIE) question after media. */
-  baseAnswerSeconds: 15,
-  /**
-   * After the learner finishes a manually started exam video, add this many
-   * seconds back onto whatever remained on the question timer.
-   */
-  baseVideoResumeBonusSeconds: 5,
-  /** WORD: combined read + answer window for specialist (A/B/C) questions. */
-  specialistSeconds: 50,
-  /**
-   * Soft floor for video share among base-scope exam questions (~50–60%).
-   * Official rules do not fix film/photo quotas; WORD base mixes both.
-   * Soft: take what's available. Do not force specialist videos.
-   */
-  baseVideoMinRatio: 0.55,
-} as const;
-
-/** Soft min video count for a given base-scope slot count (catalog soft quota). */
-export function getExamBaseVideoMinTarget(baseQuestionTarget: number) {
-  const normalized = Math.max(0, Math.floor(baseQuestionTarget));
-  return Math.min(
-    normalized,
-    Math.round(normalized * EXAM_RULES.baseVideoMinRatio)
-  );
-}
+export {
+  EXAM_RULES,
+  getExamBaseVideoMinTarget,
+} from "./exam-rules";
 
 export const QUESTION_MASTERY_RULES = {
   consecutiveCorrect: 3,
@@ -240,6 +210,14 @@ export const AD_POLICY = {
   appResumeBackgroundMinutes: 10,
 } as const;
 
+/** Native store review only — never reward, never mid-exam / mid-blitz. */
+export const REVIEW_PROMPT_POLICY = {
+  /** Matches training result "good" (see getTrainingResultOutcome). */
+  minTrainingPercent: 80,
+  /** Let the result screen settle after an interstitial closes. */
+  adQuietPeriodMs: 1_500,
+} as const;
+
 export const AI_LIMITS = {
   /** Deprecated: AI chat is Plus-only in Free + Ads / Plus v1. */
   freeQuestionChatPerDay: 8,
@@ -253,3 +231,4 @@ export const FREE_TIER_LIMITS = {
 } as const;
 
 export * from "./question-topics";
+export * from "./countries";

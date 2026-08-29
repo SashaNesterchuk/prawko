@@ -1,6 +1,7 @@
 import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
 import { mobileEnv } from "../../config/env";
+import { getMediaBaseUrl } from "../../countries/runtime";
 import {
   getOfflineQuestionAssetUrl,
   getOfflineQuestionPosterUrl,
@@ -18,8 +19,9 @@ export function buildStoragePublicUrl(
   bucket: string,
   storagePath: string
 ): string | null {
-  if (mobileEnv.mediaBaseUrl) {
-    const normalizedBaseUrl = mobileEnv.mediaBaseUrl.replace(/\/+$/, "");
+  const mediaBaseUrl = getMediaBaseUrl();
+  if (mediaBaseUrl) {
+    const normalizedBaseUrl = mediaBaseUrl.replace(/\/+$/, "");
     return `${normalizedBaseUrl}/${encodeURIComponent(
       bucket
     )}/${encodeStoragePath(storagePath)}`;

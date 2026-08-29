@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 
 import { mobileEnv } from "../../config/env";
+import { getMediaBaseUrl } from "../../countries/runtime";
 import { getE2ETestReachabilityOverride } from "../../testing/e2e/state";
 
 /** Keep this short — hung fetches must never freeze the UI thread for seconds. */
@@ -15,8 +16,9 @@ function buildReachabilityUrls() {
     );
   }
 
-  if (mobileEnv.mediaBaseUrl) {
-    urls.push(mobileEnv.mediaBaseUrl.replace(/\/+$/, ""));
+  const mediaBaseUrl = getMediaBaseUrl();
+  if (mediaBaseUrl) {
+    urls.push(mediaBaseUrl.replace(/\/+$/, ""));
   } else if (mobileEnv.supabaseUrl) {
     urls.push(
       `${mobileEnv.supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public`

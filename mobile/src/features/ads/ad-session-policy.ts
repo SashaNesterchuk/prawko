@@ -103,6 +103,10 @@ export function isAppResumeAdsSuppressed() {
   return Date.now() < suppressAppResumeAdsUntil;
 }
 
+export function getLastAdShownAt() {
+  return sessionState.lastAdShownAt;
+}
+
 /** Test-only: wipe module session so suites stay isolated. */
 export function resetAdSessionStateForTests() {
   sessionState = createFreshSessionState();

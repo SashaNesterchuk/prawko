@@ -16,7 +16,7 @@ import {
   useResponsiveStyles,
 } from "../../src/portable-ui";
 import {
-  ROAD_SIGN_CATEGORIES,
+  getRoadSignCategories,
   searchRoadSigns,
 } from "../../src/features/road-signs/catalog";
 import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
@@ -34,7 +34,7 @@ function SignsSearchScreen() {
   const categoryLabels = useMemo(
     () =>
       Object.fromEntries(
-        ROAD_SIGN_CATEGORIES.map((category) => [
+        getRoadSignCategories().map((category) => [
           category.id,
           t(`signs.categories.${category.id}.title`),
         ])

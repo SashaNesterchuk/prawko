@@ -13,10 +13,10 @@ import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { LocaleFlag } from "../../src/components/shell/LocaleFlag";
 import { NavigationButton } from "../../src/components/shell/NavigationButton";
 import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
+import { useCountryConfig } from "../../src/countries/use-country";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
-import { appVariant } from "../../src/app-config/runtime";
 
 export default function LanguageScreen() {
   const { t } = useTranslation();
@@ -35,6 +35,7 @@ export default function LanguageScreen() {
   const setPreferredLocale = useAppShellStore(
     (state) => state.setPreferredLocale
   );
+  const countryConfig = useCountryConfig();
 
   const handleSelectLocale = (locale: SupportedLocale) => {
     setPreferredLocale(locale);
@@ -50,7 +51,7 @@ export default function LanguageScreen() {
 
   const languageList = (
     <View style={styles.cardStack} testID="onboarding-language-list">
-      {appVariant.supportedLocales.map((locale) => {
+      {countryConfig.supportedLocales.map((locale) => {
         const supportedLocale = locale as SupportedLocale;
         const isActive = preferredLocale === supportedLocale;
 

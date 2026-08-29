@@ -1,5 +1,6 @@
 # Feature: Exam result
 # Scenario: Plus user starts a new attempt from a finished result at question 1.
+# Native in-app review is suppressed in e2e builds so this screen stays tappable.
 appId: com.mindjar.prawko
 tags:
   - exam

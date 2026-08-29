@@ -8,6 +8,7 @@ import { isMobileSupabaseConfigured } from "../../../config/env";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import { recordQuestionAnsweredForAds } from "../../ads/ad-session-policy";
 import { useAdInterstitialActions } from "../../ads/show-interstitial";
+import { maybeRequestInAppReview } from "../../profile/request-in-app-review";
 import { useResponsiveFonts } from "../../../portable-ui";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
 import { useTheme } from "../../../providers/ThemeProvider";
@@ -37,8 +38,9 @@ import type {
 } from "../types";
 import { recordQuestionAttemptBySourceId } from "../supabase-question-attempts";
 import { syncQuestionBookmarkState } from "../supabase-question-state";
-
 import { usePrefetchQuestionMedia } from "../usePrefetchQuestionMedia";
+
+import { getTrainingResultOutcome } from "./training-result-stats";
 import { useQuestionRouteParams } from "./route-params";
 import { useTrainerStyles } from "./useTrainerStyles";
 import { getVisibleQuestionSteps } from "./visible-steps";
@@ -549,9 +551,19 @@ export function useQuestionTrainingSession() {
 
     // Let the result view mount first (exam-result pattern).
     const timer = setTimeout(() => {
-      void showInterstitialForTrigger("after_practice_session_complete", {
-        practiceAnsweredCount: summary.answered,
-      });
+      void (async () => {
+        await showInterstitialForTrigger("after_practice_session_complete", {
+          practiceAnsweredCount: summary.answered,
+        });
+        await maybeRequestInAppReview({
+          isTimedSession,
+          mode: sessionMode,
+          positiveOutcome:
+            getTrainingResultOutcome(sessionResultPercent) === "good",
+          source: "training_good",
+          track,
+        });
+      })();
     }, 400);
 
     return () => clearTimeout(timer);

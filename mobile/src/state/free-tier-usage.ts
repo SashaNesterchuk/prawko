@@ -44,7 +44,8 @@ export const useFreeTierQuestionUsageStore = create<FreeTierQuestionUsageState>(
       setHasHydrated: (value) => set({ hasHydrated: value }),
     }),
     {
-      name: "prawko-free-tier-usage",
+      name: "prawko-free-tier-usage:PL",
+      skipHydration: true,
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         answeredQuestionsByDate: state.answeredQuestionsByDate,

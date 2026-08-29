@@ -1,5 +1,5 @@
 import type { RoadSignCategoryId } from "./types";
-import { getRoadSignsByCategory, ROAD_SIGN_CATEGORIES } from "./catalog";
+import { getRoadSignsByCategory, getRoadSignCategories } from "./catalog";
 import { hasSignPracticeContent } from "./content/registry";
 import type { SignCategoryProgress } from "../../components/shell/SignCategoryProgressCard";
 import type { SignPracticeRecord } from "../../state/sign-practice-progress";
@@ -49,7 +49,7 @@ export function getCategorySignProgress(
 export function getAllSignsProgress(
   records?: SignPracticeRecords
 ): SignCategoryProgress {
-  const totals = ROAD_SIGN_CATEGORIES.reduce(
+  const totals = getRoadSignCategories().reduce(
     (accumulator, category) => {
       const progress = getCategorySignProgress(category.id, records);
       accumulator.correct += progress.correct;

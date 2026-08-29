@@ -9,7 +9,6 @@
       "distribution": "internal",
       "environment": "development",
       "env": {
-        "APP_VARIANT": "prawko",
         "EXPO_PUBLIC_POSTHOG_KEY": "phc_ksus5JCVVcb52pcjPHCBurMmXHc9nijfpYhVfAifGenR",
         "EXPO_PUBLIC_POSTHOG_HOST": "https://eu.i.posthog.com"
       }
@@ -18,7 +17,6 @@
       "distribution": "internal",
       "environment": "preview",
       "env": {
-        "APP_VARIANT": "prawko",
         "EXPO_PUBLIC_POSTHOG_KEY": "phc_ksus5JCVVcb52pcjPHCBurMmXHc9nijfpYhVfAifGenR",
         "EXPO_PUBLIC_POSTHOG_HOST": "https://eu.i.posthog.com"
       }
@@ -28,16 +26,17 @@
       "credentialsSource": "local",
       "environment": "production",
       "env": {
-        "APP_VARIANT": "prawko",
-        "APP_VARIANT_PRODUCTION": "1",
         "EXPO_PUBLIC_POSTHOG_KEY": "phc_ksus5JCVVcb52pcjPHCBurMmXHc9nijfpYhVfAifGenR",
-        "EXPO_PUBLIC_POSTHOG_HOST": "https://eu.i.posthog.com"
+        "EXPO_PUBLIC_POSTHOG_HOST": "https://eu.i.posthog.com",
+        "EXPO_PUBLIC_ADMOB_IOS_APP_ID": "ca-app-pub-4994877133367352~1533006266",
+        "EXPO_PUBLIC_ADMOB_ANDROID_APP_ID": "ca-app-pub-4994877133367352~7730175532",
+        "EXPO_PUBLIC_ADMOB_IOS_INTERSTITIAL_UNIT_ID": "ca-app-pub-4994877133367352/9403561308",
+        "EXPO_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_UNIT_ID": "ca-app-pub-4994877133367352/1525071282"
       }
     },
     "e2e-test": {
       "environment": "development",
       "env": {
-        "APP_VARIANT": "prawko",
         "EXPO_PUBLIC_E2E_TEST_MODE": "1"
       },
       "withoutCredentials": true,
@@ -53,15 +52,6 @@
     "production": {
       "ios": {
         "ascAppId": "6795258105"
-      }
-    },
-    "czech": {
-      "ios": {
-        "sku": "ridicak-cz-ios",
-        "language": "cs",
-        "appName": "Řidičák: Autoškola Testy 2026",
-        "bundleIdentifier": "com.mindjar.ridicak",
-        "appleTeamId": "6ZQHZ3FP75"
       }
     }
   }

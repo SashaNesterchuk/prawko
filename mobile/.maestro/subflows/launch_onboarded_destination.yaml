@@ -9,6 +9,7 @@ env:
   EXAM_SESSION_CATEGORY: ${EXAM_SESSION_CATEGORY || ""}
   EXAM_SESSION_STATUS: ${EXAM_SESSION_STATUS || ""}
   EXAM_START_ORDER: ${EXAM_START_ORDER || "1"}
+  EXAM_COUNTRY: ${EXAM_COUNTRY || "PL"}
   LOCALE: ${LOCALE || "ua"}
   OFFLINE_PACK_CATEGORY: ${OFFLINE_PACK_CATEGORY || ""}
   OFFLINE_PACK_STATUS: ${OFFLINE_PACK_STATUS || ""}
@@ -24,7 +25,7 @@ env:
     clearKeychain: true
 
 - openLink:
-    link: "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}"
+    link: "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&examCountry=${EXAM_COUNTRY}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}"
 
 - runFlow:
     when:

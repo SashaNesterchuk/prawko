@@ -1,0 +1,80 @@
+# Feature: Profile exam country
+# Scenario: Switching to Czechia clamps languages to cs/en and uses the 25-question eTesty exam
+appId: com.mindjar.prawko
+tags:
+  - profile
+  - exam-country
+  - exam
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      TARGET_ID: screen-profile
+      LOCALE: ua
+      EXAM_COUNTRY: PL
+      PLUS_ACCESS: "true"
+
+- tapOn:
+    id: "profile-row-exam-country"
+
+- extendedWaitUntil:
+    visible:
+      id: "exam-country-list"
+    timeout: 15000
+
+- tapOn:
+    id: "exam-country-CZ"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
+- assertVisible:
+    id: "profile-row-category-value-B"
+
+- tapOn:
+    id: "profile-row-language"
+
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-language-list"
+    timeout: 15000
+
+- assertVisible:
+    id: "onboarding-language-cs"
+
+- assertVisible:
+    id: "onboarding-language-en"
+
+- assertNotVisible:
+    id: "onboarding-language-ua"
+
+- assertNotVisible:
+    id: "onboarding-language-pl"
+
+- tapOn:
+    id: "nav-back"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
+- tapOn:
+    id: "tab-index"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
+
+- runFlow:
+    file: subflows/start_exam_from_home.yaml
+    env:
+      TARGET_ID: screen-exam-session
+
+- assertVisible:
+    id: "exam-session-counter"
+    text: "Otázka 1 z 25"

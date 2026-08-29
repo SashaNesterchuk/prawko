@@ -4,6 +4,7 @@ import Constants from "expo-constants";
 import { usePostHog } from "posthog-react-native";
 
 import {
+  ANALYTICS_PROPERTIES,
   sanitizeAnalyticsProperties,
   type AnalyticsEventName,
   type AnalyticsEventPayloads,
@@ -22,6 +23,7 @@ export type AnalyticsTrack = <EventName extends AnalyticsEventName>(
 export function useAnalytics() {
   const posthog = usePostHog();
   const currentUser = useCurrentUser();
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const isPlus = useHasPlusAccess();
@@ -33,12 +35,14 @@ export function useAnalytics() {
       app_version: Constants.expoConfig?.version ?? "unknown",
       auth_mode: currentUser?.provider ?? null,
       category: preferredCategory,
+      [ANALYTICS_PROPERTIES.examCountry]: examCountry,
       is_plus: isPlus,
       locale: preferredLocale,
       platform: Platform.OS,
     }),
     [
       currentUser?.provider,
+      examCountry,
       isPlus,
       preferredCategory,
       preferredLocale,

@@ -72,7 +72,8 @@ export const useSignPracticeProgressStore =
         resetProgress: () => set({ records: {} }),
       }),
       {
-        name: "road-sign-practice-progress-v1",
+        name: "road-sign-practice-progress-v1:PL",
+        skipHydration: true,
         storage: createJSONStorage(() => AsyncStorage),
       }
     )

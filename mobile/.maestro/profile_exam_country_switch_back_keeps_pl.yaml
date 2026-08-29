@@ -1,0 +1,137 @@
+# Feature: Profile exam country
+# Scenario: Czech exam rules do not leak into Poland after switching back
+appId: com.mindjar.prawko
+tags:
+  - profile
+  - exam-country
+  - exam
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      TARGET_ID: screen-home
+      LOCALE: ua
+      EXAM_COUNTRY: PL
+      PLUS_ACCESS: "true"
+
+- runFlow:
+    file: subflows/start_exam_from_home.yaml
+    env:
+      TARGET_ID: screen-exam-session
+
+- assertVisible:
+    id: "exam-session-counter"
+    text: "Питання 1 з 32"
+
+- tapOn:
+    id: "question-choice-index-0"
+
+- tapOn:
+    id: "exam-next-question"
+
+- extendedWaitUntil:
+    visible:
+      id: "exam-session-counter"
+      text: "Питання 2 з 32"
+    timeout: 15000
+
+- tapOn:
+    id: "exam-close"
+
+- runFlow:
+    file: subflows/confirm_training_exit_to_home.yaml
+
+- tapOn:
+    id: "tab-profile"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
+- tapOn:
+    id: "profile-row-exam-country"
+
+- extendedWaitUntil:
+    visible:
+      id: "exam-country-list"
+    timeout: 15000
+
+- tapOn:
+    id: "exam-country-CZ"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
+- tapOn:
+    id: "tab-index"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
+
+- runFlow:
+    file: subflows/start_exam_from_home.yaml
+    env:
+      TARGET_ID: screen-exam-session
+
+- assertVisible:
+    id: "exam-session-counter"
+    text: "Otázka 1 z 25"
+
+- assertNotVisible:
+    id: "exam-session-counter"
+    text: "Питання 2 з 32"
+
+- tapOn:
+    id: "exam-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-profile"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
+- tapOn:
+    id: "profile-row-exam-country"
+
+- extendedWaitUntil:
+    visible:
+      id: "exam-country-list"
+    timeout: 15000
+
+- tapOn:
+    id: "exam-country-PL"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
+- tapOn:
+    id: "tab-index"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
+
+- runFlow:
+    file: subflows/start_exam_from_home.yaml
+    env:
+      TARGET_ID: screen-exam-session
+
+- assertVisible:
+    id: "exam-session-counter"
+    text: "Питання 1 з 32"

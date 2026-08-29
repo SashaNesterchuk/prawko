@@ -189,7 +189,6 @@ function useStyles({
       minWidth: 0,
       ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
       color: colors.ink,
-      // color: "red",
     },
     readinessValue: {
       ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),

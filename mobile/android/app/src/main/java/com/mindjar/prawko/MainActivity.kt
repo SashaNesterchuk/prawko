@@ -1,4 +1,4 @@
-package com.mindjar.ridicak
+package com.mindjar.prawko
 
 import android.os.Build
 import android.os.Bundle

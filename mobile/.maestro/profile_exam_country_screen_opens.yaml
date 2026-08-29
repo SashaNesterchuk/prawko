@@ -1,0 +1,31 @@
+# Feature: Profile exam country
+# Scenario: Onboarded user opens exam-country settings and sees PL and CZ
+appId: com.mindjar.prawko
+tags:
+  - profile
+  - exam-country
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      TARGET_ID: screen-profile
+      LOCALE: ua
+      EXAM_COUNTRY: PL
+
+- tapOn:
+    id: "profile-row-exam-country"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-settings-exam-country"
+    timeout: 15000
+
+- assertVisible:
+    id: "exam-country-list"
+
+- assertVisible:
+    id: "exam-country-PL"
+
+- assertVisible:
+    id: "exam-country-CZ"

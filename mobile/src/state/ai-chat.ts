@@ -99,7 +99,8 @@ export const useAiChatStore = create<AiChatState>()(
       setHasHydrated: (value) => set({ hasHydrated: value }),
     }),
     {
-      name: "prawko-ai-chat",
+      name: "prawko-ai-chat:PL",
+      skipHydration: true,
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         conversations: state.conversations,

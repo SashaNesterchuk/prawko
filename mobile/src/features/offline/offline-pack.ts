@@ -3,7 +3,9 @@ import type { QuestionDeliveryAsset } from "@prawko/schemas";
 import { Directory, File, Paths } from "expo-file-system";
 import { Platform } from "react-native";
 
+import { getExamCountry } from "../../state/app-shell";
 import { mobileEnv } from "../../config/env";
+import { getMediaBaseUrl } from "../../countries/runtime";
 import {
   getE2EOfflinePackOverride,
   setE2EOfflinePackOverride,
@@ -1112,8 +1114,9 @@ function normalizeQuestionDeliveryAsset(
 }
 
 function buildRemoteStorageUrl(bucket: string, storagePath: string) {
-  if (mobileEnv.mediaBaseUrl) {
-    return `${mobileEnv.mediaBaseUrl.replace(/\/+$/, "")}/${encodeURIComponent(
+  const mediaBaseUrl = getMediaBaseUrl();
+  if (mediaBaseUrl) {
+    return `${mediaBaseUrl.replace(/\/+$/, "")}/${encodeURIComponent(
       bucket
     )}/${encodeStoragePath(storagePath)}`;
   }
@@ -1156,7 +1159,10 @@ function lookupOfflineAssetBytes(bucket: string, storagePath: string) {
 }
 
 function getOfflineRootDirectory() {
-  return new Directory(Paths.document, OFFLINE_ROOT_DIR_NAME);
+  return new Directory(
+    Paths.document,
+    `${OFFLINE_ROOT_DIR_NAME}-${getExamCountry()}`,
+  );
 }
 
 function getOfflineAssetsDirectory() {

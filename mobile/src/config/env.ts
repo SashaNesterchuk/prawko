@@ -1,17 +1,6 @@
-import { appVariant } from "../app-config/runtime";
-
-function resolveMediaBaseUrl() {
-  if (appVariant.id === "prawko") {
-    return process.env.EXPO_PUBLIC_MEDIA_BASE_URL ?? appVariant.mediaBaseUrl;
-  }
-
-  // Country builds must not inherit Prawko's EXPO_PUBLIC_MEDIA_BASE_URL.
-  // That origin is the Polish R2 bucket; Czech files (Q_W_*.webp) are not there.
-  if (appVariant.id === "czech") {
-    return process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL || "";
-  }
-
-  return appVariant.mediaBaseUrl || "";
+function envOr(value: string | undefined, fallback: string) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : fallback;
 }
 
 function parseBooleanEnv(value: string | undefined, fallback = false) {
@@ -33,8 +22,6 @@ function parseBooleanEnv(value: string | undefined, fallback = false) {
 }
 
 export const mobileEnv = {
-  questionSetKey: process.env.EXPO_PUBLIC_QUESTION_SET_KEY ?? appVariant.questionSetKey,
-  mediaBaseUrl: resolveMediaBaseUrl(),
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "",
   enableE2ETestMode: parseBooleanEnv(
@@ -57,12 +44,22 @@ export const mobileEnv = {
     process.env.EXPO_PUBLIC_REVENUECAT_ENABLE_IN_DEV,
     false
   ),
-  admobIosAppId: process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID ?? "",
-  admobAndroidAppId: process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID ?? "",
-  admobIosInterstitialUnitId:
-    process.env.EXPO_PUBLIC_ADMOB_IOS_INTERSTITIAL_UNIT_ID ?? "",
-  admobAndroidInterstitialUnitId:
-    process.env.EXPO_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_UNIT_ID ?? "",
+  admobIosAppId: envOr(
+    process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID,
+    "ca-app-pub-4994877133367352~1533006266",
+  ),
+  admobAndroidAppId: envOr(
+    process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID,
+    "ca-app-pub-4994877133367352~7730175532",
+  ),
+  admobIosInterstitialUnitId: envOr(
+    process.env.EXPO_PUBLIC_ADMOB_IOS_INTERSTITIAL_UNIT_ID,
+    "ca-app-pub-4994877133367352/9403561308",
+  ),
+  admobAndroidInterstitialUnitId: envOr(
+    process.env.EXPO_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_UNIT_ID,
+    "ca-app-pub-4994877133367352/1525071282",
+  ),
   enableMockAuth: parseBooleanEnv(
     process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH,
     false

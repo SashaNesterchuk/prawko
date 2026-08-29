@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Řidičák</string>
+	<string>Prawko</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,8 +27,8 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>ridicak</string>
-				<string>com.mindjar.ridicak</string>
+				<string>prawko</string>
+				<string>com.mindjar.prawko</string>
 			</array>
 		</dict>
 	</array>

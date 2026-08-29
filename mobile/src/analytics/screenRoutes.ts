@@ -11,6 +11,8 @@ const SCREEN_ROUTES: Array<
   exact("/", ANALYTICS_SCREENS.appEntry),
   exact("/(onboarding)/language", ANALYTICS_SCREENS.onboardingLanguage),
   exact("/language", ANALYTICS_SCREENS.onboardingLanguage),
+  exact("/(onboarding)/exam-country", ANALYTICS_SCREENS.examCountry),
+  exact("/exam-country", ANALYTICS_SCREENS.examCountry),
   exact("/(onboarding)/category", ANALYTICS_SCREENS.onboardingCategory),
   exact("/category", ANALYTICS_SCREENS.onboardingCategory),
   exact("/(onboarding)/exam-schedule", ANALYTICS_SCREENS.onboardingExamSchedule),

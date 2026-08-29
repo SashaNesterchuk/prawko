@@ -3,20 +3,20 @@ import {
   CZECH_EXAM_PROFILE,
   WORD_EXAM_PROFILE,
   getExamProfile,
-  getExamProfileForVariant,
+  getExamProfileForCountry,
   readExamFlaggedOrders,
 } from "../exam-profile";
 
 describe("exam profile", () => {
-  it("defaults to WORD for Prawko", () => {
+  it("defaults to WORD for Poland", () => {
     expect(getExamProfile()).toEqual(WORD_EXAM_PROFILE);
     expect(getExamProfile().navigation).toBe("forward_only");
     expect(getExamProfile().perQuestionTimer).toBe(true);
     expect(getExamProfile().totalQuestions).toBe(32);
   });
 
-  it("uses eTesty rules for the Czech variant", () => {
-    const profile = getExamProfileForVariant("czech");
+  it("uses eTesty rules for Czechia", () => {
+    const profile = getExamProfileForCountry("CZ");
     expect(profile).toEqual(CZECH_EXAM_PROFILE);
     expect(profile.navigation).toBe("free");
     expect(profile.perQuestionTimer).toBe(false);

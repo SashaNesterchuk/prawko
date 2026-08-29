@@ -1,23 +1,23 @@
-import { variantRuntime } from "@app-variant";
-import type { TFunction } from "i18next";
-
 import {
   QUESTION_TOPIC_CATALOG,
   getQuestionTopicCatalogEntry,
-  getQuestionTopicIdsForVariant,
+  getQuestionTopicIdsForCountry,
   isQuestionTopicId,
   isTopicBlockId,
   type LearningTopicId,
   type QuestionTopicId,
   type SupportedLocale,
 } from "@prawko/config";
+import type { TFunction } from "i18next";
+
+import { getExamCountry } from "../../state/app-shell";
 
 export function getQuestionTopicCatalog() {
   return QUESTION_TOPIC_CATALOG;
 }
 
 export function getQuestionTopicIds() {
-  return getQuestionTopicIdsForVariant(variantRuntime.id);
+  return getQuestionTopicIdsForCountry(getExamCountry());
 }
 
 export function getQuestionTopicTitle(

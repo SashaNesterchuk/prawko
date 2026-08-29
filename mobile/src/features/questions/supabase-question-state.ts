@@ -1,6 +1,7 @@
 import type { QuestionSessionMode, SupportedLocale } from "@prawko/config";
 
-import { isMobileSupabaseConfigured, mobileEnv } from "../../config/env";
+import { isMobileSupabaseConfigured } from "../../config/env";
+import { getQuestionSetKey } from "../../countries/runtime";
 import { fetchAllSupabasePages } from "../../lib/fetch-all-supabase-pages";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 import { createEmptyQuestionUserState } from "./question-engine";
@@ -60,7 +61,7 @@ export async function fetchRemoteQuestionUserStateMap() {
   const { data: set, error: setError } = await client
     .from("question_sets")
     .select("id")
-    .eq("key", mobileEnv.questionSetKey)
+    .eq("key", getQuestionSetKey())
     .eq("is_active", true)
     .single();
   if (setError) throw setError;
@@ -120,7 +121,7 @@ export async function syncQuestionBookmarkState(input: SyncBookmarkInput) {
 
   const client = getMobileSupabaseClient();
   const { error } = await client.rpc("set_question_bookmark_state_by_source_id_v2", {
-    p_question_set_key: mobileEnv.questionSetKey,
+    p_question_set_key: getQuestionSetKey(),
     p_question_source_id: input.questionSourceId,
     p_is_bookmarked: input.isBookmarked,
     p_saved_from_mode: input.savedFromMode ?? null,
@@ -141,7 +142,7 @@ export async function syncQuestionHardState(input: SyncHardStateInput) {
 
   const client = getMobileSupabaseClient();
   const { error } = await client.rpc("set_question_hard_state_by_source_id_v2", {
-    p_question_set_key: mobileEnv.questionSetKey,
+    p_question_set_key: getQuestionSetKey(),
     p_question_source_id: input.questionSourceId,
     p_is_hard: input.isHard,
     p_review_due_at: input.reviewDueAt ?? null,

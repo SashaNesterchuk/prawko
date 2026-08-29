@@ -1,6 +1,7 @@
 import { PropsWithChildren, useEffect, useRef } from "react";
 import { PostHogProvider, usePostHog } from "posthog-react-native";
 
+import { ANALYTICS_PROPERTIES } from "../analytics/catalog";
 import { mobileEnv } from "../config/env";
 import { useAppShellStore, useCurrentUser } from "../state/app-shell";
 import { useHasPlusAccess } from "../state/entitlements";
@@ -36,6 +37,7 @@ function PostHogIdentitySync() {
   const posthog = usePostHog();
   const currentUser = useCurrentUser();
   const isPlus = useHasPlusAccess();
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const previousIdentitySignatureRef = useRef<string | null>(null);
@@ -53,6 +55,7 @@ function PostHogIdentitySync() {
           currentSupabaseUserId,
           currentUser?.email ?? "",
           currentUser?.fullName ?? "",
+          examCountry ?? "",
           preferredCategory,
           preferredLocale,
           String(isPlus),
@@ -67,6 +70,7 @@ function PostHogIdentitySync() {
         auth_mode: currentUser?.provider ?? null,
         category: preferredCategory,
         email: currentUser?.email ?? null,
+        [ANALYTICS_PROPERTIES.examCountry]: examCountry,
         full_name: currentUser?.fullName ?? null,
         is_plus: isPlus,
         locale: preferredLocale,
@@ -78,7 +82,7 @@ function PostHogIdentitySync() {
     }
 
     previousIdentitySignatureRef.current = identitySignature;
-  }, [currentUser, isPlus, posthog, preferredCategory, preferredLocale]);
+  }, [currentUser, examCountry, isPlus, posthog, preferredCategory, preferredLocale]);
 
   return null;
 }

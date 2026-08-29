@@ -1,44 +1,22 @@
-# Expo: запуск вариантов приложения
+# Expo
 
-Все команды выполняются из папки `prawko/mobile`.
-
-## Prawko
+Commands run from `prawko/mobile`.
 
 ```bash
-pnpm start:prawko
+pnpm start
+pnpm ios
+pnpm android
 ```
 
-Это запускает Expo с `APP_VARIANT=prawko`. Обычный `pnpm start` тоже запускает Prawko по умолчанию.
-
-Нативный запуск:
-
-# 1. Native под Czech → появится Řidičák (com.mindjar.ridicak)
-
-APP_VARIANT=czech npx expo prebuild
-APP_VARIANT=czech npx expo run:ios
-
-# 2. Вернуть Prawko native и поставить снова
-
-# Czech останется на симуляторе: другой bundle id
-
-APP_VARIANT=prawko npx expo prebuild
-APP_VARIANT=prawko npx expo run:ios
-
-## Будущие приложения
+Native identity is always Prawko (`com.mindjar.prawko`). Exam country (Poland / Czechia) is chosen at runtime from the storefront or device region, then from Profile. Do not prebuild a second bundle id.
 
 ```bash
-pnpm start:czech
-pnpm start:greece
+npx expo prebuild
+npx expo run:ios
 ```
 
-При смене variant всегда перезапускай Expo/Metro: variant выбирается при старте bundler-а.
-
-## Проверка Expo-конфига
+Public Expo config:
 
 ```bash
-pnpm config:prawko
-pnpm config:czech
-pnpm config:greece
+npx expo config --type public --json
 ```
-
-Prawko готов к EAS build. Czech и Greece пока являются development-шаблонами: EAS build заблокирован, пока для каждого не будут добавлены собственные icon/splash, EAS project ID, Store IDs и credentials.

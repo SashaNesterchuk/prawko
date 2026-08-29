@@ -4,6 +4,7 @@ export default function OnboardingLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="language" />
+      <Stack.Screen name="exam-country" />
       <Stack.Screen name="category" />
       <Stack.Screen name="exam-schedule" />
       <Stack.Screen name="notifications" />

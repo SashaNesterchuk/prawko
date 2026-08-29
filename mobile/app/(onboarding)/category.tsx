@@ -4,11 +4,12 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ACTIVE_CATEGORIES, type DrivingCategory } from "@prawko/config";
+import { type DrivingCategory } from "@prawko/config";
 
 import { Icon, type IconName } from "../../src/components/icons";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../src/components/shell/NavigationButton";
+import { useCountryConfig } from "../../src/countries/use-country";
 import {
   CText,
   getFontFamily,
@@ -37,8 +38,6 @@ const CATEGORIES: CategoryOption[] = [
   { id: "D", icon: "d" },
   { id: "D1", icon: "d1" },
 ];
-
-const ACTIVE_CATEGORY_SET = new Set<string>(ACTIVE_CATEGORIES);
 
 function chunkPairs<T>(items: T[]): T[][] {
   const rows: T[][] = [];
@@ -69,6 +68,8 @@ export default function CategoryScreen() {
   const setPreferredCategory = useAppShellStore(
     (state) => state.setPreferredCategory
   );
+  const countryConfig = useCountryConfig();
+  const activeCategorySet = new Set<string>(countryConfig.categories);
 
   const rows = chunkPairs(CATEGORIES);
   const badgeIconSize = responsiveFont(24);
@@ -91,7 +92,7 @@ export default function CategoryScreen() {
       {rows.map((row, rowIndex) => (
         <View key={`row-${rowIndex}`} style={styles.gridRow}>
           {row.map((option) => {
-            const isActive = ACTIVE_CATEGORY_SET.has(option.id);
+            const isActive = activeCategorySet.has(option.id);
             const isSelected = preferredCategory === option.id;
 
             return (

@@ -273,9 +273,30 @@ export const ANALYTICS_EVENTS = {
     key: "settings_changed",
     description: "A persisted learner preference changed.",
   },
+  examCountryResolved: {
+    key: "exam_country_resolved",
+    description:
+      "Exam country was assigned on first launch or for an existing learner without a stored country.",
+  },
+  examCountryChanged: {
+    key: "exam_country_changed",
+    description: "The learner switched exam country from Profile.",
+  },
   profileActionSelected: {
     key: "profile_action_selected",
     description: "A profile support, sharing, or navigation action was selected.",
+  },
+  appReviewRequested: {
+    key: "app_review_requested",
+    description: "The native in-app review prompt was requested.",
+  },
+  appReviewSkipped: {
+    key: "app_review_skipped",
+    description: "An eligible review prompt was skipped by policy or the store API.",
+  },
+  appReviewFailed: {
+    key: "app_review_failed",
+    description: "Opening the native review prompt or store URL failed.",
   },
   progressResetConfirmed: {
     key: "progress_reset_confirmed",
@@ -372,6 +393,7 @@ export const ANALYTICS_SCREENS = {
   learn: "learn",
   signsHome: "signs_home",
   profile: "profile",
+  examCountry: "exam_country",
   topics: "topics",
   topicDetail: "topic_detail",
   trainerModes: "trainer_modes",
@@ -399,3 +421,25 @@ export const ANALYTICS_SCREENS = {
 
 export type AnalyticsScreenName =
   (typeof ANALYTICS_SCREENS)[keyof typeof ANALYTICS_SCREENS];
+
+/**
+ * Super-property and payload keys for exam-country analytics.
+ * Dashboard breakdowns must use these strings, not ad-hoc aliases.
+ */
+export const ANALYTICS_PROPERTIES = {
+  examCountry: "exam_country",
+  previous: "previous",
+  source: "source",
+} as const;
+
+export const ANALYTICS_EXAM_COUNTRY_SOURCES = {
+  default: "default",
+  deviceRegion: "device_region",
+  e2e: "e2e",
+  legacyOnboarded: "legacy_onboarded",
+  settings: "settings",
+  storefront: "storefront",
+} as const;
+
+export type AnalyticsExamCountrySource =
+  (typeof ANALYTICS_EXAM_COUNTRY_SOURCES)[keyof typeof ANALYTICS_EXAM_COUNTRY_SOURCES];

@@ -39,7 +39,8 @@ export const useSignBookmarksStore = create<SignBookmarksState>()(
       resetSaved: () => set({ savedSignIds: {} }),
     }),
     {
-      name: "road-sign-bookmarks-v1",
+      name: "road-sign-bookmarks-v1:PL",
+      skipHydration: true,
       storage: createJSONStorage(() => AsyncStorage),
     }
   )
