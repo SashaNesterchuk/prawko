@@ -16,6 +16,8 @@ import { getOfflineGateDescription } from "../src/features/offline/offline-gate-
 import { useOfflineFeatureGate } from "../src/features/offline/useOfflineFeatureGate";
 import { getQuestionDisplayStats } from "../src/features/questions/question-engine";
 import { QuestionSessionResultView } from "../src/features/questions/training/QuestionSessionResultView";
+import { InitialDiagnosticResultView } from "../src/features/questions/initial-diagnostic/InitialDiagnosticResultView";
+import { isInitialDiagnosticSession } from "../src/features/questions/readiness-assessment";
 import { QuestionTrainingFooter } from "../src/features/questions/training/QuestionTrainingFooter";
 import { QuestionTrainingView } from "../src/features/questions/training/QuestionTrainingView";
 import { useQuestionTrainingSession } from "../src/features/questions/training/useQuestionTrainingSession";
@@ -263,6 +265,17 @@ function QuestionTrainingScreen() {
   }
 
   if (session.isCompleted) {
+    if (isInitialDiagnosticSession(session.activeSession)) {
+      return (
+        <InitialDiagnosticResultView
+          activeSession={session.activeSession}
+          onClose={exitToTabs}
+          onWorkOnMistakes={exitToMistakes}
+          summary={session.summary}
+        />
+      );
+    }
+
     return (
       <QuestionSessionResultView
         activeSession={session.activeSession}

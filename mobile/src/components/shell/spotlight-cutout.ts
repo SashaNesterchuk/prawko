@@ -41,6 +41,28 @@ export function paddedHole(
   };
 }
 
+/**
+ * A first-frame hole under the status bar is the pre-inset layout. Showing it
+ * punches the Dynamic Island and drops the tooltip onto the real card.
+ */
+export function isPlausibleSpotlightHole(
+  hole: LayoutRectangle,
+  overlayOrigin: { y: number },
+  safeTop: number
+) {
+  if (hole.width < 120 || hole.height < 72) {
+    return false;
+  }
+
+  const overlayCoversStatusBar = overlayOrigin.y <= Math.max(1, safeTop * 0.5);
+
+  if (overlayCoversStatusBar && safeTop >= 20) {
+    return hole.y >= safeTop - 16;
+  }
+
+  return hole.y >= 0;
+}
+
 /** Even-odd path: full rect minus a rounded hole. */
 export function spotlightCutoutPath(input: {
   windowWidth: number;

@@ -1,4 +1,4 @@
-# Reusable steps: fresh install → finish onboarding (skip notifications).
+# Reusable steps: fresh install → finish onboarding (no notifications step).
 appId: com.mindjar.prawko
 ---
 - launchApp:
@@ -25,14 +25,6 @@ appId: com.mindjar.prawko
 
 - tapOn:
     id: "onboarding-exam-schedule-continue"
-
-- extendedWaitUntil:
-    visible:
-      id: "screen-onboarding-notifications"
-    timeout: 15000
-
-- tapOn:
-    id: "onboarding-notifications-skip"
 
 - extendedWaitUntil:
     visible:

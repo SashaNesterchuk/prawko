@@ -75,6 +75,14 @@ describe("shouldRequestInAppReview", () => {
         })
       )
     ).toEqual({ allowed: false, reason: "blocked_mode" });
+    expect(
+      shouldRequestInAppReview(
+        baseInput({
+          mode: "initial_diagnostic",
+          source: "training_good",
+        })
+      )
+    ).toEqual({ allowed: false, reason: "blocked_mode" });
   });
 
   it("skips a failed or weak result", () => {

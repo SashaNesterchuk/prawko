@@ -99,6 +99,7 @@ export default function E2EBootstrapScreen() {
           destination === "question-result-failed",
         seedQuestionResultOutcome:
           destination === "question-result-failed" ? "poor" : "good",
+        seedDiagnosticResult: destination === "diagnostic-result",
         unlockHomeChrome: firstStart === true ? false : true,
       });
 

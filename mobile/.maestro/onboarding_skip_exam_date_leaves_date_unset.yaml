@@ -1,13 +1,56 @@
 # Feature: Onboarding exam date
-# Scenario: Continuing without picking a date does not invent an exam date
+# Scenario: Skipping the exam date leaves profile date unset
 appId: com.mindjar.prawko
 tags:
   - onboarding
 ---
-- runFlow: subflows/complete_onboarding.yaml
+- launchApp:
+    clearState: true
+    clearKeychain: true
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-onboarding-category"
+    timeout: 30000
+
+- tapOn:
+    id: "onboarding-category-B"
+- tapOn:
+    id: "onboarding-category-continue"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-onboarding-exam-schedule"
+    timeout: 15000
+
+- tapOn:
+    id: "onboarding-exam-date-skip"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
+
+- tapOn:
+    id: "home-start-spotlight-skip"
+
+- extendedWaitUntil:
+    notVisible:
+      id: "home-start-spotlight"
+    timeout: 10000
+
+- waitForAnimationToEnd:
+    timeout: 5000
 
 - tapOn:
     id: "tab-profile"
+- runFlow:
+    when:
+      notVisible:
+        id: "screen-profile"
+    commands:
+      - tapOn:
+          id: "tab-profile"
 
 - extendedWaitUntil:
     visible:

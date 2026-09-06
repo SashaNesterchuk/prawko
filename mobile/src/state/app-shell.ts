@@ -658,19 +658,25 @@ export function getCurrentUserFromState(state: AppShellState) {
   return state.authMode === "supabase" ? state.supabaseUser : state.mockUser;
 }
 
-export function getNextOnboardingRoute(state: AppShellState): OnboardingRoute {
+export function canFinalizeOnboarding(state: {
+  onboardingProgress: Pick<OnboardingProgress, "categoryDone" | "scheduleDone">;
+  studyPlanSetup: Pick<StudyPlanSetupDraft, "daysUntilExam">;
+}) {
+  return (
+    state.onboardingProgress.categoryDone &&
+    state.onboardingProgress.scheduleDone &&
+    state.studyPlanSetup.daysUntilExam !== null
+  );
+}
+
+export function getNextOnboardingRoute(state: {
+  onboardingProgress: Pick<OnboardingProgress, "categoryDone">;
+}): OnboardingRoute {
   if (!state.onboardingProgress.categoryDone) {
     return "/(onboarding)/category";
   }
 
-  if (
-    !state.onboardingProgress.scheduleDone ||
-    state.studyPlanSetup.daysUntilExam === null
-  ) {
-    return "/(onboarding)/exam-schedule";
-  }
-
-  return "/(onboarding)/notifications";
+  return "/(onboarding)/exam-schedule";
 }
 
 export function useCurrentUser() {

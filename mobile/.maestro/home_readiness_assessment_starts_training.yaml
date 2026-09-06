@@ -1,5 +1,5 @@
 # Feature: Home readiness assessment
-# Scenario: Empty readiness CTA starts untimed training (not exam) with mini_test
+# Scenario: Empty readiness CTA starts untimed initial diagnostic (not exam)
 appId: com.mindjar.prawko
 tags:
   - smoke

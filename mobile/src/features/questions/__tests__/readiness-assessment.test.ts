@@ -16,9 +16,9 @@ function makeSession(
     id: "session-test",
     request: {
       currentCategory: "B",
-      mode: "mini_test",
+      mode: "initial_diagnostic",
       questionLimit: READINESS_ASSESSMENT_QUESTION_COUNT,
-      sessionKey: "B:mini_test",
+      sessionKey: "B:initial_diagnostic",
       ...requestOverrides,
     },
     questionIds: ["q1", "q2", "q3"],
@@ -51,7 +51,7 @@ function makeSession(
 }
 
 describe("readiness-assessment", () => {
-  it("treats a 10-question mini_test as the readiness assessment", () => {
+  it("treats initial_diagnostic as the readiness assessment", () => {
     expect(
       isReadinessAssessmentSession(
         makeSession({
@@ -61,17 +61,12 @@ describe("readiness-assessment", () => {
     ).toBe(true);
     expect(
       isReadinessAssessmentSession(
+        makeSession({ request: { mode: "mini_test", questionLimit: 10 } })
+      )
+    ).toBe(false);
+    expect(
+      isReadinessAssessmentSession(
         makeSession({ request: { mode: "learning", questionLimit: 10 } })
-      )
-    ).toBe(false);
-    expect(
-      isReadinessAssessmentSession(
-        makeSession({ request: { questionLimit: 12 } })
-      )
-    ).toBe(false);
-    expect(
-      isReadinessAssessmentSession(
-        makeSession({ request: { questionLimit: 30 } })
       )
     ).toBe(false);
   });

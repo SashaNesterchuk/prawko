@@ -5,6 +5,14 @@ export function scopedPersistName(base: string, country: CountryCode) {
   return `${base}:${country}`;
 }
 
+/** Reset in-memory country stores only when leaving a previously hydrated country. */
+export function shouldResetCountryScopedStores(
+  lastHydratedCountry: CountryCode | null,
+  nextCountry: CountryCode
+) {
+  return lastHydratedCountry != null && lastHydratedCountry !== nextCountry;
+}
+
 export async function migrateUnscopedPersistKey(
   base: string,
   country: CountryCode = DEFAULT_COUNTRY_CODE,

@@ -36,6 +36,15 @@ describe("analytics catalog", () => {
     expect(ANALYTICS_EVENTS.firstStartShown.key).toBe("first_start_shown");
     expect(ANALYTICS_EVENTS.firstStartSkipped.key).toBe("first_start_skipped");
     expect(ANALYTICS_EVENTS.firstStartStarted.key).toBe("first_start_started");
+    expect(ANALYTICS_EVENTS.diagnosticResultAction.key).toBe(
+      "diagnostic_result_action"
+    );
+    expect(ANALYTICS_EVENTS.diagnosticReminderShown.key).toBe(
+      "diagnostic_reminder_shown"
+    );
+    expect(ANALYTICS_EVENTS.diagnosticReminderResolved.key).toBe(
+      "diagnostic_reminder_resolved"
+    );
     expect(ANALYTICS_PROPERTIES.appUserId).toBe("app_user_id");
     expect(ANALYTICS_PROPERTIES.supabaseUserId).toBe("supabase_user_id");
     expect(ANALYTICS_PROPERTIES.examCountry).toBe("exam_country");

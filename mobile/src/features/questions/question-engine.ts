@@ -17,6 +17,9 @@ import {
   type SupportedLocale,
 } from "@prawko/config";
 
+import { getExamCountry } from "../../state/app-shell";
+import { getInitialDiagnosticQuestionIds } from "./initial-diagnostic/selection";
+import { INITIAL_DIAGNOSTIC_QUESTION_COUNT } from "./initial-diagnostic/mix";
 import { getQuestionBank, getQuestionBankById } from "./question-bank";
 import type {
   LocalQuestion,
@@ -1474,6 +1477,12 @@ function getQuestionIdsForMode(
         now,
         questionLimit ?? EXAM_PREVIEW_TOTAL
       );
+    case "initial_diagnostic":
+      return getInitialDiagnosticQuestionIds({
+        countryCode: getExamCountry(),
+        questionLimit: questionLimit ?? INITIAL_DIAGNOSTIC_QUESTION_COUNT,
+        userStates,
+      });
     case "mini_test":
     case "exam":
       return getExamPreviewQuestionIds(

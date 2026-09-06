@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BackHandler,
+  InteractionManager,
   Pressable,
   StyleSheet,
   View,
@@ -20,13 +21,20 @@ import { useTheme } from "../../providers/ThemeProvider";
 import {
   holesAreClose,
   holeRelativeToOverlay,
+  isPlausibleSpotlightHole,
   paddedHole,
   spotlightCutoutPath,
 } from "./spotlight-cutout";
 
 const HOLE_PADDING = 8;
-const STABLE_MEASURES = 2;
-const MAX_MEASURE_FRAMES = 90;
+const STABLE_MEASURES = 3;
+const MAX_MEASURE_FRAMES = 180;
+const FOLLOW_THROUGH_FRAMES = 24;
+
+type MeasuredHole = {
+  hole: LayoutRectangle;
+  overlayY: number;
+};
 
 export type HomeStartSpotlightProps = {
   visible: boolean;
@@ -54,13 +62,23 @@ export function HomeStartSpotlight({
   const theme = useTheme();
   const styles = useStyles();
   const overlayRef = useRef<View>(null);
+  const publishedHoleRef = useRef<LayoutRectangle | null>(null);
   const [hole, setHole] = useState<LayoutRectangle | null>(null);
   const [overlaySize, setOverlaySize] = useState({
     width: windowWidth,
     height: windowHeight,
   });
 
-  const measureHole = useCallback((onResult: (next: LayoutRectangle | null) => void) => {
+  const publishHole = useCallback((next: LayoutRectangle) => {
+    if (holesAreClose(publishedHoleRef.current, next)) {
+      return;
+    }
+
+    publishedHoleRef.current = next;
+    setHole(next);
+  }, []);
+
+  const measureHole = useCallback((onResult: (next: MeasuredHole | null) => void) => {
     const overlay = overlayRef.current;
     const anchor = anchorRef.current;
     if (overlay == null || anchor == null) {
@@ -75,21 +93,23 @@ export function HomeStartSpotlight({
           return;
         }
 
-        onResult(
-          paddedHole(
+        onResult({
+          overlayY,
+          hole: paddedHole(
             holeRelativeToOverlay(
               { x: overlayX, y: overlayY },
               { x, y, width, height }
             ),
             HOLE_PADDING
-          )
-        );
+          ),
+        });
       });
     });
   }, [anchorRef]);
 
   useEffect(() => {
     if (!visible) {
+      publishedHoleRef.current = null;
       setHole(null);
       return;
     }
@@ -98,17 +118,23 @@ export function HomeStartSpotlight({
     let raf = 0;
     let frame = 0;
     let consecutive = 0;
+    let followThrough = 0;
     let last: LayoutRectangle | null = null;
 
     const tick = () => {
-      measureHole((next) => {
+      measureHole((measured) => {
         if (cancelled) {
           return;
         }
 
         frame += 1;
+        const next = measured?.hole ?? null;
+        const plausible =
+          next != null &&
+          measured != null &&
+          isPlausibleSpotlightHole(next, { y: measured.overlayY }, safeTop);
 
-        if (next != null) {
+        if (plausible && next) {
           if (holesAreClose(last, next)) {
             consecutive += 1;
           } else {
@@ -116,27 +142,51 @@ export function HomeStartSpotlight({
             last = next;
           }
 
-          if (consecutive >= STABLE_MEASURES || frame >= MAX_MEASURE_FRAMES) {
-            setHole(next);
-            return;
+          if (consecutive >= STABLE_MEASURES) {
+            publishHole(next);
+            followThrough += 1;
           }
+        } else {
+          consecutive = 0;
         }
 
-        if (frame < MAX_MEASURE_FRAMES) {
+        const keepMeasuring =
+          followThrough < FOLLOW_THROUGH_FRAMES &&
+          frame < MAX_MEASURE_FRAMES;
+
+        if (keepMeasuring) {
           raf = requestAnimationFrame(tick);
-        } else if (last != null) {
-          setHole(last);
+          return;
+        }
+
+        if (publishedHoleRef.current == null && last != null && plausible) {
+          publishHole(last);
         }
       });
     };
 
-    raf = requestAnimationFrame(tick);
+    const interaction = InteractionManager.runAfterInteractions(() => {
+      if (cancelled) {
+        return;
+      }
+
+      raf = requestAnimationFrame(tick);
+    });
 
     return () => {
       cancelled = true;
+      interaction.cancel();
       cancelAnimationFrame(raf);
     };
-  }, [layoutNonce, measureHole, safeTop, visible, windowHeight, windowWidth]);
+  }, [
+    layoutNonce,
+    measureHole,
+    publishHole,
+    safeTop,
+    visible,
+    windowHeight,
+    windowWidth,
+  ]);
 
   useEffect(() => {
     if (!visible) {

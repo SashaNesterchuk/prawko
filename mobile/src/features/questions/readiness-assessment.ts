@@ -14,20 +14,16 @@ export type ReadinessAssessmentResult = {
   total: number;
 };
 
+export function isInitialDiagnosticSession(
+  session: Pick<QuestionSession, "request"> | null | undefined
+) {
+  return session?.request.mode === "initial_diagnostic";
+}
+
 export function isReadinessAssessmentSession(
   session: Pick<QuestionSession, "request"> | null | undefined
 ) {
-  if (session?.request.mode !== "mini_test") {
-    return false;
-  }
-
-  const limit = session.request.questionLimit;
-
-  return (
-    typeof limit === "number" &&
-    Number.isFinite(limit) &&
-    limit === READINESS_ASSESSMENT_QUESTION_COUNT
-  );
+  return isInitialDiagnosticSession(session);
 }
 
 export function buildReadinessAssessmentResult(

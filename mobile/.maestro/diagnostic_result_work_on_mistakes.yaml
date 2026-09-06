@@ -1,0 +1,24 @@
+# Feature: First-session diagnostic result
+# Scenario: Work on mistakes opens the mistakes monitor
+appId: com.mindjar.prawko
+tags:
+  - first-start
+  - diagnostic
+  - mistakes
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: diagnostic-result
+      TARGET_ID: screen-question-result
+
+- tapOn:
+    id: "diagnostic-result-mistakes"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-mistakes"
+    timeout: 15000
+
+- assertNotVisible:
+    id: "screen-question-result"

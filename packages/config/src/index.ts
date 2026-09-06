@@ -143,6 +143,7 @@ export const QUESTION_SESSION_MODES = [
   "saved_sprint",
   "exam_tomorrow",
   "mini_test",
+  "initial_diagnostic",
   "exam",
 ] as const;
 export type QuestionSessionMode = (typeof QUESTION_SESSION_MODES)[number];

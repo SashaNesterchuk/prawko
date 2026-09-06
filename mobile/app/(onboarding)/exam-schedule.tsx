@@ -10,6 +10,7 @@ import { STUDY_PLAN_LIMITS } from "@prawko/config";
 import { Icon } from "../../src/components/icons";
 import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { finalizeLocalOnboarding } from "../../src/features/onboarding/finalize-local-onboarding";
 import { CText, getFontFamily, useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import {
@@ -32,6 +33,7 @@ export default function ExamScheduleScreen() {
   const { responsiveFont } = useResponsiveFonts();
   const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const setExamSchedule = useAppShellStore((state) => state.setExamSchedule);
+  const [isFinishing, setIsFinishing] = useState(false);
 
   const [pickerVisible, setPickerVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
@@ -40,15 +42,20 @@ export default function ExamScheduleScreen() {
   const badgeIconSize = responsiveFont(28);
   const fieldIconSize = responsiveFont(20);
 
-  const goNext = () => {
-    if (selectedDate) {
-      const examDate = toIsoDate(selectedDate);
+  const finishOnboarding = (date: Date | null) => {
+    if (isFinishing) {
+      return;
+    }
+
+    setIsFinishing(true);
+
+    if (date) {
+      const examDate = toIsoDate(date);
       setExamSchedule({
         daysUntilExam: Math.max(1, getDaysUntilExamFromDate(examDate)),
         examDate,
       });
     } else {
-      // Optional date: keep examDate unset, but still seed a planning horizon.
       setExamSchedule({
         daysUntilExam: STUDY_PLAN_LIMITS.recommendedDays,
         examDate: null,
@@ -56,13 +63,14 @@ export default function ExamScheduleScreen() {
     }
 
     track(ANALYTICS_EVENTS.onboardingStepCompleted.key, {
-      days_until_exam: selectedDate
-        ? Math.max(1, getDaysUntilExamFromDate(toIsoDate(selectedDate)))
+      days_until_exam: date
+        ? Math.max(1, getDaysUntilExamFromDate(toIsoDate(date)))
         : STUDY_PLAN_LIMITS.recommendedDays,
-      exam_date_provided: Boolean(selectedDate),
+      exam_date_provided: Boolean(date),
       step: "exam_schedule",
     });
-    router.navigate("/(onboarding)/notifications");
+    finalizeLocalOnboarding();
+    router.replace("/(tabs)");
   };
 
   return (
@@ -109,25 +117,43 @@ export default function ExamScheduleScreen() {
                   : t("onboarding.examDatePlaceholder")}
               </CText>
             </Pressable>
+
+            <CText style={styles.hint}>{t("onboarding.examDateHint")}</CText>
           </View>
 
           <View style={styles.footer}>
             <View style={styles.paging}>
               <View style={styles.dot} />
               <View style={[styles.dot, styles.dotActive]} />
-              <View style={styles.dot} />
             </View>
 
             <Pressable
               accessibilityRole="button"
-              onPress={goNext}
+              disabled={isFinishing}
+              onPress={() => finishOnboarding(selectedDate)}
               style={({ pressed }) => [
                 styles.cta,
+                isFinishing ? styles.ctaDisabled : null,
                 pressed ? styles.ctaPressed : null,
               ]}
               testID="onboarding-exam-schedule-continue"
             >
               <CText style={styles.ctaLabel}>{t("common.continue")}</CText>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              disabled={isFinishing}
+              onPress={() => finishOnboarding(null)}
+              style={({ pressed }) => [
+                styles.skip,
+                pressed ? styles.skipPressed : null,
+              ]}
+              testID="onboarding-exam-date-skip"
+            >
+              <CText style={styles.skipLabel}>
+                {t("onboarding.examDateSkip")}
+              </CText>
             </Pressable>
           </View>
         </View>
@@ -209,8 +235,15 @@ function useStyles() {
         color: colors.textPrimary,
         fontFamily: getFontFamily("medium"),
       },
+      hint: {
+        marginTop: spacing.exact(12),
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        fontFamily: getFontFamily("regular"),
+        color: colors.textMuted,
+      },
       footer: {
-        gap: spacing.exact(20),
+        gap: spacing.exact(12),
       },
       paging: {
         flexDirection: "row",
@@ -245,11 +278,28 @@ function useStyles() {
       ctaPressed: {
         opacity: 0.9,
       },
+      ctaDisabled: {
+        opacity: 0.7,
+      },
       ctaLabel: {
         fontSize: responsiveFont(20),
         lineHeight: responsiveFont(28),
         fontFamily: getFontFamily("semiBold"),
         color: colors.onAccent,
+      },
+      skip: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: spacing.exact(8),
+      },
+      skipPressed: {
+        opacity: 0.7,
+      },
+      skipLabel: {
+        fontSize: responsiveFont(16),
+        lineHeight: responsiveFont(24),
+        fontFamily: getFontFamily("medium"),
+        color: colors.textMuted,
       },
     })
   );

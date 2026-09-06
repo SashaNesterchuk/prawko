@@ -325,8 +325,11 @@ export default function HomeTabScreen() {
         });
       }
 
+      const sessionMode =
+        source === "today" ? "mini_test" : "initial_diagnostic";
+
       track(ANALYTICS_EVENTS.trainingModeSelected.key, {
-        mode: "mini_test",
+        mode: sessionMode,
         question_limit: FIRST_START_QUESTION_COUNT,
         source,
         topic_id: null,
@@ -334,7 +337,7 @@ export default function HomeTabScreen() {
       router.navigate({
         pathname: "/question",
         params: buildQuestionRouteParams({
-          mode: "mini_test",
+          mode: sessionMode,
           questionLimit: HOME_DAILY_QUESTION_COUNT,
           sessionKey: createHomeDailySessionKey(todayIso, preferredCategory),
         }),

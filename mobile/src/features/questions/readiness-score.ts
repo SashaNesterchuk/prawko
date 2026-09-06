@@ -13,7 +13,7 @@ import type { QuestionAttempt, QuestionUserStateMap } from "./types";
  * accuracy 45 + plan 25 + latest exam 20 + review hygiene 5 + weak spots 5.
  */
 export const READINESS_EXAM_SESSION_MODES: ReadonlySet<QuestionSessionMode> =
-  new Set(["exam", "mini_test", "exam_tomorrow"]);
+  new Set(["exam", "mini_test", "exam_tomorrow", "initial_diagnostic"]);
 
 export type ReadinessScoreInput = {
   attempts: readonly QuestionAttempt[];

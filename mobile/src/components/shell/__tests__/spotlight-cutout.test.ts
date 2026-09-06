@@ -1,6 +1,7 @@
 import {
   holesAreClose,
   holeRelativeToOverlay,
+  isPlausibleSpotlightHole,
   paddedHole,
   spotlightCutoutPath,
 } from "../spotlight-cutout";
@@ -40,5 +41,32 @@ describe("spotlight cutout", () => {
     expect(holesAreClose(null, hole)).toBe(false);
     expect(holesAreClose(hole, { ...hole, y: 80.4 })).toBe(true);
     expect(holesAreClose(hole, { ...hole, y: 96 })).toBe(false);
+  });
+
+  it("rejects a pre-safe-area hole under the status bar", () => {
+    expect(
+      isPlausibleSpotlightHole(
+        { x: 16, y: 8, width: 360, height: 140 },
+        { y: 0 },
+        59
+      )
+    ).toBe(false);
+    expect(
+      isPlausibleSpotlightHole(
+        { x: 16, y: 72, width: 360, height: 140 },
+        { y: 0 },
+        59
+      )
+    ).toBe(true);
+  });
+
+  it("accepts a card-sized hole when the overlay is already below the inset", () => {
+    expect(
+      isPlausibleSpotlightHole(
+        { x: 16, y: 16, width: 360, height: 140 },
+        { y: 59 },
+        59
+      )
+    ).toBe(true);
   });
 });

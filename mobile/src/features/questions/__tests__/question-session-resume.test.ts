@@ -474,4 +474,27 @@ describe("home daily practice session pin", () => {
     expect(nextDay.id).not.toBe(first.id);
     expect(nextDay.request.sessionKey).toBe("B:home-today:2026-09-07:B");
   });
+
+  it("keeps an in-progress diagnostic when Home later opens the same daily key as mini_test", () => {
+    const store = useQuestionProgressStore.getState();
+    const first = store.startOrResumeSession({
+      currentCategory: "B",
+      mode: "initial_diagnostic",
+      questionLimit: 3,
+      sessionKey: "B:home-today:2026-09-06:B",
+    });
+    store.answerCurrentQuestion("A");
+    store.clearActiveSession();
+
+    const resumed = store.startOrResumeSession({
+      currentCategory: "B",
+      mode: "mini_test",
+      questionLimit: 3,
+      sessionKey: "B:home-today:2026-09-06:B",
+    });
+
+    expect(resumed.id).toBe(first.id);
+    expect(resumed.request.mode).toBe("initial_diagnostic");
+    expect(resumed.currentIndex).toBe(1);
+  });
 });

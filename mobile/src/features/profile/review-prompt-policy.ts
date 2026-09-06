@@ -22,6 +22,7 @@ export type InAppReviewPromptDecision =
 const BLOCKED_TRAINING_MODES = new Set([
   "blitz",
   "mini_test",
+  "initial_diagnostic",
   "exam",
   "exam_tomorrow",
 ]);

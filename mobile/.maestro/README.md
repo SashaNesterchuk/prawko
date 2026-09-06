@@ -28,16 +28,18 @@ pnpm test:e2e:studio
 
 | Flow | What it covers |
 | --- | --- |
-| `onboarding_completes_and_lands_on_home.yaml` | Category → exam date → skip notifications → Home with first-start spotlight over the readiness card (tiles stay visible, dimmed; tab bar stays, quieter) |
-| `onboarding_skip_exam_date_leaves_date_unset.yaml` | Skip exam date on onboarding → Profile shows unset date |
-| `home_first_start_spotlight_starts_training.yaml` | First-start spotlight (`FIRST_START`) → 10-question untimed mini_test (not exam) |
+| `onboarding_completes_and_lands_on_home.yaml` | Category → exam date → Home with first-start spotlight over the readiness card (tiles stay visible, dimmed; tab bar stays, quieter) |
+| `onboarding_skip_exam_date_leaves_date_unset.yaml` | Skip exam date → dismiss first-start spotlight → Profile shows unset date |
+| `home_first_start_spotlight_starts_training.yaml` | First-start spotlight (`FIRST_START`) → 10-question untimed initial diagnostic (not exam) |
 | `home_first_start_skip_shows_home_tiles.yaml` | Skip spotlight → Home tiles stay; empty card still starts the assessment |
 | `home_today_start_resumes_same_session.yaml` | Today’s 10: answer Q1 → exit → reopen the same set at Q2 (not a new draw) |
 | `home_today_done_hides_card.yaml` | Finished daily 10 → Home hides the parked done card; result hides New attempt |
 | `home_first_start_dim_dismisses_spotlight.yaml` | Tap the dimmed overlay → spotlight dismisses, Home tiles stay |
+| `diagnostic_result_continue_shows_reminder.yaml` | Finished first diagnostic → Continue → reminder prompt → Not now → Home |
+| `diagnostic_result_work_on_mistakes.yaml` | Finished first diagnostic → Work on mistakes opens the mistakes monitor |
 | `home_opens_trainer_modes.yaml` | Home → Trainer tile, unique learned coverage card |
 | `home_blitz_opens_duration_dialog.yaml` | Home → Quick session → duration picker → timed blitz training |
-| `home_readiness_assessment_starts_training.yaml` | Empty readiness CTA (no period-change badge, never stuck on the loading skeleton) → untimed mini_test training (not exam) |
+| `home_readiness_assessment_starts_training.yaml` | Empty readiness CTA (no period-change badge, never stuck on the loading skeleton) → untimed initial diagnostic (not exam) |
 | `home_traps_opens_count_dialog.yaml` | Home → Traps tile → count picker → training |
 | `home_exam_starts_session.yaml` | Home → Exam tile → official 32-question simulator (no count picker) |
 | `profile_exam_country_screen_opens.yaml` | Profile → Exam country screen with PL and CZ tiles |
@@ -104,7 +106,7 @@ Shared steps live in:
 - `subflows/dismiss_interstitial_if_present.yaml` after a free-user session end that may show a test interstitial
 - `subflows/answer_first_available_option.yaml` for generic “answer first option” steps
 
-Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `statistics`, `signs`, `signs-category`, `topic`, `topics`, `trainer-modes`, `exam-session`, `exam-result`, `exam-answers`, `question-result`, `question-result-failed`.
+Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `statistics`, `signs`, `signs-category`, `topic`, `topics`, `trainer-modes`, `exam-session`, `exam-result`, `exam-answers`, `question-result`, `question-result-failed`, `diagnostic-result`.
 
 ## Writing new flows
 

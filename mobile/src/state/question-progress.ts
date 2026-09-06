@@ -60,9 +60,14 @@ const PERSIST_FLUSH_DELAY_MS = 800;
 /** Bound after the store exists so background persist can freeze the blitz clock. */
 let pauseTimedSessionForBackground: (() => void) | null = null;
 let flushDeferredProgressPersist: (() => Promise<void>) | null = null;
+let discardDeferredProgressPersist: (() => void) | null = null;
 
 export function flushQuestionProgressPersist() {
   return flushDeferredProgressPersist?.() ?? Promise.resolve();
+}
+
+export function discardPendingQuestionProgressPersist() {
+  discardDeferredProgressPersist?.();
 }
 
 /**
@@ -113,6 +118,14 @@ function createDeferredProgressStorage(): PersistStorage<PersistedQuestionProgre
   };
 
   flushDeferredProgressPersist = () => flush();
+  discardDeferredProgressPersist = () => {
+    pendingWrites.clear();
+
+    if (flushTimeout) {
+      clearTimeout(flushTimeout);
+      flushTimeout = null;
+    }
+  };
 
   AppState.addEventListener("change", (nextState) => {
     if (nextState !== "active") {
@@ -234,7 +247,8 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             },
           };
         }),
-      advanceSession: () =>
+      advanceSession: () => {
+        const wasFinished = Boolean(get().activeSession?.finishedAt);
         set((state) => {
           if (!state.activeSession) {
             return state;
@@ -258,7 +272,12 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             activeSession,
             homeDailySession: pinDailySession(state.homeDailySession, activeSession),
           };
-        }),
+        });
+
+        if (!wasFinished && get().activeSession?.finishedAt) {
+          void flushQuestionProgressPersist();
+        }
+      },
       retreatSession: () =>
         set((state) => {
           if (!state.activeSession || state.activeSession.currentIndex <= 0) {
@@ -435,14 +454,20 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         return attempt;
       },
       clearActiveSession: () => set({ activeSession: null }),
-      finishActiveSession: () =>
+      finishActiveSession: () => {
+        const wasFinished = Boolean(get().activeSession?.finishedAt);
         set((state) => {
           if (!state.activeSession || state.activeSession.finishedAt) {
             return state;
           }
 
           return completeActiveSessionState(state, state.activeSession);
-        }),
+        });
+
+        if (!wasFinished && get().activeSession?.finishedAt) {
+          void flushQuestionProgressPersist();
+        }
+      },
       ensureTopicQuestionProgressSeeded: () => {
         const state = get();
 

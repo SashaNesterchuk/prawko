@@ -6,13 +6,18 @@ import { useAiChatStore } from "../state/ai-chat";
 import { useAppShellStore } from "../state/app-shell";
 import { useFreeTierQuestionUsageStore } from "../state/free-tier-usage";
 import {
+  discardPendingQuestionProgressPersist,
   flushQuestionProgressPersist,
   useQuestionProgressStore,
 } from "../state/question-progress";
 import { useReadinessSnapshotStore } from "../state/readiness-snapshot";
 import { useSignBookmarksStore } from "../state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../state/sign-practice-progress";
-import { migrateUnscopedPersistKey, scopedPersistName } from "./persist";
+import {
+  migrateUnscopedPersistKey,
+  scopedPersistName,
+  shouldResetCountryScopedStores,
+} from "./persist";
 
 const QUESTION_PROGRESS_PERSIST_BASE = "prawko-question-progress";
 const AI_CHAT_PERSIST_BASE = "prawko-ai-chat";
@@ -39,7 +44,12 @@ async function rehydrateCountryScopedStoresNow(country: CountryCode) {
     return;
   }
 
-  if (lastHydratedCountry && lastHydratedCountry !== country) {
+  const isCountrySwitch = shouldResetCountryScopedStores(
+    lastHydratedCountry,
+    country
+  );
+
+  if (isCountrySwitch) {
     await flushQuestionProgressPersist();
   }
 
@@ -52,7 +62,7 @@ async function rehydrateCountryScopedStoresNow(country: CountryCode) {
     migrateUnscopedPersistKey(FREE_TIER_PERSIST_BASE),
   ]);
 
-  if (lastHydratedCountry !== country) {
+  if (isCountrySwitch) {
     useQuestionProgressStore.getState().resetProgress();
     useQuestionProgressStore.getState().setHasHydrated(false);
     useAiChatStore.setState({
@@ -69,6 +79,7 @@ async function rehydrateCountryScopedStoresNow(country: CountryCode) {
       hasHydrated: false,
     });
     clearExamSnapshotMemory();
+    discardPendingQuestionProgressPersist();
   }
 
   useQuestionProgressStore.persist.setOptions({

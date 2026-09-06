@@ -39,6 +39,8 @@ import {
   createHomeDailySessionKey,
   HOME_DAILY_QUESTION_COUNT,
 } from "../../features/home/home-daily-practice";
+import { INITIAL_DIAGNOSTIC_QUESTION_COUNT } from "../../features/questions/initial-diagnostic/mix";
+import { resetDiagnosticReminderPromptForTests } from "../../features/questions/initial-diagnostic/reminder-prompt";
 import { finalizeLocalOnboarding } from "../../features/onboarding/finalize-local-onboarding";
 import { isRoadSignCategoryId } from "../../features/road-signs/catalog";
 import { getExamDateFromDays } from "../../features/study-plan/generate-local-study-plan";
@@ -70,7 +72,8 @@ export type E2EDestination =
   | "exam-result"
   | "exam-answers"
   | "question-result"
-  | "question-result-failed";
+  | "question-result-failed"
+  | "diagnostic-result";
 
 export type E2EHomeDailyStatus = "done" | "in_progress";
 
@@ -90,6 +93,7 @@ type PrepareE2EAppStateInput = {
   reachability?: boolean | null;
   seedQuestionResult?: boolean | null;
   seedQuestionResultOutcome?: "good" | "poor" | null;
+  seedDiagnosticResult?: boolean | null;
   unlockHomeChrome?: boolean | null;
 };
 
@@ -178,6 +182,10 @@ export async function prepareE2EAppState(
     : null;
   const seededQuestionSessionKey = homeDailySessionKey
     ? homeDailySessionKey
+    : input.seedDiagnosticResult
+      ? seedE2EFinishedDiagnosticSession({
+          category: preferredCategory,
+        })
     : input.seedQuestionResult
       ? seedE2EFinishedQuestionSession({
           category: preferredCategory,
@@ -189,11 +197,15 @@ export async function prepareE2EAppState(
     seededExamSessionId,
     seededQuestionLimit: homeDailySessionKey
       ? String(HOME_DAILY_QUESTION_COUNT)
+      : input.seedDiagnosticResult
+        ? String(INITIAL_DIAGNOSTIC_QUESTION_COUNT)
       : seededQuestionSessionKey
         ? "5"
         : null,
     seededQuestionMode: homeDailySessionKey
       ? "mini_test"
+      : input.seedDiagnosticResult
+        ? "initial_diagnostic"
       : seededQuestionSessionKey
         ? "learning"
         : null,
@@ -263,6 +275,7 @@ export function resolveE2EDestination(
         : "/(tabs)";
     case "question-result":
     case "question-result-failed":
+    case "diagnostic-result":
       return input.seededQuestionSessionKey
         ? {
             pathname: "/question",
@@ -299,6 +312,7 @@ function normalizeDestination(
     case "exam-answers":
     case "question-result":
     case "question-result-failed":
+    case "diagnostic-result":
       return normalized;
     case "home":
     default:
@@ -495,6 +509,87 @@ function pickWrongAnswer(correctAnswer: QuestionOptionValue): QuestionOptionValu
   }
 }
 
+/** Finished first-session diagnostic so `/question` opens the starting-point result. */
+function seedE2EFinishedDiagnosticSession(input: { category: DrivingCategory }) {
+  resetDiagnosticReminderPromptForTests();
+  const routeSessionKey = `e2e-diagnostic-result-${Date.now().toString(36)}`;
+  const sessionKey = `${input.category}:${routeSessionKey}`;
+  const sourceQuestions = getQuestionBank().slice(
+    0,
+    INITIAL_DIAGNOSTIC_QUESTION_COUNT
+  );
+
+  if (sourceQuestions.length < INITIAL_DIAGNOSTIC_QUESTION_COUNT) {
+    throw new Error("E2E diagnostic result seed needs at least 10 questions.");
+  }
+
+  const questionIds = sourceQuestions.map((question) => question.id);
+  const answers = Object.fromEntries(
+    sourceQuestions.map((question, index) => {
+      const isCorrect = index === 0 || index === 7;
+      const selectedAnswer = isCorrect
+        ? question.correctAnswer
+        : pickWrongAnswer(question.correctAnswer);
+
+      return [
+        question.id,
+        {
+          questionId: question.id,
+          selectedAnswer,
+          isCorrect,
+          answeredAt: new Date(
+            Date.now() - (sourceQuestions.length - index) * 20_000
+          ).toISOString(),
+        },
+      ];
+    })
+  );
+
+  const session: QuestionSession = {
+    id: `session-${sessionKey}`,
+    request: {
+      currentCategory: input.category,
+      mode: "initial_diagnostic",
+      questionLimit: INITIAL_DIAGNOSTIC_QUESTION_COUNT,
+      sessionKey,
+    },
+    questionIds,
+    currentIndex: questionIds.length - 1,
+    answers,
+    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    finishedAt: new Date().toISOString(),
+    emptyReason: null,
+  };
+
+  const now = new Date().toISOString();
+  const questionUserState: QuestionUserStateMap = Object.fromEntries(
+    sourceQuestions.map((question, index) => {
+      const isCorrect = index === 0 || index === 7;
+      return [
+        question.id,
+        {
+          ...createEmptyQuestionUserState(question.id),
+          timesSeen: 1,
+          timesCorrect: isCorrect ? 1 : 0,
+          timesWrong: isCorrect ? 0 : 1,
+          lastSeenAt: now,
+          lastCorrectAt: isCorrect ? now : null,
+          lastWrongAt: isCorrect ? null : now,
+        },
+      ];
+    })
+  );
+
+  useAppShellStore.setState({ homeStartSpotlightDismissed: true });
+  useQuestionProgressStore.setState({
+    activeSession: session,
+    questionUserState,
+    readinessAssessment: buildReadinessAssessmentResult(session),
+  });
+
+  return routeSessionKey;
+}
+
 /** Finished 5-question learning session so `/question` opens the result screen. */
 function seedE2EFinishedQuestionSession(input: {
   category: DrivingCategory;
@@ -661,9 +756,14 @@ function seedE2EHomeDailySession(input: {
       answeredAt: answer.answeredAt,
     };
   });
-  const readinessAssessment = isDone
-    ? buildReadinessAssessmentResult(session)
-    : null;
+  // Daily 10 is post-diagnostic. Mini-test sessions no longer write readiness.
+  const readinessAssessment = {
+    completedAt: new Date(nowMs).toISOString(),
+    correct: 6,
+    scorePercent: 60,
+    sessionId: "e2e-prior-diagnostic",
+    total: INITIAL_DIAGNOSTIC_QUESTION_COUNT,
+  };
 
   useAppShellStore.setState({ homeStartSpotlightDismissed: true });
   useQuestionProgressStore.setState({

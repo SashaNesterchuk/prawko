@@ -43,6 +43,7 @@ import { syncQuestionBookmarkState } from "../supabase-question-state";
 import { usePrefetchQuestionMedia } from "../usePrefetchQuestionMedia";
 
 import { isHomeDailySessionKey } from "../../home/home-daily-practice";
+import { shouldAutoShowPracticeSessionCompleteAd } from "../initial-diagnostic/session-ads";
 import { getTrainingResultOutcome } from "./training-result-stats";
 import { useQuestionRouteParams } from "./route-params";
 import { useTrainerStyles } from "./useTrainerStyles";
@@ -528,6 +529,10 @@ export function useQuestionTrainingSession() {
     // Caller navigates after this returns. Show the ad only after replace()
     // so AdMob is not presented over the exit Modal / outgoing screen.
     pendingExitAdRef.current = () => {
+      if (!shouldAutoShowPracticeSessionCompleteAd(sessionMode)) {
+        return;
+      }
+
       if (
         shouldAttemptPracticeInterstitial &&
         answeredCount >= AD_POLICY.questionsBetweenInterstitials
@@ -568,6 +573,12 @@ export function useQuestionTrainingSession() {
 
   useEffect(() => {
     if (!isCompleted || didShowSessionCompleteAdRef.current) {
+      return;
+    }
+
+    if (!shouldAutoShowPracticeSessionCompleteAd(sessionMode)) {
+      didShowSessionCompleteAdRef.current = true;
+      shouldAttemptPracticeAdRef.current = false;
       return;
     }
 

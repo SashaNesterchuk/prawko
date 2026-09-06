@@ -83,6 +83,21 @@ export const ANALYTICS_EVENTS = {
     description:
       "The learner started the capped first-start session from Home.",
   },
+  diagnosticResultAction: {
+    key: "diagnostic_result_action",
+    description:
+      "The learner chose a first-session diagnostic result CTA.",
+  },
+  diagnosticReminderShown: {
+    key: "diagnostic_reminder_shown",
+    description:
+      "The post-diagnostic study-reminder bottom sheet was shown.",
+  },
+  diagnosticReminderResolved: {
+    key: "diagnostic_reminder_resolved",
+    description:
+      "The learner enabled, deferred, or dismissed the study-reminder sheet.",
+  },
   trainingModeSelected: {
     key: "training_mode_selected",
     description: "A training mode and question count were selected.",

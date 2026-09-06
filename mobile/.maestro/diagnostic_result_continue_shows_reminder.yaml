@@ -1,0 +1,38 @@
+# Feature: First-session diagnostic result
+# Scenario: Continue shows the reminder prompt, Not now lands on Home
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - first-start
+  - diagnostic
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: diagnostic-result
+      TARGET_ID: screen-question-result
+
+- assertVisible:
+    id: "screen-diagnostic-result"
+- assertVisible:
+    id: "question-result-primary"
+- assertVisible:
+    id: "diagnostic-result-mistakes"
+- assertNotVisible:
+    id: "question-result-new-attempt"
+
+- tapOn:
+    id: "question-result-primary"
+
+- extendedWaitUntil:
+    visible:
+      id: "diagnostic-reminder-prompt"
+    timeout: 10000
+
+- tapOn:
+    id: "diagnostic-reminder-later"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
