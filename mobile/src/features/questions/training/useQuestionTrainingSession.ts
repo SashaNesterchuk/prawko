@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { InteractionManager } from "react-native";
 
 import type { SupportedLocale } from "@prawko/config";
 import { AD_POLICY } from "@prawko/config";
 
+import { hideModalAndWait } from "../../../components/shell/hide-modal-and-wait";
 import { isMobileSupabaseConfigured } from "../../../config/env";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import { recordQuestionAnsweredForAds } from "../../ads/ad-session-policy";
@@ -40,6 +42,7 @@ import { recordQuestionAttemptBySourceId } from "../supabase-question-attempts";
 import { syncQuestionBookmarkState } from "../supabase-question-state";
 import { usePrefetchQuestionMedia } from "../usePrefetchQuestionMedia";
 
+import { isHomeDailySessionKey } from "../../home/home-daily-practice";
 import { getTrainingResultOutcome } from "./training-result-stats";
 import { useQuestionRouteParams } from "./route-params";
 import { useTrainerStyles } from "./useTrainerStyles";
@@ -98,6 +101,10 @@ export function useQuestionTrainingSession() {
   const trackedCompletedSessionIdRef = useRef<string | null>(null);
   const trackedEmptySessionIdRef = useRef<string | null>(null);
   const shouldAttemptPracticeAdRef = useRef(false);
+  const showExitDialogRef = useRef(false);
+  const modalHideResolverRef = useRef<(() => void) | null>(null);
+  const pendingExitAdRef = useRef<(() => void) | null>(null);
+  showExitDialogRef.current = showExitDialog;
 
   useEffect(() => {
     setDisplayLocale(preferredLocale);
@@ -134,7 +141,9 @@ export function useQuestionTrainingSession() {
       currentSession.request.mode === mode &&
       currentSession.request.currentCategory === preferredCategory &&
       (currentSession.request.topic ?? null) === (topic ?? null) &&
-      (currentSession.request.questionLimit ?? null) === (questionLimit ?? null)
+      (currentSession.request.questionLimit ?? null) === (questionLimit ?? null) &&
+      !isHomeDailySessionKey(currentSession.request.sessionKey) &&
+      !isHomeDailySessionKey(sessionKey)
     ) {
       return;
     }
@@ -256,7 +265,6 @@ export function useQuestionTrainingSession() {
         activeSession.currentIndex
       )
     : [];
-
   const screenSubtitle = isCompleted
     ? t("question.summarySubtitle", {
         correct: summary.correct,
@@ -467,9 +475,28 @@ export function useQuestionTrainingSession() {
 
     if (shouldAttemptInterstitial) {
       // Opportunistic only — never wait for AdMob mid-session.
+      // Controller still waits for UI idle before native show().
       maybeShowInterstitial("after_question_answer");
     }
   }, [advanceSession, maybeShowInterstitial]);
+
+  const hideExitDialogAndWait = useCallback(() => {
+    return hideModalAndWait(
+      () => setShowExitDialog(false),
+      modalHideResolverRef,
+      showExitDialogRef.current
+    );
+  }, []);
+
+  const handleExitDialogDismissed = useCallback(() => {
+    modalHideResolverRef.current?.();
+  }, []);
+
+  const showPendingExitAd = useCallback(() => {
+    const showAd = pendingExitAdRef.current;
+    pendingExitAdRef.current = null;
+    showAd?.();
+  }, []);
 
   const handleConfirmExit = useCallback(() => {
     setShowExitDialog(false);
@@ -485,6 +512,7 @@ export function useQuestionTrainingSession() {
     clearActiveSession();
 
     if (wasCompleted) {
+      pendingExitAdRef.current = null;
       return;
     }
 
@@ -497,10 +525,9 @@ export function useQuestionTrainingSession() {
       topic_id: sessionTopic ?? null,
     });
 
-    // Caller navigates immediately after this returns. Schedule the ad after
-    // the transition — awaiting AdMob load/show here freezes/glitches the stack
-    // (exam result stays on a stable screen; exit must not).
-    const showExitAd = () => {
+    // Caller navigates after this returns. Show the ad only after replace()
+    // so AdMob is not presented over the exit Modal / outgoing screen.
+    pendingExitAdRef.current = () => {
       if (
         shouldAttemptPracticeInterstitial &&
         answeredCount >= AD_POLICY.questionsBetweenInterstitials
@@ -513,8 +540,6 @@ export function useQuestionTrainingSession() {
         practiceAnsweredCount: answeredCount,
       });
     };
-
-    setTimeout(showExitAd, 400);
   }, [
     clearActiveSession,
     isCompleted,
@@ -549,12 +574,21 @@ export function useQuestionTrainingSession() {
     didShowSessionCompleteAdRef.current = true;
     shouldAttemptPracticeAdRef.current = false;
 
-    // Let the result view mount first (exam-result pattern).
-    const timer = setTimeout(() => {
+    let cancelled = false;
+    const task = InteractionManager.runAfterInteractions(() => {
+      if (cancelled) {
+        return;
+      }
+
       void (async () => {
         await showInterstitialForTrigger("after_practice_session_complete", {
           practiceAnsweredCount: summary.answered,
         });
+
+        if (cancelled) {
+          return;
+        }
+
         await maybeRequestInAppReview({
           isTimedSession,
           mode: sessionMode,
@@ -564,10 +598,21 @@ export function useQuestionTrainingSession() {
           track,
         });
       })();
-    }, 400);
+    });
 
-    return () => clearTimeout(timer);
-  }, [isCompleted, showInterstitialForTrigger, summary.answered]);
+    return () => {
+      cancelled = true;
+      task.cancel?.();
+    };
+  }, [
+    isCompleted,
+    isTimedSession,
+    sessionMode,
+    sessionResultPercent,
+    showInterstitialForTrigger,
+    summary.answered,
+    track,
+  ]);
 
   useEffect(() => {
     didShowSessionCompleteAdRef.current = false;
@@ -593,9 +638,11 @@ export function useQuestionTrainingSession() {
     handleContinueAfterFeedback,
     handleConfirmExit,
     handleDismissExitDialog,
+    handleExitDialogDismissed,
     handleRequestExit,
     handleToggleBookmark,
     hasStartedTraining,
+    hideExitDialogAndWait,
     isCompleted,
     isEmptyState,
     isReady: questionProgressHydrated && Boolean(activeSession),
@@ -612,6 +659,7 @@ export function useQuestionTrainingSession() {
     sessionResultPercent,
     sessionTopic,
     showExitDialog,
+    showPendingExitAd,
     summary,
     topic,
     trainerStyles,

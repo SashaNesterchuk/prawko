@@ -85,3 +85,19 @@ export function clampLocaleForCountry(
 
   return config.defaultLocale;
 }
+
+/**
+ * Pick a UI locale from the phone language, then the exam country.
+ * Unknown country keeps any recognized locale so Czech/English phones are
+ * not forced through Poland's list before storefront detection finishes.
+ */
+export function resolveLocaleForCountry(
+  country: CountryCode | null | undefined,
+  locale: SupportedLocale | null | undefined,
+): SupportedLocale {
+  if (!country) {
+    return locale ?? COUNTRY_CONFIGS[DEFAULT_COUNTRY_CODE].defaultLocale;
+  }
+
+  return clampLocaleForCountry(country, locale);
+}

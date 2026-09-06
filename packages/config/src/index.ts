@@ -170,7 +170,7 @@ export const AI_MESSAGE_KINDS = [
 ] as const;
 export type AiMessageKind = (typeof AI_MESSAGE_KINDS)[number];
 
-export const DEFAULT_LOCALE: SupportedLocale = "ua";
+export const DEFAULT_LOCALE: SupportedLocale = "pl";
 export const DEFAULT_CATEGORY: DrivingCategory = "B";
 
 export {
@@ -206,8 +206,9 @@ export const AD_POLICY = {
   minSecondsBetweenAds: 180,
   maxAdsPerSession: 6,
   sessionInactivityResetMinutes: 30,
-  /** Deprecated in Free + Ads / Plus v1; app-resume ads should stay disabled. */
+  /** Deprecated in Free + Ads / Plus v1; app-resume ads stay disabled. */
   appResumeBackgroundMinutes: 10,
+  enableAppResumeAds: false,
 } as const;
 
 /** Native store review only — never reward, never mid-exam / mid-blitz. */

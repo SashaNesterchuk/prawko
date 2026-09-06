@@ -17,7 +17,7 @@ export const PL_COUNTRY_CONFIG: CountryConfig = {
     "D",
     "T",
   ],
-  defaultLocale: "ua",
+  defaultLocale: "pl",
   exam: {
     id: "word",
     totalQuestions: EXAM_RULES.totalQuestions,

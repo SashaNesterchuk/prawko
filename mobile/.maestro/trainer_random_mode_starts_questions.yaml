@@ -18,3 +18,6 @@ tags:
     file: subflows/start_default_question_count.yaml
     env:
       TARGET_ID: screen-question
+
+- assertVisible:
+    id: "question-counter"

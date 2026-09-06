@@ -143,4 +143,26 @@ describe("resolveSignsSummaryDisplay", () => {
       correctAnswersLabel: "0 / 0",
     });
   });
+
+  it("shows at least 1% once any unique questions are covered", () => {
+    expect(
+      resolveSignsSummaryDisplay({
+        correct: 2,
+        wrong: 0,
+        seen: 2,
+        total: 2142,
+      }).learnedPercent
+    ).toBe(1);
+  });
+
+  it("stays at 0% when nothing has been covered", () => {
+    expect(
+      resolveSignsSummaryDisplay({
+        correct: 0,
+        wrong: 0,
+        seen: 0,
+        total: 2142,
+      }).learnedPercent
+    ).toBe(0);
+  });
 });

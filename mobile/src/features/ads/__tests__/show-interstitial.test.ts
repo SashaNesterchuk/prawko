@@ -219,37 +219,9 @@ describe("show-interstitial", () => {
       );
     });
 
-    it("retries once after failed show then succeeds", async () => {
-      mockIsInterstitialLoaded.mockReturnValue(true);
-      mockShowPreloadedInterstitial
-        .mockResolvedValueOnce(false)
-        .mockResolvedValueOnce(true);
-      mockEnsureInterstitialReady.mockResolvedValue(true);
-
-      await expect(
-        showInterstitialIfAllowed({
-          hasPlusAccess: false,
-          track,
-          trigger: "after_exam_complete",
-          waitForLoad: true,
-        })
-      ).resolves.toBe(true);
-
-      expect(mockShowPreloadedInterstitial).toHaveBeenCalledTimes(2);
-      expect(mockEnsureInterstitialReady).toHaveBeenCalledWith({
-        attempts: 1,
-        timeoutMs: 3_000,
-      });
-      expect(track).toHaveBeenCalledWith(
-        "ad_shown",
-        expect.objectContaining({ retried: true })
-      );
-    });
-
-    it("retries once after failed show then skips", async () => {
+    it("does not retry after a failed show — fail-open keeps the result tappable", async () => {
       mockIsInterstitialLoaded.mockReturnValue(true);
       mockShowPreloadedInterstitial.mockResolvedValue(false);
-      mockEnsureInterstitialReady.mockResolvedValue(true);
 
       await expect(
         showInterstitialIfAllowed({
@@ -260,7 +232,7 @@ describe("show-interstitial", () => {
         })
       ).resolves.toBe(false);
 
-      expect(mockShowPreloadedInterstitial).toHaveBeenCalledTimes(2);
+      expect(mockShowPreloadedInterstitial).toHaveBeenCalledTimes(1);
       expect(track).toHaveBeenCalledWith(
         "ad_failed",
         expect.objectContaining({ reason: "show_returned_false" })
@@ -363,35 +335,9 @@ describe("show-interstitial", () => {
       );
     });
 
-    it("retries unlock show once and succeeds", async () => {
-      mockIsInterstitialLoaded.mockReturnValue(true);
-      mockShowPreloadedInterstitial
-        .mockResolvedValueOnce(false)
-        .mockResolvedValueOnce(true);
-      mockEnsureInterstitialReady.mockResolvedValue(true);
-
-      await expect(
-        showInterstitialForUnlockGate({
-          hasPlusAccess: false,
-          track,
-        })
-      ).resolves.toBe(true);
-
-      expect(mockShowPreloadedInterstitial).toHaveBeenCalledTimes(2);
-      expect(track).toHaveBeenCalledWith(
-        "ad_shown",
-        expect.objectContaining({
-          trigger: "exam_restart",
-          type: "exam_restart_gate",
-          retried: true,
-        })
-      );
-    });
-
-    it("retries unlock show once then fails open", async () => {
+    it("does not retry unlock show — fail-open instead of stacking overlays", async () => {
       mockIsInterstitialLoaded.mockReturnValue(true);
       mockShowPreloadedInterstitial.mockResolvedValue(false);
-      mockEnsureInterstitialReady.mockResolvedValue(false);
 
       await expect(
         showInterstitialForUnlockGate({
@@ -400,6 +346,7 @@ describe("show-interstitial", () => {
         })
       ).resolves.toBe(false);
 
+      expect(mockShowPreloadedInterstitial).toHaveBeenCalledTimes(1);
       expect(track).toHaveBeenCalledWith(
         "ad_failed",
         expect.objectContaining({ reason: "show_returned_false" })

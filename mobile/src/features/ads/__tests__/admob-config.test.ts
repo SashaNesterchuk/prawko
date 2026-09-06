@@ -45,6 +45,23 @@ describe("admob-config", () => {
     expect(isAdMobEnabled()).toBe(false);
   });
 
+  it("disables AdMob in e2e test builds", async () => {
+    mockMobileEnv.enableE2ETestMode = true;
+    const { isAdMobEnabled } = await loadConfigForOs("ios");
+    expect(isAdMobEnabled()).toBe(false);
+  });
+
+  it("enables AdMob in e2e when bootstrap opts into ads", async () => {
+    mockMobileEnv.enableE2ETestMode = true;
+    jest.resetModules();
+    const rn = require("react-native") as { Platform: { OS: string } };
+    rn.Platform.OS = "ios";
+    const { setE2EAdsEnabled } = await import("../../../testing/e2e/ads-flag");
+    setE2EAdsEnabled(true);
+    const { isAdMobEnabled } = await import("../admob-config");
+    expect(isAdMobEnabled()).toBe(true);
+  });
+
   it("returns iOS app id", async () => {
     const { getAdMobAppId } = await loadConfigForOs("ios");
     expect(getAdMobAppId()).toBe("ios-app-id");
@@ -79,8 +96,21 @@ describe("admob-config", () => {
 
   it("uses production iOS unit ids when not in __DEV__", async () => {
     (globalThis as { __DEV__?: boolean }).__DEV__ = false;
-    const { getInterstitialAdUnitId } = await loadConfigForOs("ios");
+    const { getInterstitialAdUnitId, shouldUseAdMobTestAds } =
+      await loadConfigForOs("ios");
+    expect(shouldUseAdMobTestAds()).toBe(false);
     expect(getInterstitialAdUnitId()).toBe("ios-unit");
+  });
+
+  it("flags test ads in __DEV__ and e2e", async () => {
+    (globalThis as { __DEV__?: boolean }).__DEV__ = true;
+    const { shouldUseAdMobTestAds: inDev } = await loadConfigForOs("ios");
+    expect(inDev()).toBe(true);
+
+    (globalThis as { __DEV__?: boolean }).__DEV__ = false;
+    mockMobileEnv.enableE2ETestMode = true;
+    const { shouldUseAdMobTestAds: inE2e } = await loadConfigForOs("ios");
+    expect(inE2e()).toBe(true);
   });
 
   it("uses production Android unit ids when not in __DEV__", async () => {

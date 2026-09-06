@@ -41,7 +41,7 @@ import {
   readOfflinePackSnapshot,
 } from "../../src/features/offline/offline-pack";
 import { getQuestionDisplayStats } from "../../src/features/questions/question-engine";
-import { resolveLocalReadinessPercent } from "../../src/features/questions/readiness-assessment";
+import { resolveReadinessScore } from "../../src/features/questions/readiness-score";
 import {
   applyExamDateChange,
   parseNullableIsoDate,
@@ -116,9 +116,6 @@ export default function ProfileTabScreen() {
   const attempts = useQuestionProgressStore((state) => state.attempts);
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
-  );
-  const readinessAssessment = useQuestionProgressStore(
-    (state) => state.readinessAssessment
   );
   const resetProgress = useQuestionProgressStore((state) => state.resetProgress);
   const questionCatalogVersion = useQuestionCatalogVersion();
@@ -209,24 +206,26 @@ export default function ProfileTabScreen() {
   );
 
   const metrics = useMemo(() => {
-    const localReadiness = resolveLocalReadinessPercent({
-      assessmentScorePercent: readinessAssessment?.scorePercent,
-      seen: questionStats.seen,
-      total: questionStats.total,
-    });
+    const localReadiness = resolveReadinessScore(
+      readinessSummary?.readinessScore,
+      {
+        attempts,
+        userStates: questionUserState,
+        planCompletionPercent: readinessSummary?.planCompletionPercent,
+        totalQuestions: questionStats.total,
+      }
+    );
     const coverage =
       questionStats.total > 0
         ? Math.round((questionStats.seen / questionStats.total) * 100)
         : 0;
 
     return {
-      readiness: Math.round(
-        readinessSummary?.readinessScore ?? localReadiness
-      ),
+      readiness: localReadiness,
       coverage,
       streak: getCurrentStreakFromAttempts(attempts),
     };
-  }, [attempts, questionStats, readinessAssessment, readinessSummary]);
+  }, [attempts, questionStats, questionUserState, readinessSummary]);
 
   // User-set date only — plan.examDate is a planning horizon, not a chosen exam date.
   const examDate = studyPlanSetup.examDate ?? null;

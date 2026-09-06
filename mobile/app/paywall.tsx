@@ -52,7 +52,8 @@ import {
   useRevenueCatOfferings,
   useRevenueCatStatus,
 } from "../src/state/entitlements";
-import { useCurrentUser, useAppShellStore } from "../src/state/app-shell";
+import { useAppUserId } from "../src/identity/AppIdentityProvider";
+import { useAppShellStore } from "../src/state/app-shell";
 
 export default function PaywallPage() {
   const { t } = useTranslation();
@@ -72,7 +73,7 @@ export default function PaywallPage() {
     selectedAnswer?: string | string[];
     studyPlanTaskId?: string | string[];
   }>();
-  const currentUser = useCurrentUser();
+  const appUserId = useAppUserId();
   const authMode = useAppShellStore((state) => state.authMode);
   const purchaseAccess = usePurchaseAccess();
   const revenueCatConfigured = useRevenueCatConfigured();
@@ -139,8 +140,6 @@ export default function PaywallPage() {
     router.back();
   };
 
-  const revenueCatAppUserId =
-    authMode === "supabase" && currentUser ? currentUser.id : null;
   const purchaseEndsAt = purchaseAccess?.latestExpirationDate
     ? formatPlanDate(purchaseAccess.latestExpirationDate.slice(0, 10))
     : null;
@@ -277,7 +276,7 @@ export default function PaywallPage() {
       let targetPackage = selectedPackage;
 
       if (!targetPackage) {
-        const snapshot = await fetchRevenueCatSnapshot(revenueCatAppUserId);
+        const snapshot = await fetchRevenueCatSnapshot(appUserId);
         hydrateRevenueCatSnapshot(snapshot);
         targetPackage = pickRecommendedPackage(snapshot.offerings);
       }
@@ -299,7 +298,7 @@ export default function PaywallPage() {
       });
 
       const snapshot = await purchaseRevenueCatPackage({
-        appUserId: revenueCatAppUserId,
+        appUserId,
         identifier: targetPackage.identifier,
         offeringIdentifier: targetPackage.offeringIdentifier,
       });
@@ -381,7 +380,7 @@ export default function PaywallPage() {
     });
 
     try {
-      const snapshot = await restoreRevenueCatPurchases(revenueCatAppUserId);
+      const snapshot = await restoreRevenueCatPurchases(appUserId);
 
       hydrateRevenueCatSnapshot(snapshot);
 

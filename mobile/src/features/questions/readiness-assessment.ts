@@ -1,8 +1,10 @@
 import type { QuestionSession } from "./types";
 import { getQuestionSessionSummary } from "./question-engine";
 
-/** Home «Оціни знання» — untimed training, larger than a timed blitz. */
-export const READINESS_ASSESSMENT_QUESTION_COUNT = 30;
+import { FIRST_START_QUESTION_COUNT } from "../home/first-start";
+
+/** Home first-start assessment — untimed, capped so it can be finished. */
+export const READINESS_ASSESSMENT_QUESTION_COUNT = FIRST_START_QUESTION_COUNT;
 
 export type ReadinessAssessmentResult = {
   completedAt: string;
@@ -24,7 +26,7 @@ export function isReadinessAssessmentSession(
   return (
     typeof limit === "number" &&
     Number.isFinite(limit) &&
-    limit >= READINESS_ASSESSMENT_QUESTION_COUNT
+    limit === READINESS_ASSESSMENT_QUESTION_COUNT
   );
 }
 
@@ -51,23 +53,4 @@ export function buildReadinessAssessmentResult(
     sessionId: session.id,
     total,
   };
-}
-
-export function resolveLocalReadinessPercent(input: {
-  assessmentScorePercent?: number | null;
-  seen: number;
-  total: number;
-}) {
-  if (
-    typeof input.assessmentScorePercent === "number" &&
-    Number.isFinite(input.assessmentScorePercent)
-  ) {
-    return Math.max(0, Math.min(100, Math.round(input.assessmentScorePercent)));
-  }
-
-  if (input.total <= 0) {
-    return 0;
-  }
-
-  return Math.round((input.seen / input.total) * 100);
 }

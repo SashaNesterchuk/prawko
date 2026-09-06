@@ -1,0 +1,48 @@
+# Feature: Signs
+# Scenario: Closing a started sign test (free user, ads on) returns the signs
+# hub and it stays tappable — the interstitial must not freeze the UI.
+appId: com.mindjar.prawko
+tags:
+  - signs
+  - session
+  - ads
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: signs
+      ENABLE_ADS: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-signs
+
+- tapOn:
+    id: "signs-train-all"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-sign-test
+
+- runFlow:
+    file: subflows/answer_first_available_option.yaml
+    env:
+      OPTION_ID: sign-test-option-index-0
+
+- tapOn:
+    id: "sign-test-close"
+
+- runFlow:
+    file: subflows/dismiss_interstitial_if_present.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-signs"
+    timeout: 20000
+
+- tapOn:
+    id: "signs-train-all"
+
+- extendedWaitUntil:
+    visible:
+      id: "question-count-dialog"
+    timeout: 15000

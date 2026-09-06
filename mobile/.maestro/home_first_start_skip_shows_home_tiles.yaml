@@ -1,0 +1,51 @@
+# Feature: Home first start
+# Scenario: Skip hides the spotlight forever and restores exam/blitz/trainer; empty card still starts the assessment
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+  - first-start
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      FIRST_START: "true"
+      TARGET_ID: screen-home
+
+- extendedWaitUntil:
+    visible:
+      id: "home-start-spotlight-skip"
+    timeout: 15000
+
+- tapOn:
+    id: "home-start-spotlight-skip"
+
+- extendedWaitUntil:
+    notVisible:
+      id: "home-start-spotlight"
+    timeout: 10000
+
+- assertVisible:
+    id: "tab-index"
+- assertVisible:
+    id: "home-readiness-index"
+- assertVisible:
+    id: "action-tile-trainer"
+- assertVisible:
+    id: "home-tile-blitz"
+- assertNotVisible:
+    id: "home-today-start"
+
+- tapOn:
+    id: "home-readiness-index"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 20000
+
+- assertVisible:
+    id: "question-choice-index-0"
+- assertNotVisible:
+    id: "screen-exam-session"

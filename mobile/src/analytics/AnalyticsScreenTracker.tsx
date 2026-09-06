@@ -1,25 +1,29 @@
-import { usePathname } from "expo-router";
+import { useSegments } from "expo-router";
 import { useEffect, useRef } from "react";
 
 import { ANALYTICS_EVENTS } from "./catalog";
-import { resolveScreenRoute } from "./screenRoutes";
+import {
+  analyticsPathFromSegments,
+  resolveScreenRoute,
+} from "./screenRoutes";
 import { useAnalytics } from "../providers/AnalyticsProvider";
 
 export function AnalyticsScreenTracker() {
-  const pathname = usePathname();
+  const segments = useSegments();
   const { track } = useAnalytics();
-  const previousPathnameRef = useRef<string | null>(null);
+  const previousPathRef = useRef<string | null>(null);
+  const pathname = analyticsPathFromSegments(segments);
 
   useEffect(() => {
     if (!pathname || pathname === "/e2e/bootstrap") {
       return;
     }
 
-    if (previousPathnameRef.current === pathname) {
+    if (previousPathRef.current === pathname) {
       return;
     }
 
-    previousPathnameRef.current = pathname;
+    previousPathRef.current = pathname;
     const route = resolveScreenRoute(pathname);
 
     track(ANALYTICS_EVENTS.screenViewed.key, {

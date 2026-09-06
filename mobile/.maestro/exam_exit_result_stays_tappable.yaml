@@ -1,0 +1,61 @@
+# Feature: Exam
+# Scenario: Closing a started exam (free user, ads on) lands on the result
+# screen and Close stays tappable — the interstitial must not freeze the UI.
+appId: com.mindjar.prawko
+tags:
+  - exam
+  - session
+  - result
+  - ads
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      ENABLE_ADS: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-home
+
+- runFlow:
+    file: subflows/start_exam_from_home.yaml
+    env:
+      TARGET_ID: screen-exam-session
+
+- tapOn:
+    id: "question-choice-index-0"
+
+- tapOn:
+    id: "exam-next-question"
+
+- extendedWaitUntil:
+    visible:
+      id: "exam-session-counter"
+      text: "Питання 2 з 32"
+    timeout: 15000
+
+- tapOn:
+    id: "exam-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "training-exit-dialog"
+    timeout: 10000
+
+- tapOn:
+    id: "training-exit-finish"
+
+- runFlow:
+    file: subflows/dismiss_interstitial_if_present.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-result"
+    timeout: 20000
+
+- tapOn:
+    id: "exam-result-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000

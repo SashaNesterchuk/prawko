@@ -2,6 +2,7 @@ import { isDrivingCategory, type DrivingCategory } from "@prawko/config";
 
 import { mobileEnv } from "../../config/env";
 import { useEntitlementStore } from "../../state/entitlements";
+import { resetE2EAdsEnabled, setE2EAdsEnabled } from "./ads-flag";
 
 export type E2EOfflinePackStatus =
   | "downloading"
@@ -24,6 +25,7 @@ let overrides: E2ETestOverrides = {
   questionScenario: null,
   reachability: null,
 };
+let homeChromeUnlocked = false;
 
 export function resetE2ETestOverrides() {
   if (!mobileEnv.enableE2ETestMode) {
@@ -36,15 +38,19 @@ export function resetE2ETestOverrides() {
     questionScenario: null,
     reachability: null,
   };
+  homeChromeUnlocked = false;
   useEntitlementStore.getState().setDebugPlusOverride(null);
+  resetE2EAdsEnabled();
 }
 
 export function configureE2ETestOverrides(input: {
+  enableAds?: boolean | null;
   offlinePackCategory?: string | null;
   offlinePackStatus?: E2EOfflinePackStatus | null;
   plusAccess?: boolean | null;
   questionScenario?: E2EQuestionScenario | null;
   reachability?: boolean | null;
+  unlockHomeChrome?: boolean | null;
 }) {
   if (!mobileEnv.enableE2ETestMode) {
     return;
@@ -57,9 +63,15 @@ export function configureE2ETestOverrides(input: {
     reachability:
       typeof input.reachability === "boolean" ? input.reachability : null,
   };
+  homeChromeUnlocked = input.unlockHomeChrome !== false;
   useEntitlementStore.getState().setDebugPlusOverride(
     typeof input.plusAccess === "boolean" ? input.plusAccess : null
   );
+  setE2EAdsEnabled(input.enableAds === true);
+}
+
+export function isE2EHomeChromeUnlocked() {
+  return mobileEnv.enableE2ETestMode && homeChromeUnlocked;
 }
 
 export function getE2ETestReachabilityOverride() {

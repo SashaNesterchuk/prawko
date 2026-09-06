@@ -1,12 +1,15 @@
-import { AppState, type NativeEventSubscription } from "react-native";
+import { InteractionManager } from "react-native";
 import {
   AdEventType,
   InterstitialAd,
   MobileAds,
-  TestIds,
 } from "react-native-google-mobile-ads";
 
-import { getInterstitialAdUnitId, isAdMobEnabled } from "./admob-config";
+import {
+  getInterstitialAdUnitId,
+  isAdMobEnabled,
+  shouldUseAdMobTestAds,
+} from "./admob-config";
 
 type InterstitialShowingListener = (showing: boolean) => void;
 
@@ -40,9 +43,49 @@ const SHOW_OPEN_TIMEOUT_MS = 4_000;
  * advance in the background. Keep this longer than any normal creative.
  */
 const SHOW_CLOSE_TIMEOUT_MS = 90_000;
+/** Extra settle after RN animations so AdMob is not presented over a Modal. */
+export const PRESENTATION_SETTLE_MS = 400;
+/** Hard cap so a stuck interaction queue cannot freeze show() forever. */
+export const PRESENTATION_IDLE_TIMEOUT_MS = 1_200;
 /** Max time spent waiting for a creative before skipping. */
 const ENSURE_ATTEMPTS = 2;
 const ENSURE_PER_ATTEMPT_MS = 2_500;
+
+type IdleWait = () => Promise<void>;
+
+/**
+ * Presenting GADInterstitial during a Modal dismiss / stack animation leaves a
+ * transparent native layer that eats all touches. Wait for the UI to settle.
+ */
+export function waitForPresentationReady(): Promise<void> {
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const finish = () => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      resolve();
+    };
+
+    const task = InteractionManager.runAfterInteractions(() => {
+      setTimeout(finish, PRESENTATION_SETTLE_MS);
+    });
+
+    setTimeout(() => {
+      task.cancel?.();
+      finish();
+    }, PRESENTATION_IDLE_TIMEOUT_MS);
+  });
+}
+
+let idleWait: IdleWait = waitForPresentationReady;
+
+export function setInterstitialIdleWaitForTests(next?: IdleWait) {
+  idleWait = next ?? waitForPresentationReady;
+}
 
 export function isInterstitialLoaded() {
   return interstitialLoaded;
@@ -129,6 +172,7 @@ export function resetInterstitialInstance() {
 export function resetInterstitialControllerForTests() {
   resetInterstitialInstance();
   sdkInitialized = false;
+  idleWait = waitForPresentationReady;
 }
 
 export async function initializeAdMobSdk() {
@@ -137,9 +181,11 @@ export async function initializeAdMobSdk() {
   }
 
   try {
-    await MobileAds().setRequestConfiguration({
-      testDeviceIdentifiers: ["EMULATOR"],
-    });
+    if (shouldUseAdMobTestAds()) {
+      await MobileAds().setRequestConfiguration({
+        testDeviceIdentifiers: ["EMULATOR"],
+      });
+    }
     await MobileAds().initialize();
     sdkInitialized = true;
     logAd("SDK initialized", { unitId: getInterstitialAdUnitId() });
@@ -157,7 +203,7 @@ export function startInterstitialPreload() {
 
   resetInterstitialInstance();
 
-  const unitId = getInterstitialAdUnitId() || TestIds.INTERSTITIAL;
+  const unitId = getInterstitialAdUnitId();
 
   if (!unitId) {
     console.warn("[AdMob] Missing interstitial unit id.");
@@ -288,7 +334,8 @@ export function waitForInterstitialLoaded(timeoutMs = 5_000): Promise<boolean> {
 
 /**
  * Show a loaded interstitial with hard fail-open timeouts.
- * Never leaves `isShowing` stuck — ghost overlays get torn down.
+ * Never leaves `isShowing` stuck. Does not tear down the native instance on
+ * AppState flicker — that is what leaves a transparent overlay on the result.
  */
 export async function showPreloadedInterstitial(): Promise<boolean> {
   if (isShowing) {
@@ -307,16 +354,27 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
   }
 
   const current = interstitial;
+  setShowing(true);
+
+  try {
+    await idleWait();
+  } catch (error) {
+    console.warn("[AdMob] idle wait failed before show", error);
+    setShowing(false);
+    return false;
+  }
+
+  if (!current || interstitial !== current) {
+    logAd("show aborted — instance changed during idle wait");
+    setShowing(false);
+    return false;
+  }
 
   return new Promise<boolean>((resolve) => {
-    setShowing(true);
     let didOpen = false;
-    let sawBackgroundDuringShow = false;
     let settled = false;
-    let appStateSub: NativeEventSubscription | null = null;
     let openTimeout: ReturnType<typeof setTimeout> | null = null;
     let closeTimeout: ReturnType<typeof setTimeout> | null = null;
-    let appStateReleaseTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const cleanupTimers = () => {
       if (openTimeout) {
@@ -327,12 +385,6 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
         clearTimeout(closeTimeout);
         closeTimeout = null;
       }
-      if (appStateReleaseTimeout) {
-        clearTimeout(appStateReleaseTimeout);
-        appStateReleaseTimeout = null;
-      }
-      appStateSub?.remove();
-      appStateSub = null;
     };
 
     const finish = (shown: boolean, reason: string) => {
@@ -351,8 +403,8 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
         reason,
       });
 
-      // Always recreate after a show attempt so a ghost native layer cannot
-      // keep eating touches on the exam result screen.
+      // Recreate only after the native show settled (CLOSED / ERROR / timeout).
+      // Tearing down on AppState flicker is what leaves a ghost touch layer.
       resetInterstitialInstance();
       startInterstitialPreload();
 
@@ -392,45 +444,6 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
         finish(false, "error");
       }
     );
-
-    // Ghost dismiss without CLOSED: only treat "active" as done after the app
-    // actually left the foreground during this show. A spurious active (or
-    // open flicker) must not unlock navigation under a still-visible ad.
-    appStateSub = AppState.addEventListener("change", (nextState) => {
-      if (settled || !isShowing) {
-        return;
-      }
-
-      if (nextState === "inactive" || nextState === "background") {
-        sawBackgroundDuringShow = true;
-        return;
-      }
-
-      if (nextState !== "active") {
-        return;
-      }
-
-      if (didOpen && !sawBackgroundDuringShow) {
-        logAd("Ignoring AppState active — never left foreground after OPENED");
-        return;
-      }
-
-      const reason = didOpen
-        ? "app_active_after_open"
-        : "app_active_without_open";
-      const delayMs = didOpen ? 250 : 400;
-
-      logAd(`App became active during show — ${reason}`);
-      if (appStateReleaseTimeout) {
-        clearTimeout(appStateReleaseTimeout);
-      }
-      appStateReleaseTimeout = setTimeout(() => {
-        appStateReleaseTimeout = null;
-        if (!settled) {
-          finish(Boolean(didOpen), reason);
-        }
-      }, delayMs);
-    });
 
     openTimeout = setTimeout(() => {
       if (didOpen) {

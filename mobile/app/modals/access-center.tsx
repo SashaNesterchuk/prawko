@@ -26,6 +26,7 @@ import {
   usePurchaseAccess,
   useRevenueCatConfigured,
 } from "../../src/state/entitlements";
+import { useAppUserId } from "../../src/identity/AppIdentityProvider";
 import { useAppShellStore, useCurrentUser } from "../../src/state/app-shell";
 
 type FeedbackState =
@@ -41,6 +42,7 @@ export default function AccessCenterModalScreen() {
   const { captureError } = useErrorLogger();
   const styles = useStyles();
   const currentUser = useCurrentUser();
+  const appUserId = useAppUserId();
   const authMode = useAppShellStore((state) => state.authMode);
   const hasPlusAccess = useHasPlusAccess();
   const purchaseAccess = usePurchaseAccess();
@@ -86,7 +88,7 @@ export default function AccessCenterModalScreen() {
     });
 
     try {
-      const snapshot = await restoreRevenueCatPurchases(currentUser.id);
+      const snapshot = await restoreRevenueCatPurchases(appUserId);
 
       hydrateRevenueCatSnapshot(snapshot);
 
@@ -164,7 +166,7 @@ export default function AccessCenterModalScreen() {
 
     try {
       await presentRevenueCatCustomerCenter({
-        appUserId: currentUser.id,
+        appUserId,
         onCustomerInfoUpdated: (snapshot) => {
           hydrateRevenueCatSnapshot(snapshot);
         },

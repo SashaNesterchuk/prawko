@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { InteractionManager } from "react-native";
 
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import { ExamRestartGateDialog } from "../../src/components/shell/ExamRestartGateDialog";
@@ -206,25 +207,41 @@ export default function ExamResultScreen() {
     const passed = getExamResultOutcome(snapshot.session) === "passed";
     const examMode = snapshot.session.mode;
 
-    // Ad first (free users), then a native review sheet on a pass — never
-    // while the exam session is still live. Timeouts in the interstitial
-    // controller keep this screen tappable if the creative dies.
-    void (async () => {
-      if (!hasPlusAccess) {
-        try {
-          await showInterstitialForTrigger("after_exam_complete");
-        } catch (error) {
-          console.warn("Exam result interstitial failed open.", error);
-        }
+    // Wait until the result fade (and the exam exit Modal) have finished.
+    // Showing AdMob during that transition flashes a native overlay that
+    // then eats every tap on this screen.
+    let cancelled = false;
+    const task = InteractionManager.runAfterInteractions(() => {
+      if (cancelled) {
+        return;
       }
 
-      await maybeRequestInAppReview({
-        mode: examMode,
-        positiveOutcome: passed,
-        source: "exam_passed",
-        track,
-      });
-    })();
+      void (async () => {
+        if (!hasPlusAccess) {
+          try {
+            await showInterstitialForTrigger("after_exam_complete");
+          } catch (error) {
+            console.warn("Exam result interstitial failed open.", error);
+          }
+        }
+
+        if (cancelled) {
+          return;
+        }
+
+        await maybeRequestInAppReview({
+          mode: examMode,
+          positiveOutcome: passed,
+          source: "exam_passed",
+          track,
+        });
+      })();
+    });
+
+    return () => {
+      cancelled = true;
+      task.cancel?.();
+    };
   }, [hasPlusAccess, showInterstitialForTrigger, snapshot, track]);
 
   // Only bounce an *active* session back to the player — never while reviewing

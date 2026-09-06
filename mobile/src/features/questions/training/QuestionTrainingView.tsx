@@ -41,6 +41,7 @@ type QuestionTrainingViewProps = Pick<
   | "handleContinueAfterFeedback"
   | "handleConfirmExit"
   | "handleDismissExitDialog"
+  | "handleExitDialogDismissed"
   | "handleRequestExit"
   | "handleToggleBookmark"
   | "premiumIconSize"
@@ -73,6 +74,7 @@ export function QuestionTrainingView({
   handleContinueAfterFeedback,
   handleConfirmExit,
   handleDismissExitDialog,
+  handleExitDialogDismissed,
   handleRequestExit,
   handleToggleBookmark,
   premiumIconSize,
@@ -305,6 +307,7 @@ export function QuestionTrainingView({
           continueLabel={t("question.exitConfirmContinue")}
           finishLabel={t("question.exitConfirmFinish")}
           onContinue={handleDismissExitDialog}
+          onDismiss={handleExitDialogDismissed}
           onFinish={handleConfirmExit}
           title={t("question.exitConfirmTitle")}
           visible={showExitDialog}

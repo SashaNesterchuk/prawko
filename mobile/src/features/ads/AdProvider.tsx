@@ -1,6 +1,7 @@
-import { PropsWithChildren, useEffect } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 
 import { startTimedSessionClock } from "../questions/timed-session-clock";
+import { subscribeE2EAdsEnabled } from "../../testing/e2e/ads-flag";
 import { isAdMobEnabled } from "./admob-config";
 import {
   initializeAdMobSdk,
@@ -9,10 +10,16 @@ import {
 } from "./interstitial-controller";
 
 export function AdProvider({ children }: PropsWithChildren) {
+  const [adsEnabled, setAdsEnabled] = useState(() => isAdMobEnabled());
+
   useEffect(() => startTimedSessionClock(), []);
 
+  useEffect(() => subscribeE2EAdsEnabled(() => {
+    setAdsEnabled(isAdMobEnabled());
+  }), []);
+
   useEffect(() => {
-    if (!isAdMobEnabled()) {
+    if (!adsEnabled) {
       stopInterstitialPreload();
       return;
     }
@@ -35,7 +42,7 @@ export function AdProvider({ children }: PropsWithChildren) {
       stopPreload?.();
       stopInterstitialPreload();
     };
-  }, []);
+  }, [adsEnabled]);
 
   return children;
 }

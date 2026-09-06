@@ -2,10 +2,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DEFAULT_CATEGORY,
   DEFAULT_COUNTRY_CODE,
-  clampLocaleForCountry,
   getCountryConfig,
   isCountryCode,
   isDrivingCategory,
+  resolveLocaleForCountry,
   type CountryCode,
   type DrivingCategory,
   type PlanLevel,
@@ -76,6 +76,7 @@ type AppShellState = {
   currentStudyPlan: GeneratedStudyPlan | null;
   currentStudyPlanRemoteId: string | null;
   examCountry: CountryCode | null;
+  homeStartSpotlightDismissed: boolean;
   hasHydrated: boolean;
   mockUser: AppUser | null;
   onboardingCompleted: boolean;
@@ -92,6 +93,7 @@ type AppShellState = {
   studyPlanSetup: StudyPlanSetupDraft;
   supabaseUser: AppUser | null;
   clearCurrentStudyPlan: () => void;
+  dismissHomeStartSpotlight: () => void;
   completeCategoryStep: () => void;
   completeLanguageStep: () => void;
   completeOnboarding: () => void;
@@ -147,6 +149,7 @@ type PersistedAppShellState = Pick<
   | "preferredCategory"
   | "preferredLocale"
   | "hasChosenPreferredLocale"
+  | "homeStartSpotlightDismissed"
   | "enablePjmTracks"
   | "isScheduleNotificationEnabled"
   | "notificationHours"
@@ -199,10 +202,7 @@ function createMockUser(): AppUser {
 function getDefaultPreferredLocale(
   country: CountryCode | null | undefined,
 ): SupportedLocale {
-  return clampLocaleForCountry(
-    country ?? DEFAULT_COUNTRY_CODE,
-    getSupportedDeviceLocale(),
-  );
+  return resolveLocaleForCountry(country, getSupportedDeviceLocale());
 }
 
 function getSignedOutAuthMode(): AuthMode {
@@ -217,8 +217,10 @@ function normalizePersistedLocale(
   country: CountryCode | null | undefined,
   locale: SupportedLocale | null | undefined,
 ): SupportedLocale {
-  const normalized = normalizeSupportedLocale(locale ?? null);
-  return clampLocaleForCountry(country ?? DEFAULT_COUNTRY_CODE, normalized);
+  return resolveLocaleForCountry(
+    country,
+    normalizeSupportedLocale(locale ?? null),
+  );
 }
 
 function normalizePersistedCategory(
@@ -334,7 +336,9 @@ function normalizePersistedShellState(
       persistedState?.preferredCategory,
     ),
     preferredLocale: resolvedPreferredLocale,
-    hasChosenPreferredLocale,
+    hasChosenPreferredLocale: false,
+    homeStartSpotlightDismissed:
+      persistedState?.homeStartSpotlightDismissed ?? false,
     enablePjmTracks: persistedState?.enablePjmTracks ?? false,
     isScheduleNotificationEnabled:
       persistedState?.isScheduleNotificationEnabled ?? false,
@@ -362,6 +366,7 @@ export const useAppShellStore = create<AppShellState>()(
       preferredCategory: DEFAULT_CATEGORY,
       preferredLocale: getDefaultPreferredLocale(null),
       hasChosenPreferredLocale: false,
+      homeStartSpotlightDismissed: false,
       enablePjmTracks: false,
       isScheduleNotificationEnabled: false,
       notificationHours: DEFAULT_NOTIFICATION_HOURS,
@@ -372,6 +377,8 @@ export const useAppShellStore = create<AppShellState>()(
       supabaseUser: null,
       clearCurrentStudyPlan: () =>
         set({ currentStudyPlan: null, currentStudyPlanRemoteId: null }),
+      dismissHomeStartSpotlight: () =>
+        set({ homeStartSpotlightDismissed: true }),
       completeCategoryStep: () =>
         set((state) => ({
           onboardingProgress: {
@@ -440,6 +447,7 @@ export const useAppShellStore = create<AppShellState>()(
           preferredCategory: DEFAULT_CATEGORY,
           preferredLocale: getDefaultPreferredLocale(null),
           hasChosenPreferredLocale: false,
+          homeStartSpotlightDismissed: false,
           enablePjmTracks: false,
           isScheduleNotificationEnabled: false,
           notificationHours: DEFAULT_NOTIFICATION_HOURS,
@@ -623,6 +631,7 @@ export const useAppShellStore = create<AppShellState>()(
         preferredCategory: state.preferredCategory,
         preferredLocale: state.preferredLocale,
         hasChosenPreferredLocale: state.hasChosenPreferredLocale,
+        homeStartSpotlightDismissed: state.homeStartSpotlightDismissed,
         enablePjmTracks: state.enablePjmTracks,
         isScheduleNotificationEnabled: state.isScheduleNotificationEnabled,
         notificationHours: state.notificationHours,

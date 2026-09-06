@@ -175,6 +175,10 @@ export function shouldShowInterstitialForTrigger(
   }
 
   if (trigger === "app_resume") {
+    if (!AD_POLICY.enableAppResumeAds) {
+      return { allowed: false, reason: "trigger_not_ready" };
+    }
+
     if (!lastBackgroundAt) {
       return { allowed: false, reason: "trigger_not_ready" };
     }

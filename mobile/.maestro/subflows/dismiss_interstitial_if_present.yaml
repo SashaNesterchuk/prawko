@@ -1,0 +1,20 @@
+# Google test interstitials expose "Close Advertisement". No-op when ads are
+# skipped, the creative did not fill, or the overlay already dismissed.
+# Repeat because the flash can appear a second after navigation.
+appId: com.mindjar.prawko
+---
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- repeat:
+    times: 4
+    commands:
+      - runFlow:
+          when:
+            visible: "Close Advertisement"
+          commands:
+            - tapOn: "Close Advertisement"
+            - waitForAnimationToEnd:
+                timeout: 3000
+      - waitForAnimationToEnd:
+          timeout: 800

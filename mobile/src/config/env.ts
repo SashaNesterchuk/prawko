@@ -28,18 +28,21 @@ export const mobileEnv = {
     process.env.EXPO_PUBLIC_E2E_TEST_MODE,
     false
   ),
-  posthogKey:
-    process.env.EXPO_PUBLIC_POSTHOG_KEY ||
-    "phc_ksus5JCVVcb52pcjPHCBurMmXHc9nijfpYhVfAifGenR",
+  posthogKey: process.env.EXPO_PUBLIC_POSTHOG_KEY?.trim() ?? "",
   posthogHost:
-    process.env.EXPO_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
+    process.env.EXPO_PUBLIC_POSTHOG_HOST?.trim() || "https://eu.i.posthog.com",
+  // Baked true only in eas.json production. Dev, preview, TestFlight, and
+  // local Metro stay off so PostHog DAU and funnels are store traffic.
+  posthogCaptureEnabled: parseBooleanEnv(
+    process.env.EXPO_PUBLIC_POSTHOG_ENABLED,
+    false
+  ),
   revenueCatAppleApiKey:
     process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY ?? "",
   revenueCatGoogleApiKey:
     process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY ?? "",
-  // Every fresh install registers another anonymous customer in the shared
-  // RevenueCat project, so dev builds stay out of it until purchases are
-  // actually being tested.
+  // Production customers use a persisted app_user_id. Dev builds stay out of
+  // the shared RevenueCat project until purchases are actually being tested.
   revenueCatEnableInDev: parseBooleanEnv(
     process.env.EXPO_PUBLIC_REVENUECAT_ENABLE_IN_DEV,
     false

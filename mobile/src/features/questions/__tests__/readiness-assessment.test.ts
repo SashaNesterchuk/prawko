@@ -1,7 +1,6 @@
 import {
   buildReadinessAssessmentResult,
   READINESS_ASSESSMENT_QUESTION_COUNT,
-  resolveLocalReadinessPercent,
   isReadinessAssessmentSession,
 } from "../readiness-assessment";
 import type { QuestionSession } from "../types";
@@ -52,7 +51,7 @@ function makeSession(
 }
 
 describe("readiness-assessment", () => {
-  it("treats mini_test with >= 30 questions as readiness assessment", () => {
+  it("treats a 10-question mini_test as the readiness assessment", () => {
     expect(
       isReadinessAssessmentSession(
         makeSession({
@@ -62,12 +61,17 @@ describe("readiness-assessment", () => {
     ).toBe(true);
     expect(
       isReadinessAssessmentSession(
-        makeSession({ request: { mode: "learning", questionLimit: 30 } })
+        makeSession({ request: { mode: "learning", questionLimit: 10 } })
       )
     ).toBe(false);
     expect(
       isReadinessAssessmentSession(
         makeSession({ request: { questionLimit: 12 } })
+      )
+    ).toBe(false);
+    expect(
+      isReadinessAssessmentSession(
+        makeSession({ request: { questionLimit: 30 } })
       )
     ).toBe(false);
   });
@@ -82,22 +86,5 @@ describe("readiness-assessment", () => {
       sessionId: "session-test",
       total: 3,
     });
-  });
-
-  it("prefers assessment score over coverage for local readiness", () => {
-    expect(
-      resolveLocalReadinessPercent({
-        assessmentScorePercent: 67,
-        seen: 3,
-        total: 1000,
-      })
-    ).toBe(67);
-    expect(
-      resolveLocalReadinessPercent({
-        assessmentScorePercent: null,
-        seen: 50,
-        total: 100,
-      })
-    ).toBe(50);
   });
 });

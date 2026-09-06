@@ -23,6 +23,11 @@ import {
   type RevenueCatPaywallOutcome,
   type RevenueCatProductId,
 } from "./revenuecat-config";
+import {
+  STORE_OFFERS_TIMEOUT_MESSAGE,
+  STORE_REQUEST_TIMEOUT_MS,
+  withStoreRequestTimeout,
+} from "./store-request-timeout";
 
 export {
   getRevenueCatErrorMessage,
@@ -69,7 +74,6 @@ let didConfigurePurchases = false;
 let revenueCatModulePromise: Promise<RevenueCatModule> | null = null;
 let revenueCatUIModulePromise: Promise<RevenueCatUIModule> | null = null;
 let customerInfoListener: CustomerInfoUpdateListener | null = null;
-const STORE_REQUEST_TIMEOUT_MS = 20_000;
 
 export function isRevenueCatConfiguredForCurrentPlatform() {
   return Boolean(getRevenueCatPublicApiKey());
@@ -86,7 +90,7 @@ export function hasProEntitlement(customerInfo: CustomerInfo) {
 }
 
 export async function fetchRevenueCatSnapshot(
-  appUserId: string | null = null
+  appUserId: string
 ): Promise<RevenueCatSnapshot> {
   const isConfigured = await ensureRevenueCatReady(appUserId);
 
@@ -95,10 +99,10 @@ export async function fetchRevenueCatSnapshot(
   }
 
   const Purchases = (await getRevenueCatModule()).default;
-  const [customerInfo, offerings] = await withTimeout(
+  const [customerInfo, offerings] = await withStoreRequestTimeout(
     Promise.all([Purchases.getCustomerInfo(), Purchases.getOfferings()]),
     STORE_REQUEST_TIMEOUT_MS,
-    "Timed out loading Plus offers from the store."
+    STORE_OFFERS_TIMEOUT_MESSAGE
   );
 
   return mapRevenueCatSnapshot({
@@ -108,22 +112,39 @@ export async function fetchRevenueCatSnapshot(
   });
 }
 
+export async function syncRevenueCatSubscriberAttributes(input: {
+  appUserId: string;
+  supabaseUserId: string | null;
+}) {
+  const isConfigured = await ensureRevenueCatReady(input.appUserId);
+
+  if (!isConfigured) {
+    return;
+  }
+
+  const Purchases = (await getRevenueCatModule()).default;
+  await Purchases.setAttributes({
+    app_user_id: input.appUserId,
+    supabase_user_id: input.supabaseUserId ?? "",
+  });
+}
+
 export async function purchaseRevenueCatPackage(input: {
-  appUserId?: string | null;
+  appUserId: string;
   identifier: string;
   offeringIdentifier: string;
 }) {
-  const isConfigured = await ensureRevenueCatReady(input.appUserId ?? null);
+  const isConfigured = await ensureRevenueCatReady(input.appUserId);
 
   if (!isConfigured) {
     throw new Error("RevenueCat is not configured for this build.");
   }
 
   const Purchases = (await getRevenueCatModule()).default;
-  const offerings = await withTimeout(
+  const offerings = await withStoreRequestTimeout(
     Purchases.getOfferings(),
     STORE_REQUEST_TIMEOUT_MS,
-    "Timed out loading Plus offers from the store."
+    STORE_OFFERS_TIMEOUT_MESSAGE
   );
   const targetPackage = findOfferingPackage(offerings, input);
 
@@ -140,9 +161,7 @@ export async function purchaseRevenueCatPackage(input: {
   });
 }
 
-export async function restoreRevenueCatPurchases(
-  appUserId: string | null = null
-) {
+export async function restoreRevenueCatPurchases(appUserId: string) {
   const isConfigured = await ensureRevenueCatReady(appUserId);
 
   if (!isConfigured) {
@@ -167,14 +186,13 @@ export async function restoreRevenueCatPurchases(
  * Falls back to `not_presented` when the dashboard paywall is missing.
  */
 export async function presentRevenueCatPaywall(input: {
-  appUserId?: string | null;
+  appUserId: string;
   requiredEntitlementIdentifier?: string;
 }): Promise<{
   outcome: RevenueCatPaywallOutcome;
   snapshot: RevenueCatSnapshot | null;
 }> {
-  const appUserId = input.appUserId ?? null;
-  const isConfigured = await ensureRevenueCatReady(appUserId);
+  const isConfigured = await ensureRevenueCatReady(input.appUserId);
 
   if (!isConfigured) {
     return { outcome: "not_presented", snapshot: null };
@@ -196,7 +214,7 @@ export async function presentRevenueCatPaywall(input: {
       return { outcome, snapshot: null };
     }
 
-    const snapshot = await fetchRevenueCatSnapshot(appUserId);
+    const snapshot = await fetchRevenueCatSnapshot(input.appUserId);
     return { outcome, snapshot };
   } catch (error) {
     console.warn("Failed to present RevenueCat paywall.", error);
@@ -208,10 +226,10 @@ export async function presentRevenueCatPaywall(input: {
  * Opens RevenueCat Customer Center for restore / manage / support flows.
  */
 export async function presentRevenueCatCustomerCenter(input: {
-  appUserId?: string | null;
+  appUserId: string;
   onCustomerInfoUpdated?: (snapshot: RevenueCatSnapshot) => void;
 }) {
-  const isConfigured = await ensureRevenueCatReady(input.appUserId ?? null);
+  const isConfigured = await ensureRevenueCatReady(input.appUserId);
 
   if (!isConfigured) {
     throw new Error("RevenueCat is not configured for this build.");
@@ -244,7 +262,7 @@ export async function presentRevenueCatCustomerCenter(input: {
 }
 
 export async function subscribeToRevenueCatCustomerInfo(
-  appUserId: string | null,
+  appUserId: string,
   onUpdate: (snapshot: RevenueCatSnapshot) => void
 ) {
   const isConfigured = await ensureRevenueCatReady(appUserId);
@@ -290,20 +308,8 @@ export async function logoutRevenueCatUser() {
     customerInfoListener = null;
   }
 
-  if (!didConfigurePurchases) {
-    configuredAppUserId = null;
-    configuredApiKey = null;
-    return;
-  }
-
-  try {
-    const Purchases = (await getRevenueCatModule()).default;
-    await Purchases.logOut();
-  } catch (error) {
-    console.warn("Failed to log out RevenueCat user.", error);
-  } finally {
-    configuredAppUserId = null;
-  }
+  // Keep the persisted app_user_id as the RevenueCat customer. logOut() would
+  // mint a new anonymous $RCAnonymousID and split purchases from PostHog.
 }
 
 export function matchRevenueCatProductId(
@@ -363,17 +369,15 @@ function createEmptyRevenueCatSnapshot(
   };
 }
 
-async function ensureRevenueCatReady(appUserId: string | null = null) {
+async function ensureRevenueCatReady(appUserId: string) {
   const apiKey = getRevenueCatPublicApiKey();
 
-  if (!apiKey) {
+  if (!apiKey || !appUserId) {
     return false;
   }
 
   const Purchases = (await getRevenueCatModule()).default;
-  const configureOptions = appUserId
-    ? { apiKey, appUserID: appUserId }
-    : { apiKey };
+  const configureOptions = { apiKey, appUserID: appUserId };
 
   if (!didConfigurePurchases) {
     if ("setLogLevel" in Purchases) {
@@ -396,20 +400,10 @@ async function ensureRevenueCatReady(appUserId: string | null = null) {
     return true;
   }
 
-  if (appUserId && configuredAppUserId !== appUserId) {
+  if (configuredAppUserId !== appUserId) {
     await Purchases.logIn(appUserId);
     configuredAppUserId = appUserId;
     return true;
-  }
-
-  if (!appUserId && configuredAppUserId !== null) {
-    try {
-      await Purchases.logOut();
-    } catch (error) {
-      console.warn("Failed to switch RevenueCat to anonymous user.", error);
-    } finally {
-      configuredAppUserId = null;
-    }
   }
 
   return true;
@@ -654,23 +648,3 @@ function dedupeByKey<T>(items: T[], getKey: (item: T) => string) {
   });
 }
 
-async function withTimeout<T>(
-  promise: Promise<T>,
-  ms: number,
-  message: string
-) {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<T>((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error(message)), ms);
-      }),
-    ]);
-  } finally {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-  }
-}

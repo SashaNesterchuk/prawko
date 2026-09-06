@@ -16,8 +16,12 @@ import {
   getQuestionBank,
   hydrateQuestionBankFromLocalQuestions,
 } from "../../features/questions/question-bank";
-import { createEmptyQuestionUserState } from "../../features/questions/question-engine";
+import {
+  createEmptyQuestionUserState,
+} from "../../features/questions/question-engine";
+import { buildReadinessAssessmentResult } from "../../features/questions/readiness-assessment";
 import type {
+  QuestionAttempt,
   QuestionOptionValue,
   QuestionSession,
   QuestionUserStateMap,
@@ -31,9 +35,14 @@ import type {
   RemoteExamSessionStatus,
   RemoteExamSnapshot,
 } from "../../features/exam/types";
+import {
+  createHomeDailySessionKey,
+  HOME_DAILY_QUESTION_COUNT,
+} from "../../features/home/home-daily-practice";
 import { finalizeLocalOnboarding } from "../../features/onboarding/finalize-local-onboarding";
 import { isRoadSignCategoryId } from "../../features/road-signs/catalog";
 import { getExamDateFromDays } from "../../features/study-plan/generate-local-study-plan";
+import { getWarsawIsoDate } from "../../features/study-plan/supabase-study-plan-progress";
 import { rehydrateCountryScopedStores } from "../../countries/CountryScopedStores";
 import { useAppShellStore } from "../../state/app-shell";
 import { useQuestionCatalogStore } from "../../state/question-catalog";
@@ -63,13 +72,17 @@ export type E2EDestination =
   | "question-result"
   | "question-result-failed";
 
+export type E2EHomeDailyStatus = "done" | "in_progress";
+
 type PrepareE2EAppStateInput = {
   category?: string | null;
   daysUntilExam?: number | null;
   examCountry?: string | null;
   examSessionCategory?: string | null;
   examSessionStatus?: RemoteExamSessionStatus | null;
+  homeDaily?: E2EHomeDailyStatus | null;
   locale?: SupportedLocale | null;
+  enableAds?: boolean | null;
   offlinePackCategory?: string | null;
   offlinePackStatus?: E2EOfflinePackStatus | null;
   plusAccess?: boolean | null;
@@ -77,12 +90,15 @@ type PrepareE2EAppStateInput = {
   reachability?: boolean | null;
   seedQuestionResult?: boolean | null;
   seedQuestionResultOutcome?: "good" | "poor" | null;
+  unlockHomeChrome?: boolean | null;
 };
 
 type ResolveE2EDestinationInput = {
   destination?: string | null;
   reviewStartOrder?: number | null;
   seededExamSessionId?: string | null;
+  seededQuestionLimit?: string | null;
+  seededQuestionMode?: string | null;
   seededQuestionSessionKey?: string | null;
   signCategoryId?: string | null;
   topicId?: string | null;
@@ -92,6 +108,8 @@ export async function prepareE2EAppState(
   input: PrepareE2EAppStateInput = {},
 ): Promise<{
   seededExamSessionId: string | null;
+  seededQuestionLimit: string | null;
+  seededQuestionMode: string | null;
   seededQuestionSessionKey: string | null;
 }> {
   const store = useAppShellStore.getState();
@@ -102,11 +120,13 @@ export async function prepareE2EAppState(
 
   resetE2ETestOverrides();
   configureE2ETestOverrides({
+    enableAds: input.enableAds,
     offlinePackCategory: input.offlinePackCategory,
     offlinePackStatus: input.offlinePackStatus,
     plusAccess: input.plusAccess,
     questionScenario: input.questionScenario,
     reachability: input.reachability,
+    unlockHomeChrome: input.unlockHomeChrome ?? true,
   });
 
   if (input.questionScenario) {
@@ -131,6 +151,7 @@ export async function prepareE2EAppState(
   });
 
   finalizeLocalOnboarding();
+  useAppShellStore.setState({ homeStartSpotlightDismissed: false });
 
   await waitForQuestionProgressHydrated();
   await waitForQuestionCatalogResolved();
@@ -149,15 +170,33 @@ export async function prepareE2EAppState(
       })
     : null;
 
-  const seededQuestionSessionKey = input.seedQuestionResult
-    ? seedE2EFinishedQuestionSession({
+  const homeDailySessionKey = input.homeDaily
+    ? seedE2EHomeDailySession({
         category: preferredCategory,
-        outcome: input.seedQuestionResultOutcome === "poor" ? "poor" : "good",
+        status: input.homeDaily,
       })
     : null;
+  const seededQuestionSessionKey = homeDailySessionKey
+    ? homeDailySessionKey
+    : input.seedQuestionResult
+      ? seedE2EFinishedQuestionSession({
+          category: preferredCategory,
+          outcome: input.seedQuestionResultOutcome === "poor" ? "poor" : "good",
+        })
+      : null;
 
   return {
     seededExamSessionId,
+    seededQuestionLimit: homeDailySessionKey
+      ? String(HOME_DAILY_QUESTION_COUNT)
+      : seededQuestionSessionKey
+        ? "5"
+        : null,
+    seededQuestionMode: homeDailySessionKey
+      ? "mini_test"
+      : seededQuestionSessionKey
+        ? "learning"
+        : null,
     seededQuestionSessionKey,
   };
 }
@@ -228,8 +267,8 @@ export function resolveE2EDestination(
         ? {
             pathname: "/question",
             params: {
-              mode: "learning",
-              questionLimit: "5",
+              mode: input.seededQuestionMode ?? "learning",
+              questionLimit: input.seededQuestionLimit ?? "5",
               session: input.seededQuestionSessionKey,
             },
           }
@@ -531,6 +570,108 @@ function seedE2EFinishedQuestionSession(input: {
       "learning:all": 100,
     },
     ...(questionUserState ? { questionUserState } : {}),
+  });
+
+  return routeSessionKey;
+}
+
+function seedE2EHomeDailySession(input: {
+  category: DrivingCategory;
+  status: E2EHomeDailyStatus;
+}) {
+  const today = getWarsawIsoDate();
+  const routeSessionKey = createHomeDailySessionKey(today, input.category);
+  const sessionKey = `${input.category}:${routeSessionKey}`;
+  const sourceQuestions = getQuestionBank().slice(0, HOME_DAILY_QUESTION_COUNT);
+
+  if (sourceQuestions.length === 0) {
+    throw new Error("E2E home daily seed needs a local question bank.");
+  }
+
+  const isDone = input.status === "done";
+  const answeredQuestions = isDone ? sourceQuestions : sourceQuestions.slice(0, 1);
+  const nowMs = Date.now();
+  const answers = Object.fromEntries(
+    answeredQuestions.map((question, index) => {
+      const isCorrect = index !== 2;
+      const selectedAnswer = isCorrect
+        ? question.correctAnswer
+        : pickWrongAnswer(question.correctAnswer);
+
+      return [
+        question.id,
+        {
+          questionId: question.id,
+          selectedAnswer,
+          isCorrect,
+          answeredAt: new Date(
+            nowMs - (answeredQuestions.length - index) * 20_000
+          ).toISOString(),
+        },
+      ];
+    })
+  );
+  const questionIds = sourceQuestions.map((question) => question.id);
+  const session: QuestionSession = {
+    id: `session-${sessionKey}`,
+    request: {
+      currentCategory: input.category,
+      mode: "mini_test",
+      questionLimit: HOME_DAILY_QUESTION_COUNT,
+      sessionKey,
+    },
+    questionIds,
+    currentIndex: isDone ? Math.max(0, questionIds.length - 1) : 0,
+    answers,
+    createdAt: new Date(nowMs - 5 * 60 * 1000).toISOString(),
+    finishedAt: isDone ? new Date(nowMs).toISOString() : null,
+    emptyReason: null,
+  };
+  const questionUserState: QuestionUserStateMap = Object.fromEntries(
+    answeredQuestions.map((question) => {
+      const answer = answers[question.id];
+      const isCorrect = Boolean(answer?.isCorrect);
+      const answeredAt = answer?.answeredAt ?? new Date(nowMs).toISOString();
+
+      return [
+        question.id,
+        {
+          ...createEmptyQuestionUserState(question.id),
+          timesSeen: 1,
+          timesCorrect: isCorrect ? 1 : 0,
+          timesWrong: isCorrect ? 0 : 1,
+          lastSeenAt: answeredAt,
+          lastCorrectAt: isCorrect ? answeredAt : null,
+          lastWrongAt: isCorrect ? null : answeredAt,
+        },
+      ];
+    })
+  );
+  const attempts: QuestionAttempt[] = answeredQuestions.map((question) => {
+    const answer = answers[question.id]!;
+
+    return {
+      id: `attempt-${answer.answeredAt}-${question.id}`,
+      questionId: question.id,
+      sessionId: session.id,
+      sessionMode: "mini_test",
+      topicBlock: question.topicBlock,
+      selectedAnswer: answer.selectedAnswer,
+      isCorrect: answer.isCorrect,
+      answeredAt: answer.answeredAt,
+    };
+  });
+  const readinessAssessment = isDone
+    ? buildReadinessAssessmentResult(session)
+    : null;
+
+  useAppShellStore.setState({ homeStartSpotlightDismissed: true });
+  useQuestionProgressStore.setState({
+    activeSession: isDone ? session : null,
+    attempts,
+    homeDailySession: session,
+    questionUserState,
+    readinessAssessment,
   });
 
   return routeSessionKey;

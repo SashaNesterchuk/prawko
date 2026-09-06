@@ -1,7 +1,7 @@
 import "react-native-gesture-handler";
 import "react-native-reanimated";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useFonts } from "expo-font";
 import { Observe, ObserveRoot, useObserve } from "expo-observe";
 import { Stack } from "expo-router";
@@ -10,6 +10,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { configureFonts } from "../src/portable-ui";
 import { AnalyticsScreenTracker } from "../src/analytics/AnalyticsScreenTracker";
 import { mobileEnv } from "../src/config/env";
+import { getOrCreateAppUserId } from "../src/identity/app-user-id";
 import { AppProviders } from "../src/providers/AppProviders";
 import {
   useAppShellStore,
@@ -60,6 +61,7 @@ function ObserveAppReadyMarker() {
 
 function RootLayout() {
   const [loaded, error] = useFonts(appFonts);
+  const [appUserId, setAppUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (error) {
@@ -68,17 +70,32 @@ function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
+    void getOrCreateAppUserId().then(setAppUserId);
+  }, []);
+
+  useEffect(() => {
+    if (!appUserId) {
+      return;
+    }
+
+    Observe.setGlobalAttributes({
+      app_user_id: appUserId,
+      revenuecat_app_user_id: appUserId,
+    });
+  }, [appUserId]);
+
+  useEffect(() => {
+    if (loaded && appUserId) {
       void SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [appUserId, loaded]);
 
-  if (!loaded) {
+  if (!loaded || !appUserId) {
     return null;
   }
 
   return (
-    <AppProviders>
+    <AppProviders appUserId={appUserId}>
       <ObserveAppReadyMarker />
       <AnalyticsScreenTracker />
       <Stack screenOptions={{ headerShown: false }}>

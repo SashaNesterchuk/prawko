@@ -1,13 +1,20 @@
 import type { QuestionAttempt } from "../../questions/types";
 import {
+  computeLocalReadinessScore,
+  computeLocalReadinessScoreComponents,
+} from "../../questions/readiness-score";
+import {
   getReadinessPeriodChange,
   resolveReadinessPeriodChangeLabelKey,
 } from "../profile-stats";
 
-const TOTAL_QUESTIONS = 2139;
 const TODAY = new Date("2026-08-15T12:00:00.000Z");
 
-function makeAttempt(questionId: string, answeredAt: string): QuestionAttempt {
+function makeAttempt(
+  questionId: string,
+  answeredAt: string,
+  overrides: Partial<QuestionAttempt> = {}
+): QuestionAttempt {
   return {
     id: `attempt-${questionId}`,
     questionId,
@@ -17,159 +24,235 @@ function makeAttempt(questionId: string, answeredAt: string): QuestionAttempt {
     selectedAnswer: "A",
     isCorrect: true,
     answeredAt,
+    ...overrides,
   };
 }
 
-function makeSeenIds(count: number, prefix: string) {
-  return Array.from({ length: count }, (_, index) => `${prefix}-${index}`);
+function makeSeenAttempts(
+  count: number,
+  prefix: string,
+  answeredAt: string,
+  overrides: Partial<QuestionAttempt> = {}
+) {
+  return Array.from({ length: count }, (_, index) =>
+    makeAttempt(`${prefix}-${index}`, answeredAt, {
+      id: `attempt-${prefix}-${index}`,
+      ...overrides,
+    })
+  );
 }
 
 describe("getReadinessPeriodChange", () => {
-  it("does not treat newly covered questions as readiness change when the index is an assessment score", () => {
-    const previouslySeen = makeSeenIds(94, "old");
-    const newlyCovered = makeSeenIds(199, "new");
+  it("does not treat newly covered questions as readiness change when accuracy stays the same", () => {
+    const previouslySeen = makeSeenAttempts(
+      94,
+      "old",
+      "2026-08-07T12:00:00.000Z"
+    );
+    const newlyCovered = makeSeenAttempts(
+      199,
+      "new",
+      "2026-08-15T12:00:00.000Z"
+    );
+    const attempts = [...previouslySeen, ...newlyCovered];
+    const currentReadiness = computeLocalReadinessScore({
+      attempts,
+      now: TODAY,
+    });
+
+    expect(
+      getReadinessPeriodChange({
+        attempts,
+        currentReadiness,
+        referenceDate: TODAY,
+      })
+    ).toBeNull();
+  });
+
+  it("shows today's index jump for a new learner instead of the first-session percent", () => {
     const attempts = [
-      ...previouslySeen.map((questionId) =>
-        makeAttempt(questionId, "2026-08-07T12:00:00.000Z")
-      ),
-      ...newlyCovered.map((questionId) =>
-        makeAttempt(questionId, "2026-08-15T12:00:00.000Z")
-      ),
+      ...makeSeenAttempts(3, "correct", "2026-08-15T12:00:00.000Z", {
+        sessionId: "mini-1",
+        sessionMode: "mini_test",
+        isCorrect: true,
+      }),
+      ...makeSeenAttempts(7, "wrong", "2026-08-15T12:00:00.000Z", {
+        sessionId: "mini-1",
+        sessionMode: "mini_test",
+        isCorrect: false,
+      }),
+    ];
+    const currentReadiness = computeLocalReadinessScore({
+      attempts,
+      now: TODAY,
+    });
+
+    expect(currentReadiness).toBe(24);
+    expect(
+      getReadinessPeriodChange({
+        attempts,
+        currentReadiness,
+        referenceDate: TODAY,
+      })
+    ).toEqual({
+      deltaPercent: 24,
+      periodDays: 1,
+    });
+  });
+
+  it("does not show +24% today after 10 questions in the real bank", () => {
+    const attempts = [
+      ...makeSeenAttempts(3, "correct", "2026-08-15T12:00:00.000Z", {
+        sessionId: "mini-1",
+        sessionMode: "mini_test",
+        isCorrect: true,
+      }),
+      ...makeSeenAttempts(7, "wrong", "2026-08-15T12:00:00.000Z", {
+        sessionId: "mini-1",
+        sessionMode: "mini_test",
+        isCorrect: false,
+      }),
     ];
 
     expect(
       getReadinessPeriodChange({
         attempts,
-        seenQuestionIds: [...previouslySeen, ...newlyCovered],
-        totalQuestions: TOTAL_QUESTIONS,
-        assessment: {
-          completedAt: "2026-08-07T12:00:00.000Z",
-          scorePercent: 53,
-        },
-        currentReadiness: 53,
-        referenceDate: TODAY,
-      })
-    ).toBeNull();
-  });
-
-  it("shows today's index jump for a new learner instead of coverage gained in the session", () => {
-    const coveredToday = makeSeenIds(293, "today");
-
-    expect(
-      getReadinessPeriodChange({
-        attempts: coveredToday.map((questionId) =>
-          makeAttempt(questionId, "2026-08-15T14:00:00.000Z")
-        ),
-        seenQuestionIds: coveredToday,
-        totalQuestions: TOTAL_QUESTIONS,
-        assessment: {
-          completedAt: "2026-08-15T12:00:00.000Z",
-          scorePercent: 53,
-        },
-        currentReadiness: 53,
+        totalQuestions: 2142,
+        currentReadiness: computeLocalReadinessScore({
+          attempts,
+          totalQuestions: 2142,
+          now: TODAY,
+        }),
         referenceDate: TODAY,
       })
     ).toEqual({
-      deltaPercent: 53,
+      deltaPercent: 1,
       periodDays: 1,
     });
   });
 
   it("grows the window from today to 7 days, then stays at 7", () => {
-    const seenYesterday = makeSeenIds(20, "yesterday");
-    const seenTwoDaysAgo = makeSeenIds(20, "two-days");
-    const seenTenDaysAgo = makeSeenIds(20, "ten-days");
+    const seenYesterday = makeSeenAttempts(
+      20,
+      "yesterday",
+      "2026-08-14T12:00:00.000Z"
+    );
+    const seenTwoDaysAgo = makeSeenAttempts(
+      20,
+      "two-days",
+      "2026-08-13T12:00:00.000Z"
+    );
+    const seenTenDaysAgo = makeSeenAttempts(
+      20,
+      "ten-days",
+      "2026-08-05T12:00:00.000Z",
+      { isCorrect: false, sessionMode: "mini_test", sessionId: "old-exam" }
+    );
+    const seenYesterdayBetter = makeSeenAttempts(
+      20,
+      "yesterday",
+      "2026-08-14T12:00:00.000Z",
+      { sessionMode: "mini_test", sessionId: "new-exam" }
+    );
 
     expect(
       getReadinessPeriodChange({
-        attempts: seenYesterday.map((questionId) =>
-          makeAttempt(questionId, "2026-08-14T12:00:00.000Z")
-        ),
-        seenQuestionIds: seenYesterday,
-        totalQuestions: 100,
-        currentReadiness: 20,
+        attempts: seenYesterday,
+        currentReadiness: computeLocalReadinessScore({
+          attempts: seenYesterday,
+          now: TODAY,
+        }),
         referenceDate: TODAY,
-      })
-    ).toEqual({
-      deltaPercent: 20,
-      periodDays: 2,
+      })?.periodDays
+    ).toBe(2);
+
+    expect(
+      getReadinessPeriodChange({
+        attempts: seenTwoDaysAgo,
+        currentReadiness: computeLocalReadinessScore({
+          attempts: seenTwoDaysAgo,
+          now: TODAY,
+        }),
+        referenceDate: TODAY,
+      })?.periodDays
+    ).toBe(3);
+
+    const weekAttempts = [...seenTenDaysAgo, ...seenYesterdayBetter];
+    const weekNow = computeLocalReadinessScore({
+      attempts: weekAttempts,
+      now: TODAY,
+    });
+    const weekThen = computeLocalReadinessScore({
+      attempts: seenTenDaysAgo,
+      now: TODAY,
     });
 
+    expect(weekNow).not.toBe(weekThen);
     expect(
       getReadinessPeriodChange({
-        attempts: seenTwoDaysAgo.map((questionId) =>
-          makeAttempt(questionId, "2026-08-13T12:00:00.000Z")
-        ),
-        seenQuestionIds: seenTwoDaysAgo,
-        totalQuestions: 100,
-        currentReadiness: 20,
+        attempts: weekAttempts,
+        currentReadiness: weekNow,
         referenceDate: TODAY,
       })
     ).toEqual({
-      deltaPercent: 20,
-      periodDays: 3,
-    });
-
-    expect(
-      getReadinessPeriodChange({
-        attempts: [
-          ...seenTenDaysAgo.map((questionId) =>
-            makeAttempt(questionId, "2026-08-05T12:00:00.000Z")
-          ),
-          ...seenYesterday.map((questionId) =>
-            makeAttempt(questionId, "2026-08-14T12:00:00.000Z")
-          ),
-        ],
-        seenQuestionIds: [...seenTenDaysAgo, ...seenYesterday],
-        totalQuestions: 100,
-        currentReadiness: 40,
-        referenceDate: TODAY,
-      })
-    ).toEqual({
-      deltaPercent: 20,
+      deltaPercent: weekNow - weekThen,
       periodDays: 7,
     });
   });
 
   it("hides the badge when the index is unchanged over the window", () => {
-    const seen = makeSeenIds(40, "old");
+    const seen = makeSeenAttempts(40, "old", "2026-08-01T12:00:00.000Z");
 
     expect(
       getReadinessPeriodChange({
-        attempts: seen.map((questionId) =>
-          makeAttempt(questionId, "2026-08-01T12:00:00.000Z")
-        ),
-        seenQuestionIds: seen,
-        totalQuestions: 100,
-        currentReadiness: 40,
+        attempts: seen,
+        currentReadiness: computeLocalReadinessScore({
+          attempts: seen,
+          now: TODAY,
+        }),
         referenceDate: TODAY,
       })
     ).toBeNull();
   });
 
-  it("uses coverage change only when coverage is the displayed index", () => {
-    const previouslySeen = makeSeenIds(10, "old");
-    const newlyCovered = makeSeenIds(20, "new");
+  it("shows the readinessScore delta, not unique coverage gained in the session", () => {
+    const previouslySeen = makeSeenAttempts(
+      10,
+      "old",
+      "2026-08-05T12:00:00.000Z",
+      { isCorrect: false, sessionMode: "mini_test", sessionId: "old-exam" }
+    );
+    const newlyCovered = makeSeenAttempts(
+      20,
+      "new",
+      "2026-08-15T12:00:00.000Z",
+      { sessionMode: "mini_test", sessionId: "new-exam" }
+    );
+    const attempts = [...previouslySeen, ...newlyCovered];
+    const currentReadiness = computeLocalReadinessScore({
+      attempts,
+      now: TODAY,
+    });
+    const readinessThen = computeLocalReadinessScore({
+      attempts: previouslySeen,
+      now: TODAY,
+    });
 
+    expect(currentReadiness).not.toBe(30);
     expect(
       getReadinessPeriodChange({
-        attempts: [
-          ...previouslySeen.map((questionId) =>
-            makeAttempt(questionId, "2026-08-05T12:00:00.000Z")
-          ),
-          ...newlyCovered.map((questionId) =>
-            makeAttempt(questionId, "2026-08-15T12:00:00.000Z")
-          ),
-        ],
-        seenQuestionIds: [...previouslySeen, ...newlyCovered],
-        totalQuestions: 100,
-        currentReadiness: 30,
+        attempts,
+        currentReadiness,
         referenceDate: TODAY,
       })
     ).toEqual({
-      deltaPercent: 20,
+      deltaPercent: currentReadiness - readinessThen,
       periodDays: 7,
     });
+    expect(
+      computeLocalReadinessScoreComponents({ attempts, now: TODAY })
+        .accuracyPercent
+    ).toBe(66.7);
   });
 });
 

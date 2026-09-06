@@ -16,13 +16,14 @@ export function isUuidString(value: string | null | undefined): value is string 
 export function buildQuestionRouteParams(input: {
   mode: QuestionSessionMode;
   questionLimit?: number | null;
+  sessionKey?: string;
   studyPlanTaskId?: string | null;
   timeLimitSeconds?: number | null;
   topic?: LearningTopicId;
 }) {
   const params: Record<string, string> = {
     mode: input.mode,
-    session: createQuestionSessionKey(input),
+    session: input.sessionKey ?? createQuestionSessionKey(input),
   };
 
   if (

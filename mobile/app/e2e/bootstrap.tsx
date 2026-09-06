@@ -8,6 +8,7 @@ import { useHasHydrated } from "../../src/state/app-shell";
 import {
   prepareE2EAppState,
   resolveE2EDestination,
+  type E2EHomeDailyStatus,
 } from "../../src/testing/e2e/bootstrap";
 import type {
   E2EOfflinePackStatus,
@@ -20,10 +21,12 @@ type BootstrapParams = {
   category?: string | string[];
   daysUntilExam?: string | string[];
   destination?: string | string[];
+  enableAds?: string | string[];
   examSessionCategory?: string | string[];
   examSessionStatus?: string | string[];
   examStartOrder?: string | string[];
   examCountry?: string | string[];
+  homeDaily?: string | string[];
   locale?: string | string[];
   offlinePackCategory?: string | string[];
   offlinePackStatus?: string | string[];
@@ -32,6 +35,7 @@ type BootstrapParams = {
   reachability?: string | string[];
   signCategoryId?: string | string[];
   topicId?: string | string[];
+  firstStart?: string | string[];
 };
 
 export default function E2EBootstrapScreen() {
@@ -41,6 +45,7 @@ export default function E2EBootstrapScreen() {
   const destination = getSingleParam(params.destination);
   const category = getSingleParam(params.category);
   const plusAccess = parseOptionalBoolean(getSingleParam(params.plusAccess));
+  const enableAds = parseOptionalBoolean(getSingleParam(params.enableAds));
   const reachability = parseOptionalBoolean(getSingleParam(params.reachability));
   const locale = normalizeSupportedLocale(getSingleParam(params.locale));
   const offlinePackCategory = getSingleParam(params.offlinePackCategory);
@@ -55,12 +60,14 @@ export default function E2EBootstrapScreen() {
     getSingleParam(params.examSessionStatus)
   );
   const examCountry = getSingleParam(params.examCountry);
+  const homeDaily = parseHomeDailyStatus(getSingleParam(params.homeDaily));
   const reviewStartOrder = parsePositiveInteger(
     getSingleParam(params.examStartOrder)
   );
   const signCategoryId = getSingleParam(params.signCategoryId);
   const topicId = getSingleParam(params.topicId);
   const daysUntilExam = parsePositiveInteger(getSingleParam(params.daysUntilExam));
+  const firstStart = parseOptionalBoolean(getSingleParam(params.firstStart));
 
   useEffect(() => {
     if (
@@ -76,9 +83,11 @@ export default function E2EBootstrapScreen() {
       const prepared = await prepareE2EAppState({
         category,
         daysUntilExam,
+        enableAds,
         examSessionCategory,
         examSessionStatus,
         examCountry,
+        homeDaily,
         locale,
         offlinePackCategory,
         offlinePackStatus,
@@ -90,6 +99,7 @@ export default function E2EBootstrapScreen() {
           destination === "question-result-failed",
         seedQuestionResultOutcome:
           destination === "question-result-failed" ? "poor" : "good",
+        unlockHomeChrome: firstStart === true ? false : true,
       });
 
       router.replace(
@@ -97,6 +107,8 @@ export default function E2EBootstrapScreen() {
           destination,
           reviewStartOrder,
           seededExamSessionId: prepared.seededExamSessionId,
+          seededQuestionLimit: prepared.seededQuestionLimit,
+          seededQuestionMode: prepared.seededQuestionMode,
           seededQuestionSessionKey: prepared.seededQuestionSessionKey,
           signCategoryId,
           topicId,
@@ -107,10 +119,13 @@ export default function E2EBootstrapScreen() {
     category,
     daysUntilExam,
     destination,
+    enableAds,
     examSessionCategory,
     examSessionStatus,
     examCountry,
+    firstStart,
     hasHydrated,
+    homeDaily,
     locale,
     offlinePackCategory,
     offlinePackStatus,
@@ -174,6 +189,19 @@ function parseOptionalBoolean(value: string | undefined) {
   }
 
   return null;
+}
+
+function parseHomeDailyStatus(
+  value: string | undefined
+): E2EHomeDailyStatus | null {
+  switch (value?.trim().toLowerCase()) {
+    case "done":
+      return "done";
+    case "in_progress":
+      return "in_progress";
+    default:
+      return null;
+  }
 }
 
 function parseOfflinePackStatus(

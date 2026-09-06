@@ -69,6 +69,20 @@ export const ANALYTICS_EVENTS = {
     key: "notification_permission_resolved",
     description: "The notification permission flow resolved.",
   },
+  firstStartShown: {
+    key: "first_start_shown",
+    description:
+      "The post-onboarding Home spotlight was shown on an empty readiness card.",
+  },
+  firstStartSkipped: {
+    key: "first_start_skipped",
+    description: "The learner dismissed the post-onboarding Home spotlight.",
+  },
+  firstStartStarted: {
+    key: "first_start_started",
+    description:
+      "The learner started the capped first-start session from Home.",
+  },
   trainingModeSelected: {
     key: "training_mode_selected",
     description: "A training mode and question count were selected.",
@@ -427,9 +441,11 @@ export type AnalyticsScreenName =
  * Dashboard breakdowns must use these strings, not ad-hoc aliases.
  */
 export const ANALYTICS_PROPERTIES = {
+  appUserId: "app_user_id",
   examCountry: "exam_country",
   previous: "previous",
   source: "source",
+  supabaseUserId: "supabase_user_id",
 } as const;
 
 export const ANALYTICS_EXAM_COUNTRY_SOURCES = {

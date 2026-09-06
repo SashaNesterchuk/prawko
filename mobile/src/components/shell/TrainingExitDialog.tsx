@@ -10,6 +10,8 @@ type TrainingExitDialogProps = {
   layout?: "vertical" | "horizontal";
   onContinue: () => void;
   onFinish: () => void;
+  /** iOS: fires after the modal finish dismissing. */
+  onDismiss?: () => void;
   title: string;
   visible: boolean;
 };
@@ -21,6 +23,7 @@ export function TrainingExitDialog({
   layout = "vertical",
   onContinue,
   onFinish,
+  onDismiss,
   title,
   visible,
 }: TrainingExitDialogProps) {
@@ -69,6 +72,7 @@ export function TrainingExitDialog({
   return (
     <Modal
       animationType="fade"
+      onDismiss={onDismiss}
       onRequestClose={onContinue}
       presentationStyle="overFullScreen"
       transparent

@@ -11,6 +11,7 @@ import { AppButton } from "../../src/components/shell/AppButton";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../src/components/shell/NavigationButton";
 import { ErrorStateView } from "../../src/components/shell/StateViews";
+import { hideModalAndWait } from "../../src/components/shell/hide-modal-and-wait";
 import { TrainingExitDialog } from "../../src/components/shell/TrainingExitDialog";
 import { setExamSessionActive } from "../../src/features/ads/ad-session-policy";
 import {
@@ -137,6 +138,8 @@ export default function ExamSessionScreen() {
   const questionTimeoutHandledRef = useRef(false);
   const questionStartedAtRef = useRef(Date.now());
   const resultNavigationHandledRef = useRef(false);
+  const modalHideResolverRef = useRef<(() => void) | null>(null);
+  const confirmLockRef = useRef(false);
   // Empty open + close = miss-click: no confirm dialog, no result screen.
   const hasStartedExamRef = useRef(false);
   const exitHandlersRef = useRef<{
@@ -645,11 +648,16 @@ export default function ExamSessionScreen() {
   };
 
   const handleConfirmFinishExam = async () => {
-    if (!sessionId || isEnding) {
+    if (!sessionId || isEnding || confirmLockRef.current) {
       return;
     }
 
-    setShowFinishDialog(false);
+    confirmLockRef.current = true;
+    await hideModalAndWait(
+      () => setShowFinishDialog(false),
+      modalHideResolverRef
+    );
+
     setIsEnding(true);
     setErrorMessage(null);
 
@@ -676,6 +684,7 @@ export default function ExamSessionScreen() {
       console.warn("Failed to finish exam session.", error);
       setErrorMessage(getErrorMessage(error));
     } finally {
+      confirmLockRef.current = false;
       setIsEnding(false);
     }
   };
@@ -964,10 +973,24 @@ export default function ExamSessionScreen() {
   };
 
   const handleConfirmExit = () => {
-    setShowExitDialog(false);
-    void handleEndSession("abandoned", {
-      reason: "user_ended_early",
-    });
+    if (isEnding || confirmLockRef.current) {
+      return;
+    }
+
+    confirmLockRef.current = true;
+    void (async () => {
+      try {
+        await hideModalAndWait(
+          () => setShowExitDialog(false),
+          modalHideResolverRef
+        );
+        await handleEndSession("abandoned", {
+          reason: "user_ended_early",
+        });
+      } finally {
+        confirmLockRef.current = false;
+      }
+    })();
   };
 
   exitHandlersRef.current = {
@@ -1539,6 +1562,9 @@ export default function ExamSessionScreen() {
         continueLabel={t("exam.exitConfirmContinue")}
         finishLabel={t("exam.exitConfirmFinish")}
         onContinue={handleDismissExitDialog}
+        onDismiss={() => {
+          modalHideResolverRef.current?.();
+        }}
         onFinish={handleConfirmExit}
         title={t("exam.exitConfirmTitle")}
         visible={showExitDialog}
@@ -1552,6 +1578,9 @@ export default function ExamSessionScreen() {
         continueLabel={t("exam.finishConfirmContinue")}
         finishLabel={t("exam.finishConfirmFinish")}
         onContinue={() => setShowFinishDialog(false)}
+        onDismiss={() => {
+          modalHideResolverRef.current?.();
+        }}
         onFinish={() => void handleConfirmFinishExam()}
         title={t("exam.finishConfirmTitle")}
         visible={showFinishDialog}

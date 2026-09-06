@@ -6,6 +6,7 @@ import {
 } from "./ads-test-utils";
 
 const mockIsAdMobEnabled = jest.fn(() => true);
+const mockShouldUseAdMobTestAds = jest.fn(() => true);
 const mockGetInterstitialAdUnitId = jest.fn(
   () => "ca-app-pub-3940256099942544/4411468910"
 );
@@ -24,6 +25,7 @@ function mockCreateInterstitial(): MockInterstitial {
 jest.mock("../admob-config", () => ({
   isAdMobEnabled: () => mockIsAdMobEnabled(),
   getInterstitialAdUnitId: () => mockGetInterstitialAdUnitId(),
+  shouldUseAdMobTestAds: () => mockShouldUseAdMobTestAds(),
 }));
 
 jest.mock("react-native-google-mobile-ads", () => ({
@@ -49,11 +51,14 @@ import {
   isInterstitialLoaded,
   isInterstitialShowing,
   resetInterstitialControllerForTests,
+  setInterstitialIdleWaitForTests,
   showPreloadedInterstitial,
   startInterstitialPreload,
   stopInterstitialPreload,
   subscribeInterstitialShowing,
   waitForInterstitialLoaded,
+  waitForPresentationReady,
+  PRESENTATION_SETTLE_MS,
 } from "../interstitial-controller";
 
 type MockAppState = typeof AppState & {
@@ -67,11 +72,13 @@ describe("interstitial-controller", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     mockIsAdMobEnabled.mockReturnValue(true);
+    mockShouldUseAdMobTestAds.mockReturnValue(true);
     mockGetInterstitialAdUnitId.mockReturnValue(
       "ca-app-pub-3940256099942544/4411468910"
     );
     resetLatestMockInterstitial();
     resetInterstitialControllerForTests();
+    setInterstitialIdleWaitForTests(async () => undefined);
     mockAppState.__reset();
     mockMobileAds.setRequestConfiguration.mockClear();
     mockMobileAds.initialize.mockClear();
@@ -169,12 +176,18 @@ describe("interstitial-controller", () => {
     await expect(promise).resolves.toBe(true);
   });
 
+  async function afterIdleWait() {
+    await Promise.resolve();
+    await Promise.resolve();
+  }
+
   it("shows and finishes on CLOSED without leaving isShowing stuck", async () => {
     startInterstitialPreload();
     const ad = loadCurrentAd();
 
     const showPromise = showPreloadedInterstitial();
     expect(isInterstitialShowing()).toBe(true);
+    await afterIdleWait();
 
     ad.emit(AdEventType.OPENED);
     ad.emit(AdEventType.CLOSED);
@@ -184,11 +197,44 @@ describe("interstitial-controller", () => {
     expect(getLatestMockInterstitial()).toBeTruthy();
   });
 
+  it("waits for UI idle before calling native show()", async () => {
+    startInterstitialPreload();
+    const ad = loadCurrentAd();
+    let releaseIdle: (() => void) | undefined;
+    setInterstitialIdleWaitForTests(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseIdle = resolve;
+        })
+    );
+
+    const showPromise = showPreloadedInterstitial();
+    await Promise.resolve();
+    expect(isInterstitialShowing()).toBe(true);
+    expect(ad.show).not.toHaveBeenCalled();
+
+    releaseIdle!();
+    await afterIdleWait();
+    expect(ad.show).toHaveBeenCalled();
+
+    ad.emit(AdEventType.OPENED);
+    ad.emit(AdEventType.CLOSED);
+    await expect(showPromise).resolves.toBe(true);
+  });
+
+  it("waitForPresentationReady resolves after the settle delay", async () => {
+    setInterstitialIdleWaitForTests();
+    const promise = waitForPresentationReady();
+    await jest.advanceTimersByTimeAsync(PRESENTATION_SETTLE_MS);
+    await expect(promise).resolves.toBeUndefined();
+  });
+
   it("force-releases UI on open timeout when OPENED never fires", async () => {
     startInterstitialPreload();
     const ad = loadCurrentAd();
 
     const showPromise = showPreloadedInterstitial();
+    await afterIdleWait();
     expect(ad.show).toHaveBeenCalled();
 
     await jest.advanceTimersByTimeAsync(4_000);
@@ -201,6 +247,7 @@ describe("interstitial-controller", () => {
     const ad = loadCurrentAd();
 
     const showPromise = showPreloadedInterstitial();
+    await afterIdleWait();
     ad.emit(AdEventType.OPENED);
 
     // Still showing after a normal creative length — must not unlock early.
@@ -212,33 +259,37 @@ describe("interstitial-controller", () => {
     expect(isInterstitialShowing()).toBe(false);
   });
 
-  it("releases on AppState active after OPENED only if app left foreground", async () => {
+  it("does not treat AppState flicker as dismiss after OPENED", async () => {
     startInterstitialPreload();
     const ad = loadCurrentAd();
 
     const showPromise = showPreloadedInterstitial();
+    await afterIdleWait();
     ad.emit(AdEventType.OPENED);
-
-    // Spurious active without inactive/background must not finish the show.
-    mockAppState.__emit("active");
-    await jest.advanceTimersByTimeAsync(250);
-    expect(isInterstitialShowing()).toBe(true);
 
     mockAppState.__emit("inactive");
     mockAppState.__emit("active");
-    await jest.advanceTimersByTimeAsync(250);
+    await jest.advanceTimersByTimeAsync(500);
+    expect(isInterstitialShowing()).toBe(true);
+
+    ad.emit(AdEventType.CLOSED);
     await expect(showPromise).resolves.toBe(true);
     expect(isInterstitialShowing()).toBe(false);
   });
 
-  it("releases on AppState active without OPENED (flash then vanish)", async () => {
+  it("does not finish on AppState active without OPENED — waits for open timeout", async () => {
     startInterstitialPreload();
     loadCurrentAd();
 
     const showPromise = showPreloadedInterstitial();
+    await afterIdleWait();
+    mockAppState.__emit("inactive");
     mockAppState.__emit("active");
 
     await jest.advanceTimersByTimeAsync(400);
+    expect(isInterstitialShowing()).toBe(true);
+
+    await jest.advanceTimersByTimeAsync(4_000);
     await expect(showPromise).resolves.toBe(false);
     expect(isInterstitialShowing()).toBe(false);
   });
@@ -248,6 +299,7 @@ describe("interstitial-controller", () => {
     const ad = loadCurrentAd();
 
     const showPromise = showPreloadedInterstitial();
+    await afterIdleWait();
     ad.emit(AdEventType.ERROR, { message: "show failed" });
 
     await expect(showPromise).resolves.toBe(false);
@@ -260,7 +312,7 @@ describe("interstitial-controller", () => {
     ad.show.mockRejectedValueOnce(new Error("native show failed"));
 
     const showPromise = showPreloadedInterstitial();
-    await Promise.resolve();
+    await afterIdleWait();
     await expect(showPromise).resolves.toBe(false);
     expect(isInterstitialShowing()).toBe(false);
   });
@@ -275,6 +327,7 @@ describe("interstitial-controller", () => {
     await expect(showPreloadedInterstitial()).resolves.toBe(false);
     expect(isInterstitialShowing()).toBe(true);
 
+    await afterIdleWait();
     ad.emit(AdEventType.OPENED);
     ad.emit(AdEventType.CLOSED);
     await expect(first).resolves.toBe(true);
@@ -288,6 +341,7 @@ describe("interstitial-controller", () => {
 
     const showPromise = showPreloadedInterstitial();
     expect(listener).toHaveBeenCalledWith(true);
+    await afterIdleWait();
 
     ad.emit(AdEventType.OPENED);
     ad.emit(AdEventType.CLOSED);
@@ -301,6 +355,34 @@ describe("interstitial-controller", () => {
     mockIsAdMobEnabled.mockReturnValue(false);
     await expect(initializeAdMobSdk()).resolves.toBeUndefined();
     expect(mockMobileAds.initialize).not.toHaveBeenCalled();
+  });
+
+  it("registers emulator as a test device only for debug/e2e ads", async () => {
+    mockShouldUseAdMobTestAds.mockReturnValue(true);
+    await initializeAdMobSdk();
+
+    expect(mockMobileAds.setRequestConfiguration).toHaveBeenCalledWith({
+      testDeviceIdentifiers: ["EMULATOR"],
+    });
+    expect(mockMobileAds.initialize).toHaveBeenCalled();
+  });
+
+  it("does not register test devices in production", async () => {
+    mockShouldUseAdMobTestAds.mockReturnValue(false);
+    await initializeAdMobSdk();
+
+    expect(mockMobileAds.setRequestConfiguration).not.toHaveBeenCalled();
+    expect(mockMobileAds.initialize).toHaveBeenCalled();
+  });
+
+  it("does not fall back to Google sample unit ids when production id is missing", () => {
+    mockShouldUseAdMobTestAds.mockReturnValue(false);
+    mockGetInterstitialAdUnitId.mockReturnValue("");
+
+    startInterstitialPreload();
+
+    expect(getLatestMockInterstitial()).toBeNull();
+    expect(isInterstitialLoaded()).toBe(false);
   });
 
   it("show aborts when ensure cannot load a creative", async () => {

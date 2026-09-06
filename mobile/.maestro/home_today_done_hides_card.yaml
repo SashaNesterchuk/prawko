@@ -1,0 +1,34 @@
+# Feature: Home daily practice
+# Scenario: After today’s 10 are done, Home hides the parked “that’s all for today”
+# card; the result screen has no New attempt
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+  - daily
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      HOME_DAILY: done
+      TARGET_ID: screen-home
+
+- assertVisible:
+    id: "screen-home"
+- assertNotVisible:
+    id: "home-today-start"
+
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: question-result
+      HOME_DAILY: done
+      TARGET_ID: screen-question-result
+
+- assertVisible:
+    id: "screen-question-result"
+- assertVisible:
+    id: "question-result-answers"
+- assertNotVisible:
+    id: "question-result-new-attempt"

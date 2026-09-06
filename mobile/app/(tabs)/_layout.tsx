@@ -2,6 +2,7 @@ import { Redirect, Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { AppScreen } from "../../src/components/shell/AppScreen";
 import { FloatingTabBar } from "../../src/components/shell/FloatingTabBar";
+import { HomeStartSpotlightHost } from "../../src/components/shell/HomeStartSpotlightHost";
 import { LoadingStateView } from "../../src/components/shell/StateViews";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { useCountryConfig } from "../../src/countries/use-country";
@@ -39,51 +40,53 @@ export default function TabsLayout() {
   }
 
   return (
-    <Tabs
-      tabBar={(props) => <FloatingTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-        // Freeze inactive tabs so exam/progress updates don't re-render Home+Learn+Profile
-        // in the background and block the tab bar. Learn topic math is cheap now, so
-        // unfreeze on tab press should stay snappy.
-        freezeOnBlur: true,
-        tabBarStyle: {
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: theme.colors.transparent,
-          borderTopWidth: 0,
-          elevation: 0,
-          shadowOpacity: 0,
-          overflow: "visible",
-        },
-        tabBarBackground: () => null,
-        sceneStyle: {
-          backgroundColor: theme.colors.paper,
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{ title: t("nav.home"), tabBarLabel: t("nav.home") }}
-      />
-      <Tabs.Screen
-        name="learn"
-        options={{ title: t("nav.learn"), tabBarLabel: t("nav.learn") }}
-      />
-      <Tabs.Screen
-        name="signs"
-        options={{
-          title: t("nav.signs"),
-          tabBarLabel: t("nav.signs"),
-          href: countryConfig.features.roadSigns ? undefined : null,
+    <HomeStartSpotlightHost>
+      <Tabs
+        tabBar={(props) => <FloatingTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+          // Freeze inactive tabs so exam/progress updates don't re-render Home+Learn+Profile
+          // in the background and block the tab bar. Learn topic math is cheap now, so
+          // unfreeze on tab press should stay snappy.
+          freezeOnBlur: true,
+          tabBarStyle: {
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: theme.colors.transparent,
+            borderTopWidth: 0,
+            elevation: 0,
+            shadowOpacity: 0,
+            overflow: "visible",
+          },
+          tabBarBackground: () => null,
+          sceneStyle: {
+            backgroundColor: theme.colors.paper,
+          },
         }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{ title: t("nav.profile"), tabBarLabel: t("nav.profile") }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{ title: t("nav.home"), tabBarLabel: t("nav.home") }}
+        />
+        <Tabs.Screen
+          name="learn"
+          options={{ title: t("nav.learn"), tabBarLabel: t("nav.learn") }}
+        />
+        <Tabs.Screen
+          name="signs"
+          options={{
+            title: t("nav.signs"),
+            tabBarLabel: t("nav.signs"),
+            href: countryConfig.features.roadSigns ? undefined : null,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{ title: t("nav.profile"), tabBarLabel: t("nav.profile") }}
+        />
+      </Tabs>
+    </HomeStartSpotlightHost>
   );
 }

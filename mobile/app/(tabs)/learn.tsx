@@ -12,6 +12,7 @@ import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
 import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
 import { ActionTileSection } from "../../src/components/shell/ActionTileSection";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { QuestionCoverageCard } from "../../src/components/shell/QuestionCoverageCard";
 import { ScreenSection } from "../../src/components/shell/ScreenSection";
 import { TopicReadinessCard } from "../../src/components/shell/TopicReadinessCard";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
@@ -246,6 +247,18 @@ export default function LearnTabScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
+          {stats.total > 0 ? (
+            <QuestionCoverageCard
+              correct={stats.seenCorrect}
+              seen={stats.seen}
+              total={stats.total}
+              testID="learn-coverage"
+              title={t("question.learnedTitle", {
+                defaultValue: "Усі питання",
+              })}
+              wrong={stats.seenWrong}
+            />
+          ) : null}
           <View style={styles.stack}>
             <ActionTileGrid items={primaryTiles} />
 

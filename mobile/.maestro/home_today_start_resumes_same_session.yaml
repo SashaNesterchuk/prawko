@@ -1,0 +1,78 @@
+# Feature: Home daily practice
+# Scenario: Today’s 10 questions keep the same set after exit and resume at Q2
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+  - daily
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      FIRST_START: "true"
+      TARGET_ID: screen-home
+
+- extendedWaitUntil:
+    visible:
+      id: "home-start-spotlight-skip"
+    timeout: 15000
+
+- tapOn:
+    id: "home-start-spotlight-skip"
+
+- extendedWaitUntil:
+    notVisible:
+      id: "home-start-spotlight"
+    timeout: 10000
+
+- tapOn:
+    id: "home-readiness-index"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 20000
+
+- assertVisible:
+    id: "question-counter"
+    text: "1 / 10"
+
+- runFlow:
+    file: subflows/answer_first_available_option.yaml
+    env:
+      OPTION_ID: question-choice-index-0
+
+- tapOn:
+    id: "question-feedback-next"
+
+- extendedWaitUntil:
+    visible:
+      id: "question-counter"
+      text: "2 / 10"
+    timeout: 10000
+
+- tapOn:
+    id: "question-close"
+
+- runFlow:
+    file: subflows/confirm_training_exit_to_home.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "home-today-start"
+    timeout: 15000
+
+- tapOn:
+    id: "home-today-start"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 20000
+
+- assertVisible:
+    id: "question-counter"
+    text: "2 / 10"
+- assertNotVisible:
+    id: "question-step-0-current"

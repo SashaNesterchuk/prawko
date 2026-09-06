@@ -23,3 +23,5 @@ tags:
     id: "trainer-mode-random"
 - assertVisible:
     id: "trainer-mode-new"
+- assertVisible:
+    id: "trainer-coverage"

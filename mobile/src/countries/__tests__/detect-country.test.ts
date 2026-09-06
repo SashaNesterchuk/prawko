@@ -37,7 +37,11 @@ describe("detectExamCountry", () => {
   it("prefers a supported RevenueCat storefront over the device region", async () => {
     getStorefront.mockResolvedValue("CZ");
     jest.mocked(getLocales).mockReturnValue([
-      { regionCode: "PL" } as never,
+      {
+        regionCode: "PL",
+        languageCode: "uk",
+        languageTag: "uk-PL",
+      } as never,
     ]);
 
     await expect(detectExamCountry()).resolves.toEqual({
@@ -49,12 +53,37 @@ describe("detectExamCountry", () => {
   it("falls back to the device region when storefront is missing or unsupported", async () => {
     getStorefront.mockResolvedValue("US");
     jest.mocked(getLocales).mockReturnValue([
-      { regionCode: "CZ" } as never,
+      { regionCode: "CZ", languageCode: "pl", languageTag: "pl-CZ" } as never,
     ]);
 
     await expect(detectExamCountry()).resolves.toEqual({
       country: "CZ",
       source: "device_region",
+    });
+  });
+
+  it("uses a later locale region when the primary region is unsupported", async () => {
+    getStorefront.mockResolvedValue(null);
+    jest.mocked(getLocales).mockReturnValue([
+      { regionCode: "UA", languageCode: "uk", languageTag: "uk-UA" } as never,
+      { regionCode: "CZ", languageCode: "cs", languageTag: "cs-CZ" } as never,
+    ]);
+
+    await expect(detectExamCountry()).resolves.toEqual({
+      country: "CZ",
+      source: "device_region",
+    });
+  });
+
+  it("does not pick exam country from phone language", async () => {
+    getStorefront.mockResolvedValue(null);
+    jest.mocked(getLocales).mockReturnValue([
+      { regionCode: "US", languageCode: "cs", languageTag: "cs-US" } as never,
+    ]);
+
+    await expect(detectExamCountry()).resolves.toEqual({
+      country: "PL",
+      source: "default",
     });
   });
 

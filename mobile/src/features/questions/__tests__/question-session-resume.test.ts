@@ -378,3 +378,100 @@ describe("startOrResumeSession after exit", () => {
     expect(next.answers).toEqual({});
   });
 });
+
+describe("home daily practice session pin", () => {
+  beforeEach(() => {
+    hydrateQuestionBankFromLocalQuestions([
+      makeQuestion("q1"),
+      makeQuestion("q2"),
+      makeQuestion("q3"),
+    ]);
+    useQuestionProgressStore.getState().resetProgress();
+  });
+
+  afterEach(() => {
+    useQuestionProgressStore.getState().resetProgress();
+    resetQuestionBankToMock();
+  });
+
+  it("restores the same questions and answers after the active session is cleared", () => {
+    const store = useQuestionProgressStore.getState();
+    const request = {
+      currentCategory: "B" as const,
+      mode: "mini_test" as const,
+      questionLimit: 3,
+      sessionKey: "B:home-today:2026-09-06:B",
+    };
+
+    const first = store.startOrResumeSession(request);
+    store.answerCurrentQuestion("A");
+    const questionIds = first.questionIds;
+    store.clearActiveSession();
+
+    const resumed = store.startOrResumeSession(request);
+
+    expect(resumed.questionIds).toEqual(questionIds);
+    expect(resumed.answers[questionIds[0]!]?.selectedAnswer).toBe("A");
+    expect(resumed.currentIndex).toBe(1);
+  });
+
+  it("resumes the same daily set from a category-prefixed route key", () => {
+    const store = useQuestionProgressStore.getState();
+    const first = store.startOrResumeSession({
+      currentCategory: "B",
+      mode: "mini_test",
+      questionLimit: 3,
+      sessionKey: "home-today:2026-09-06:B",
+    });
+    store.answerCurrentQuestion("A");
+    store.clearActiveSession();
+
+    const resumed = store.startOrResumeSession({
+      currentCategory: "B",
+      mode: "mini_test",
+      questionLimit: 3,
+      sessionKey: "B:home-today:2026-09-06:B",
+    });
+
+    expect(resumed.questionIds).toEqual(first.questionIds);
+    expect(resumed.answers[first.questionIds[0]!]?.selectedAnswer).toBe("A");
+  });
+
+  it("keeps the same questions when the set is left unanswered", () => {
+    const store = useQuestionProgressStore.getState();
+    const request = {
+      currentCategory: "B" as const,
+      mode: "mini_test" as const,
+      questionLimit: 3,
+      sessionKey: "B:home-today:2026-09-06:B",
+    };
+    const first = store.startOrResumeSession(request);
+    store.clearActiveSession();
+
+    const resumed = store.startOrResumeSession(request);
+
+    expect(resumed.id).toBe(first.id);
+    expect(resumed.questionIds).toEqual(first.questionIds);
+  });
+
+  it("draws a new set after the Warsaw day changes", () => {
+    const store = useQuestionProgressStore.getState();
+    const first = store.startOrResumeSession({
+      currentCategory: "B",
+      mode: "mini_test",
+      questionLimit: 3,
+      sessionKey: "B:home-today:2026-09-06:B",
+    });
+    store.clearActiveSession();
+
+    const nextDay = store.startOrResumeSession({
+      currentCategory: "B",
+      mode: "mini_test",
+      questionLimit: 3,
+      sessionKey: "B:home-today:2026-09-07:B",
+    });
+
+    expect(nextDay.id).not.toBe(first.id);
+    expect(nextDay.request.sessionKey).toBe("B:home-today:2026-09-07:B");
+  });
+});

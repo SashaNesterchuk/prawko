@@ -1,5 +1,5 @@
 # Feature: Onboarding
-# Scenario: New user completes onboarding and lands on Home
+# Scenario: New user completes onboarding and lands on Home with first-start spotlight
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -11,5 +11,11 @@ tags:
     id: "screen-home"
 - assertVisible:
     id: "tab-index"
+- extendedWaitUntil:
+    visible:
+      id: "home-start-spotlight"
+    timeout: 15000
 - assertVisible:
     id: "action-tile-trainer"
+- assertVisible:
+    id: "home-tile-blitz"

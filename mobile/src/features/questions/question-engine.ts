@@ -800,6 +800,10 @@ type QuestionDisplayStats = {
   saved: number;
   reviewDue: number;
   seen: number;
+  /** Unique seen questions whose latest answer is not an unresolved wrong. */
+  seenCorrect: number;
+  /** Unique seen questions currently unresolved-wrong. */
+  seenWrong: number;
   seenNotMastered: number;
   weakSpots: number;
 };
@@ -855,6 +859,8 @@ function computeQuestionDisplayStats(
     saved: 0,
     reviewDue: 0,
     seen: 0,
+    seenCorrect: 0,
+    seenWrong: 0,
     seenNotMastered: 0,
     weakSpots: 0,
   };
@@ -889,6 +895,12 @@ function computeQuestionDisplayStats(
 
     if (state.timesSeen > 0) {
       stats.seen += 1;
+
+      if (isUnresolvedWrong) {
+        stats.seenWrong += 1;
+      } else {
+        stats.seenCorrect += 1;
+      }
     }
 
     if (isSeenNotMasteredState(state, now)) {

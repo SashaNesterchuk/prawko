@@ -11,7 +11,9 @@ import { ErrorLoggingProvider } from "./ErrorLoggingProvider";
 import { LocaleSyncProvider } from "./LocaleSyncProvider";
 import { ExamCountryBootstrap } from "../countries/ExamCountryBootstrap";
 import { CountryScopedStores } from "../countries/CountryScopedStores";
+import { AppIdentityProvider } from "../identity/AppIdentityProvider";
 import { NotificationSetupProvider } from "./NotificationSetupProvider";
+import { ObserveIdentitySync } from "./ObserveIdentitySync";
 import { QuestionCatalogProvider } from "./QuestionCatalogProvider";
 import { RevenueCatProvider } from "./RevenueCatProvider";
 import { RemoteEntitlementsProvider } from "./RemoteEntitlementsProvider";
@@ -20,7 +22,10 @@ import { SessionProvider } from "./SessionProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { UserProvider } from "./UserProvider";
 
-export function AppProviders({ children }: PropsWithChildren) {
+export function AppProviders({
+  appUserId,
+  children,
+}: PropsWithChildren<{ appUserId: string }>) {
   const styles = useStyles();
 
   return (
@@ -28,33 +33,34 @@ export function AppProviders({ children }: PropsWithChildren) {
       <SafeAreaProvider>
         <ThemeProvider>
           <BottomSheetModalProvider>
-            <AnalyticsProvider>
-              <ErrorLoggingProvider>
-                <SessionProvider>
-                  <RemoteEntitlementsProvider>
-                    <RevenueCatProvider>
-                      <RemoteLearningStateProvider>
-                        <NotificationSetupProvider>
-                          <ExamCountryBootstrap>
-                            <CountryScopedStores>
-                              <LocaleSyncProvider>
-                                <UserProvider>
-                                  <QuestionCatalogProvider>
-                                    <AdProvider>
-                                      {children}
-                                    </AdProvider>
-                                  </QuestionCatalogProvider>
-                                </UserProvider>
-                              </LocaleSyncProvider>
-                            </CountryScopedStores>
-                          </ExamCountryBootstrap>
-                        </NotificationSetupProvider>
-                      </RemoteLearningStateProvider>
-                    </RevenueCatProvider>
-                  </RemoteEntitlementsProvider>
-                </SessionProvider>
-              </ErrorLoggingProvider>
-            </AnalyticsProvider>
+            <AppIdentityProvider appUserId={appUserId}>
+              <ObserveIdentitySync />
+              <AnalyticsProvider>
+                <ErrorLoggingProvider>
+                  <SessionProvider>
+                    <RemoteEntitlementsProvider>
+                      <RevenueCatProvider>
+                        <RemoteLearningStateProvider>
+                          <NotificationSetupProvider>
+                            <ExamCountryBootstrap>
+                              <CountryScopedStores>
+                                <LocaleSyncProvider>
+                                  <UserProvider>
+                                    <QuestionCatalogProvider>
+                                      <AdProvider>{children}</AdProvider>
+                                    </QuestionCatalogProvider>
+                                  </UserProvider>
+                                </LocaleSyncProvider>
+                              </CountryScopedStores>
+                            </ExamCountryBootstrap>
+                          </NotificationSetupProvider>
+                        </RemoteLearningStateProvider>
+                      </RevenueCatProvider>
+                    </RemoteEntitlementsProvider>
+                  </SessionProvider>
+                </ErrorLoggingProvider>
+              </AnalyticsProvider>
+            </AppIdentityProvider>
           </BottomSheetModalProvider>
         </ThemeProvider>
       </SafeAreaProvider>

@@ -1,21 +1,13 @@
 import { useEffect, useRef } from "react";
 import { AppState, type AppStateStatus } from "react-native";
-import { usePathname } from "expo-router";
 
-import { useHasPlusAccess } from "../../state/entitlements";
-import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { isAdMobEnabled } from "./admob-config";
 import {
-  isAppResumeAdsSuppressed,
   markAppBackgrounded,
   touchAdSessionActivity,
 } from "./ad-session-policy";
-import { isAdRouteBlocked, maybeShowInterstitial } from "./show-interstitial";
 
 export function AppResumeAdListener() {
-  const { track } = useAnalytics();
-  const hasPlusAccess = useHasPlusAccess();
-  const pathname = usePathname();
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
   useEffect(() => {
@@ -40,26 +32,13 @@ export function AppResumeAdListener() {
         nextState === "active"
       ) {
         touchAdSessionActivity();
-
-        if (isAppResumeAdsSuppressed()) {
-          return;
-        }
-
-        if (isAdRouteBlocked(pathname)) {
-          return;
-        }
-
-        maybeShowInterstitial("app_resume", {
-          hasPlusAccess,
-          track,
-        });
       }
     });
 
     return () => {
       subscription.remove();
     };
-  }, [hasPlusAccess, pathname, track]);
+  }, []);
 
   return null;
 }

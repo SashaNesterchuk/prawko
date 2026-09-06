@@ -14,6 +14,7 @@ import {
   withResponsiveFont,
 } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
+import { useHomeStartSpotlightActive } from "./home-start-spotlight-chrome";
 
 type TabsProps = ComponentProps<typeof Tabs>;
 export type FloatingTabBarProps = Parameters<
@@ -36,6 +37,7 @@ export function FloatingTabBar({
   const spacing = useResponsiveSpacing();
   const { responsiveFont } = useResponsiveFonts();
   const { bottom } = useSafeAreaInsets();
+  const spotlightActive = useHomeStartSpotlightActive();
   const activePalette = theme.accents.green;
   const inactiveInk = theme.colors.ink3;
   const styles = useStyles({
@@ -43,20 +45,28 @@ export function FloatingTabBar({
   });
 
   return (
-    <View pointerEvents="box-none" style={styles.wrap}>
-      <LinearGradient
-        colors={[`${theme.colors.paper}00`, theme.colors.paper]}
-        end={{ x: 0.5, y: 1 }}
-        locations={[0, 0.5]}
-        pointerEvents="none"
-        start={{ x: 0.5, y: 0 }}
-        style={styles.fade}
-      />
-      <View style={styles.menu}>
+    <View
+      pointerEvents={spotlightActive ? "none" : "box-none"}
+      style={styles.wrap}
+    >
+      {spotlightActive ? null : (
+        <LinearGradient
+          colors={[`${theme.colors.paper}00`, theme.colors.paper]}
+          end={{ x: 0.5, y: 1 }}
+          locations={[0, 0.5]}
+          pointerEvents="none"
+          start={{ x: 0.5, y: 0 }}
+          style={styles.fade}
+        />
+      )}
+      <View
+        style={[styles.menu, spotlightActive ? styles.menuQuiet : null]}
+      >
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
-          const color = isFocused ? activePalette.ink : inactiveInk;
+          const color =
+            isFocused && !spotlightActive ? activePalette.ink : inactiveInk;
           const label =
             typeof options.tabBarLabel === "string"
               ? options.tabBarLabel
@@ -87,7 +97,10 @@ export function FloatingTabBar({
               accessibilityLabel={label}
               onPress={onPress}
               onLongPress={onLongPress}
-              style={[styles.tab, isFocused ? styles.tabActive : null]}
+              style={[
+                styles.tab,
+                isFocused && !spotlightActive ? styles.tabActive : null,
+              ]}
               testID={`tab-${route.name}`}
             >
               <Icon color={color} name={iconName} size={responsiveFont(24)} />
@@ -95,7 +108,9 @@ export function FloatingTabBar({
                 numberOfLines={1}
                 style={[
                   styles.label,
-                  isFocused ? styles.labelActive : styles.labelInactive,
+                  isFocused && !spotlightActive
+                    ? styles.labelActive
+                    : styles.labelInactive,
                 ]}
               >
                 {label}
@@ -135,6 +150,12 @@ function useStyles({
         borderRadius: radius.xxxxl,
         backgroundColor: colors.white,
         ...elevation.raised,
+      },
+      menuQuiet: {
+        backgroundColor: colors.surface,
+        shadowOpacity: 0,
+        elevation: 0,
+        boxShadow: "none",
       },
       tab: {
         flex: 1,

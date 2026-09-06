@@ -77,5 +77,12 @@ async function readStorefrontCountry(): Promise<CountryCode | null> {
 }
 
 function readDeviceRegionCountry(): CountryCode | null {
-  return resolveCountryCode(getLocales()[0]?.regionCode);
+  for (const locale of getLocales()) {
+    const country = resolveCountryCode(locale?.regionCode);
+    if (country) {
+      return country;
+    }
+  }
+
+  return null;
 }

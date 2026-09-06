@@ -10,7 +10,8 @@ import {
   type AnalyticsEventPayloads,
   type AnalyticsProperties,
 } from "../analytics/catalog";
-import { mobileEnv } from "../config/env";
+import { isPostHogCaptureEnabled } from "../analytics/posthog-build-gate";
+import { useAppUserId } from "../identity/AppIdentityProvider";
 import { useAppShellStore, useCurrentUser } from "../state/app-shell";
 import { useHasPlusAccess } from "../state/entitlements";
 
@@ -22,25 +23,30 @@ export type AnalyticsTrack = <EventName extends AnalyticsEventName>(
 
 export function useAnalytics() {
   const posthog = usePostHog();
+  const appUserId = useAppUserId();
   const currentUser = useCurrentUser();
   const examCountry = useAppShellStore((state) => state.examCountry);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const isPlus = useHasPlusAccess();
-  const isConfigured =
-    Boolean(mobileEnv.posthogKey.trim()) && !mobileEnv.enableE2ETestMode;
+  const isConfigured = isPostHogCaptureEnabled();
 
   const baseProperties = useMemo(
     () => ({
       app_version: Constants.expoConfig?.version ?? "unknown",
-      auth_mode: currentUser?.provider ?? null,
+      [ANALYTICS_PROPERTIES.appUserId]: appUserId,
+      auth_mode: currentUser?.provider ?? "guest",
       category: preferredCategory,
       [ANALYTICS_PROPERTIES.examCountry]: examCountry,
       is_plus: isPlus,
       locale: preferredLocale,
       platform: Platform.OS,
+      [ANALYTICS_PROPERTIES.supabaseUserId]:
+        currentUser?.provider === "supabase" ? currentUser.id : null,
     }),
     [
+      appUserId,
+      currentUser?.id,
       currentUser?.provider,
       examCountry,
       isPlus,
@@ -92,12 +98,8 @@ export function useAnalytics() {
   );
 
   const reset = useCallback(() => {
-    if (!posthog || !isConfigured) {
-      return;
-    }
-
-    posthog.reset();
-  }, [isConfigured, posthog]);
+    // Install identity is durable across auth. Never mint a new anonymous distinct_id.
+  }, []);
 
   return {
     capture,

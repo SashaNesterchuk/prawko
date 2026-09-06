@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { AD_POLICY } from "@prawko/config";
 
 import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
@@ -167,20 +168,22 @@ export function SignTestSessionScreen({
       });
     }
 
-    // Navigate first — never await AdMob on the outgoing screen (same as
-    // question training exit / opposite of the old freeze on TestFlight).
+    // Navigate first — never await AdMob on the outgoing screen. The
+    // interstitial controller waits for UI idle before native show(), so do
+    // not fire from a setTimeout that races the pop animation.
     router.back();
 
-    setTimeout(() => {
-      if (shouldAttemptPracticeInterstitial && answeredCount >= 12) {
-        void showInterstitialForTrigger("after_question_answer");
-        return;
-      }
+    if (
+      shouldAttemptPracticeInterstitial &&
+      answeredCount >= AD_POLICY.questionsBetweenInterstitials
+    ) {
+      void showInterstitialForTrigger("after_question_answer");
+      return;
+    }
 
-      void showInterstitialForTrigger("after_practice_session_complete", {
-        practiceAnsweredCount: answeredCount,
-      });
-    }, 400);
+    void showInterstitialForTrigger("after_practice_session_complete", {
+      practiceAnsweredCount: answeredCount,
+    });
   };
 
   const handleContinue = () => {
@@ -204,7 +207,10 @@ export function SignTestSessionScreen({
 
     if (shouldAttemptPracticeInterstitial) {
       maybeShowInterstitial("after_question_answer");
-    } else if (recordedQuestionIdsRef.current.size >= 10) {
+    } else if (
+      recordedQuestionIdsRef.current.size >=
+      AD_POLICY.questionsBetweenInterstitials - 2
+    ) {
       void preloadInterstitial();
     }
   };

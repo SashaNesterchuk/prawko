@@ -12,6 +12,9 @@ tags:
       DESTINATION: learn
       TARGET_ID: screen-learn
 
+- assertVisible:
+    id: "learn-coverage"
+
 - tapOn:
     id: "learn-topic-card-index-0"
 

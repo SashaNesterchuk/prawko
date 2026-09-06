@@ -59,11 +59,15 @@ export function normalizeContentLocale(
 }
 
 export function getSupportedDeviceLocale(): SupportedLocale {
-  const primaryLocale = getLocales()[0];
+  for (const locale of getLocales()) {
+    const resolved =
+      normalizeSupportedLocale(locale?.languageTag) ??
+      normalizeSupportedLocale(locale?.languageCode);
 
-  return (
-    normalizeSupportedLocale(primaryLocale?.languageTag) ??
-    normalizeSupportedLocale(primaryLocale?.languageCode) ??
-    DEFAULT_LOCALE
-  );
+    if (resolved) {
+      return resolved;
+    }
+  }
+
+  return DEFAULT_LOCALE;
 }

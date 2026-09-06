@@ -17,6 +17,9 @@ tags:
     id: "screen-question-result"
 
 - assertVisible:
+    id: "question-coverage"
+
+- assertVisible:
     id: "question-result-primary"
 
 - assertVisible:

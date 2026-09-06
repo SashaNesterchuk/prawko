@@ -1,0 +1,36 @@
+# Feature: Home first start
+# Scenario: Tap the dimmed overlay dismisses the spotlight like Skip
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+  - first-start
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      FIRST_START: "true"
+      TARGET_ID: screen-home
+
+- extendedWaitUntil:
+    visible:
+      id: "home-start-spotlight"
+    timeout: 15000
+
+- tapOn:
+    id: "home-start-spotlight-dismiss"
+
+- extendedWaitUntil:
+    notVisible:
+      id: "home-start-spotlight"
+    timeout: 10000
+
+- assertVisible:
+    id: "tab-index"
+- assertVisible:
+    id: "home-readiness-index"
+- assertVisible:
+    id: "action-tile-trainer"
+- assertVisible:
+    id: "home-tile-blitz"

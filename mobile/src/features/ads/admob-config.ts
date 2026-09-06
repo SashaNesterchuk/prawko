@@ -4,6 +4,7 @@ import { TestIds } from "react-native-google-mobile-ads";
 import { FEATURE_FLAGS } from "@prawko/config";
 
 import { mobileEnv } from "../../config/env";
+import { isE2EAdsEnabled } from "../../testing/e2e/ads-flag";
 
 /**
  * AdMob App IDs:
@@ -12,10 +13,20 @@ import { mobileEnv } from "../../config/env";
  * Product ads use Interstitial units only (not Rewarded).
  * iOS unit:     ios_interstitial_main     ca-app-pub-4994877133367352/9403561308
  * Android unit: android_interstitial_main ca-app-pub-4994877133367352/1525071282
- * __DEV__ and e2e builds always use Google test interstitial IDs.
+ * Dev and e2e use Google sample interstitial IDs. Production never registers
+ * test devices. E2E builds skip AdMob unless bootstrap sets enableAds=true.
  */
 export function isAdMobEnabled() {
+  if (mobileEnv.enableE2ETestMode) {
+    return FEATURE_FLAGS.enableAds && isE2EAdsEnabled();
+  }
+
   return FEATURE_FLAGS.enableAds;
+}
+
+/** Sample unit IDs + emulator test-device flag. Never true in store builds. */
+export function shouldUseAdMobTestAds() {
+  return __DEV__ || mobileEnv.enableE2ETestMode;
 }
 
 export function getAdMobAppId() {
@@ -37,7 +48,7 @@ export function getInterstitialAdUnitId() {
       ? "ca-app-pub-3940256099942544/4411468910"
       : "ca-app-pub-3940256099942544/1033173712";
 
-  if (__DEV__ || mobileEnv.enableE2ETestMode) {
+  if (shouldUseAdMobTestAds()) {
     return TestIds.INTERSTITIAL || googleTestInterstitial;
   }
 

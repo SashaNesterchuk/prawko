@@ -18,6 +18,7 @@ import { Icon } from "../../../components/icons";
 import { AppButton } from "../../../components/shell/AppButton";
 import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../../components/shell/NavigationButton";
+import { QuestionCoverageCard } from "../../../components/shell/QuestionCoverageCard";
 import { ResultTopicProgressRow } from "../../../components/shell/ResultTopicProgressRow";
 import { CText, getFontFamily, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
@@ -29,7 +30,9 @@ import type {
   RemoteExamQuestionRef,
 } from "../../exam/types";
 import { getQuestionById, getQuestionUserState } from "../question-engine";
+import { useQuestionCoverageStats } from "../useQuestionCoverageStats";
 import { buildQuestionRouteParams } from "../question-routes";
+import { isHomeDailySessionKey } from "../../home/home-daily-practice";
 import { syncQuestionBookmarkState } from "../supabase-question-state";
 import { getQuestionTopicTitle } from "../../question-topics/catalog";
 
@@ -72,6 +75,7 @@ export function QuestionSessionResultView({
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
+  const coverage = useQuestionCoverageStats();
   const lastTrainingSessionPercents = useQuestionProgressStore(
     (state) => state.lastTrainingSessionPercents
   );
@@ -87,6 +91,9 @@ export function QuestionSessionResultView({
 
   const [reviewIndex, setReviewIndex] = useState<number | null>(null);
   const didRecordPercentRef = useRef(false);
+  const isHomeDailyPractice = isHomeDailySessionKey(
+    activeSession?.request.sessionKey
+  );
 
   const outcome = getTrainingResultOutcome(sessionResultPercent);
   const resultAccent =
@@ -353,6 +360,19 @@ export function QuestionSessionResultView({
               </CText>
             </View>
 
+            {coverage.total > 0 ? (
+              <QuestionCoverageCard
+                correct={coverage.seenCorrect}
+                seen={coverage.seen}
+                total={coverage.total}
+                testID="question-coverage"
+                title={t("question.learnedTitle", {
+                  defaultValue: "Усі питання",
+                })}
+                wrong={coverage.seenWrong}
+              />
+            ) : null}
+
             {questionChips.length > 0 ? (
               <View style={[styles.card, styles.questionsCard]}>
                 <CText style={styles.questionsTitle}>
@@ -434,6 +454,7 @@ export function QuestionSessionResultView({
                 </CText>
               </Pressable>
 
+              {isHomeDailyPractice ? null : (
               <Pressable
                 accessibilityRole="button"
                 onPress={handleNewAttempt}
@@ -448,6 +469,7 @@ export function QuestionSessionResultView({
                   {t("question.newAttemptCta")}
                 </CText>
               </Pressable>
+              )}
             </View>
           </View>
         </View>

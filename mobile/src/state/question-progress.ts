@@ -28,6 +28,11 @@ import {
   buildReadinessAssessmentResult,
   type ReadinessAssessmentResult,
 } from "../features/questions/readiness-assessment";
+import {
+  isHomeDailySessionKey,
+  isSameHomeDailySession,
+  resumeHomeDailySession,
+} from "../features/home/home-daily-practice";
 import type {
   QuestionAttempt,
   QuestionOptionValue,
@@ -41,6 +46,7 @@ type PersistedQuestionProgress = Pick<
   QuestionProgressState,
   | "activeSession"
   | "attempts"
+  | "homeDailySession"
   | "lastTrainingSessionPercents"
   | "questionUserState"
   | "readinessAssessment"
@@ -149,6 +155,8 @@ type QuestionProgressState = {
   activeSession: QuestionSession | null;
   attempts: QuestionAttempt[];
   hasHydrated: boolean;
+  /** Pinned Home “today: 10” session so trainer/exam cannot replace the day’s set. */
+  homeDailySession: QuestionSession | null;
   /** Last finished training percent by mode:topic — used for session delta badges. */
   lastTrainingSessionPercents: Record<string, number>;
   questionUserState: QuestionUserStateMap;
@@ -201,6 +209,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
       activeSession: null,
       attempts: [],
       hasHydrated: false,
+      homeDailySession: null,
       lastTrainingSessionPercents: {},
       questionUserState: {},
       readinessAssessment: null,
@@ -240,11 +249,14 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             return completeActiveSessionState(state, state.activeSession);
           }
 
+          const activeSession = {
+            ...state.activeSession,
+            currentIndex: state.activeSession.currentIndex + 1,
+          };
+
           return {
-            activeSession: {
-              ...state.activeSession,
-              currentIndex: state.activeSession.currentIndex + 1,
-            },
+            activeSession,
+            homeDailySession: pinDailySession(state.homeDailySession, activeSession),
           };
         }),
       retreatSession: () =>
@@ -253,12 +265,15 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             return state;
           }
 
+          const activeSession = {
+            ...state.activeSession,
+            currentIndex: state.activeSession.currentIndex - 1,
+            finishedAt: null,
+          };
+
           return {
-            activeSession: {
-              ...state.activeSession,
-              currentIndex: state.activeSession.currentIndex - 1,
-              finishedAt: null,
-            },
+            activeSession,
+            homeDailySession: pinDailySession(state.homeDailySession, activeSession),
           };
         }),
       answerCurrentQuestion: (selectedAnswer) => {
@@ -318,8 +333,8 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         };
 
         if (existingAnswer) {
-          set((currentState) => ({
-            activeSession: currentState.activeSession
+          set((currentState) => {
+            const activeSession = currentState.activeSession
               ? {
                   ...currentState.activeSession,
                   answers: {
@@ -332,8 +347,16 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
                     },
                   },
                 }
-              : null,
-          }));
+              : null;
+
+            return {
+              activeSession,
+              homeDailySession: pinDailySession(
+                currentState.homeDailySession,
+                activeSession
+              ),
+            };
+          });
 
           return attempt;
         }
@@ -378,6 +401,20 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
                 { answeredAt, isCorrect }
               )
             : currentState.topicQuestionContextProgress;
+          const nextActiveSession = currentState.activeSession
+            ? {
+                ...currentState.activeSession,
+                answers: {
+                  ...currentState.activeSession.answers,
+                  [questionId]: {
+                    questionId,
+                    selectedAnswer,
+                    isCorrect,
+                    answeredAt,
+                  },
+                },
+              }
+            : null;
 
           return {
             attempts: [...currentState.attempts, attempt],
@@ -387,20 +424,11 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             },
             topicQuestionProgress: nextTopicQuestionProgress,
             topicQuestionContextProgress: nextTopicQuestionContextProgress,
-            activeSession: currentState.activeSession
-              ? {
-                  ...currentState.activeSession,
-                  answers: {
-                    ...currentState.activeSession.answers,
-                    [questionId]: {
-                      questionId,
-                      selectedAnswer,
-                      isCorrect,
-                      answeredAt,
-                    },
-                  },
-                }
-              : null,
+            activeSession: nextActiveSession,
+            homeDailySession: pinDailySession(
+              currentState.homeDailySession,
+              nextActiveSession
+            ),
           };
         });
 
@@ -437,12 +465,21 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           questionUserState: normalizeQuestionUserStateMap(questionUserState),
         }),
       reconcileCatalog: (validQuestionIds) =>
-        set((state) => ({
-          activeSession: reconcileSessionWithCatalog(
+        set((state) => {
+          const activeSession = reconcileSessionWithCatalog(
             state.activeSession,
             validQuestionIds
-          ),
-        })),
+          );
+          const homeDailySession = reconcileSessionWithCatalog(
+            state.homeDailySession,
+            validQuestionIds
+          );
+
+          return {
+            activeSession,
+            homeDailySession,
+          };
+        }),
       recordTrainingSessionPercent: ({ key, percent }) =>
         set((state) => ({
           lastTrainingSessionPercents: {
@@ -454,6 +491,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         set({
           activeSession: null,
           attempts: [],
+          homeDailySession: null,
           lastTrainingSessionPercents: {},
           questionUserState: {},
           readinessAssessment: null,
@@ -471,7 +509,13 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           const nextSession = pauseQuestionSessionTimer(state.activeSession);
           return nextSession === state.activeSession
             ? state
-            : { activeSession: nextSession };
+            : {
+                activeSession: nextSession,
+                homeDailySession: pinDailySession(
+                  state.homeDailySession,
+                  nextSession
+                ),
+              };
         }),
       resumeActiveSessionTimer: () =>
         set((state) => {
@@ -482,10 +526,52 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           const nextSession = resumeQuestionSessionTimer(state.activeSession);
           return nextSession === state.activeSession
             ? state
-            : { activeSession: nextSession };
+            : {
+                activeSession: nextSession,
+                homeDailySession: pinDailySession(
+                  state.homeDailySession,
+                  nextSession
+                ),
+              };
         }),
       startOrResumeSession: (request) => {
-        const activeSession = get().activeSession;
+        const state = get();
+
+        if (isHomeDailySessionKey(request.sessionKey)) {
+          const pinned = state.homeDailySession;
+
+          if (
+            pinned &&
+            isSameHomeDailySession(
+              pinned.request.sessionKey,
+              request.sessionKey
+            ) &&
+            pinned.request.currentCategory === request.currentCategory &&
+            !pinned.emptyReason &&
+            pinned.questionIds.length > 0
+          ) {
+            const resumed = resumeHomeDailySession(pinned);
+            set({
+              activeSession: resumed,
+              homeDailySession: resumed,
+            });
+            return resumed;
+          }
+
+          const session = buildQuestionSession(
+            request,
+            state.questionUserState,
+            new Date(),
+            state.topicQuestionContextProgress
+          );
+          set({
+            activeSession: session,
+            homeDailySession: session,
+          });
+          return session;
+        }
+
+        const activeSession = state.activeSession;
 
         if (activeSession && canResumeQuestionSession(activeSession, request)) {
           if (isQuestionSessionExpired(activeSession)) {
@@ -510,7 +596,6 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           return resumedSession;
         }
 
-        const state = get();
         const session = buildQuestionSession(
           request,
           state.questionUserState,
@@ -565,6 +650,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
       partialize: (state) => ({
         activeSession: state.activeSession,
         attempts: state.attempts,
+        homeDailySession: state.homeDailySession,
         lastTrainingSessionPercents: state.lastTrainingSessionPercents,
         questionUserState: state.questionUserState,
         readinessAssessment: state.readinessAssessment,
@@ -606,6 +692,9 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           ...persisted,
           activeSession: normalizePersistedSessionTopic(
             persisted.activeSession ?? currentState.activeSession
+          ),
+          homeDailySession: normalizePersistedSessionTopic(
+            persisted.homeDailySession ?? currentState.homeDailySession
           ),
           lastTrainingSessionPercents,
           questionUserState,
@@ -757,16 +846,28 @@ function getFallbackSessionIndex(
 }
 
 function completeActiveSessionState(
-  state: Pick<QuestionProgressState, "readinessAssessment">,
+  state: Pick<QuestionProgressState, "homeDailySession" | "readinessAssessment">,
   session: QuestionSession
 ) {
   const finishedSession = finishQuestionSession(session);
   const readinessAssessment =
-    buildReadinessAssessmentResult(finishedSession) ??
-    state.readinessAssessment;
+    state.readinessAssessment ??
+    buildReadinessAssessmentResult(finishedSession);
 
   return {
     activeSession: finishedSession,
+    homeDailySession: pinDailySession(state.homeDailySession, finishedSession),
     readinessAssessment,
   };
+}
+
+function pinDailySession(
+  currentPinned: QuestionSession | null,
+  session: QuestionSession | null
+) {
+  if (session != null && isHomeDailySessionKey(session.request.sessionKey)) {
+    return session;
+  }
+
+  return currentPinned;
 }

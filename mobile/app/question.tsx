@@ -105,9 +105,13 @@ function QuestionTrainingScreen() {
   const exitHandlersRef = useRef<{
     handleConfirmExit: () => void;
     handleRequestExit: () => void;
+    hideExitDialogAndWait: () => Promise<void>;
+    showPendingExitAd: () => void;
   }>({
     handleConfirmExit: session.handleConfirmExit,
     handleRequestExit: () => undefined,
+    hideExitDialogAndWait: async () => undefined,
+    showPendingExitAd: () => undefined,
   });
 
   const leaveQuestionScreen = (href: Href) => {
@@ -115,10 +119,12 @@ function QuestionTrainingScreen() {
     // replace(), or the stack freezes on the loading spinner (session already
     // cleared, new session never starts because the effect does not watch it).
     allowNavigationRef.current = true;
-    // Ads are scheduled inside handleConfirmExit after a short delay so
-    // navigation is never blocked on AdMob load/show.
-    exitHandlersRef.current.handleConfirmExit();
-    router.replace(href);
+    void (async () => {
+      await exitHandlersRef.current.hideExitDialogAndWait();
+      exitHandlersRef.current.handleConfirmExit();
+      router.replace(href);
+      exitHandlersRef.current.showPendingExitAd();
+    })();
   };
 
   const exitToTabs = () => {
@@ -146,6 +152,8 @@ function QuestionTrainingScreen() {
   exitHandlersRef.current = {
     handleConfirmExit: session.handleConfirmExit,
     handleRequestExit: requestExit,
+    hideExitDialogAndWait: session.hideExitDialogAndWait,
+    showPendingExitAd: session.showPendingExitAd,
   };
 
   // Hardware / JS back only — swipe is disabled via gestureEnabled: false.
@@ -298,6 +306,7 @@ function QuestionTrainingScreen() {
       handleContinueAfterFeedback={session.handleContinueAfterFeedback}
       handleConfirmExit={exitToTabs}
       handleDismissExitDialog={session.handleDismissExitDialog}
+      handleExitDialogDismissed={session.handleExitDialogDismissed}
       handleRequestExit={requestExit}
       handleToggleBookmark={session.handleToggleBookmark}
       premiumIconSize={session.premiumIconSize}

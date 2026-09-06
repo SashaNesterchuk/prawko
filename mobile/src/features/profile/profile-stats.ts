@@ -1,8 +1,11 @@
 import type { ContentLocale, SupportedLocale } from "@prawko/config";
 import { getContentLocale } from "@prawko/config";
 
-import { resolveLocalReadinessPercent } from "../questions/readiness-assessment";
-import type { QuestionAttempt } from "../questions/types";
+import {
+  computeLocalReadinessScore,
+  replayQuestionUserStates,
+} from "../questions/readiness-score";
+import type { QuestionAttempt, QuestionUserStateMap } from "../questions/types";
 
 export type ProfileStatMetrics = {
   sessions: number;
@@ -91,41 +94,24 @@ export function resolveReadinessPeriodChangeLabelKey(
 /**
  * Signed change of the displayed readiness index over an adaptive window.
  * New learners use "today", then 2..7 days, then stay at 7. Returns null when
- * the index did not move. Coverage-only users still see coverage change
- * because that is the local index; assessment/remote scores are not replaced
- * by newly seen material. Questions without a local first-seen timestamp are
- * treated as older than the window (common after remote sync).
+ * the index did not move. Both ends use coverage-weighted readinessScore
+ * (answer quality scaled by unique questions seen in the bank), not the
+ * first-session percent. Without local attempts the window cannot be reconstructed.
  */
 export function getReadinessPeriodChange(input: {
   attempts: QuestionAttempt[];
-  seenQuestionIds: readonly string[];
-  totalQuestions: number;
-  assessment?: {
-    completedAt: string;
-    scorePercent: number;
-  } | null;
+  userStates?: QuestionUserStateMap | null;
+  planCompletionPercent?: number | null;
+  totalQuestions?: number | null;
   currentReadiness?: number | null;
   referenceDate?: Date;
 }): ReadinessPeriodChange | null {
-  const { attempts, seenQuestionIds, totalQuestions, assessment } = input;
+  const { attempts } = input;
 
-  if (totalQuestions <= 0) {
+  if (attempts.length === 0) {
     return null;
   }
 
-  const assessmentCompletedAt = Date.parse(assessment?.completedAt ?? "");
-  const resolvedAssessment =
-    assessment != null &&
-    Number.isFinite(assessment.scorePercent) &&
-    Number.isFinite(assessmentCompletedAt)
-      ? assessment
-      : null;
-
-  if (seenQuestionIds.length === 0 && resolvedAssessment == null) {
-    return null;
-  }
-
-  const firstSeenAtByQuestion = new Map<string, number>();
   let firstActivityIso: string | null = null;
 
   for (const attempt of attempts) {
@@ -135,12 +121,6 @@ export function getReadinessPeriodChange(input: {
       continue;
     }
 
-    const previous = firstSeenAtByQuestion.get(attempt.questionId);
-
-    if (previous == null || timestamp < previous) {
-      firstSeenAtByQuestion.set(attempt.questionId, timestamp);
-    }
-
     const attemptIso = getWarsawIsoDate(new Date(timestamp));
 
     if (firstActivityIso == null || attemptIso < firstActivityIso) {
@@ -148,48 +128,36 @@ export function getReadinessPeriodChange(input: {
     }
   }
 
-  if (resolvedAssessment != null) {
-    const assessmentIso = getWarsawIsoDate(new Date(assessmentCompletedAt));
-
-    if (firstActivityIso == null || assessmentIso < firstActivityIso) {
-      firstActivityIso = assessmentIso;
-    }
+  if (firstActivityIso == null) {
+    return null;
   }
 
-  const todayIso = getWarsawIsoDate(input.referenceDate ?? new Date());
+  const now = input.referenceDate ?? new Date();
+  const todayIso = getWarsawIsoDate(now);
   const periodDays = resolveReadinessPeriodDays(firstActivityIso, todayIso);
   const cutoffIso = shiftIsoDate(todayIso, -periodDays);
-  let seenAtBaseline = 0;
+  const thenAttempts = attempts.filter((attempt) => {
+    const timestamp = Date.parse(attempt.answeredAt);
 
-  for (const questionId of seenQuestionIds) {
-    const firstSeenAt = firstSeenAtByQuestion.get(questionId);
-
-    if (firstSeenAt == null) {
-      seenAtBaseline += 1;
-      continue;
+    if (!Number.isFinite(timestamp)) {
+      return false;
     }
 
-    const firstSeenIso = getWarsawIsoDate(new Date(firstSeenAt));
-
-    if (firstSeenIso <= cutoffIso) {
-      seenAtBaseline += 1;
-    }
-  }
-
-  const assessmentAtBaseline =
-    resolvedAssessment != null &&
-    getWarsawIsoDate(new Date(assessmentCompletedAt)) <= cutoffIso
-      ? resolvedAssessment.scorePercent
-      : null;
-  const reconstructedNow = resolveLocalReadinessPercent({
-    assessmentScorePercent: resolvedAssessment?.scorePercent ?? null,
-    seen: seenQuestionIds.length,
-    total: totalQuestions,
+    return getWarsawIsoDate(new Date(timestamp)) <= cutoffIso;
   });
-  const readinessThen = resolveLocalReadinessPercent({
-    assessmentScorePercent: assessmentAtBaseline,
-    seen: seenAtBaseline,
-    total: totalQuestions,
+  const reconstructedNow = computeLocalReadinessScore({
+    attempts,
+    userStates: input.userStates ?? replayQuestionUserStates(attempts),
+    planCompletionPercent: input.planCompletionPercent,
+    totalQuestions: input.totalQuestions,
+    now,
+  });
+  const readinessThen = computeLocalReadinessScore({
+    attempts: thenAttempts,
+    userStates: replayQuestionUserStates(thenAttempts),
+    planCompletionPercent: input.planCompletionPercent,
+    totalQuestions: input.totalQuestions,
+    now,
   });
   const readinessNow =
     typeof input.currentReadiness === "number" &&

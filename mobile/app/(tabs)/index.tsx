@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useIsFocused } from "expo-router/react-navigation";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,6 +10,8 @@ import { ActionTile } from "../../src/components/shell/ActionTile";
 import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
 import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { HomeStartSpotlightLayer } from "../../src/components/shell/HomeStartSpotlightHost";
+import { HomeTodayStartCard } from "../../src/components/shell/HomeTodayStartCard";
 import {
   ReadinessIndexCard,
   resolveReadinessLevel,
@@ -23,20 +25,29 @@ import {
   useResponsiveStyles,
 } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
+import {
+  FIRST_START_QUESTION_COUNT,
+  shouldShowHomeStartSpotlight,
+  type FirstStartCtaSource,
+} from "../../src/features/home/first-start";
+import {
+  createHomeDailySessionKey,
+  getHomeDailyPracticeStatus,
+  getHomeDailyRemainingCount,
+  HOME_DAILY_QUESTION_COUNT,
+  isHomeTodayStartCardVisible,
+} from "../../src/features/home/home-daily-practice";
 import {
   getReadinessPeriodChange,
   resolveReadinessPeriodChangeLabelKey,
 } from "../../src/features/profile/profile-stats";
-import {
-  getQuestionDisplayStats,
-  getSeenQuestionIds,
-} from "../../src/features/questions/question-engine";
-import {
-  READINESS_ASSESSMENT_QUESTION_COUNT,
-  resolveLocalReadinessPercent,
-} from "../../src/features/questions/readiness-assessment";
+import { getQuestionDisplayStats } from "../../src/features/questions/question-engine";
+import { resolveReadinessScore } from "../../src/features/questions/readiness-score";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
+import { getDaysUntilExamFromDate } from "../../src/features/study-plan/generate-local-study-plan";
 import {
   fetchRemoteHomeProgress,
   getWarsawIsoDate,
@@ -62,6 +73,7 @@ import {
   useReadinessSnapshotStore,
   type ReadinessSnapshot,
 } from "../../src/state/readiness-snapshot";
+import { isE2EHomeChromeUnlocked } from "../../src/testing/e2e/state";
 import { Icon, IconName } from "../../src/components/icons";
 
 function HomeActionIcon({
@@ -85,9 +97,18 @@ function HomeActionIcon({
 
 export default function HomeTabScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
   const authMode = useAppShellStore((state) => state.authMode);
+  const examDate = useAppShellStore((state) => state.studyPlanSetup.examDate);
+  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
+  const homeStartSpotlightDismissed = useAppShellStore(
+    (state) => state.homeStartSpotlightDismissed
+  );
+  const dismissHomeStartSpotlight = useAppShellStore(
+    (state) => state.dismissHomeStartSpotlight
+  );
   const hasPlusAccess = useHasPlusAccess();
   const setDebugPlusOverride = useEntitlementStore(
     (state) => state.setDebugPlusOverride
@@ -107,6 +128,9 @@ export default function HomeTabScreen() {
     (state) => state.questionUserState
   );
   const attempts = useQuestionProgressStore((state) => state.attempts);
+  const homeDailySession = useQuestionProgressStore(
+    (state) => state.homeDailySession
+  );
   const readinessAssessment = useQuestionProgressStore(
     (state) => state.readinessAssessment
   );
@@ -114,6 +138,11 @@ export default function HomeTabScreen() {
     useState<RemoteReadinessSummary | null>(null);
   const { openMode, openExam, openBlitz, dialog: countDialog } =
     useQuestionModeCountDialog();
+  const readinessCardRef = useRef<View>(null);
+  const readinessCardLayoutRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
+  const [readinessCardLayoutNonce, setReadinessCardLayoutNonce] = useState(0);
+  const didTrackSpotlightRef = useRef(false);
+  const unlockHomeChrome = isE2EHomeChromeUnlocked();
 
   useEffect(() => {
     if (!isFocused) {
@@ -156,14 +185,12 @@ export default function HomeTabScreen() {
     return next;
   }, [isFocused, questionCatalogVersion, questionUserState]);
 
-  const localReadiness = resolveLocalReadinessPercent({
-    assessmentScorePercent: readinessAssessment?.scorePercent,
-    seen: stats.seen,
-    total: stats.total,
+  const readiness = resolveReadinessScore(readinessSummary?.readinessScore, {
+    attempts,
+    userStates: questionUserState,
+    planCompletionPercent: readinessSummary?.planCompletionPercent,
+    totalQuestions: stats.total,
   });
-  const readiness = Math.round(
-    readinessSummary?.readinessScore ?? localReadiness
-  );
   const isLiveReadinessEmpty = stats.seen <= 0 && readinessAssessment == null;
   const readinessPeriodChange = useMemo(() => {
     if (!isFocused || isLiveReadinessEmpty) {
@@ -172,19 +199,18 @@ export default function HomeTabScreen() {
 
     return getReadinessPeriodChange({
       attempts,
-      seenQuestionIds: getSeenQuestionIds(questionUserState),
+      userStates: questionUserState,
+      planCompletionPercent: readinessSummary?.planCompletionPercent,
       totalQuestions: stats.total,
-      assessment: readinessAssessment,
       currentReadiness: readiness,
     });
   }, [
     attempts,
     isFocused,
     isLiveReadinessEmpty,
-    questionCatalogVersion,
     questionUserState,
     readiness,
-    readinessAssessment,
+    readinessSummary?.planCompletionPercent,
     stats.total,
   ]);
   const liveReadiness = useMemo<ReadinessSnapshot>(
@@ -234,6 +260,12 @@ export default function HomeTabScreen() {
 
   const isReadinessLoading = readinessView == null;
   const isReadinessEmpty = readinessView?.isEmpty ?? false;
+  const showStartSpotlight = shouldShowHomeStartSpotlight({
+    isReadinessEmpty,
+    isReadinessLoading,
+    spotlightDismissed: homeStartSpotlightDismissed,
+    unlockHomeChrome,
+  });
   const readinessPercent = readinessView?.percent ?? 0;
   const readinessLevel = resolveReadinessLevel(readinessPercent);
   const readinessWeekChangePercent = readinessView?.weekChangePercent ?? null;
@@ -266,6 +298,78 @@ export default function HomeTabScreen() {
 
   const examTitle = t("dash.tileExamTitle", { defaultValue: "Іспит" });
   const trapsTitle = t("dash.tileTrapsTitle", { defaultValue: "Пастки" });
+  const examDaysRemaining = examDate
+    ? getDaysUntilExamFromDate(examDate)
+    : null;
+  const todayIso = getWarsawIsoDate();
+  const homeDailyStatus = getHomeDailyPracticeStatus({
+    session: homeDailySession,
+    today: todayIso,
+    category: preferredCategory,
+  });
+  const homeDailyRemaining =
+    homeDailyStatus === "in_progress" && homeDailySession
+      ? getHomeDailyRemainingCount(homeDailySession)
+      : HOME_DAILY_QUESTION_COUNT;
+  const openHomeDailySession = useCallback(
+    (source: FirstStartCtaSource) => {
+      if (homeDailyStatus === "done") {
+        return;
+      }
+
+      if (source !== "today") {
+        dismissHomeStartSpotlight();
+        track(ANALYTICS_EVENTS.firstStartStarted.key, {
+          question_limit: FIRST_START_QUESTION_COUNT,
+          source,
+        });
+      }
+
+      track(ANALYTICS_EVENTS.trainingModeSelected.key, {
+        mode: "mini_test",
+        question_limit: FIRST_START_QUESTION_COUNT,
+        source,
+        topic_id: null,
+      });
+      router.navigate({
+        pathname: "/question",
+        params: buildQuestionRouteParams({
+          mode: "mini_test",
+          questionLimit: HOME_DAILY_QUESTION_COUNT,
+          sessionKey: createHomeDailySessionKey(todayIso, preferredCategory),
+        }),
+      });
+    },
+    [
+      dismissHomeStartSpotlight,
+      homeDailyStatus,
+      preferredCategory,
+      todayIso,
+      track,
+    ]
+  );
+
+  const startFirstSession = useCallback(
+    (source: FirstStartCtaSource) => {
+      openHomeDailySession(source);
+    },
+    [openHomeDailySession]
+  );
+
+  const startTodaySession = useCallback(() => {
+    openHomeDailySession("today");
+  }, [openHomeDailySession]);
+
+  useEffect(() => {
+    if (!showStartSpotlight || didTrackSpotlightRef.current) {
+      return;
+    }
+
+    didTrackSpotlightRef.current = true;
+    track(ANALYTICS_EVENTS.firstStartShown.key, {
+      question_limit: FIRST_START_QUESTION_COUNT,
+    });
+  }, [showStartSpotlight, track]);
 
   const tiles: ActionTileItem[] = [
     {
@@ -328,7 +432,28 @@ export default function HomeTabScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          <ReadinessIndexCard
+          <View
+            ref={readinessCardRef}
+            collapsable={false}
+            onLayout={(event) => {
+              const { x, y, width, height } = event.nativeEvent.layout;
+              const previous = readinessCardLayoutRef.current;
+              if (
+                previous.x === x &&
+                previous.y === y &&
+                previous.width === width &&
+                previous.height === height
+              ) {
+                return;
+              }
+
+              readinessCardLayoutRef.current = { x, y, width, height };
+              if (showStartSpotlight) {
+                setReadinessCardLayoutNonce((current) => current + 1);
+              }
+            }}
+          >
+            <ReadinessIndexCard
             empty={isReadinessEmpty}
             loading={isReadinessLoading}
             progress={readinessPercent}
@@ -360,7 +485,7 @@ export default function HomeTabScreen() {
             detailsLabel={
               isReadinessEmpty
                 ? t("dash.readinessDetails", {
-                  defaultValue: "Оціни знання",
+                  defaultValue: "Пройти тест",
                 })
                 : undefined
             }
@@ -368,20 +493,57 @@ export default function HomeTabScreen() {
             weekChangeLabel={readinessWeekChangeLabel}
             onPress={() => {
               if (isReadinessEmpty) {
-                // Untimed training assessment (not exam simulator) — larger than Blitz.
-                router.navigate({
-                  pathname: "/question",
-                  params: buildQuestionRouteParams({
-                    mode: "mini_test",
-                    questionLimit: READINESS_ASSESSMENT_QUESTION_COUNT,
-                  }),
-                });
+                startFirstSession(showStartSpotlight ? "spotlight" : "card");
                 return;
               }
 
               router.navigate("/statistics");
             }}
-          />
+            />
+          </View>
+
+          {!isReadinessEmpty && isHomeTodayStartCardVisible(homeDailyStatus) ? (
+            <HomeTodayStartCard
+              completed={homeDailyStatus === "done"}
+              examCountdownLabel={
+                examDaysRemaining != null && examDaysRemaining > 0
+                  ? t("dash.examCountdown", {
+                      count: examDaysRemaining,
+                      days: examDaysRemaining,
+                      defaultValue: "Do egzaminu: {{days}} dni",
+                    })
+                  : null
+              }
+              title={
+                homeDailyStatus === "done"
+                  ? t("dash.todayStartDoneTitle", {
+                      defaultValue: "Na dziś gotowe",
+                    })
+                  : t("dash.todayStartTitle", {
+                      count: FIRST_START_QUESTION_COUNT,
+                      defaultValue: "Dzis: {{count}} pytan",
+                    })
+              }
+              subtitle={
+                homeDailyStatus === "done"
+                  ? t("dash.todayStartDoneSubtitle", {
+                      defaultValue: "Nowe pytania jutro",
+                    })
+                  : homeDailyStatus === "in_progress" &&
+                      homeDailyRemaining < HOME_DAILY_QUESTION_COUNT
+                    ? t("dash.todayStartContinueSubtitle", {
+                        remaining: homeDailyRemaining,
+                        defaultValue: "Zostalo {{remaining}} · bez limitu czasu",
+                      })
+                    : t("dash.todayStartSubtitle", {
+                        defaultValue: "Krotka sesja bez limitu czasu",
+                      })
+              }
+              onPress={
+                homeDailyStatus === "done" ? undefined : startTodaySession
+              }
+            />
+          ) : null}
 
           <View style={styles.stack}>
             <ActionTile
@@ -439,6 +601,29 @@ export default function HomeTabScreen() {
         </ScrollView>
       </SafeAreaView>
       {countDialog}
+      <HomeStartSpotlightLayer
+        visible={showStartSpotlight}
+        anchorRef={readinessCardRef}
+        layoutNonce={readinessCardLayoutNonce}
+        title={t("dash.firstStartSpotlightTitle", {
+          defaultValue: "Zrób szybki test wiedzy",
+        })}
+        body={t("dash.firstStartSpotlightBody", {
+          count: FIRST_START_QUESTION_COUNT,
+          defaultValue:
+            "{{count}} pytań, bez limitu czasu. Zaraz zobaczysz, na czym stoisz.",
+        })}
+        skipLabel={t("dash.firstStartSpotlightSkip", {
+          defaultValue: "Pozniej",
+        })}
+        onStart={() => startFirstSession("spotlight")}
+        onSkip={() => {
+          dismissHomeStartSpotlight();
+          track(ANALYTICS_EVENTS.firstStartSkipped.key, {
+            question_limit: FIRST_START_QUESTION_COUNT,
+          });
+        }}
+      />
     </GreenWaveScreen>
   );
 }

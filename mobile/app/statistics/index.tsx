@@ -51,10 +51,9 @@ import {
 import {
   getMistakesFixedStats,
   getQuestionDisplayStats,
-  getSeenQuestionIds,
   getTopicProgress,
 } from "../../src/features/questions/question-engine";
-import { resolveLocalReadinessPercent } from "../../src/features/questions/readiness-assessment";
+import { resolveReadinessScore } from "../../src/features/questions/readiness-score";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
 import {
@@ -272,13 +271,14 @@ export default function StatisticsScreen() {
 
   const coveragePercent =
     stats.total > 0 ? Math.round((stats.seen / stats.total) * 100) : 0;
-  const localReadiness = resolveLocalReadinessPercent({
-    assessmentScorePercent: readinessAssessment?.scorePercent,
-    seen: stats.seen,
-    total: stats.total,
-  });
-  const examReadiness = Math.round(
-    readinessSummary?.readinessScore ?? localReadiness
+  const examReadiness = resolveReadinessScore(
+    readinessSummary?.readinessScore,
+    {
+      attempts,
+      userStates: questionUserState,
+      planCompletionPercent: readinessSummary?.planCompletionPercent,
+      totalQuestions: stats.total,
+    }
   );
   const signsLearnedPercent =
     signsCatalogProgress.total > 0
@@ -324,17 +324,17 @@ export default function StatisticsScreen() {
 
     return getReadinessPeriodChange({
       attempts,
-      seenQuestionIds: getSeenQuestionIds(questionUserState),
+      userStates: questionUserState,
+      planCompletionPercent: readinessSummary?.planCompletionPercent,
       totalQuestions: stats.total,
-      assessment: readinessAssessment,
       currentReadiness: examReadiness,
     });
   }, [
     attempts,
     examReadiness,
-    questionCatalogVersion,
     questionUserState,
     readinessAssessment,
+    readinessSummary?.planCompletionPercent,
     stats.seen,
     stats.total,
   ]);

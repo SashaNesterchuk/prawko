@@ -34,8 +34,16 @@ export const AppState = {
   },
 };
 
+export const InteractionManager = {
+  runAfterInteractions: (callback: () => void) => {
+    callback();
+    return { cancel: () => undefined };
+  },
+};
+
 export default {
   Platform,
   Linking,
   AppState,
+  InteractionManager,
 };

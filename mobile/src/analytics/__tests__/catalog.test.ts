@@ -33,6 +33,11 @@ describe("analytics catalog", () => {
     expect(ANALYTICS_EVENTS.examCountryChanged.key).toBe(
       "exam_country_changed"
     );
+    expect(ANALYTICS_EVENTS.firstStartShown.key).toBe("first_start_shown");
+    expect(ANALYTICS_EVENTS.firstStartSkipped.key).toBe("first_start_skipped");
+    expect(ANALYTICS_EVENTS.firstStartStarted.key).toBe("first_start_started");
+    expect(ANALYTICS_PROPERTIES.appUserId).toBe("app_user_id");
+    expect(ANALYTICS_PROPERTIES.supabaseUserId).toBe("supabase_user_id");
     expect(ANALYTICS_PROPERTIES.examCountry).toBe("exam_country");
     expect(ANALYTICS_PROPERTIES.previous).toBe("previous");
     expect(ANALYTICS_PROPERTIES.source).toBe("source");
@@ -85,6 +90,10 @@ describe("analytics catalog", () => {
     expect(resolveScreenRoute("/(onboarding)/exam-country")).toMatchObject({
       routePattern: "/(onboarding)/exam-country",
       screenName: "exam_country",
+    });
+    expect(resolveScreenRoute("/(tabs)/index")).toMatchObject({
+      routePattern: "/(tabs)/index",
+      screenName: "home",
     });
   });
 });

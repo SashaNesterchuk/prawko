@@ -116,25 +116,8 @@ async function presentInterstitial(input: ShowInterstitialInput): Promise<boolea
   const shown = await showPreloadedInterstitial();
 
   if (!shown) {
-    // Load → show failed: one short retry, then skip. Never leave UI hung.
-    trackAdFailed(input, "show_returned_false_retrying");
-
-    const readyAgain = await ensureInterstitialReady({
-      attempts: 1,
-      timeoutMs: 3_000,
-    });
-
-    if (readyAgain) {
-      const retried = await showPreloadedInterstitial();
-      if (retried) {
-        trackAdShown(input, { retried: true });
-        recordAdShown();
-        clearAppBackgroundMark();
-        trackAdDismissed(input, { retried: true });
-        return true;
-      }
-    }
-
+    // Do not retry immediately — a flashed native overlay plus a second show
+    // stacks ghost windows that freeze the exam result screen.
     trackAdFailed(input, "show_returned_false");
     return false;
   }
@@ -251,28 +234,7 @@ export async function showInterstitialForUnlockGate(
 
   const shown = await showPreloadedInterstitial();
 
-  // One more short retry if show itself failed (common on first attempt).
   if (!shown) {
-    trackAdFailed(normalizedInput, "show_returned_false_retrying");
-
-    const readyAgain = await ensureInterstitialReady({
-      attempts: 1,
-      timeoutMs: 3_000,
-    });
-
-    if (readyAgain) {
-      const retried = await showPreloadedInterstitial();
-      if (retried) {
-        trackAdShown(normalizedInput, {
-          retried: true,
-        });
-        recordAdShown();
-        clearAppBackgroundMark();
-        trackAdDismissed(normalizedInput, { retried: true });
-        return true;
-      }
-    }
-
     trackAdFailed(normalizedInput, "show_returned_false");
     return false;
   }

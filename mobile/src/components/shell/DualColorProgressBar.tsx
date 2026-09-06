@@ -1,17 +1,26 @@
+import { useEffect } from "react";
 import { View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
-import {
-  useResponsiveStyles,
-  type PercentageString,
-} from "../../portable-ui";
+import { useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { resolveDualColorProgressSegments } from "./dual-color-progress";
+
+const FILL_DURATION_MS = 700;
+const FILL_EASING = Easing.out(Easing.cubic);
 
 type DualColorProgressBarProps = {
   correct: number;
   wrong: number;
   total: number;
   height?: number;
+  /** Fill from the previous width (or empty) when counts change. */
+  animated?: boolean;
 };
 
 export function DualColorProgressBar({
@@ -19,19 +28,52 @@ export function DualColorProgressBar({
   wrong,
   total,
   height = 8,
+  animated = true,
 }: DualColorProgressBarProps) {
   const theme = useTheme();
   const { wrongPercent, correctPercent, filledPercent, accessibilityText } =
     resolveDualColorProgressSegments({ correct, wrong, total });
-  const wrongWidth = `${wrongPercent}%` as PercentageString;
-  const correctWidth = `${correctPercent}%` as PercentageString;
+  const trackWidth = useSharedValue(0);
+  const wrongFraction = useSharedValue(0);
+  const correctFraction = useSharedValue(0);
   const styles = useStyles({
     height,
-    wrongWidth,
-    correctWidth,
     wrongColor: theme.accents.red.fill,
     correctColor: theme.accents.green.fill,
   });
+
+  useEffect(() => {
+    const nextWrong = wrongPercent / 100;
+    const nextCorrect = correctPercent / 100;
+
+    if (!animated) {
+      wrongFraction.value = nextWrong;
+      correctFraction.value = nextCorrect;
+      return;
+    }
+
+    wrongFraction.value = withTiming(nextWrong, {
+      duration: FILL_DURATION_MS,
+      easing: FILL_EASING,
+    });
+    correctFraction.value = withTiming(nextCorrect, {
+      duration: FILL_DURATION_MS,
+      easing: FILL_EASING,
+    });
+  }, [
+    animated,
+    correctFraction,
+    correctPercent,
+    wrongFraction,
+    wrongPercent,
+  ]);
+
+  const wrongFillStyle = useAnimatedStyle(() => ({
+    width: trackWidth.value * wrongFraction.value,
+  }));
+  const correctFillStyle = useAnimatedStyle(() => ({
+    width: trackWidth.value * correctFraction.value,
+  }));
 
   return (
     <View
@@ -42,24 +84,23 @@ export function DualColorProgressBar({
         now: Math.round(filledPercent),
         text: accessibilityText,
       }}
+      onLayout={(event) => {
+        trackWidth.value = event.nativeEvent.layout.width;
+      }}
       style={styles.track}
     >
-      {wrong > 0 ? <View style={styles.wrongFill} /> : null}
-      {correct > 0 ? <View style={styles.correctFill} /> : null}
+      <Animated.View style={[styles.wrongFill, wrongFillStyle]} />
+      <Animated.View style={[styles.correctFill, correctFillStyle]} />
     </View>
   );
 }
 
 function useStyles({
   height,
-  wrongWidth,
-  correctWidth,
   wrongColor,
   correctColor,
 }: {
   height: number;
-  wrongWidth: PercentageString;
-  correctWidth: PercentageString;
   wrongColor: string;
   correctColor: string;
 }) {
@@ -73,12 +114,12 @@ function useStyles({
       overflow: "hidden",
     },
     wrongFill: {
-      width: wrongWidth,
+      width: 0,
       height: "100%",
       backgroundColor: wrongColor,
     },
     correctFill: {
-      width: correctWidth,
+      width: 0,
       height: "100%",
       backgroundColor: correctColor,
     },

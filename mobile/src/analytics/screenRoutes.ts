@@ -9,6 +9,7 @@ const SCREEN_ROUTES: Array<
   AnalyticsScreenRoute & { matches: (pathname: string) => boolean }
 > = [
   exact("/", ANALYTICS_SCREENS.appEntry),
+  exact("/index", ANALYTICS_SCREENS.appEntry),
   exact("/(onboarding)/language", ANALYTICS_SCREENS.onboardingLanguage),
   exact("/language", ANALYTICS_SCREENS.onboardingLanguage),
   exact("/(onboarding)/exam-country", ANALYTICS_SCREENS.examCountry),
@@ -75,6 +76,16 @@ const SCREEN_ROUTES: Array<
   ),
   prefix("/signs/", "/signs/[signId]", ANALYTICS_SCREENS.signDetail),
 ];
+
+/**
+ * Expo Router's usePathname() strips groups, so Home (`app/(tabs)/index`)
+ * looks like `/` — the same path as the root gate (`app/index`). Segments
+ * keep `(tabs)` so Home can be distinguished from app_entry.
+ */
+export function analyticsPathFromSegments(segments: readonly string[]): string {
+  const path = segments.filter(Boolean).join("/");
+  return path ? `/${path}` : "/";
+}
 
 export function resolveScreenRoute(pathname: string): AnalyticsScreenRoute {
   return (

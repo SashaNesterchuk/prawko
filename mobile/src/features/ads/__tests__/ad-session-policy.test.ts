@@ -166,22 +166,10 @@ describe("ad-session-policy", () => {
   });
 
   describe("app_resume", () => {
-    it("requires a long enough background mark", () => {
-      expect(
-        shouldShowInterstitialForTrigger("app_resume", {
-          adsEnabled: true,
-          hasPlusAccess: false,
-        })
-      ).toEqual({ allowed: false, reason: "trigger_not_ready" });
+    it("stays disabled even after a long background", () => {
+      expect(AD_POLICY.enableAppResumeAds).toBe(false);
 
       markAppBackgrounded();
-      expect(
-        shouldShowInterstitialForTrigger("app_resume", {
-          adsEnabled: true,
-          hasPlusAccess: false,
-        })
-      ).toEqual({ allowed: false, reason: "trigger_not_ready" });
-
       jest.advanceTimersByTime(
         AD_POLICY.appResumeBackgroundMinutes * 60 * 1000
       );
@@ -191,7 +179,7 @@ describe("ad-session-policy", () => {
           adsEnabled: true,
           hasPlusAccess: false,
         })
-      ).toEqual({ allowed: true, reason: null });
+      ).toEqual({ allowed: false, reason: "trigger_not_ready" });
     });
 
     it("clears background mark so resume is not ready again", () => {

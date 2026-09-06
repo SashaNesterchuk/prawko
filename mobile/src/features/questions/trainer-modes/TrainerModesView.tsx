@@ -10,6 +10,7 @@ import { Icon, type IconName } from "../../../components/icons";
 import type { ActionTileItem } from "../../../components/shell/ActionTileGrid";
 import { ActionTileSection } from "../../../components/shell/ActionTileSection";
 import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
+import { QuestionCoverageCard } from "../../../components/shell/QuestionCoverageCard";
 import { ScreenHeader } from "../../../components/shell/ScreenHeader";
 import {
   QuestionCountDialog,
@@ -20,6 +21,7 @@ import {
 import { getLearningTopicTitle } from "../../question-topics/catalog";
 import {
   getQuestionCountForMode,
+  getQuestionDisplayStats,
   getTrainerModeStats,
 } from "../question-engine";
 import { buildQuestionRouteParams } from "../question-routes";
@@ -78,6 +80,10 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
       topic,
       topicQuestionContextProgress,
     ]
+  );
+  const coverage = useMemo(
+    () => getQuestionDisplayStats(questionUserState),
+    [questionCatalogVersion, questionUserState]
   );
 
   const pendingModeCount = useMemo(() => {
@@ -269,6 +275,18 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
+          {coverage.total > 0 ? (
+            <QuestionCoverageCard
+              correct={coverage.seenCorrect}
+              seen={coverage.seen}
+              total={coverage.total}
+              testID="trainer-coverage"
+              title={t("question.learnedTitle", {
+                defaultValue: "Усі питання",
+              })}
+              wrong={coverage.seenWrong}
+            />
+          ) : null}
           <ActionTileSection
             title={t("trainerModes.primaryTitle", {
               defaultValue: "Основні режими",

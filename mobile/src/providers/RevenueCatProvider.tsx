@@ -5,14 +5,16 @@ import {
   fetchRevenueCatSnapshot,
   isRevenueCatConfiguredForCurrentPlatform,
   subscribeToRevenueCatCustomerInfo,
+  syncRevenueCatSubscriberAttributes,
 } from "../features/entitlements/revenuecat";
+import { useAppUserId } from "../identity/AppIdentityProvider";
 import { useHasHydrated, useAppShellStore } from "../state/app-shell";
 import { useEntitlementStore } from "../state/entitlements";
 import { useErrorLogger } from "./ErrorLoggingProvider";
 
 export function RevenueCatProvider({ children }: PropsWithChildren) {
+  const appUserId = useAppUserId();
   const appShellHydrated = useHasHydrated();
-  const authMode = useAppShellStore((state) => state.authMode);
   const { captureError } = useErrorLogger();
   const captureErrorRef = useRef(captureError);
   captureErrorRef.current = captureError;
@@ -38,9 +40,6 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    const appUserId =
-      authMode === "supabase" && supabaseUserId ? supabaseUserId : null;
-
     let cancelled = false;
     let unsubscribeCustomerInfo: (() => void) | undefined;
     setRevenueCatStatus("loading");
@@ -52,6 +51,10 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
         }
 
         hydrateRevenueCatSnapshot(snapshot);
+        await syncRevenueCatSubscriberAttributes({
+          appUserId,
+          supabaseUserId,
+        });
 
         unsubscribeCustomerInfo = await subscribeToRevenueCatCustomerInfo(
           appUserId,
@@ -84,7 +87,7 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
     };
   }, [
     appShellHydrated,
-    authMode,
+    appUserId,
     clearRevenueCatState,
     hydrateRevenueCatSnapshot,
     sessionResolved,

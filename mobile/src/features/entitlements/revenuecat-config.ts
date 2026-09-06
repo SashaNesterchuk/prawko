@@ -52,10 +52,8 @@ export const REVENUECAT_PACKAGE_ALIASES: Record<
 };
 
 /**
- * Local and E2E runs share the production RevenueCat project, where every fresh
- * install (or Maestro `clearState`) registers another anonymous customer and
- * skews the dashboard. Purchases stay off in dev builds until someone opts in
- * with EXPO_PUBLIC_REVENUECAT_ENABLE_IN_DEV=true.
+ * Local and E2E runs share the production RevenueCat project. Purchases stay
+ * off in dev builds until someone opts in with EXPO_PUBLIC_REVENUECAT_ENABLE_IN_DEV.
  */
 export function isRevenueCatEnabledForBuild(input: {
   enableInDevBuilds: boolean;
