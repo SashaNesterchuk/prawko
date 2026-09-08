@@ -1,5 +1,6 @@
 import { isMobileSupabaseConfigured } from "../../config/env";
 import { getQuestionSetKey } from "../../countries/runtime";
+import { invokeRpcWithQuestionSetFallback } from "../../lib/supabase-rpc";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 
 type RemoteDailyUsageSnapshotRow = {
@@ -20,9 +21,12 @@ export async function fetchRemoteDailyUsageSnapshot(): Promise<RemoteDailyUsageS
   }
 
   const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("get_daily_usage_snapshot", {
-    p_question_set_key: getQuestionSetKey(),
-  });
+  const { data, error } = await invokeRpcWithQuestionSetFallback(
+    (params) => client.rpc("get_daily_usage_snapshot", params),
+    {
+      p_question_set_key: getQuestionSetKey(),
+    }
+  );
 
   if (error) {
     throw error;

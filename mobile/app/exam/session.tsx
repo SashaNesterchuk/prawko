@@ -140,6 +140,7 @@ export default function ExamSessionScreen() {
   const resultNavigationHandledRef = useRef(false);
   const modalHideResolverRef = useRef<(() => void) | null>(null);
   const confirmLockRef = useRef(false);
+  const submitLockRef = useRef(false);
   // Empty open + close = miss-click: no confirm dialog, no result screen.
   const hasStartedExamRef = useRef(false);
   const exitHandlersRef = useRef<{
@@ -466,6 +467,7 @@ export default function ExamSessionScreen() {
       !snapshot ||
       !currentQuestionRef ||
       !currentQuestion ||
+      submitLockRef.current ||
       isSubmitting ||
       isEnding
     ) {
@@ -483,6 +485,7 @@ export default function ExamSessionScreen() {
       return;
     }
 
+    submitLockRef.current = true;
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -530,6 +533,7 @@ export default function ExamSessionScreen() {
       console.warn("Failed to submit exam answer.", error);
       setErrorMessage(getErrorMessage(error));
     } finally {
+      submitLockRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -551,12 +555,14 @@ export default function ExamSessionScreen() {
       !currentQuestionRef ||
       !currentQuestion ||
       isSubmitting ||
-      isEnding
+      isEnding ||
+      submitLockRef.current
     ) {
       return;
     }
 
     setSelectedAnswerId(answerGiven);
+    submitLockRef.current = true;
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -597,12 +603,19 @@ export default function ExamSessionScreen() {
       console.warn("Failed to save exam answer.", error);
       setErrorMessage(getErrorMessage(error));
     } finally {
+      submitLockRef.current = false;
       setIsSubmitting(false);
     }
   };
 
   const handleGoToOrder = async (questionOrder: number) => {
-    if (!sessionId || !snapshot || isSubmitting || isEnding) {
+    if (
+      !sessionId ||
+      !snapshot ||
+      submitLockRef.current ||
+      isSubmitting ||
+      isEnding
+    ) {
       return;
     }
 
@@ -610,6 +623,7 @@ export default function ExamSessionScreen() {
       return;
     }
 
+    submitLockRef.current = true;
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
@@ -622,6 +636,7 @@ export default function ExamSessionScreen() {
       console.warn("Failed to change exam question.", error);
       setErrorMessage(getErrorMessage(error));
     } finally {
+      submitLockRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -690,14 +705,14 @@ export default function ExamSessionScreen() {
   };
 
   useEffect(() => {
-    questionTimeoutHandledRef.current = false;
-  }, [currentQuestion?.id]);
+    if (!questionTimer.isAnswerTimedOut) {
+      questionTimeoutHandledRef.current = false;
+      return;
+    }
 
-  useEffect(() => {
     if (
       !snapshot ||
       snapshot.session.status !== "active" ||
-      !questionTimer.isAnswerTimedOut ||
       isSubmitting ||
       isEnding ||
       questionTimeoutHandledRef.current
@@ -710,7 +725,7 @@ export default function ExamSessionScreen() {
       answer: selectedAnswerId,
       timedOut: true,
     });
-  }, [questionTimer.isAnswerTimedOut]);
+  }, [currentQuestion?.id, questionTimer.isAnswerTimedOut]);
 
   const handleEndSession = async (
     status: "abandoned" | "expired",

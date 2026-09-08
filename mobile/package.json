@@ -17,7 +17,7 @@
     "icons:generate": "node scripts/generate-icon-registry.mjs",
     "offline:sizes:generate": "node scripts/generate-offline-asset-size-map.mjs",
     "road-signs:generate": "node scripts/generate-road-signs-content.mjs",
-    "test:e2e": "PATH=\"$HOME/.maestro/bin:$PATH\" maestro test .maestro",
+    "test:e2e": "PATH=\"$HOME/.maestro/bin:$PATH\" sh -c 'maestro test \"${@:-.maestro}\"' _",
     "test:e2e:smoke": "PATH=\"$HOME/.maestro/bin:$PATH\" maestro test .maestro --include-tags smoke",
     "test:e2e:studio": "PATH=\"$HOME/.maestro/bin:$PATH\" maestro studio"
   },

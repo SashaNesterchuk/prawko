@@ -12,8 +12,20 @@ tags:
       TARGET_ID: screen-profile
       LOCALE: ua
 
-- assertVisible:
-    id: "profile-row-support"
+- scrollUntilVisible:
+    element:
+      id: "profile-row-feedback"
+    direction: DOWN
+    timeout: 8000
 
 - assertVisible:
     id: "profile-row-feedback"
+
+- scrollUntilVisible:
+    element:
+      id: "profile-row-support"
+    direction: DOWN
+    timeout: 5000
+
+- assertVisible:
+    id: "profile-row-support"

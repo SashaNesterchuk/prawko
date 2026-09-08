@@ -101,18 +101,27 @@ export function getDiagnosticStrongArea(
   return strongest;
 }
 
-export function getDiagnosticSummaryBand(correctCount: number, total: number) {
-  if (total <= 0) {
-    return "mid" as const;
+export type DiagnosticStartLabel =
+  | "nowWeKnow"
+  | "goodStartingPoint"
+  | "goodStart"
+  | "strongStart";
+
+export function getDiagnosticStartLabel(
+  correctCount: number,
+  total: number
+): DiagnosticStartLabel {
+  if (total <= 0 || correctCount <= 3) {
+    return "nowWeKnow";
   }
 
-  if (correctCount <= 3) {
-    return "low" as const;
+  if (correctCount <= 6) {
+    return "goodStartingPoint";
   }
 
-  if (correctCount >= 8) {
-    return "high" as const;
+  if (correctCount <= 8) {
+    return "goodStart";
   }
 
-  return "mid" as const;
+  return "strongStart";
 }

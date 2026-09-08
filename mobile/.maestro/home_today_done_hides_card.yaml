@@ -1,6 +1,6 @@
 # Feature: Home daily practice
-# Scenario: After today’s 10 are done, Home hides the parked “that’s all for today”
-# card; the result screen has no New attempt
+# Scenario: After today’s 10 are done, Home has no today-start card;
+# the result screen has no New attempt
 appId: com.mindjar.prawko
 tags:
   - smoke

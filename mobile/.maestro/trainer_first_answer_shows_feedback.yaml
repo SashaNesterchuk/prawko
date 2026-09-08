@@ -24,6 +24,11 @@ tags:
     env:
       TARGET_ID: screen-question
 
+- assertVisible:
+    id: "question-title-training"
+- assertNotVisible:
+    id: "question-title-quick-check"
+
 - runFlow:
     file: subflows/answer_first_available_option.yaml
     env:

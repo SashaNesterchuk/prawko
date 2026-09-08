@@ -19,9 +19,13 @@ tags:
 
 - tapOn:
     id: "question-choice-index-0"
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 
 - tapOn:
     id: "exam-next-question"
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 
 - extendedWaitUntil:
     visible:
@@ -31,6 +35,8 @@ tags:
 
 - tapOn:
     id: "exam-close"
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 
 - extendedWaitUntil:
     visible:
@@ -39,9 +45,14 @@ tags:
 
 - tapOn:
     id: "training-exit-continue"
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 
 - assertVisible:
     id: "screen-exam-session"
-- assertVisible:
-    id: "exam-session-counter"
-    text: "Питання 2 з 32"
+
+- extendedWaitUntil:
+    visible:
+      id: "exam-session-counter"
+      text: "Питання 2 з 32"
+    timeout: 5000

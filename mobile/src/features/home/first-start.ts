@@ -2,7 +2,7 @@ import { INITIAL_DIAGNOSTIC_QUESTION_COUNT } from "../questions/initial-diagnost
 
 export const FIRST_START_QUESTION_COUNT = INITIAL_DIAGNOSTIC_QUESTION_COUNT;
 
-export type FirstStartCtaSource = "spotlight" | "card" | "today";
+export type FirstStartCtaSource = "spotlight" | "card";
 
 export function shouldShowHomeStartSpotlight(input: {
   isReadinessEmpty: boolean;

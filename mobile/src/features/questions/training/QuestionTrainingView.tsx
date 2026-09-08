@@ -207,8 +207,17 @@ export function QuestionTrainingView({
                 testID="question-close"
               />
               <View style={trainerStyles.headerCenter}>
-                <CText style={trainerStyles.headerTitle}>
-                  {t("question.trainerTitle")}
+                <CText
+                  style={trainerStyles.headerTitle}
+                  testID={
+                    activeSession.request.mode === "initial_diagnostic"
+                      ? "question-title-quick-check"
+                      : "question-title-training"
+                  }
+                >
+                  {activeSession.request.mode === "initial_diagnostic"
+                    ? t("question.quickCheckTitle")
+                    : t("question.trainerTitle")}
                 </CText>
                 <CText
                   style={[

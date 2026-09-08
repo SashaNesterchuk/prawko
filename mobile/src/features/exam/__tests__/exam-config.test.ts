@@ -4,6 +4,7 @@ import {
   getExamDurationMinutes,
   getExamQuestionTarget,
   getScaledExamPassPoints,
+  isExamQuestionTimedOut,
   resolveExamLaunchFromQuestionCount,
 } from "../exam-config";
 import { CZECH_EXAM_PROFILE, WORD_EXAM_PROFILE } from "../exam-profile";
@@ -52,5 +53,48 @@ describe("exam config scales from the active profile", () => {
     expect(getExamDurationMinutes(25, CZECH_EXAM_PROFILE)).toBe(30);
     expect(getScaledExamPassPoints(50, CZECH_EXAM_PROFILE)).toBe(43);
     expect(getExamDurationMinutes(10, CZECH_EXAM_PROFILE)).toBe(12);
+  });
+});
+
+describe("isExamQuestionTimedOut", () => {
+  const timedOutClock = {
+    enabled: true,
+    hasVideo: true,
+    isAppInactive: false,
+    isTimerPaused: false,
+    phase: "read" as const,
+    phaseTotalSeconds: 20,
+    remainingSeconds: 0,
+  };
+
+  it("does not time out the next question from the previous clock", () => {
+    expect(
+      isExamQuestionTimedOut({
+        ...timedOutClock,
+        clockQuestionId: "q1",
+        questionId: "q2",
+      })
+    ).toBe(false);
+  });
+
+  it("times out a video read when that question's clock hits zero", () => {
+    expect(
+      isExamQuestionTimedOut({
+        ...timedOutClock,
+        clockQuestionId: "q1",
+        questionId: "q1",
+      })
+    ).toBe(true);
+  });
+
+  it("does not time out a no-video read (answer window still ahead)", () => {
+    expect(
+      isExamQuestionTimedOut({
+        ...timedOutClock,
+        clockQuestionId: "q1",
+        hasVideo: false,
+        questionId: "q1",
+      })
+    ).toBe(false);
   });
 });

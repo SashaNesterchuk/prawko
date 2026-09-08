@@ -12,6 +12,13 @@ tags:
       PLUS_ACCESS: "false"
       TARGET_ID: screen-profile
 
+- scrollUntilVisible:
+    element:
+      id: "profile-row-offline-mode"
+    direction: DOWN
+    centerElement: true
+    timeout: 8000
+
 - tapOn:
     id: "profile-row-offline-mode"
 

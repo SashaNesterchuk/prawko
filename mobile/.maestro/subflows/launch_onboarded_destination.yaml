@@ -37,6 +37,11 @@ env:
       - tapOn: "Close Advertisement"
 
 - extendedWaitUntil:
+    notVisible:
+      id: "screen-e2e-bootstrap-disabled"
+    timeout: 5000
+
+- extendedWaitUntil:
     visible:
       id: "${TARGET_ID}"
     timeout: 20000

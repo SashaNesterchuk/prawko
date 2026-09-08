@@ -6,6 +6,7 @@ import { getExamProfile } from "./exam-profile";
 import {
   getExamQuestionPhaseDuration,
   getExamQuestionTiming,
+  isExamQuestionTimedOut,
   type ExamQuestionTimerPhase,
 } from "./exam-config";
 
@@ -42,6 +43,7 @@ export function useExamQuestionTimer({
     () => (scope ? getExamQuestionTiming(scope) : null),
     [scope]
   );
+  const [clockQuestionId, setClockQuestionId] = useState<string | null>(null);
   const [phase, setPhase] = useState<ExamQuestionTimerPhase>("answer");
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [phaseTotalSeconds, setPhaseTotalSeconds] = useState(0);
@@ -111,6 +113,7 @@ export function useExamQuestionTimer({
     (nextPhase: ExamQuestionTimerPhase, durationSeconds: number) => {
       const now = Date.now();
       const durationMs = Math.max(0, durationSeconds) * 1000;
+      setClockQuestionId(questionId);
       phaseEndedRef.current = false;
       phaseStartedAtRef.current = now;
       // If we are already inactive, only credit inactivity from this phase start.
@@ -126,7 +129,7 @@ export function useExamQuestionTimer({
       setProgressFraction(durationSeconds > 0 ? 1 : 0);
       setPhaseEpoch((value) => value + 1);
     },
-    []
+    [questionId]
   );
 
   const enterAnswerPhase = useCallback(
@@ -250,15 +253,17 @@ export function useExamQuestionTimer({
     timing,
   ]);
 
-  const isTimedOut =
-    enabled &&
-    !isTimerPaused &&
-    !isAppInactive &&
-    phase !== "media" &&
-    remainingSeconds <= 0 &&
-    phaseTotalSeconds > 0 &&
-    // After read→answer transition for no-video, answer phase has its own clock.
-    (phase === "answer" || (phase === "read" && hasVideo));
+  const isTimedOut = isExamQuestionTimedOut({
+    clockQuestionId,
+    enabled,
+    hasVideo,
+    isAppInactive,
+    isTimerPaused,
+    phase,
+    phaseTotalSeconds,
+    questionId,
+    remainingSeconds,
+  });
 
   return {
     canAnswer: enabled,

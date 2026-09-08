@@ -48,8 +48,8 @@ import {
 } from "./reminder-prompt";
 import {
   buildDiagnosticTopicStats,
+  getDiagnosticStartLabel,
   getDiagnosticStrongArea,
-  getDiagnosticSummaryBand,
   getDiagnosticWeakAreas,
 } from "./result-stats";
 
@@ -107,7 +107,7 @@ export function InitialDiagnosticResultView({
     : [];
   const weakAreas = getDiagnosticWeakAreas(topicStats);
   const strongArea = getDiagnosticStrongArea(topicStats);
-  const summaryBand = getDiagnosticSummaryBand(summary.correct, summary.total);
+  const startLabel = getDiagnosticStartLabel(summary.correct, summary.total);
   const examDateLabel = formatDiagnosticExamDate(examDate, preferredLocale);
   const reviewQuestionIds = activeSession?.questionIds ?? [];
   const reviewQuestionId =
@@ -291,20 +291,12 @@ export function InitialDiagnosticResultView({
                   total: summary.total,
                 })}
               </CText>
-              <CText style={styles.percentLine}>
-                {t("diagnostic.percentCorrect", {
-                  percent: Math.round(
-                    (summary.correct / Math.max(summary.total, 1)) * 100
-                  ),
-                })}
+              <CText
+                style={styles.interpretationLine}
+                testID="diagnostic-start-label"
+              >
+                {t(`diagnostic.startLabel.${startLabel}`)}
               </CText>
-              {summaryBand !== "mid" ? (
-                <CText style={styles.summaryBody}>
-                  {summaryBand === "low"
-                    ? t("diagnostic.summaryLow")
-                    : t("diagnostic.summaryHigh")}
-                </CText>
-              ) : null}
             </View>
 
             {weakAreas.length > 0 ? (
@@ -542,20 +534,12 @@ function useStyles() {
         textAlign: "center",
         color: colors.ink,
       },
-      percentLine: {
+      interpretationLine: {
         fontSize: responsiveFont(14),
         lineHeight: responsiveFont(20),
         fontFamily: getFontFamily("regular"),
         textAlign: "center",
         color: colors.ink3,
-      },
-      summaryBody: {
-        fontSize: responsiveFont(14),
-        lineHeight: responsiveFont(20),
-        fontFamily: getFontFamily("regular"),
-        textAlign: "center",
-        color: colors.ink2,
-        paddingHorizontal: spacing.exact(12),
       },
       card: {
         borderRadius: radius.xxl,

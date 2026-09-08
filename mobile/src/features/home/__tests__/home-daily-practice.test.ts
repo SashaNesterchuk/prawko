@@ -5,7 +5,6 @@ import {
   getHomeDailyPracticeStatus,
   getHomeDailyRemainingCount,
   isHomeDailySessionKey,
-  isHomeTodayStartCardVisible,
   isSameHomeDailySession,
   resumeHomeDailySession,
 } from "../home-daily-practice";
@@ -100,12 +99,6 @@ describe("home daily practice", () => {
         category: "B",
       })
     ).toBe("done");
-  });
-
-  it("keeps the start card and hides the parked done copy", () => {
-    expect(isHomeTodayStartCardVisible("missing")).toBe(true);
-    expect(isHomeTodayStartCardVisible("in_progress")).toBe(true);
-    expect(isHomeTodayStartCardVisible("done")).toBe(false);
   });
 
   it("treats the category-prefixed route key as the same daily set", () => {

@@ -11,7 +11,6 @@ import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
 import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { HomeStartSpotlightLayer } from "../../src/components/shell/HomeStartSpotlightHost";
-import { HomeTodayStartCard } from "../../src/components/shell/HomeTodayStartCard";
 import {
   ReadinessIndexCard,
   resolveReadinessLevel,
@@ -35,9 +34,7 @@ import {
 import {
   createHomeDailySessionKey,
   getHomeDailyPracticeStatus,
-  getHomeDailyRemainingCount,
   HOME_DAILY_QUESTION_COUNT,
-  isHomeTodayStartCardVisible,
 } from "../../src/features/home/home-daily-practice";
 import {
   getReadinessPeriodChange,
@@ -47,7 +44,6 @@ import { getQuestionDisplayStats } from "../../src/features/questions/question-e
 import { resolveReadinessScore } from "../../src/features/questions/readiness-score";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
-import { getDaysUntilExamFromDate } from "../../src/features/study-plan/generate-local-study-plan";
 import {
   fetchRemoteHomeProgress,
   getWarsawIsoDate,
@@ -101,7 +97,6 @@ export default function HomeTabScreen() {
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
   const authMode = useAppShellStore((state) => state.authMode);
-  const examDate = useAppShellStore((state) => state.studyPlanSetup.examDate);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const homeStartSpotlightDismissed = useAppShellStore(
     (state) => state.homeStartSpotlightDismissed
@@ -298,38 +293,26 @@ export default function HomeTabScreen() {
 
   const examTitle = t("dash.tileExamTitle", { defaultValue: "Іспит" });
   const trapsTitle = t("dash.tileTrapsTitle", { defaultValue: "Пастки" });
-  const examDaysRemaining = examDate
-    ? getDaysUntilExamFromDate(examDate)
-    : null;
   const todayIso = getWarsawIsoDate();
   const homeDailyStatus = getHomeDailyPracticeStatus({
     session: homeDailySession,
     today: todayIso,
     category: preferredCategory,
   });
-  const homeDailyRemaining =
-    homeDailyStatus === "in_progress" && homeDailySession
-      ? getHomeDailyRemainingCount(homeDailySession)
-      : HOME_DAILY_QUESTION_COUNT;
   const openHomeDailySession = useCallback(
     (source: FirstStartCtaSource) => {
       if (homeDailyStatus === "done") {
         return;
       }
 
-      if (source !== "today") {
-        dismissHomeStartSpotlight();
-        track(ANALYTICS_EVENTS.firstStartStarted.key, {
-          question_limit: FIRST_START_QUESTION_COUNT,
-          source,
-        });
-      }
-
-      const sessionMode =
-        source === "today" ? "mini_test" : "initial_diagnostic";
+      dismissHomeStartSpotlight();
+      track(ANALYTICS_EVENTS.firstStartStarted.key, {
+        question_limit: FIRST_START_QUESTION_COUNT,
+        source,
+      });
 
       track(ANALYTICS_EVENTS.trainingModeSelected.key, {
-        mode: sessionMode,
+        mode: "initial_diagnostic",
         question_limit: FIRST_START_QUESTION_COUNT,
         source,
         topic_id: null,
@@ -337,7 +320,7 @@ export default function HomeTabScreen() {
       router.navigate({
         pathname: "/question",
         params: buildQuestionRouteParams({
-          mode: sessionMode,
+          mode: "initial_diagnostic",
           questionLimit: HOME_DAILY_QUESTION_COUNT,
           sessionKey: createHomeDailySessionKey(todayIso, preferredCategory),
         }),
@@ -358,10 +341,6 @@ export default function HomeTabScreen() {
     },
     [openHomeDailySession]
   );
-
-  const startTodaySession = useCallback(() => {
-    openHomeDailySession("today");
-  }, [openHomeDailySession]);
 
   useEffect(() => {
     if (!showStartSpotlight || didTrackSpotlightRef.current) {
@@ -504,49 +483,6 @@ export default function HomeTabScreen() {
             }}
             />
           </View>
-
-          {!isReadinessEmpty && isHomeTodayStartCardVisible(homeDailyStatus) ? (
-            <HomeTodayStartCard
-              completed={homeDailyStatus === "done"}
-              examCountdownLabel={
-                examDaysRemaining != null && examDaysRemaining > 0
-                  ? t("dash.examCountdown", {
-                      count: examDaysRemaining,
-                      days: examDaysRemaining,
-                      defaultValue: "Do egzaminu: {{days}} dni",
-                    })
-                  : null
-              }
-              title={
-                homeDailyStatus === "done"
-                  ? t("dash.todayStartDoneTitle", {
-                      defaultValue: "Na dziś gotowe",
-                    })
-                  : t("dash.todayStartTitle", {
-                      count: FIRST_START_QUESTION_COUNT,
-                      defaultValue: "Dzis: {{count}} pytan",
-                    })
-              }
-              subtitle={
-                homeDailyStatus === "done"
-                  ? t("dash.todayStartDoneSubtitle", {
-                      defaultValue: "Nowe pytania jutro",
-                    })
-                  : homeDailyStatus === "in_progress" &&
-                      homeDailyRemaining < HOME_DAILY_QUESTION_COUNT
-                    ? t("dash.todayStartContinueSubtitle", {
-                        remaining: homeDailyRemaining,
-                        defaultValue: "Zostalo {{remaining}} · bez limitu czasu",
-                      })
-                    : t("dash.todayStartSubtitle", {
-                        defaultValue: "Krotka sesja bez limitu czasu",
-                      })
-              }
-              onPress={
-                homeDailyStatus === "done" ? undefined : startTodaySession
-              }
-            />
-          ) : null}
 
           <View style={styles.stack}>
             <ActionTile

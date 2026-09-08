@@ -30,7 +30,9 @@ tags:
 
 - assertVisible:
     id: "question-choice-index-0"
-
-# Must not land in the timed exam simulator.
+- assertVisible:
+    id: "question-title-quick-check"
+- assertNotVisible:
+    id: "question-title-training"
 - assertNotVisible:
     id: "screen-exam-session"

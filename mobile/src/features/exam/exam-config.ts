@@ -271,6 +271,46 @@ export function getExamQuestionPhaseDuration(
   return 0;
 }
 
+/**
+ * A question is timed out only when *its* clock hit zero.
+ * Stale remainingSeconds=0 from the previous question must not fire.
+ */
+export function isExamQuestionTimedOut({
+  clockQuestionId,
+  enabled,
+  hasVideo,
+  isAppInactive,
+  isTimerPaused,
+  phase,
+  phaseTotalSeconds,
+  questionId,
+  remainingSeconds,
+}: {
+  clockQuestionId: string | null;
+  enabled: boolean;
+  hasVideo: boolean;
+  isAppInactive: boolean;
+  isTimerPaused: boolean;
+  phase: ExamQuestionTimerPhase;
+  phaseTotalSeconds: number;
+  questionId: string | null;
+  remainingSeconds: number;
+}): boolean {
+  if (!enabled || isTimerPaused || isAppInactive || phase === "media") {
+    return false;
+  }
+
+  if (!questionId || clockQuestionId !== questionId) {
+    return false;
+  }
+
+  if (remainingSeconds > 0 || phaseTotalSeconds <= 0) {
+    return false;
+  }
+
+  return phase === "answer" || (phase === "read" && hasVideo);
+}
+
 export function getRemainingExamSeconds(expiresAt: string | null | undefined) {
   if (!expiresAt) {
     return null;

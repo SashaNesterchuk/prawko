@@ -1,8 +1,8 @@
 import type { QuestionSession } from "../../types";
 import {
   buildDiagnosticTopicStats,
+  getDiagnosticStartLabel,
   getDiagnosticStrongArea,
-  getDiagnosticSummaryBand,
   getDiagnosticWeakAreas,
 } from "../result-stats";
 import {
@@ -152,9 +152,14 @@ describe("initial diagnostic result stats", () => {
     ).toBeNull();
   });
 
-  it("bands copy by correct count", () => {
-    expect(getDiagnosticSummaryBand(2, 10)).toBe("low");
-    expect(getDiagnosticSummaryBand(5, 10)).toBe("mid");
-    expect(getDiagnosticSummaryBand(9, 10)).toBe("high");
+  it("maps correct count to a starting-point label, not a score", () => {
+    expect(getDiagnosticStartLabel(0, 10)).toBe("nowWeKnow");
+    expect(getDiagnosticStartLabel(3, 10)).toBe("nowWeKnow");
+    expect(getDiagnosticStartLabel(4, 10)).toBe("goodStartingPoint");
+    expect(getDiagnosticStartLabel(6, 10)).toBe("goodStartingPoint");
+    expect(getDiagnosticStartLabel(7, 10)).toBe("goodStart");
+    expect(getDiagnosticStartLabel(8, 10)).toBe("goodStart");
+    expect(getDiagnosticStartLabel(9, 10)).toBe("strongStart");
+    expect(getDiagnosticStartLabel(10, 10)).toBe("strongStart");
   });
 });

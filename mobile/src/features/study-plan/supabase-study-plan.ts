@@ -2,6 +2,7 @@ import type { GeneratedStudyPlan } from "@prawko/schemas";
 
 import { isMobileSupabaseConfigured } from "../../config/env";
 import { getQuestionSetKey } from "../../countries/runtime";
+import { invokeRpcWithQuestionSetFallback } from "../../lib/supabase-rpc";
 import { getMobileSupabaseClient } from "../../lib/supabase";
 
 type SaveGeneratedStudyPlanInput = {
@@ -19,24 +20,27 @@ export async function saveGeneratedStudyPlanRemotely(
   }
 
   const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("save_generated_study_plan", {
-    p_title: input.plan.title,
-    p_current_category: input.plan.category,
-    p_plan_locale: input.plan.locale,
-    p_level: input.plan.level,
-    p_exam_date: input.plan.examDate,
-    p_days_planned: input.plan.daysPlanned,
-    p_minutes_per_day: input.plan.minutesPerDay,
-    p_generator_version: input.plan.generatorVersion,
-    p_plan_snapshot: input.plan.days,
-    p_school_code: input.plan.schoolCode ?? null,
-    p_generation_context: toRpcJsonObject({
-      client_plan_id: input.plan.id,
-      source: "mobile_onboarding_preview",
-      ...input.generationContext,
-    }),
-    p_question_set_key: getQuestionSetKey(),
-  });
+  const { data, error } = await invokeRpcWithQuestionSetFallback(
+    (params) => client.rpc("save_generated_study_plan", params),
+    {
+      p_title: input.plan.title,
+      p_current_category: input.plan.category,
+      p_plan_locale: input.plan.locale,
+      p_level: input.plan.level,
+      p_exam_date: input.plan.examDate,
+      p_days_planned: input.plan.daysPlanned,
+      p_minutes_per_day: input.plan.minutesPerDay,
+      p_generator_version: input.plan.generatorVersion,
+      p_plan_snapshot: input.plan.days,
+      p_school_code: input.plan.schoolCode ?? null,
+      p_generation_context: toRpcJsonObject({
+        client_plan_id: input.plan.id,
+        source: "mobile_onboarding_preview",
+        ...input.generationContext,
+      }),
+      p_question_set_key: getQuestionSetKey(),
+    }
+  );
 
   if (error) {
     throw error;

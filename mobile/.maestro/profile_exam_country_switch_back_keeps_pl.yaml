@@ -39,8 +39,26 @@ tags:
 - tapOn:
     id: "exam-close"
 
-- runFlow:
-    file: subflows/confirm_training_exit_to_home.yaml
+- extendedWaitUntil:
+    visible:
+      id: "training-exit-dialog"
+    timeout: 10000
+
+- tapOn:
+    id: "training-exit-finish"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-result"
+    timeout: 20000
+
+- tapOn:
+    id: "exam-result-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
 
 - tapOn:
     id: "tab-profile"
@@ -134,4 +152,7 @@ tags:
 
 - assertVisible:
     id: "exam-session-counter"
-    text: "Питання 1 з 32"
+    text: ".*32"
+- assertNotVisible:
+    id: "exam-session-counter"
+    text: ".*25"

@@ -6,14 +6,7 @@ import { FIRST_START_QUESTION_COUNT } from "./first-start";
 
 export const HOME_DAILY_QUESTION_COUNT = FIRST_START_QUESTION_COUNT;
 
-/** Parked until the completed-day copy is rewritten. */
-export const SHOW_HOME_DAILY_DONE_CARD = false;
-
 export type HomeDailyPracticeStatus = "missing" | "in_progress" | "done";
-
-export function isHomeTodayStartCardVisible(status: HomeDailyPracticeStatus) {
-  return status !== "done" || SHOW_HOME_DAILY_DONE_CARD;
-}
 
 const HOME_DAILY_KEY_PATTERN = /home-today:(\d{4}-\d{2}-\d{2}):([^:]+)/;
 

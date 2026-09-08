@@ -90,20 +90,25 @@ export async function applyExamDateChange(
   let nextRemoteId: string | null = null;
 
   if (authMode === "supabase" && isMobileSupabaseConfigured) {
-    nextRemoteId = await saveGeneratedStudyPlanRemotely({
-      plan: nextPlan,
-      generationContext: {
-        days_until_exam: daysUntilExam,
-        from_exam_date: currentStudyPlan.examDate,
-        from_minutes_per_day: currentStudyPlan.minutesPerDay,
-        generated_at: new Date().toISOString(),
-        previous_plan_id: currentStudyPlanRemoteId,
-        reason: "exam_date_change",
-        source: "mobile_exam_date_calendar",
-        to_exam_date: examDate,
-        to_minutes_per_day: currentStudyPlan.minutesPerDay,
-      },
-    });
+    try {
+      nextRemoteId = await saveGeneratedStudyPlanRemotely({
+        plan: nextPlan,
+        generationContext: {
+          days_until_exam: daysUntilExam,
+          from_exam_date: currentStudyPlan.examDate,
+          from_minutes_per_day: currentStudyPlan.minutesPerDay,
+          generated_at: new Date().toISOString(),
+          previous_plan_id: currentStudyPlanRemoteId,
+          reason: "exam_date_change",
+          source: "mobile_exam_date_calendar",
+          to_exam_date: examDate,
+          to_minutes_per_day: currentStudyPlan.minutesPerDay,
+        },
+      });
+    } catch (error) {
+      console.warn("Failed to save regenerated study plan remotely.", error);
+      nextRemoteId = currentStudyPlanRemoteId;
+    }
   }
 
   hydrateRemoteStudyPlan({
