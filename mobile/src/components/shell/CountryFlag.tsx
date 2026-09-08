@@ -4,10 +4,12 @@ import type { SvgProps } from "react-native-svg";
 
 import FlagCzech from "../../../assets/flags/flag-czech.svg";
 import FlagPoland from "../../../assets/flags/flag-poland.svg";
+import FlagSlovakia from "../../../assets/flags/flag-slovakia.svg";
 
 const FLAG_BY_COUNTRY: Record<CountryCode, FC<SvgProps>> = {
   PL: FlagPoland,
   CZ: FlagCzech,
+  SK: FlagSlovakia,
 };
 
 type CountryFlagProps = {

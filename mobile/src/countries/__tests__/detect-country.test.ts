@@ -62,6 +62,28 @@ describe("detectExamCountry", () => {
     });
   });
 
+  it("detects Slovakia from a Slovak storefront or device region", async () => {
+    getStorefront.mockResolvedValue("SK");
+    jest.mocked(getLocales).mockReturnValue([
+      { regionCode: "CZ", languageCode: "cs", languageTag: "cs-CZ" } as never,
+    ]);
+
+    await expect(detectExamCountry()).resolves.toEqual({
+      country: "SK",
+      source: "storefront",
+    });
+
+    getStorefront.mockResolvedValue(null);
+    jest.mocked(getLocales).mockReturnValue([
+      { regionCode: "SK", languageCode: "sk", languageTag: "sk-SK" } as never,
+    ]);
+
+    await expect(detectExamCountry()).resolves.toEqual({
+      country: "SK",
+      source: "device_region",
+    });
+  });
+
   it("uses a later locale region when the primary region is unsupported", async () => {
     getStorefront.mockResolvedValue(null);
     jest.mocked(getLocales).mockReturnValue([

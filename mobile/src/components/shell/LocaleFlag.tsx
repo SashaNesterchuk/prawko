@@ -6,6 +6,7 @@ import FlagGermany from "../../../assets/flags/flag-germany.svg";
 import FlagCzech from "../../../assets/flags/flag-czech.svg";
 import FlagGreece from "../../../assets/flags/flag-greece.svg";
 import FlagPoland from "../../../assets/flags/flag-poland.svg";
+import FlagSlovakia from "../../../assets/flags/flag-slovakia.svg";
 import FlagSpain from "../../../assets/flags/flag-spain.svg";
 import FlagUk from "../../../assets/flags/flag-uk.svg";
 import FlagUkraine from "../../../assets/flags/flag-ukraine.svg";
@@ -18,6 +19,7 @@ const FLAG_BY_LOCALE: Record<SupportedLocale, FC<SvgProps>> = {
   el: FlagGreece,
   de: FlagGermany,
   es: FlagSpain,
+  sk: FlagSlovakia,
 };
 
 type LocaleFlagProps = {

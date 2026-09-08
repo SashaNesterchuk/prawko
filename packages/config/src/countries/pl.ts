@@ -1,5 +1,5 @@
 import { EXAM_RULES } from "../exam-rules";
-import { QUESTION_TOPIC_IDS } from "../question-topics";
+import { POLISH_QUESTION_TOPIC_IDS } from "../question-topics";
 import type { CountryConfig } from "./types";
 
 export const PL_COUNTRY_CONFIG: CountryConfig = {
@@ -34,11 +34,13 @@ export const PL_COUNTRY_CONFIG: CountryConfig = {
     baseAnswerSeconds: EXAM_RULES.baseAnswerSeconds,
     baseVideoResumeBonusSeconds: EXAM_RULES.baseVideoResumeBonusSeconds,
     specialistSeconds: EXAM_RULES.specialistSeconds,
+    strictBasketComposition: false,
   },
   features: { roadSigns: true },
   mediaEnvKey: "EXPO_PUBLIC_MEDIA_BASE_URL",
   questionImageResizeMode: "cover",
   questionSetKey: "pl-v2-current",
+  officialExamLocales: ["pl"],
   supportedLocales: ["pl", "ua", "en", "de", "es"],
-  topicIds: QUESTION_TOPIC_IDS,
+  topicIds: POLISH_QUESTION_TOPIC_IDS,
 };

@@ -1,5 +1,18 @@
 import type { TopicBlockId } from "./index";
 
+const SLOVAK_QUESTION_TOPIC_DEFINITIONS = [
+  ["road_traffic_rules", "Pravidlá cestnej premávky", "Road traffic rules"],
+  ["priority_and_speed_limits", "Uplatňovanie pravidiel prednosti v jazde a rýchlostné obmedzenia", "Priority rules and speed limits"],
+  ["road_signs_and_traffic_devices", "Dopravné značky a dopravné zariadenia", "Road signs and traffic devices"],
+  ["intersection_traffic_situations", "Dopravné situácie na križovatkách", "Traffic situations at intersections"],
+  ["road_accident_duties", "Povinnosti vodiča pri dopravnej nehode", "Driver duties in a road accident"],
+  ["vehicle_driving_theory", "Teória vedenia vozidla", "Vehicle driving theory"],
+  ["documents_and_transport_time", "Predpisy o dokladoch a organizácia času v doprave", "Vehicle documents and transport-time rules"],
+  ["vehicle_operation_requirements", "Podmienky prevádzky vozidiel v premávke na pozemných komunikáciách", "Vehicle operation requirements"],
+  ["safe_driving_principles", "Zásady bezpečnej jazdy", "Safe-driving principles"],
+  ["vehicle_construction_and_maintenance", "Konštrukcia vozidiel a ich údržba", "Vehicle construction and maintenance"],
+] as const;
+
 /**
  * The official categorized workbook provides one learner-facing category per
  * question. Keep this catalog aligned with its category_legend worksheet.
@@ -139,12 +152,64 @@ export const QUESTION_TOPIC_CATALOG = [
   },
 ] as const;
 
-export type QuestionTopicCatalogEntry = (typeof QUESTION_TOPIC_CATALOG)[number];
-export type QuestionTopicId = QuestionTopicCatalogEntry["id"];
+export type PolishQuestionTopicId = (typeof QUESTION_TOPIC_CATALOG)[number]["id"];
+export type SlovakQuestionTopicId =
+  (typeof SLOVAK_QUESTION_TOPIC_DEFINITIONS)[number][0];
+export type QuestionTopicId = PolishQuestionTopicId | SlovakQuestionTopicId;
+
+export type SlovakQuestionTopicCatalogEntry = {
+  id: SlovakQuestionTopicId;
+  sortOrder: number;
+  titleUa: string;
+  titlePl: string;
+  titleEn: string;
+  titleDe: string;
+  titleEs: string;
+  titleCs: string;
+  titleSk: string;
+  sourceLabelUa: string;
+};
+
+export const SLOVAK_QUESTION_TOPIC_CATALOG: readonly SlovakQuestionTopicCatalogEntry[] =
+  SLOVAK_QUESTION_TOPIC_DEFINITIONS.map(([id, titleSk, titleEn], index) => ({
+    id,
+    sortOrder: index + 1,
+    titleUa: titleSk,
+    titlePl: titleSk,
+    titleEn,
+    titleDe: titleEn,
+    titleEs: titleEn,
+    titleCs: titleSk,
+    titleSk,
+    sourceLabelUa: titleSk,
+  }));
+
+export type QuestionTopicCatalogEntry =
+  | (typeof QUESTION_TOPIC_CATALOG)[number]
+  | SlovakQuestionTopicCatalogEntry;
 
 export const QUESTION_TOPIC_IDS = QUESTION_TOPIC_CATALOG.map(
   (topic) => topic.id
-) as QuestionTopicId[];
+) as PolishQuestionTopicId[];
+
+/** Prawko's original 11-topic catalogue, kept isolated from country catalogues. */
+export const POLISH_QUESTION_TOPIC_IDS = QUESTION_TOPIC_CATALOG.slice(0, 11).map(
+  (topic) => topic.id
+) as PolishQuestionTopicId[];
+
+export const SLOVAK_QUESTION_TOPIC_IDS = SLOVAK_QUESTION_TOPIC_DEFINITIONS.map(
+  ([id]) => id
+) as SlovakQuestionTopicId[];
+
+export const ALL_QUESTION_TOPIC_IDS = [
+  ...QUESTION_TOPIC_IDS,
+  ...SLOVAK_QUESTION_TOPIC_IDS,
+] as QuestionTopicId[];
+
+const ALL_QUESTION_TOPIC_CATALOG: readonly QuestionTopicCatalogEntry[] = [
+  ...QUESTION_TOPIC_CATALOG,
+  ...SLOVAK_QUESTION_TOPIC_CATALOG,
+];
 
 /**
  * Learner-facing Czech catalogue. Official eTesty baskets stay on
@@ -168,15 +233,21 @@ export type CzechQuestionTopicId = (typeof CZECH_QUESTION_TOPIC_IDS)[number];
 export function getQuestionTopicIdsForCountry(
   countryCode: string | null | undefined
 ): QuestionTopicId[] {
-  return countryCode === "CZ"
-    ? [...CZECH_QUESTION_TOPIC_IDS]
-    : QUESTION_TOPIC_IDS;
+  if (countryCode === "CZ") {
+    return [...CZECH_QUESTION_TOPIC_IDS];
+  }
+
+  if (countryCode === "SK") {
+    return [...SLOVAK_QUESTION_TOPIC_IDS];
+  }
+
+  return [...POLISH_QUESTION_TOPIC_IDS];
 }
 
 export type LearningTopicId = TopicBlockId | QuestionTopicId;
 
 export function isQuestionTopicId(value: string): value is QuestionTopicId {
-  return QUESTION_TOPIC_IDS.includes(value as QuestionTopicId);
+  return ALL_QUESTION_TOPIC_IDS.includes(value as QuestionTopicId);
 }
 
 /**
@@ -311,13 +382,20 @@ export function normalizeQuestionTopicIds(
 export function getQuestionTopicCatalogEntry(
   topicId: QuestionTopicId
 ): QuestionTopicCatalogEntry {
-  const topic = QUESTION_TOPIC_CATALOG.find((entry) => entry.id === topicId);
+  const topic = ALL_QUESTION_TOPIC_CATALOG.find((entry) => entry.id === topicId);
 
   if (!topic) {
     throw new Error(`Unknown question topic id "${topicId}".`);
   }
 
   return topic;
+}
+
+export function getQuestionTopicCatalogForCountry(
+  countryCode: string | null | undefined
+): QuestionTopicCatalogEntry[] {
+  const allowed = new Set(getQuestionTopicIdsForCountry(countryCode));
+  return ALL_QUESTION_TOPIC_CATALOG.filter((topic) => allowed.has(topic.id));
 }
 
 export function getQuestionTopicFallbackFromTopicBlock(topicBlock: TopicBlockId) {

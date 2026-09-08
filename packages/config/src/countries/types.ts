@@ -1,7 +1,7 @@
 import type { DrivingCategory, SupportedLocale } from "../index";
 import type { QuestionTopicId } from "../question-topics";
 
-export const COUNTRY_CODES = ["PL", "CZ"] as const;
+export const COUNTRY_CODES = ["PL", "CZ", "SK"] as const;
 export type CountryCode = (typeof COUNTRY_CODES)[number];
 
 export const DEFAULT_COUNTRY_CODE: CountryCode = "PL";
@@ -30,12 +30,18 @@ export type CountryExamConfig = {
   showWordScopes: boolean;
   specialistQuestions: number;
   specialistSeconds: number;
+  /**
+   * A full official test must match every basket and its statutory point
+   * value exactly. Do not silently substitute a question from another pool.
+   */
+  strictBasketComposition: boolean;
   totalQuestions: number;
 };
 
 export type CountryMediaEnvKey =
   | "EXPO_PUBLIC_MEDIA_BASE_URL"
-  | "EXPO_PUBLIC_CZECH_MEDIA_BASE_URL";
+  | "EXPO_PUBLIC_CZECH_MEDIA_BASE_URL"
+  | "EXPO_PUBLIC_SLOVAK_MEDIA_BASE_URL";
 
 export type CountryConfig = {
   code: CountryCode;
@@ -48,6 +54,8 @@ export type CountryConfig = {
   mediaEnvKey: CountryMediaEnvKey;
   questionImageResizeMode: "cover" | "contain";
   questionSetKey: string;
+  /** Languages supported by the state examination, independent of corpus coverage. */
+  officialExamLocales: readonly string[];
   supportedLocales: readonly SupportedLocale[];
   topicIds: readonly QuestionTopicId[];
 };

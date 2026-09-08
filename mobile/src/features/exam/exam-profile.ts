@@ -1,5 +1,6 @@
 import {
   CZECH_EXAM_BASKETS,
+  SLOVAK_EXAM_BASKETS,
   getCountryConfig,
   type CountryCode,
   type CountryExamConfig,
@@ -15,7 +16,8 @@ export type ExamProfile = CountryExamConfig;
 
 export const WORD_EXAM_PROFILE: ExamProfile = getCountryConfig("PL").exam;
 export const CZECH_EXAM_PROFILE: ExamProfile = getCountryConfig("CZ").exam;
-export { CZECH_EXAM_BASKETS };
+export const SLOVAK_EXAM_PROFILE: ExamProfile = getCountryConfig("SK").exam;
+export { CZECH_EXAM_BASKETS, SLOVAK_EXAM_BASKETS };
 
 export function getExamProfileForCountry(
   country: CountryCode | null | undefined,

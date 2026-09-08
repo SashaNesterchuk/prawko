@@ -16,6 +16,7 @@ const localeAliases: Record<string, SupportedLocale> = {
   uk: "ua",
   de: "de",
   es: "es",
+  sk: "sk",
 };
 
 export function normalizeSupportedLocale(

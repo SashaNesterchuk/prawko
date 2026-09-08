@@ -1,4 +1,10 @@
-import { CZECH_EXAM_BASKETS, CZECH_EXAM_PROFILE, WORD_EXAM_PROFILE } from "../../exam/exam-profile";
+import {
+  CZECH_EXAM_BASKETS,
+  CZECH_EXAM_PROFILE,
+  SLOVAK_EXAM_BASKETS,
+  SLOVAK_EXAM_PROFILE,
+  WORD_EXAM_PROFILE,
+} from "../../exam/exam-profile";
 import { getExamQuestionIds } from "../question-engine";
 import {
   hydrateQuestionBankFromLocalQuestions,
@@ -105,6 +111,58 @@ describe("czech exam composition", () => {
     );
 
     expect(ids).toHaveLength(10);
+  });
+
+  it("picks Slovakia's exact 40-question, 100-point statutory mix", () => {
+    const questions = SLOVAK_EXAM_BASKETS.flatMap((basket) =>
+      Array.from({ length: basket.count + 2 }, (_, index) =>
+        makeQuestion(`sk-${basket.scopeId}-${index}`, {
+          examBasketId: basket.scopeId,
+          points: basket.points,
+        })
+      )
+    );
+    hydrateQuestionBankFromLocalQuestions(questions);
+
+    const ids = getExamQuestionIds(
+      {},
+      40,
+      new Date(),
+      SLOVAK_EXAM_PROFILE,
+      "exam"
+    );
+    const selected = ids.map((id) =>
+      questions.find((question) => question.id === id)!
+    );
+
+    expect(ids).toHaveLength(40);
+    expect(new Set(ids).size).toBe(40);
+    expect(selected.reduce((sum, question) => sum + question.points, 0)).toBe(100);
+    for (const basket of SLOVAK_EXAM_BASKETS) {
+      expect(
+        selected.filter(
+          (question) =>
+            question.examBasketId === basket.scopeId &&
+            question.points === basket.points
+        )
+      ).toHaveLength(basket.count);
+    }
+  });
+
+  it("rejects a Slovak official exam when an exact statutory pool is incomplete", () => {
+    const questions = SLOVAK_EXAM_BASKETS.flatMap((basket) =>
+      Array.from({ length: basket.count }, (_, index) =>
+        makeQuestion(`sk-incomplete-${basket.scopeId}-${index}`, {
+          examBasketId: basket.scopeId,
+          points: basket.scopeId === 4 ? 3 : basket.points,
+        })
+      )
+    );
+    hydrateQuestionBankFromLocalQuestions(questions);
+
+    expect(() =>
+      getExamQuestionIds({}, 40, new Date(), SLOVAK_EXAM_PROFILE, "exam")
+    ).toThrow("Official basket 4 requires 4 questions worth 4 points");
   });
 
   it("keeps the WORD base/specialist split", () => {

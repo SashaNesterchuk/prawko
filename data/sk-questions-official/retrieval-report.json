@@ -1,0 +1,29 @@
+{
+  "country": "SK",
+  "category": "B",
+  "checkedOn": "2026-09-08",
+  "canonicalAuthority": "Ministry of Interior of the Slovak Republic (MV SR)",
+  "officialReferenceDocuments": [
+    {
+      "file": "reference/ZZ_2009_9_20260901_theory-exam-regulation.pdf",
+      "sourceUrl": "https://static.slov-lex.sk/pdf/SK/ZZ/2009/9/ZZ_2009_9_20260901.pdf",
+      "pages": 101,
+      "sha256": "e4db7733a0c2d62ad42d39dbb044e19d403a0c08697249a8c98656ce416a4021"
+    }
+  ],
+  "officialSourcesChecked": [
+    {
+      "url": "https://www.mindop.sk/ministerstvo/doprava/autoskoly/teoreticka-skuska-elektronickym-sposobom",
+      "result": "The Ministry of Transport page links to the MV SR electronic-test page."
+    },
+    {
+      "url": "https://www.minv.sk/?elektronicke-testy",
+      "result": "The current response is the general MV SR portal and exposes neither a test launcher nor a public question/API payload."
+    }
+  ],
+  "questionsDownloaded": 0,
+  "mediaDownloadedFromQuestionService": 0,
+  "thirdPartySourcesUsed": false,
+  "status": "blocked_by_unavailable_canonical_question_delivery",
+  "nextStep": "Obtain the current MV SR simulator URL or authorised official export, then enumerate category B sessions and download only the returned official payloads and media."
+}

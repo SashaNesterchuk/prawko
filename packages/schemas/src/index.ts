@@ -4,7 +4,7 @@ import {
   AI_MESSAGE_KINDS,
   AI_MESSAGE_ROLES,
   AI_PROVIDER_IDS,
-  QUESTION_TOPIC_IDS,
+  ALL_QUESTION_TOPIC_IDS,
   MEDIA_MATCH_STRATEGIES,
   MEDIA_SOURCE_KINDS,
   MEDIA_STORAGE_BUCKET_IDS,
@@ -26,7 +26,7 @@ export const categorySchema = z.enum(ACTIVE_CATEGORIES);
 export const planLevelSchema = z.enum(PLAN_LEVELS);
 export const topicBlockSchema = z.enum(TOPIC_BLOCK_IDS);
 export const questionTopicIdSchema = z.enum(
-  QUESTION_TOPIC_IDS as unknown as [QuestionTopicId, ...QuestionTopicId[]]
+  ALL_QUESTION_TOPIC_IDS as unknown as [QuestionTopicId, ...QuestionTopicId[]]
 );
 export const questionScopeSchema = z.enum(QUESTION_SCOPES);
 export const answerTypeSchema = z.enum(QUESTION_ANSWER_TYPES);

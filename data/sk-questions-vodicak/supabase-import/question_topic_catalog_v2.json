@@ -1,0 +1,102 @@
+[
+  {
+    "topic_id": "road_traffic_rules",
+    "sort_order": 1,
+    "titles": {
+      "sk": "Pravidlá cestnej premávky",
+      "en": "Road traffic rules"
+    },
+    "source_label": "Pravidlá cestnej premávky",
+    "is_active": true
+  },
+  {
+    "topic_id": "priority_and_speed_limits",
+    "sort_order": 2,
+    "titles": {
+      "sk": "Uplatňovanie pravidiel prednosti v jazde a rýchlostné obmedzenia",
+      "en": "Priority rules and speed limits"
+    },
+    "source_label": "Uplatňovanie pravidiel prednosti v jazde a rýchlostné obmedzenia",
+    "is_active": true
+  },
+  {
+    "topic_id": "road_signs_and_traffic_devices",
+    "sort_order": 3,
+    "titles": {
+      "sk": "Dopravné značky a dopravné zariadenia",
+      "en": "Road signs and traffic devices"
+    },
+    "source_label": "Dopravné značky a dopravné zariadenia",
+    "is_active": true
+  },
+  {
+    "topic_id": "intersection_traffic_situations",
+    "sort_order": 4,
+    "titles": {
+      "sk": "Dopravné situácie na križovatkách",
+      "en": "Traffic situations at intersections"
+    },
+    "source_label": "Dopravné situácie na križovatkách",
+    "is_active": true
+  },
+  {
+    "topic_id": "road_accident_duties",
+    "sort_order": 5,
+    "titles": {
+      "sk": "Povinnosti vodiča pri dopravnej nehode",
+      "en": "Driver duties in a road accident"
+    },
+    "source_label": "Povinnosti vodiča pri dopravnej nehode",
+    "is_active": true
+  },
+  {
+    "topic_id": "vehicle_driving_theory",
+    "sort_order": 6,
+    "titles": {
+      "sk": "Teória vedenia vozidla",
+      "en": "Vehicle driving theory"
+    },
+    "source_label": "Teória vedenia vozidla",
+    "is_active": true
+  },
+  {
+    "topic_id": "documents_and_transport_time",
+    "sort_order": 7,
+    "titles": {
+      "sk": "Predpisy o dokladoch a organizácia času v doprave",
+      "en": "Vehicle documents and transport-time rules"
+    },
+    "source_label": "Predpisy o dokladoch a organizácia času v doprave",
+    "is_active": true
+  },
+  {
+    "topic_id": "vehicle_operation_requirements",
+    "sort_order": 8,
+    "titles": {
+      "sk": "Podmienky prevádzky vozidiel v premávke na pozemných komunikáciách",
+      "en": "Vehicle operation requirements"
+    },
+    "source_label": "Podmienky prevádzky vozidiel v premávke na pozemných komunikáciách",
+    "is_active": true
+  },
+  {
+    "topic_id": "safe_driving_principles",
+    "sort_order": 9,
+    "titles": {
+      "sk": "Zásady bezpečnej jazdy",
+      "en": "Safe-driving principles"
+    },
+    "source_label": "Zásady bezpečnej jazdy",
+    "is_active": true
+  },
+  {
+    "topic_id": "vehicle_construction_and_maintenance",
+    "sort_order": 10,
+    "titles": {
+      "sk": "Konštrukcia vozidiel a ich údržba",
+      "en": "Vehicle construction and maintenance"
+    },
+    "source_label": "Konštrukcia vozidiel a ich údržba",
+    "is_active": true
+  }
+]

@@ -1,6 +1,7 @@
 import type { SupportedLocale } from "../index";
 import { CZ_COUNTRY_CONFIG } from "./cz";
 import { PL_COUNTRY_CONFIG } from "./pl";
+import { SK_COUNTRY_CONFIG } from "./sk";
 import {
   DEFAULT_COUNTRY_CODE,
   isCountryCode,
@@ -13,6 +14,7 @@ export {
   CZ_COUNTRY_CONFIG,
 } from "./cz";
 export { PL_COUNTRY_CONFIG } from "./pl";
+export { SK_COUNTRY_CONFIG, SLOVAK_EXAM_BASKETS } from "./sk";
 export {
   COUNTRY_CODES,
   DEFAULT_COUNTRY_CODE,
@@ -29,6 +31,7 @@ export {
 export const COUNTRY_CONFIGS: Record<CountryCode, CountryConfig> = {
   PL: PL_COUNTRY_CONFIG,
   CZ: CZ_COUNTRY_CONFIG,
+  SK: SK_COUNTRY_CONFIG,
 };
 
 const STOREFRONT_ALIASES: Record<string, CountryCode> = {
@@ -40,6 +43,10 @@ const STOREFRONT_ALIASES: Record<string, CountryCode> = {
   CZECH: "CZ",
   CZECHIA: "CZ",
   CZECHREPUBLIC: "CZ",
+  SK: "SK",
+  SVK: "SK",
+  SLOVAKIA: "SK",
+  SLOVAKREPUBLIC: "SK",
 };
 
 export function getCountryConfig(

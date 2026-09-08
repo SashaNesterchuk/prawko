@@ -32,11 +32,13 @@ export const CZ_COUNTRY_CONFIG: CountryConfig = {
     baseAnswerSeconds: 0,
     baseVideoResumeBonusSeconds: 0,
     specialistSeconds: 0,
+    strictBasketComposition: false,
   },
   features: { roadSigns: true },
   mediaEnvKey: "EXPO_PUBLIC_CZECH_MEDIA_BASE_URL",
   questionImageResizeMode: "contain",
   questionSetKey: "cz-v2-current",
+  officialExamLocales: ["cs"],
   supportedLocales: ["cs", "en"],
   topicIds: CZECH_QUESTION_TOPIC_IDS,
 };

@@ -11,6 +11,8 @@ describe("country registry", () => {
     expect(resolveCountryCode("POL")).toBe("PL");
     expect(resolveCountryCode("cz")).toBe("CZ");
     expect(resolveCountryCode("CZE")).toBe("CZ");
+    expect(resolveCountryCode("SVK")).toBe("SK");
+    expect(resolveCountryCode("Slovakia")).toBe("SK");
     expect(resolveCountryCode("US")).toBeNull();
   });
 
@@ -28,6 +30,21 @@ describe("country registry", () => {
       categories: ["B"],
       exam: { id: "etesty", totalQuestions: 25, durationMinutes: 30 },
     });
+    expect(getCountryConfig("SK")).toMatchObject({
+      questionSetKey: "sk-v2-current",
+      defaultLocale: "sk",
+      supportedLocales: ["sk"],
+      categories: ["B"],
+      features: { roadSigns: false },
+      exam: {
+        id: "etesty",
+        totalQuestions: 40,
+        durationMinutes: 30,
+        maxPoints: 100,
+        passingPoints: 90,
+        strictBasketComposition: true,
+      },
+    });
   });
 
   it("clamps locale to the country's supported list", () => {
@@ -36,6 +53,8 @@ describe("country registry", () => {
     expect(clampLocaleForCountry("PL", "cs")).toBe("pl");
     expect(clampLocaleForCountry("PL", "ua")).toBe("ua");
     expect(clampLocaleForCountry("PL", "pl")).toBe("pl");
+    expect(clampLocaleForCountry("SK", "en")).toBe("sk");
+    expect(clampLocaleForCountry("SK", "sk")).toBe("sk");
   });
 
   it("keeps the phone language until an exam country is known", () => {
@@ -50,6 +69,7 @@ describe("country registry", () => {
     expect(resolveLocaleForCountry("PL", "en")).toBe("en");
     expect(resolveLocaleForCountry("CZ", "cs")).toBe("cs");
     expect(resolveLocaleForCountry("CZ", "en")).toBe("en");
+    expect(resolveLocaleForCountry("SK", "sk")).toBe("sk");
   });
 
   it("falls back to the country's local language, not Ukrainian", () => {
@@ -57,5 +77,6 @@ describe("country registry", () => {
     expect(resolveLocaleForCountry("PL", null)).toBe("pl");
     expect(resolveLocaleForCountry("CZ", "ua")).toBe("cs");
     expect(resolveLocaleForCountry("CZ", "pl")).toBe("cs");
+    expect(resolveLocaleForCountry("SK", "en")).toBe("sk");
   });
 });

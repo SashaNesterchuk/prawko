@@ -76,6 +76,33 @@ describe("mapSupabaseQuestionV2RecordToLocalQuestion", () => {
     expect(question.examBasketId).toBe(11);
   });
 
+  it("preserves Slovak content and official basket metadata", () => {
+    const question = mapSupabaseQuestionV2RecordToLocalQuestion({
+      id: "sk-id", source_id: "sk:1", source_row_number: 1, points: 3,
+      answer_kind: "choice", correct_option_id: "C", scope: "base",
+      primary_topic_id: "road_traffic_rules", topic_ids: ["road_traffic_rules"],
+      difficulty_seed: 1,
+      official_metadata: { legacy_topic_block: "safety", official_basket_scope_id: 1 },
+      content: {
+        prompt: { sk: "Slovenská otázka" },
+        options: [
+          { id: "A", text: { sk: "Prvá" } },
+          { id: "B", text: { sk: "Druhá" } },
+          { id: "C", text: { sk: "Tretia" } },
+        ],
+      },
+    });
+
+    expect(question.prompt.sk).toBe("Slovenská otázka");
+    expect(getLocalizedText(question.prompt, "sk")).toBe("Slovenská otázka");
+    expect(getQuestionChoices(question, "sk").map((choice) => choice.label)).toEqual(
+      ["Prvá", "Druhá", "Tretia"]
+    );
+    expect(question.primaryTopicId).toBe("road_traffic_rules");
+    expect(question.topicIds).toEqual(["road_traffic_rules"]);
+    expect(question.examBasketId).toBe(1);
+  });
+
   it("keeps Prawko Ukrainian copy when Czech is absent", () => {
     const question = mapSupabaseQuestionV2RecordToLocalQuestion({
       id: "v2-id",

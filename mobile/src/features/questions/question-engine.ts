@@ -11,6 +11,7 @@ import {
   normalizeQuestionTopicId,
   normalizeQuestionTopicIds,
   type DrivingCategory,
+  type ContentLocale,
   type LearningTopicId,
   type QuestionSessionMode,
   type QuestionTopicId,
@@ -47,7 +48,7 @@ const HIGH_POINTS_THRESHOLD = 3;
 
 const BOOLEAN_CHOICES: Record<
   "true" | "false",
-  Record<"pl" | "ua" | "en" | "de" | "cs" | "el", string>
+  Record<ContentLocale, string>
 > = {
   true: {
     pl: "Tak",
@@ -56,6 +57,7 @@ const BOOLEAN_CHOICES: Record<
     de: "Ja",
     cs: "Ano",
     el: "Ναι",
+    sk: "Áno",
   },
   false: {
     pl: "Nie",
@@ -64,6 +66,7 @@ const BOOLEAN_CHOICES: Record<
     de: "Nein",
     cs: "Ne",
     el: "Όχι",
+    sk: "Nie",
   },
 };
 
@@ -598,6 +601,7 @@ export function getLocalizedText(
     value.de ||
     value.cs ||
     value.el ||
+    value.sk ||
     ""
   );
 }
@@ -1225,10 +1229,11 @@ export function getExamQuestionIds(
       desiredTotal >= profile.totalQuestions &&
       profile.baskets.length > 0
     ) {
-      return pickCzechBasketQuestionIds(
+      return pickBasketQuestionIds(
         questionBank,
         profile.baskets,
-        profile.totalQuestions
+        profile.totalQuestions,
+        profile.strictBasketComposition
       );
     }
 
@@ -1241,13 +1246,26 @@ export function getExamQuestionIds(
   return getExamPreviewQuestionIds(userStates, now, desiredTotal);
 }
 
-function pickCzechBasketQuestionIds(
+function pickBasketQuestionIds(
   questionBank: LocalQuestion[],
   baskets: ExamBasketSlot[],
-  desiredTotal: number
+  desiredTotal: number,
+  strictComposition: boolean
 ) {
   const used = new Set<string>();
   const selected: string[] = [];
+
+  if (strictComposition) {
+    const statutoryQuestionTotal = baskets.reduce(
+      (sum, basket) => sum + basket.count,
+      0
+    );
+    if (statutoryQuestionTotal !== desiredTotal) {
+      throw new Error(
+        `Official basket configuration has ${statutoryQuestionTotal} questions, expected ${desiredTotal}.`
+      );
+    }
+  }
 
   function takeFrom(pool: string[], need: number) {
     let remaining = need;
@@ -1276,6 +1294,12 @@ function pickCzechBasketQuestionIds(
         )
         .map((question) => question.id)
     );
+
+    if (strictComposition && matching.length < basket.count) {
+      throw new Error(
+        `Official basket ${basket.scopeId} requires ${basket.count} questions worth ${basket.points} points; only ${matching.length} are available.`
+      );
+    }
     const sameBasket = shuffleIds(
       questionBank
         .filter(
@@ -1287,10 +1311,12 @@ function pickCzechBasketQuestionIds(
 
     let need = basket.count;
     need = takeFrom(matching, need);
-    takeFrom(sameBasket, need);
+    if (!strictComposition) {
+      takeFrom(sameBasket, need);
+    }
   }
 
-  if (selected.length < desiredTotal) {
+  if (!strictComposition && selected.length < desiredTotal) {
     takeFrom(
       shuffleIds(
         questionBank
@@ -1299,6 +1325,29 @@ function pickCzechBasketQuestionIds(
       ),
       desiredTotal - selected.length
     );
+  }
+
+  if (strictComposition) {
+    const selectedQuestions = selected.map((id) =>
+      questionBank.find((question) => question.id === id)
+    );
+    const totalPoints = selectedQuestions.reduce(
+      (sum, question) => sum + (question?.points ?? 0),
+      0
+    );
+    const expectedPoints = baskets.reduce(
+      (sum, basket) => sum + basket.count * basket.points,
+      0
+    );
+
+    if (
+      selected.length !== desiredTotal ||
+      used.size !== selected.length ||
+      selectedQuestions.some((question) => !question) ||
+      totalPoints !== expectedPoints
+    ) {
+      throw new Error("Could not build an exact official exam composition.");
+    }
   }
 
   return shuffleIds(selected).slice(0, desiredTotal);

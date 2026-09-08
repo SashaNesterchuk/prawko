@@ -15,6 +15,7 @@ void i18n.use(initReactI18next).init({
     de: ["en"],
     el: ["en"],
     es: ["en"],
+    sk: ["en"],
     default: [DEFAULT_LOCALE],
   },
   interpolation: {

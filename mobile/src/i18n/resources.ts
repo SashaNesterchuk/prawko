@@ -118,6 +118,10 @@ const resourcesBase = {
           name: "Czesko",
           description: "Czeski egzamin eTesty, 25 pytan.",
         },
+        SK: {
+          name: "Slowacja",
+          description: "Slowacki egzamin teoretyczny, 40 pytan.",
+        },
       },
       onboarding: {
         languageTitle: "Wybierz jezyk",
@@ -1446,6 +1450,10 @@ const resourcesBase = {
         CZ: {
           name: "Чехія",
           description: "Чеський іспит eTesty, 25 питань.",
+        },
+        SK: {
+          name: "Словаччина",
+          description: "Словацький теоретичний іспит, 40 питань.",
         },
       },
       onboarding: {
@@ -2776,6 +2784,10 @@ const resourcesBase = {
         CZ: {
           name: "Czechia",
           description: "Czech eTesty exam, 25 questions.",
+        },
+        SK: {
+          name: "Slovakia",
+          description: "Slovak theory exam, 40 questions.",
         },
       },
       onboarding: {

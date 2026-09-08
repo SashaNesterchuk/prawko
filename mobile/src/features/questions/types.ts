@@ -16,13 +16,13 @@ export type QuestionOptionValue = "A" | "B" | "C" | "true" | "false";
 export type QuestionMediaAnswerSlot = "A" | "B" | "C";
 
 // Existing Polish data always carries the original four locales. New country
-// catalogues may add `cs`/`el` without forcing every historical fixture to
+// catalogues may add `cs`/`el`/`sk` without forcing every historical fixture to
 // duplicate an English fallback.
 export type LocalizedQuestionText = Record<
-  Exclude<ContentLocale, "cs" | "el">,
+  Exclude<ContentLocale, "cs" | "el" | "sk">,
   string
 > &
-  Partial<Record<Extract<ContentLocale, "cs" | "el">, string>>;
+  Partial<Record<Extract<ContentLocale, "cs" | "el" | "sk">, string>>;
 
 export type QuestionChoice = {
   id: QuestionOptionValue;

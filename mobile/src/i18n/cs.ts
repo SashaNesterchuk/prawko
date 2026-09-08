@@ -117,6 +117,10 @@ export const czechTranslations = {
       name: "Česko",
       description: "Česká zkouška eTesty, 25 otázek.",
     },
+    SK: {
+      name: "Slovensko",
+      description: "Slovenská teoretická zkouška, 40 otázek.",
+    },
   },
   onboarding: {
     languageTitle: "Vyber jazyk",

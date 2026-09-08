@@ -1,0 +1,2415 @@
+{
+  "country": "SK",
+  "snapshotAt": "2026-09-08T14:59:56.033Z",
+  "source": {
+    "name": "Vodičák",
+    "indexUrl": "https://vodicak.app/otazky",
+    "type": "third_party_enumeration_mirror"
+  },
+  "canonicalVerification": "https://www.minv.sk/?elektronicke-testy",
+  "questionCount": 1416,
+  "questionMediaCount": 259,
+  "questionMediaUnavailableCount": 11,
+  "questionsFile": "questions.vodicak.sk.json",
+  "sourceHtmlFile": "source/vodicak-otazky.html",
+  "media": [
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/2023/2000001_DS35.jpg",
+      "sourceUrl": "https://vodicak.app/questions/2023/2000001_DS35.jpg",
+      "localPath": "edia/questions/2023/2000001_DS35.jpg",
+      "bytes": 146675,
+      "contentType": "image/jpeg",
+      "sha256": "f82f022d0dad31bfaafc484131e44a2b66c1cbe0a2a70bdd4e323ce394b0ae0e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/01.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/01.png",
+      "localPath": "edia/questions/ds/01.png",
+      "bytes": 89764,
+      "contentType": "image/png",
+      "sha256": "88e481908f772b8efc06c4f422bdb09416d30114d031d0920be6d087605d7a97"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/02.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/02.png",
+      "localPath": "edia/questions/ds/02.png",
+      "bytes": 63708,
+      "contentType": "image/png",
+      "sha256": "23a492d86600aac56c6e3200d4fb2e01b98278a3a53052cf7c035b6ddcebffc1"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/03.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/03.png",
+      "localPath": "edia/questions/ds/03.png",
+      "bytes": 71336,
+      "contentType": "image/png",
+      "sha256": "e9c6189ed5ec8dd0c1b30139898735cef6b9e861eaea68f610cc15fd80da9c6f"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/04.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/04.png",
+      "localPath": "edia/questions/ds/04.png",
+      "bytes": 75744,
+      "contentType": "image/png",
+      "sha256": "feb4663d3b00ba0e434ddbb0c6f60af3ebb850bc7b45bbb48bc350d24ef28bb4"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/05.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/05.png",
+      "localPath": "edia/questions/ds/05.png",
+      "bytes": 67712,
+      "contentType": "image/png",
+      "sha256": "c350cf86574a3b910d1cb002c095abbc55a7772c94f4addf5a8c0a952b9b066e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/06.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/06.png",
+      "localPath": "edia/questions/ds/06.png",
+      "bytes": 88508,
+      "contentType": "image/png",
+      "sha256": "30164967f09e57bf84627f0301eadc37a4867a279d0ca510517b4f3c4504857c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/07.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/07.png",
+      "localPath": "edia/questions/ds/07.png",
+      "bytes": 92464,
+      "contentType": "image/png",
+      "sha256": "6e47b190f9dfa85dd67182bd83c1fe6e9952b5c98597d7a47cfae1d8e8dcb8cd"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/08.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/08.png",
+      "localPath": "edia/questions/ds/08.png",
+      "bytes": 62293,
+      "contentType": "image/png",
+      "sha256": "db51493e735f717734d116f94f3facf5afd679a55963ae964b4d6270c55be564"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/09.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/09.png",
+      "localPath": "edia/questions/ds/09.png",
+      "bytes": 71338,
+      "contentType": "image/png",
+      "sha256": "f1c7f4426900b465f0f83be1e8181b0a825535bd5b5fe79b8abaab7983ca0445"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/10.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/10.png",
+      "localPath": "edia/questions/ds/10.png",
+      "bytes": 79884,
+      "contentType": "image/png",
+      "sha256": "c4978d5600bb7f40bf788cd3e4c3a0847fbcf6638cc776118ffe92e8c1341182"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/11.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/11.png",
+      "localPath": "edia/questions/ds/11.png",
+      "bytes": 87090,
+      "contentType": "image/png",
+      "sha256": "1951373e8651623296ab12e084d4739857fd75893fadbcf5b8042dcdb1d85fdd"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/12.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/12.png",
+      "localPath": "edia/questions/ds/12.png",
+      "bytes": 91014,
+      "contentType": "image/png",
+      "sha256": "dadf0761d0cc767aa79f5803951c751000232beeb5a0ced17a3c60e8319e9f17"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/13.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/13.png",
+      "localPath": "edia/questions/ds/13.png",
+      "bytes": 72335,
+      "contentType": "image/png",
+      "sha256": "059bf8c45e4da4fb661217dc4bdf2065a657378eae204de9f6b1067dab371779"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/14.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/14.png",
+      "localPath": "edia/questions/ds/14.png",
+      "bytes": 88103,
+      "contentType": "image/png",
+      "sha256": "4643573d0dae1c4f2e7a647ed2d6582ed734d819b6023523eb8486d09942e03e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/17.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/17.png",
+      "localPath": "edia/questions/ds/17.png",
+      "bytes": 102851,
+      "contentType": "image/png",
+      "sha256": "64c54bc4eb16c6300dc7bbe48e24adc75c643410ba7ec1b94f61427f5577d4ef"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/18.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/18.png",
+      "localPath": "edia/questions/ds/18.png",
+      "bytes": 118863,
+      "contentType": "image/png",
+      "sha256": "f7d2eb3f418679e69bda62a203626fd8b3cd28f7e1c14e503192e5acaa4dff96"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/19.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/19.png",
+      "localPath": "edia/questions/ds/19.png",
+      "bytes": 90335,
+      "contentType": "image/png",
+      "sha256": "d57ab2f3e46aa2d6cde21d1bf31ce96a2491b3d3a117f15fa36deb0f290e1ac8"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/20.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/20.png",
+      "localPath": "edia/questions/ds/20.png",
+      "bytes": 101133,
+      "contentType": "image/png",
+      "sha256": "898f381eba32888645691c5ac36c883d643c9abe3d699f4154a2dbabec742967"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/21.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/21.png",
+      "localPath": "edia/questions/ds/21.png",
+      "bytes": 67350,
+      "contentType": "image/png",
+      "sha256": "70ac1a9d53ab9caea545cf3b45ecd9cd6a1a6e0b26a6caac58d4be2d316af470"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/22.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/22.png",
+      "localPath": "edia/questions/ds/22.png",
+      "bytes": 98781,
+      "contentType": "image/png",
+      "sha256": "d8d48581c1528eaaaaa042e386eeefad6adda0c2930683aed225e95d968b0149"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/23.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/23.png",
+      "localPath": "edia/questions/ds/23.png",
+      "bytes": 71800,
+      "contentType": "image/png",
+      "sha256": "30aee272d86ad438ab661a5db1c615ddf30ba5e2f2b3ca4ee9e4678f45ccb06d"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/24.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/24.png",
+      "localPath": "edia/questions/ds/24.png",
+      "bytes": 84744,
+      "contentType": "image/png",
+      "sha256": "4ff5a4bebbdb714a77c605f6951c6117cfa3b4664894870a58b28d2be54e0e44"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/25.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/25.png",
+      "localPath": "edia/questions/ds/25.png",
+      "bytes": 82357,
+      "contentType": "image/png",
+      "sha256": "f350cd257e864ada4e480ef5224e3947921b76014808b2db3b231e394ab12eff"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/26.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/26.png",
+      "localPath": "edia/questions/ds/26.png",
+      "bytes": 64006,
+      "contentType": "image/png",
+      "sha256": "ceaa55c1bfef1fcb964861996d2e969db94398514a80037bd54cc00045894d14"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/27.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/27.png",
+      "localPath": "edia/questions/ds/27.png",
+      "bytes": 68194,
+      "contentType": "image/png",
+      "sha256": "5921efc8b067b155d2d966513271ae0c3c45ed0b7007c2b187b0cfe7ea3ed685"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/28.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/28.png",
+      "localPath": "edia/questions/ds/28.png",
+      "bytes": 56666,
+      "contentType": "image/png",
+      "sha256": "3417ee1f87a768a95ab4f64929b07636b58b1ca0544eb97c7f7a1c5b502e2c60"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/29.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/29.png",
+      "localPath": "edia/questions/ds/29.png",
+      "bytes": 197291,
+      "contentType": "image/png",
+      "sha256": "c53ccfd4d12b97b4b4b1a7604047e8b408812d964648ecfb84ec6e3ad3ef614e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/30.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/30.png",
+      "localPath": "edia/questions/ds/30.png",
+      "bytes": 76713,
+      "contentType": "image/png",
+      "sha256": "6aeda1c5fea8084ddd9d1c3827252377ac81950fa9dfc57dcc6479e7dd4d669a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/31.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/31.png",
+      "localPath": "edia/questions/ds/31.png",
+      "bytes": 107945,
+      "contentType": "image/png",
+      "sha256": "d5089abf6428fd92e1c7b849a65d8ba9ef739478dd2428ee316c15b5fd56b024"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/32.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/32.png",
+      "localPath": "edia/questions/ds/32.png",
+      "bytes": 97251,
+      "contentType": "image/png",
+      "sha256": "3dd1632893e9026ba05c778e670c739ceda340f1189feec1af7bfec5e7a873a0"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/33.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/33.png",
+      "localPath": "edia/questions/ds/33.png",
+      "bytes": 89168,
+      "contentType": "image/png",
+      "sha256": "292e96c7417fce51e15e95eb527abad0f63f00bc99111649d687a8da7c3653c1"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/34-1.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/34-1.png",
+      "localPath": "edia/questions/ds/34-1.png",
+      "bytes": 103999,
+      "contentType": "image/png",
+      "sha256": "9d4634b0a93149c863799fcea7763547064811f675dd6aecb71af2fce51fe52c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/36.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/36.png",
+      "localPath": "edia/questions/ds/36.png",
+      "bytes": 60705,
+      "contentType": "image/png",
+      "sha256": "82b298036384f84c6ebcfb71acc2a99e109321eddad0d09f3857d225dc275472"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/37.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/37.png",
+      "localPath": "edia/questions/ds/37.png",
+      "bytes": 65611,
+      "contentType": "image/png",
+      "sha256": "27298c01bfd3221a1b299c3cd82b3be89e567389f047b0c9b80c16b679e92870"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/38.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/38.png",
+      "localPath": "edia/questions/ds/38.png",
+      "bytes": 39825,
+      "contentType": "image/png",
+      "sha256": "ae69262ef371c6a3c814863fabdbfe440f0d6dc5be46dbae96053bef7b29d534"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/ds/39.png",
+      "sourceUrl": "https://vodicak.app/questions/ds/39.png",
+      "localPath": "edia/questions/ds/39.png",
+      "bytes": 109786,
+      "contentType": "image/png",
+      "sha256": "4e73ef19122985e5380e1a6379d669218028d4b206a55b9bf20632dd8820fd52"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-1.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-1.png",
+      "localPath": "edia/questions/dz/1-1.png",
+      "bytes": 2649,
+      "contentType": "image/png",
+      "sha256": "7d3e99a19c5eea52a29ea601a1ab8f384c0d69586cf2f9a5d7e1a888c7ec8663"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-10a.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-10a.png",
+      "localPath": "edia/questions/dz/1-10a.png",
+      "bytes": 3904,
+      "contentType": "image/png",
+      "sha256": "795b0423300d433a5b5c8822812887529eb2e7be96d307c87355d2ce66f8b133"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/1-11.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-11.png",
+      "error": "https://vodicak.app/questions/dz/1-11.png: HTTP 404"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/1-14.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-14.png",
+      "error": "https://vodicak.app/questions/dz/1-14.png: HTTP 404"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/1-15.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-15.png",
+      "error": "https://vodicak.app/questions/dz/1-15.png: HTTP 404"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/1-16.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-16.png",
+      "error": "https://vodicak.app/questions/dz/1-16.png: HTTP 404"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-17.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-17.png",
+      "localPath": "edia/questions/dz/1-17.png",
+      "bytes": 1925,
+      "contentType": "image/png",
+      "sha256": "9876f7cac0bf4078ab0662ab9daa384bb12b23dab41ed3da3a51fbce9396f740"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-18.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-18.png",
+      "localPath": "edia/questions/dz/1-18.png",
+      "bytes": 1637,
+      "contentType": "image/png",
+      "sha256": "d974f556757db9f38cae8e2f13a0adb771e75b497d24a1452d684137afe23cc8"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-19.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-19.png",
+      "localPath": "edia/questions/dz/1-19.png",
+      "bytes": 1852,
+      "contentType": "image/png",
+      "sha256": "5a5e0b1d5f5cfe648067367ed6bc1b0aceff2d010bf83bf0ff6918496e63f52e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-2.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-2.png",
+      "localPath": "edia/questions/dz/1-2.png",
+      "bytes": 3569,
+      "contentType": "image/png",
+      "sha256": "65f2a67b9a0c570ef68dafebf7856c104d2369af3c212a832f23f153351f1b2b"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/1-20.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-20.png",
+      "error": "https://vodicak.app/questions/dz/1-20.png: HTTP 404"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/1-21.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-21.png",
+      "error": "https://vodicak.app/questions/dz/1-21.png: HTTP 404"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-27.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-27.png",
+      "localPath": "edia/questions/dz/1-27.png",
+      "bytes": 4177,
+      "contentType": "image/png",
+      "sha256": "af0352e88b11904a653d894c2042610996923373bdced465660ee9fb3fcb91f3"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-3.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-3.png",
+      "localPath": "edia/questions/dz/1-3.png",
+      "bytes": 2365,
+      "contentType": "image/png",
+      "sha256": "6ce6759a3384b7c59910d548dd71f1a02afff7936b3c43e7264dcdd30e4248ba"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-4.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-4.png",
+      "localPath": "edia/questions/dz/1-4.png",
+      "bytes": 3355,
+      "contentType": "image/png",
+      "sha256": "cfaaae0a171a6c5b32e491d5c27ea7964ff9501225121098822c82a42cd1b0cb"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-5.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-5.png",
+      "localPath": "edia/questions/dz/1-5.png",
+      "bytes": 2929,
+      "contentType": "image/png",
+      "sha256": "8a6504effba31f68d7f84832fe9285c4b77f0c5cfea4608d1e65ff0f2887ce5a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-7.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-7.png",
+      "localPath": "edia/questions/dz/1-7.png",
+      "bytes": 5256,
+      "contentType": "image/png",
+      "sha256": "d537d1974bd669d6e4a9010e8aa3b051d1facd864bdf5cb56f93db6477182b8e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-8.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-8.png",
+      "localPath": "edia/questions/dz/1-8.png",
+      "bytes": 5225,
+      "contentType": "image/png",
+      "sha256": "0a2e5cf9b4f51f4b952e4d859aa3532b58004aff517a68d84652b7317bb3232e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/1-9.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/1-9.png",
+      "localPath": "edia/questions/dz/1-9.png",
+      "bytes": 6391,
+      "contentType": "image/png",
+      "sha256": "5707db0c6c218ba2cdbbdc24a3fd8247d6babefb06b18fc3dc050b4f815973cd"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/110.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/110.jpg",
+      "localPath": "edia/questions/dz/110.jpg",
+      "bytes": 5228,
+      "contentType": "image/jpeg",
+      "sha256": "285b23b81141056d24d8e5c17e37546082b46a6234f85f68ea7eb293bea8ccca"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/111.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/111.jpg",
+      "localPath": "edia/questions/dz/111.jpg",
+      "bytes": 5364,
+      "contentType": "image/jpeg",
+      "sha256": "afb6bdad665f1261edaa04b3be88c4fcf94f8c1734df05f4ac39b00c6ad00cbf"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/112.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/112.jpg",
+      "localPath": "edia/questions/dz/112.jpg",
+      "bytes": 5698,
+      "contentType": "image/jpeg",
+      "sha256": "a2dc9b7f60fb0ab79701fd598c93afd796406e1304fdee8a49cbcad6b4901aef"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/113.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/113.jpg",
+      "localPath": "edia/questions/dz/113.jpg",
+      "bytes": 5605,
+      "contentType": "image/jpeg",
+      "sha256": "3b690e85dfb3630e2559eb9098578b0486a78aaa7de354d1491e5baaafe7427c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/114.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/114.jpg",
+      "localPath": "edia/questions/dz/114.jpg",
+      "bytes": 5243,
+      "contentType": "image/jpeg",
+      "sha256": "c819a83c1451479fe4106a51092d22059c03380ae5b4646a18bac92ded517d91"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/115.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/115.jpg",
+      "localPath": "edia/questions/dz/115.jpg",
+      "bytes": 5098,
+      "contentType": "image/jpeg",
+      "sha256": "e1dd6ddec472d71ec1bd61b9fe7cc665417c45227256148c9583506ec2ec4668"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/116.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/116.jpg",
+      "localPath": "edia/questions/dz/116.jpg",
+      "bytes": 5378,
+      "contentType": "image/jpeg",
+      "sha256": "6c23eb321f999b09b8802e0c5ba6500a49fb5f39f5bc901b345f78fecd9b5fcb"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/120.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/120.jpg",
+      "localPath": "edia/questions/dz/120.jpg",
+      "bytes": 5815,
+      "contentType": "image/jpeg",
+      "sha256": "7e3f4bff3e8c677d1e0874fe633bbbb328398a64edb3f2d3f70bd6726ac3d9c7"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/121.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/121.jpg",
+      "localPath": "edia/questions/dz/121.jpg",
+      "bytes": 5769,
+      "contentType": "image/jpeg",
+      "sha256": "f98cf644d12edb97347e1ac6507684a43d1060aada5ae44dac4a1a3a0db799d2"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/122.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/122.jpg",
+      "localPath": "edia/questions/dz/122.jpg",
+      "bytes": 5567,
+      "contentType": "image/jpeg",
+      "sha256": "a965562cbc68b460292a4bf984aeabb58537a442e8ea07e58e51dfe104e13232"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/125.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/125.jpg",
+      "localPath": "edia/questions/dz/125.jpg",
+      "bytes": 5648,
+      "contentType": "image/jpeg",
+      "sha256": "96480e1ed857d0667532b4d28636d7317f6538f61bf0b7f1bcf1983eb4b9440b"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/126.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/126.jpg",
+      "localPath": "edia/questions/dz/126.jpg",
+      "bytes": 5448,
+      "contentType": "image/jpeg",
+      "sha256": "42a16aaf6a76ee0e4e55c2312578608240254a255c4dfe4b5778f396c1148fc4"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/130.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/130.jpg",
+      "localPath": "edia/questions/dz/130.jpg",
+      "bytes": 5511,
+      "contentType": "image/jpeg",
+      "sha256": "d648dcba69613f7d129b6951dce8bf15f0fbf56d040f437884b7d9c4f2dafcdf"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/131.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/131.jpg",
+      "localPath": "edia/questions/dz/131.jpg",
+      "bytes": 5787,
+      "contentType": "image/jpeg",
+      "sha256": "fc0dea11f70c3dac2798d106d619bd986123bc74f09b61575252e6add1067f79"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/132.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/132.jpg",
+      "localPath": "edia/questions/dz/132.jpg",
+      "bytes": 5496,
+      "contentType": "image/jpeg",
+      "sha256": "564e0320d848b4c6980fdca012838b519669bfce4dc8af65e968fdef5339aee0"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/135.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/135.jpg",
+      "localPath": "edia/questions/dz/135.jpg",
+      "bytes": 5464,
+      "contentType": "image/jpeg",
+      "sha256": "acfbfaad00cc6b58355c80981c24e1126b94ba552bca7f2ff057e806f14f4881"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/136.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/136.jpg",
+      "localPath": "edia/questions/dz/136.jpg",
+      "bytes": 5542,
+      "contentType": "image/jpeg",
+      "sha256": "7c3d7717595f984cfee3375394435bb4596e1d32a04f4c0bd71b9a99d18da3a5"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/140.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/140.jpg",
+      "localPath": "edia/questions/dz/140.jpg",
+      "bytes": 5615,
+      "contentType": "image/jpeg",
+      "sha256": "295bd63d8954b40a2640037fcaa7192f81411b0903e12bd0fbb0cf6a9a542450"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/141.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/141.jpg",
+      "localPath": "edia/questions/dz/141.jpg",
+      "bytes": 5763,
+      "contentType": "image/jpeg",
+      "sha256": "9bc107d8ba6ef5a68da25eaa346b6a1d01d8bdcb3195a26afaa3a0a54e573cb3"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/142.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/142.jpg",
+      "localPath": "edia/questions/dz/142.jpg",
+      "bytes": 6070,
+      "contentType": "image/jpeg",
+      "sha256": "c196547c1c7d7c4202c4ba3b1d919a12c0f3ee861da805ea29d03f2cab7f518a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/143.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/143.jpg",
+      "localPath": "edia/questions/dz/143.jpg",
+      "bytes": 5897,
+      "contentType": "image/jpeg",
+      "sha256": "a0fcf7d276ff955685e33bac9692abbb62d024ddb9281cc070685e88b0358efa"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/145.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/145.jpg",
+      "localPath": "edia/questions/dz/145.jpg",
+      "bytes": 5460,
+      "contentType": "image/jpeg",
+      "sha256": "53d69a8b6bdc4896887fa5a53d0058568c8b03d817a3690a297c1092ae62cadb"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/146.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/146.jpg",
+      "localPath": "edia/questions/dz/146.jpg",
+      "bytes": 5343,
+      "contentType": "image/jpeg",
+      "sha256": "b086c6b67249101f8f3c419fbe154b6e0b4918238e4ff7256c28da6a9108491f"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/152-1.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/152-1.jpg",
+      "localPath": "edia/questions/dz/152-1.jpg",
+      "bytes": 2093,
+      "contentType": "image/jpeg",
+      "sha256": "0ac50eab6260c60a919c5d34285da253e8b477cbefa089d01ee014387f462d7e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/153-3.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/153-3.jpg",
+      "localPath": "edia/questions/dz/153-3.jpg",
+      "bytes": 3028,
+      "contentType": "image/jpeg",
+      "sha256": "d4921eafa024647895ef0e8f5a2d1bf6a5a756feaa08f38b8f8ab3b83f02b0b9"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/153.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/153.jpg",
+      "localPath": "edia/questions/dz/153.jpg",
+      "bytes": 4107,
+      "contentType": "image/jpeg",
+      "sha256": "35e9af09d11f072aeafef01c1d686b3c678415b3186b2d17edd8f34e4eae3faa"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/2-18.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-18.png",
+      "localPath": "edia/questions/dz/2-18.png",
+      "bytes": 4482,
+      "contentType": "image/png",
+      "sha256": "648e09a909159cd442ac2e57c2eab275ff3638ebe777b9f30f615fbccc0bf617"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/2-23.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-23.png",
+      "error": "https://vodicak.app/questions/dz/2-23.png: HTTP 404"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/2-25.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-25.png",
+      "localPath": "edia/questions/dz/2-25.png",
+      "bytes": 6988,
+      "contentType": "image/png",
+      "sha256": "1c6f3af08ffb6030175af9b475ab1a5375426f074a5d023eabe43ea2655e4633"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/2-26.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-26.png",
+      "localPath": "edia/questions/dz/2-26.png",
+      "bytes": 8293,
+      "contentType": "image/png",
+      "sha256": "370d953e6e4d6dd59d6368d5149bca373de1664c5b692541c22c1b50ab9dac08"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/2-27.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-27.png",
+      "localPath": "edia/questions/dz/2-27.png",
+      "bytes": 2669,
+      "contentType": "image/png",
+      "sha256": "6a78caee82698a8f8276b6d854b28096fde7641b5555f81f4033afd60c6d9d34"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/2-28.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-28.png",
+      "localPath": "edia/questions/dz/2-28.png",
+      "bytes": 5547,
+      "contentType": "image/png",
+      "sha256": "b7331deb362dbfbcb0ca8d8a89d775a70bfd8208526750b195620f21b7b49ac9"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/2-29.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-29.png",
+      "localPath": "edia/questions/dz/2-29.png",
+      "bytes": 4572,
+      "contentType": "image/png",
+      "sha256": "926fac93ab46503c80c1bf37ddaefb9ed6adafa707a7f1aba4431abe0a41eb0a"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/2-30.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-30.png",
+      "error": "https://vodicak.app/questions/dz/2-30.png: HTTP 404"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/2-31.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-31.png",
+      "error": "https://vodicak.app/questions/dz/2-31.png: HTTP 404"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/2-32.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-32.png",
+      "error": "https://vodicak.app/questions/dz/2-32.png: HTTP 404"
+    },
+    {
+      "status": "unavailable_at_snapshot",
+      "sourcePath": "/questions/dz/2-35.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-35.png",
+      "error": "https://vodicak.app/questions/dz/2-35.png: HTTP 404"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/2-38.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-38.png",
+      "localPath": "edia/questions/dz/2-38.png",
+      "bytes": 4135,
+      "contentType": "image/png",
+      "sha256": "351f259a80895cd4a286c909fb24ba65d6b8fde75549844fc912af97d9dfa86f"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/2-8b.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/2-8b.png",
+      "localPath": "edia/questions/dz/2-8b.png",
+      "bytes": 2433,
+      "contentType": "image/png",
+      "sha256": "aec0d572215441e07c035813a89f8b0c145262ed488ee32b98bd0f2650e5d9c1"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/201.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/201.jpg",
+      "localPath": "edia/questions/dz/201.jpg",
+      "bytes": 4665,
+      "contentType": "image/jpeg",
+      "sha256": "1851b8629f3d27f075e8645a64cddd843685739a842ff50d8bfc8b37bef33010"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/202.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/202.jpg",
+      "localPath": "edia/questions/dz/202.jpg",
+      "bytes": 6555,
+      "contentType": "image/jpeg",
+      "sha256": "abfc378e074920c6c8ba382bac117c8c0f3f11de37d2a0401d7f5f1c64b36ab0"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/203.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/203.jpg",
+      "localPath": "edia/questions/dz/203.jpg",
+      "bytes": 6922,
+      "contentType": "image/jpeg",
+      "sha256": "604f383c70af434b7cf6075fd48e1562a45aa1af77ecffeb361353215640565e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/210.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/210.jpg",
+      "localPath": "edia/questions/dz/210.jpg",
+      "bytes": 5512,
+      "contentType": "image/jpeg",
+      "sha256": "54a333fe489738990e40a8344130e7bff37a3a6c5c9640165808d43c85f66d03"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/211.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/211.jpg",
+      "localPath": "edia/questions/dz/211.jpg",
+      "bytes": 5370,
+      "contentType": "image/jpeg",
+      "sha256": "945342385f7ffa111b891db03eb22ec8b9ccfda69f9aff4282d89fe28c4b4b6d"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/212.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/212.jpg",
+      "localPath": "edia/questions/dz/212.jpg",
+      "bytes": 5488,
+      "contentType": "image/jpeg",
+      "sha256": "0b13a0d3cbf8cc91587a0598e5b4b1b827d477a4c44acb3aae7c5c3ab796c4bb"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/213.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/213.jpg",
+      "localPath": "edia/questions/dz/213.jpg",
+      "bytes": 6735,
+      "contentType": "image/jpeg",
+      "sha256": "809f4ced7814666247941d27798eb092ef451bfd61990851a0b48324895c1b34"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/215.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/215.jpg",
+      "localPath": "edia/questions/dz/215.jpg",
+      "bytes": 7079,
+      "contentType": "image/jpeg",
+      "sha256": "08e120df14085b1db1f9a5cab16029b570594b2e6ccd230e17c63026cdcbb26e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/216.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/216.jpg",
+      "localPath": "edia/questions/dz/216.jpg",
+      "bytes": 7774,
+      "contentType": "image/jpeg",
+      "sha256": "d30467882fa82807c22d143fc7e369f43fac4d7608d105f655ed2da3996f468e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/220.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/220.jpg",
+      "localPath": "edia/questions/dz/220.jpg",
+      "bytes": 6205,
+      "contentType": "image/jpeg",
+      "sha256": "28d1a91c51904668a8b5a2c87c065fbcbbc044af7f5e44d9cf8f90c42cc0df91"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/221.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/221.jpg",
+      "localPath": "edia/questions/dz/221.jpg",
+      "bytes": 6679,
+      "contentType": "image/jpeg",
+      "sha256": "e255a38ba96bde413f87740bcd922c1a5fbd368f8870bacf3058adb5c11bdfa9"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/222.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/222.jpg",
+      "localPath": "edia/questions/dz/222.jpg",
+      "bytes": 6606,
+      "contentType": "image/jpeg",
+      "sha256": "f41500e1b097f37f1864f07648003e2e654dc2e3c52492587f95b96f9b28c380"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/223.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/223.jpg",
+      "localPath": "edia/questions/dz/223.jpg",
+      "bytes": 6655,
+      "contentType": "image/jpeg",
+      "sha256": "36091e168836f84590f08eacb73e668c7d8b0a433b185e5cc49d5c5013ff061c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/230.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/230.jpg",
+      "localPath": "edia/questions/dz/230.jpg",
+      "bytes": 4573,
+      "contentType": "image/jpeg",
+      "sha256": "53b95edf051f917536cb4318d064646f9a2138a4bbce7c2bbf6fdac17261db62"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/231.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/231.jpg",
+      "localPath": "edia/questions/dz/231.jpg",
+      "bytes": 5484,
+      "contentType": "image/jpeg",
+      "sha256": "f4d338404622a59dcf7792f79d0c0f9b2ab41e8827d48993ee11c56adf0bae44"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/232.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/232.jpg",
+      "localPath": "edia/questions/dz/232.jpg",
+      "bytes": 7270,
+      "contentType": "image/jpeg",
+      "sha256": "94a46406b2f39050d56882fb3c82ad2dcf25fcb1c02a5cc31a68e0ef8530fd7e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/233.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/233.jpg",
+      "localPath": "edia/questions/dz/233.jpg",
+      "bytes": 6628,
+      "contentType": "image/jpeg",
+      "sha256": "2055ad18b769f804f42376dcb44f37d7e422fc2fe61e698c0f1321ac865e0c55"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/234.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/234.jpg",
+      "localPath": "edia/questions/dz/234.jpg",
+      "bytes": 6831,
+      "contentType": "image/jpeg",
+      "sha256": "5b0fdee0e3840455fbae89871cb24ad5e93f25754fd38c7a9f8eea5fe1dc6667"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/235.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/235.jpg",
+      "localPath": "edia/questions/dz/235.jpg",
+      "bytes": 7475,
+      "contentType": "image/jpeg",
+      "sha256": "b88631c431828976853a259aa0cee4728ec8e68734e70530badaefaf49a9f70c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/241.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/241.jpg",
+      "localPath": "edia/questions/dz/241.jpg",
+      "bytes": 7083,
+      "contentType": "image/jpeg",
+      "sha256": "9aff5e3c290329af7d055b19c622e391566b55d031462f7b8d9b75f2c7ef225b"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/242.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/242.jpg",
+      "localPath": "edia/questions/dz/242.jpg",
+      "bytes": 6976,
+      "contentType": "image/jpeg",
+      "sha256": "a33e342cc67af2b9a910ad8cd85026b4418200c06bbbd838214047e7d4a56cb1"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/243.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/243.jpg",
+      "localPath": "edia/questions/dz/243.jpg",
+      "bytes": 7122,
+      "contentType": "image/jpeg",
+      "sha256": "805ff919aa5e1edf6db305af3ee2095da21b4ea2e99b8922e939f8d67366c85c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/244.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/244.jpg",
+      "localPath": "edia/questions/dz/244.jpg",
+      "bytes": 7275,
+      "contentType": "image/jpeg",
+      "sha256": "f36efca6eeac5700d11317fdd1d5dc4bd32d4a64ead71f76cbafbe8ac3dc60a7"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/245.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/245.jpg",
+      "localPath": "edia/questions/dz/245.jpg",
+      "bytes": 7708,
+      "contentType": "image/jpeg",
+      "sha256": "3d22c41f571d5517b41cd446447366622d4d41d5dcaeceb503e399f1667e8851"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/250.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/250.jpg",
+      "localPath": "edia/questions/dz/250.jpg",
+      "bytes": 6305,
+      "contentType": "image/jpeg",
+      "sha256": "e576ee8ca78804e2f19c5c57a6b0179b2c45c395170dec0d842f957a77cce0f3"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/251.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/251.jpg",
+      "localPath": "edia/questions/dz/251.jpg",
+      "bytes": 8621,
+      "contentType": "image/jpeg",
+      "sha256": "253fb8fd0609913d57a4747e360b505a11cd63d513623c1be84af8902f280e2a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/253.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/253.jpg",
+      "localPath": "edia/questions/dz/253.jpg",
+      "bytes": 7440,
+      "contentType": "image/jpeg",
+      "sha256": "fb0d50b602081698a51ca797882101d938e9c52c343c11b9b90311ea266813d3"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/254.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/254.jpg",
+      "localPath": "edia/questions/dz/254.jpg",
+      "bytes": 6701,
+      "contentType": "image/jpeg",
+      "sha256": "8e3c121a26cf5e5b0b6381dda13f73f0268a774d2118f63521287a060d8bbd64"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/255.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/255.jpg",
+      "localPath": "edia/questions/dz/255.jpg",
+      "bytes": 6759,
+      "contentType": "image/jpeg",
+      "sha256": "db0511bf8796a27e8f923b53a03ea64044d2e7bee03a8d80350a40376abf9e5f"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/256.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/256.jpg",
+      "localPath": "edia/questions/dz/256.jpg",
+      "bytes": 7109,
+      "contentType": "image/jpeg",
+      "sha256": "f1deb2f1686137c290e78551cfac1f2c81352e0483aaa96fe6665ded15592c15"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/263.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/263.jpg",
+      "localPath": "edia/questions/dz/263.jpg",
+      "bytes": 7088,
+      "contentType": "image/jpeg",
+      "sha256": "c08154048b93d4d28ce1b8d433e71037fc2e8dacfd9bd535d5322820856bd579"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/264.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/264.jpg",
+      "localPath": "edia/questions/dz/264.jpg",
+      "bytes": 6663,
+      "contentType": "image/jpeg",
+      "sha256": "16eedfb6ede0f36557dcdfd3f129c493c5d6683e3f668185892890f9bf84a7c7"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/265.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/265.jpg",
+      "localPath": "edia/questions/dz/265.jpg",
+      "bytes": 6713,
+      "contentType": "image/jpeg",
+      "sha256": "31ab5b0b74f4192ed8ef52717d437d024746103bf0c8829dbf525c81216d3f70"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/267.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/267.jpg",
+      "localPath": "edia/questions/dz/267.jpg",
+      "bytes": 6181,
+      "contentType": "image/jpeg",
+      "sha256": "5c0ee0df12620a6740b1df8a96aab97425fa541268f345c9deb48d4e627b2372"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/270.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/270.jpg",
+      "localPath": "edia/questions/dz/270.jpg",
+      "bytes": 7483,
+      "contentType": "image/jpeg",
+      "sha256": "2b95be1c9861582c53478b76ecb4a8efeb2226b3b75e24cb14a873e93e8b52ef"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/271.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/271.jpg",
+      "localPath": "edia/questions/dz/271.jpg",
+      "bytes": 6843,
+      "contentType": "image/jpeg",
+      "sha256": "45c0fd1c1b0065c2519759dd7d98b665735e372ffba5c9b094cc96e32439ff6b"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/272.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/272.jpg",
+      "localPath": "edia/questions/dz/272.jpg",
+      "bytes": 4521,
+      "contentType": "image/jpeg",
+      "sha256": "93f0513a561ef2174168a9682be36486dc5bd753f95afb36ab832792ca4ea55a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/273.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/273.jpg",
+      "localPath": "edia/questions/dz/273.jpg",
+      "bytes": 4468,
+      "contentType": "image/jpeg",
+      "sha256": "0812f8d48e096e4435fe50d8d707b8deeaec66308f0a3ca2247f2eafd03f4e16"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/275.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/275.jpg",
+      "localPath": "edia/questions/dz/275.jpg",
+      "bytes": 6653,
+      "contentType": "image/jpeg",
+      "sha256": "c6441afe3861a1dbdc8c1dffcca5c98a9c7d6cf77b994730d998bff861ecbed4"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/276.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/276.jpg",
+      "localPath": "edia/questions/dz/276.jpg",
+      "bytes": 7092,
+      "contentType": "image/jpeg",
+      "sha256": "89cdeaf15a3fa122d45681604c54fd5589e0321d5c76dc2f4c05e9b796b0c7ad"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/277.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/277.jpg",
+      "localPath": "edia/questions/dz/277.jpg",
+      "bytes": 5561,
+      "contentType": "image/jpeg",
+      "sha256": "e1e11cc05ca7351871bb29ae5c84d4c0e55637bf5e0fe3725e7d44289b688638"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/278.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/278.jpg",
+      "localPath": "edia/questions/dz/278.jpg",
+      "bytes": 6445,
+      "contentType": "image/jpeg",
+      "sha256": "21445ba9bbf05cafd93d050855b81fc5918cc7d64b1b6ebe6a555eb82ee517a9"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/301.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/301.jpg",
+      "localPath": "edia/questions/dz/301.jpg",
+      "bytes": 5288,
+      "contentType": "image/jpeg",
+      "sha256": "5241012d8e56d67e3b13b2f47113ad7929d969a02ad3bb108458db9893227c8c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/302.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/302.jpg",
+      "localPath": "edia/questions/dz/302.jpg",
+      "bytes": 5617,
+      "contentType": "image/jpeg",
+      "sha256": "9fefb50b7e09c21d61d89354e58602f3e3eba64935756f82e8d530f0bc2ace86"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/303.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/303.jpg",
+      "localPath": "edia/questions/dz/303.jpg",
+      "bytes": 6789,
+      "contentType": "image/jpeg",
+      "sha256": "06e7fbc5ae9c9e69602919e1443b6ded53390f942adb5c128666ca26335a0d35"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/304.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/304.jpg",
+      "localPath": "edia/questions/dz/304.jpg",
+      "bytes": 5746,
+      "contentType": "image/jpeg",
+      "sha256": "d5785df56b79fab30dbc5edbb384137ba775c6350162ef4aca5d5b5be6110719"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/305.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/305.jpg",
+      "localPath": "edia/questions/dz/305.jpg",
+      "bytes": 4451,
+      "contentType": "image/jpeg",
+      "sha256": "17318d1042e185d45b2266309779dc9259d53c4a8293e2b42857604434db6825"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/306.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/306.jpg",
+      "localPath": "edia/questions/dz/306.jpg",
+      "bytes": 5543,
+      "contentType": "image/jpeg",
+      "sha256": "a3716fdcb097cdc6d09066d403dc270050233258fb0ee5cdbd72fe86b39b699a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/307.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/307.jpg",
+      "localPath": "edia/questions/dz/307.jpg",
+      "bytes": 5333,
+      "contentType": "image/jpeg",
+      "sha256": "f13288ce3672b6cd501c0a2fe09f9344146888863dba6b36ecba9c47fdb2e7ad"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/308.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/308.jpg",
+      "localPath": "edia/questions/dz/308.jpg",
+      "bytes": 6166,
+      "contentType": "image/jpeg",
+      "sha256": "06be9afe8e0494efbe5aafb002091ec891be975ce6868e607f572e1938dc3122"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/309.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/309.jpg",
+      "localPath": "edia/questions/dz/309.jpg",
+      "bytes": 5467,
+      "contentType": "image/jpeg",
+      "sha256": "6e48599c76624f8bc3a6b078c1ef260442364c07df989293effe1ad053b63586"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/310.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/310.jpg",
+      "localPath": "edia/questions/dz/310.jpg",
+      "bytes": 6409,
+      "contentType": "image/jpeg",
+      "sha256": "d02523a5dd58271d92bd5e35c016f290a9b295269c9f800999e5835f12897b71"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/311.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/311.jpg",
+      "localPath": "edia/questions/dz/311.jpg",
+      "bytes": 5221,
+      "contentType": "image/jpeg",
+      "sha256": "b7ac1a71907740adf84781296fb0a712fbae334538b69a53ab7ca623d8752182"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/312.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/312.jpg",
+      "localPath": "edia/questions/dz/312.jpg",
+      "bytes": 6185,
+      "contentType": "image/jpeg",
+      "sha256": "96f5b5f02f0aa358533c5fbb37a27b60292b06f560e6be8a3ecdf084f46970b3"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/315.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/315.jpg",
+      "localPath": "edia/questions/dz/315.jpg",
+      "bytes": 5903,
+      "contentType": "image/jpeg",
+      "sha256": "078e61b0249a69d2ed9e3a40a89377851fef6a39ba6ee1ed90f7e54ed49beb64"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/316.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/316.jpg",
+      "localPath": "edia/questions/dz/316.jpg",
+      "bytes": 6177,
+      "contentType": "image/jpeg",
+      "sha256": "fe23cb5042c36c3f285e1e4e589a261442c55af3270dd8b92feb38b77d0b8725"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/317.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/317.jpg",
+      "localPath": "edia/questions/dz/317.jpg",
+      "bytes": 6811,
+      "contentType": "image/jpeg",
+      "sha256": "cb26d8850da3b3e0c85ec371d1a47e21d4b8778cb7c7ddabd173e87d865dd9c7"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/318.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/318.jpg",
+      "localPath": "edia/questions/dz/318.jpg",
+      "bytes": 7665,
+      "contentType": "image/jpeg",
+      "sha256": "d30c1bdad35d1d0ecaf0101b7c8a3d55ee67231198700339abfe86de439a0165"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/319.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/319.jpg",
+      "localPath": "edia/questions/dz/319.jpg",
+      "bytes": 7100,
+      "contentType": "image/jpeg",
+      "sha256": "abe413f99d6e7b54a387fcb2cf28e2ca14ee53ab14a9fe89f2f1667a2d6a8b77"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/320.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/320.jpg",
+      "localPath": "edia/questions/dz/320.jpg",
+      "bytes": 7659,
+      "contentType": "image/jpeg",
+      "sha256": "59cce43db7765184b69dae2821bb066c61c3ad42b9600edb6efdd271463c4186"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/321.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/321.jpg",
+      "localPath": "edia/questions/dz/321.jpg",
+      "bytes": 2844,
+      "contentType": "image/jpeg",
+      "sha256": "aa1727946a606fa8650f9f41f74b8343ed71fe7b8a5f95f0a8b162f4a0b12890"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/322.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/322.jpg",
+      "localPath": "edia/questions/dz/322.jpg",
+      "bytes": 5654,
+      "contentType": "image/jpeg",
+      "sha256": "4f18c437a15088c2738ed52e0379f49b54f1942e985248ce44e0d0d628dd578a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/323.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/323.png",
+      "localPath": "edia/questions/dz/323.png",
+      "bytes": 46825,
+      "contentType": "image/png",
+      "sha256": "4729413596d066f91fe53016853d1ccbc4fea6c17c7f5b0ffa5a0a54c7594459"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/324.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/324.png",
+      "localPath": "edia/questions/dz/324.png",
+      "bytes": 53151,
+      "contentType": "image/png",
+      "sha256": "c101b1820b5ac3d808c46376fc871b5a3a1b7c1426abf8ca007b87ba92a13f65"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/325.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/325.jpg",
+      "localPath": "edia/questions/dz/325.jpg",
+      "bytes": 6447,
+      "contentType": "image/jpeg",
+      "sha256": "e731900a496f9cb67b771e4dafe02352ce8824c4f3a87e3e74d1befbf20a0ca0"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/326.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/326.jpg",
+      "localPath": "edia/questions/dz/326.jpg",
+      "bytes": 6704,
+      "contentType": "image/jpeg",
+      "sha256": "685f3cde652f9fbf369a77f6533513bef202b2489fdf614e1bfbce5b17da035b"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/327.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/327.jpg",
+      "localPath": "edia/questions/dz/327.jpg",
+      "bytes": 5282,
+      "contentType": "image/jpeg",
+      "sha256": "3fd79e7657cdbabeadf15aae2b170eab8041d50b1692011610c0b7aeef893ede"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/328.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/328.jpg",
+      "localPath": "edia/questions/dz/328.jpg",
+      "bytes": 4006,
+      "contentType": "image/jpeg",
+      "sha256": "16a94fe7dc46896e56792a31b8f9444ae7d2cc88503b9e40ac2de8f856a9fc41"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/330.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/330.jpg",
+      "localPath": "edia/questions/dz/330.jpg",
+      "bytes": 5223,
+      "contentType": "image/jpeg",
+      "sha256": "e46a6a096c0064d89d85cc8f9b277c09b9038d8e015b0eb9d9a3ef82e813f7f4"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/331.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/331.jpg",
+      "localPath": "edia/questions/dz/331.jpg",
+      "bytes": 5531,
+      "contentType": "image/jpeg",
+      "sha256": "e933d5b5232f83c0b95a8d6ff48b3334f44c4eef55189470a80b2a690b04ffec"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/332.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/332.jpg",
+      "localPath": "edia/questions/dz/332.jpg",
+      "bytes": 5527,
+      "contentType": "image/jpeg",
+      "sha256": "9afc0297769d8a6de9de603e46955856cf40861686aed99f8d1e2d326c41c87d"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/333.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/333.jpg",
+      "localPath": "edia/questions/dz/333.jpg",
+      "bytes": 5264,
+      "contentType": "image/jpeg",
+      "sha256": "c6b6972e3980b247e58b2fea4fc8f293904b4b0f539415781a2f9ddeeb9cd4eb"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/334.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/334.jpg",
+      "localPath": "edia/questions/dz/334.jpg",
+      "bytes": 6717,
+      "contentType": "image/jpeg",
+      "sha256": "0fe0f465cac1c582b359589b3af896c5f2a77b2d34ded32633bdabb79a7458c4"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/335.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/335.jpg",
+      "localPath": "edia/questions/dz/335.jpg",
+      "bytes": 5573,
+      "contentType": "image/jpeg",
+      "sha256": "5e72c60cbb5397eb19ad25519f8dba5820937244f6c225f44352356f22a6bdce"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/336.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/336.jpg",
+      "localPath": "edia/questions/dz/336.jpg",
+      "bytes": 4655,
+      "contentType": "image/jpeg",
+      "sha256": "bde98a16ddc19f9c8bdedcff1be410b49d050b80a26104f742ee18abd558b4af"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/340.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/340.jpg",
+      "localPath": "edia/questions/dz/340.jpg",
+      "bytes": 4437,
+      "contentType": "image/jpeg",
+      "sha256": "bc9849b54f08fff820645e03cb8ff5728203eab2d1f086bc7ce7824f2ed780e8"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/341.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/341.jpg",
+      "localPath": "edia/questions/dz/341.jpg",
+      "bytes": 7024,
+      "contentType": "image/jpeg",
+      "sha256": "f122774beaef34eea4cc6a8a9f98ad34560f7b2d8b50113d69d7b3b8ac9c505d"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/342.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/342.jpg",
+      "localPath": "edia/questions/dz/342.jpg",
+      "bytes": 8806,
+      "contentType": "image/jpeg",
+      "sha256": "d3a5f335a6ab25fadfeb23898b2b578669ef4140bf3a807099eddbf49c343562"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/343.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/343.jpg",
+      "localPath": "edia/questions/dz/343.jpg",
+      "bytes": 5772,
+      "contentType": "image/jpeg",
+      "sha256": "0a9959983da35fa8935bfc01b55cc4666e6cc0af7bb8ddddf1f175beaeae9c8f"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/350.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/350.jpg",
+      "localPath": "edia/questions/dz/350.jpg",
+      "bytes": 3663,
+      "contentType": "image/jpeg",
+      "sha256": "14a4d4bdfaf4841b10d5238e6c3ec1954e3db6720a94f4140b523189f86c117e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/352.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/352.jpg",
+      "localPath": "edia/questions/dz/352.jpg",
+      "bytes": 4151,
+      "contentType": "image/jpeg",
+      "sha256": "5d55c494b7370fdb2cc9e1516e71535db85b8bee9f911b0c3dbd321bda720374"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/353.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/353.jpg",
+      "localPath": "edia/questions/dz/353.jpg",
+      "bytes": 4599,
+      "contentType": "image/jpeg",
+      "sha256": "604b12ac5dcd28d0471b9b73733c8b8e7cac2ad34bf079a685003e216a0600b3"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/363.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/363.jpg",
+      "localPath": "edia/questions/dz/363.jpg",
+      "bytes": 10407,
+      "contentType": "image/jpeg",
+      "sha256": "4afffa341403651106e52e1a2f7a65bc4156fa9728418b0a104860e448ac75e8"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/365.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/365.jpg",
+      "localPath": "edia/questions/dz/365.jpg",
+      "bytes": 2395,
+      "contentType": "image/jpeg",
+      "sha256": "79bac120609e0b5b106f4d0f765c5320de6efb1a4226f792c6ebf345bd6fb806"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/366.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/366.jpg",
+      "localPath": "edia/questions/dz/366.jpg",
+      "bytes": 2061,
+      "contentType": "image/jpeg",
+      "sha256": "fcc6edd05388a7837946d73590b21531a45c0a05f195f6ae28787e2480aded45"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/367.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/367.jpg",
+      "localPath": "edia/questions/dz/367.jpg",
+      "bytes": 2516,
+      "contentType": "image/jpeg",
+      "sha256": "b6a6aaa3fdb1ce4496db4ceedda06d3799257f17a1f761c6f3b609e6b9f11861"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/392.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/392.jpg",
+      "localPath": "edia/questions/dz/392.jpg",
+      "bytes": 5516,
+      "contentType": "image/jpeg",
+      "sha256": "3ed60b37f300c35d3081726e244bbf31a075c224e858bb63275e7b76752a156f"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/397.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/397.jpg",
+      "localPath": "edia/questions/dz/397.jpg",
+      "bytes": 5120,
+      "contentType": "image/jpeg",
+      "sha256": "a902e58908c0fbd8e22efce40af78737020fa8533dc40ccedb4b5a8fadb711e5"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/4-3.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/4-3.png",
+      "localPath": "edia/questions/dz/4-3.png",
+      "bytes": 2803,
+      "contentType": "image/png",
+      "sha256": "81a0b42fd8e64cea595773eb78dac17af172b96b0eef6b348f770265fed39e3c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/4-4.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/4-4.png",
+      "localPath": "edia/questions/dz/4-4.png",
+      "bytes": 1578,
+      "contentType": "image/png",
+      "sha256": "66229ce873c711ecc7f0a4e424ecb29575d941cf29f56ce88ff189faf656f484"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/4-5.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/4-5.png",
+      "localPath": "edia/questions/dz/4-5.png",
+      "bytes": 3571,
+      "contentType": "image/png",
+      "sha256": "5943f40ff81c6a4862e8e8159ef36a75e41e42ead497957b65a9591c6ece9c37"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/4-6.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/4-6.png",
+      "localPath": "edia/questions/dz/4-6.png",
+      "bytes": 2531,
+      "contentType": "image/png",
+      "sha256": "43e53ef6cd05d568d8771a3787d5f45c36233f24fd7dd904ddc6b7f5c870ec30"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/401-409.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/401-409.jpg",
+      "localPath": "edia/questions/dz/401-409.jpg",
+      "bytes": 3590,
+      "contentType": "image/jpeg",
+      "sha256": "14b49d2cb7fa915d812fe571d475e55dcdac16b29ae432b13529922dd00bfe59"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/411-419.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/411-419.jpg",
+      "localPath": "edia/questions/dz/411-419.jpg",
+      "bytes": 3083,
+      "contentType": "image/jpeg",
+      "sha256": "0b7302b7c47bd4d44bfa01ece7a4393aa27439b1b2164fdf62bad16f0fdb763d"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/421-429.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/421-429.jpg",
+      "localPath": "edia/questions/dz/421-429.jpg",
+      "bytes": 3861,
+      "contentType": "image/jpeg",
+      "sha256": "a896a13b50e9a65117d0cacc666092f407a33c1757961f3d4e0d43077f8e2173"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/441-449.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/441-449.jpg",
+      "localPath": "edia/questions/dz/441-449.jpg",
+      "bytes": 4210,
+      "contentType": "image/jpeg",
+      "sha256": "7871cd4988cd52f506de620515296d413ed58eb58864eaf833796eb359de0c52"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/451-459.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/451-459.jpg",
+      "localPath": "edia/questions/dz/451-459.jpg",
+      "bytes": 4084,
+      "contentType": "image/jpeg",
+      "sha256": "a0dcd45c68d3f7a51c5a7c626db32bb02e8ddea2ee6a50dc8a3c767b096569c1"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/5-1.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/5-1.png",
+      "localPath": "edia/questions/dz/5-1.png",
+      "bytes": 4055,
+      "contentType": "image/png",
+      "sha256": "b276eeae21ac40c1494ecd810a703637f8b5e4021b3b65a376302a64fda14144"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/5-2.png",
+      "sourceUrl": "https://vodicak.app/questions/dz/5-2.png",
+      "localPath": "edia/questions/dz/5-2.png",
+      "bytes": 8706,
+      "contentType": "image/png",
+      "sha256": "7f7407cda863bbb0aabe23a7ad6913244f544a95893629389e734dc721fd3135"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/504.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/504.jpg",
+      "localPath": "edia/questions/dz/504.jpg",
+      "bytes": 2903,
+      "contentType": "image/jpeg",
+      "sha256": "ac36ccf5e41452f27c75847e743c1d0c9f1bceaab3533389a94c5a5e48a69d7e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/506.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/506.jpg",
+      "localPath": "edia/questions/dz/506.jpg",
+      "bytes": 3316,
+      "contentType": "image/jpeg",
+      "sha256": "e736320df231e3202a872ada487dd46de4943c79a4eeb63e5e0102b8f0ad476b"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/508.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/508.jpg",
+      "localPath": "edia/questions/dz/508.jpg",
+      "bytes": 3451,
+      "contentType": "image/jpeg",
+      "sha256": "ec08c7bbe2a4af0226c46c35e5b8168654606c127ca3870e93315f97c36615e0"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/510.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/510.jpg",
+      "localPath": "edia/questions/dz/510.jpg",
+      "bytes": 3716,
+      "contentType": "image/jpeg",
+      "sha256": "8f87d4bbe19191434fbec75d1f2b0eabeffc692c896374ce807031b45e78839a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/514.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/514.jpg",
+      "localPath": "edia/questions/dz/514.jpg",
+      "bytes": 4637,
+      "contentType": "image/jpeg",
+      "sha256": "acc43b384fe14f83db463489391ec0bc520eeb3150b7b072d3a3019397122acf"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/601.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/601.jpg",
+      "localPath": "edia/questions/dz/601.jpg",
+      "bytes": 2633,
+      "contentType": "image/jpeg",
+      "sha256": "46cef9c96accd7b4971cba643c50e00846d0b81c20c4b1938e08f76ee3d3c2fe"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/603.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/603.jpg",
+      "localPath": "edia/questions/dz/603.jpg",
+      "bytes": 2690,
+      "contentType": "image/jpeg",
+      "sha256": "77159f9a28f5502c1ad0d70f597a93db2ea024bc22c430745be5e143ae67d7da"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/604.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/604.jpg",
+      "localPath": "edia/questions/dz/604.jpg",
+      "bytes": 4429,
+      "contentType": "image/jpeg",
+      "sha256": "941f498029ede95399a297c73f3db93cfaf23b712ccefea2ea00604153ba89ff"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/610.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/610.jpg",
+      "localPath": "edia/questions/dz/610.jpg",
+      "bytes": 2408,
+      "contentType": "image/jpeg",
+      "sha256": "006967ac67599d295e616e450a173209208a5dbe7ecb70756fb2d54107f9107c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/620.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/620.jpg",
+      "localPath": "edia/questions/dz/620.jpg",
+      "bytes": 3467,
+      "contentType": "image/jpeg",
+      "sha256": "b43719bcf058a4f32a1cb424ff10dae51e54a729606c341d296117e71f0f7c2c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/621.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/621.jpg",
+      "localPath": "edia/questions/dz/621.jpg",
+      "bytes": 3548,
+      "contentType": "image/jpeg",
+      "sha256": "28c2d7d9badf4186cec40281cf9165f0e3733a98606d9fc06f424c19b32dc76d"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/622.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/622.jpg",
+      "localPath": "edia/questions/dz/622.jpg",
+      "bytes": 3271,
+      "contentType": "image/jpeg",
+      "sha256": "a5af6d74ff9316834199757f088410a15729a86acecf41f8594e07691ec509f7"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/630.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/630.jpg",
+      "localPath": "edia/questions/dz/630.jpg",
+      "bytes": 3717,
+      "contentType": "image/jpeg",
+      "sha256": "2c06d2ec58a1b05e0d5945a6af74f92a35b968865654754556006c75fffe12de"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/631.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/631.jpg",
+      "localPath": "edia/questions/dz/631.jpg",
+      "bytes": 4254,
+      "contentType": "image/jpeg",
+      "sha256": "a96a232c94e223d8b6a991f2e5c1354a0f4546172aa98fd71f854f923fe48ecc"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/635.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/635.jpg",
+      "localPath": "edia/questions/dz/635.jpg",
+      "bytes": 2518,
+      "contentType": "image/jpeg",
+      "sha256": "e3083d9a014c78e0be6ec0faee928b249ec81f19509b4415fc6f72c483ee9c11"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/701.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/701.jpg",
+      "localPath": "edia/questions/dz/701.jpg",
+      "bytes": 1935,
+      "contentType": "image/jpeg",
+      "sha256": "f529e5fefc759bcb15771a81c36f9335ca021e23021c596bb47f11b138791990"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/703.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/703.jpg",
+      "localPath": "edia/questions/dz/703.jpg",
+      "bytes": 2607,
+      "contentType": "image/jpeg",
+      "sha256": "c7516deb87a0437cd0a4f5a5e59f1258c823db09e7ca3200ec0b4145add0464d"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/705.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/705.jpg",
+      "localPath": "edia/questions/dz/705.jpg",
+      "bytes": 4779,
+      "contentType": "image/jpeg",
+      "sha256": "79892461069383b2ff84514d88e7ae027d11a4d3e9905f10f0c7d2a18e5fe324"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/730.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/730.jpg",
+      "localPath": "edia/questions/dz/730.jpg",
+      "bytes": 5324,
+      "contentType": "image/jpeg",
+      "sha256": "64064696eb9a83a7d0fad1198bba08726695624b644268bce5857fa35a84fe7e"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/dz/731.jpg",
+      "sourceUrl": "https://vodicak.app/questions/dz/731.jpg",
+      "localPath": "edia/questions/dz/731.jpg",
+      "bytes": 4367,
+      "contentType": "image/jpeg",
+      "sha256": "c4ef85fd0abdffa71df0d366d0afd722d144373adeea3b393b586e4695bfc86a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/15_2a.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/15_2a.png",
+      "localPath": "edia/questions/pcp/15_2a.png",
+      "bytes": 5167,
+      "contentType": "image/png",
+      "sha256": "2edf6096e57088d0528f9afbe35def6e8f2e2bed0e0e77f87dfb57537ac80dab"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/15_2b.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/15_2b.png",
+      "localPath": "edia/questions/pcp/15_2b.png",
+      "bytes": 5545,
+      "contentType": "image/png",
+      "sha256": "7d16945fa6730edd9ed46c27e76db3acb6300305b184af95b6d61dedab6691cd"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/15_2c.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/15_2c.png",
+      "localPath": "edia/questions/pcp/15_2c.png",
+      "bytes": 5164,
+      "contentType": "image/png",
+      "sha256": "915d0f1f2a1190844ad0942f6824b63f087c7a73009cc62fb378147a01e4c940"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/15_3_1.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/15_3_1.png",
+      "localPath": "edia/questions/pcp/15_3_1.png",
+      "bytes": 7186,
+      "contentType": "image/png",
+      "sha256": "bc26887a4740793f78ed3c479096b5e1e67e3a4cb0424c66c9f9d65c8bcea847"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/15_3_2.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/15_3_2.png",
+      "localPath": "edia/questions/pcp/15_3_2.png",
+      "bytes": 8714,
+      "contentType": "image/png",
+      "sha256": "b1f3b1b01b9ee9aac191cdb163ed1e24b7b4d37200b1bc82f4c4b3ca3906400b"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/15_3_3.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/15_3_3.png",
+      "localPath": "edia/questions/pcp/15_3_3.png",
+      "bytes": 9147,
+      "contentType": "image/png",
+      "sha256": "f1eb7d0f8cd002ecab215856de3a97fdab9f83b21a581c37a5faf90c449b46eb"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/15_6.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/15_6.png",
+      "localPath": "edia/questions/pcp/15_6.png",
+      "bytes": 8463,
+      "contentType": "image/png",
+      "sha256": "c24829a276378cb7d19720e187cc6e76252dc6d2cf130b394bcc21dcbd41d6df"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/17_1a.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/17_1a.png",
+      "localPath": "edia/questions/pcp/17_1a.png",
+      "bytes": 3004,
+      "contentType": "image/png",
+      "sha256": "926ae7e0d57c5c2355ea859c9d913437d485100bd8f0eaf36e01718508658b46"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/17_1b.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/17_1b.png",
+      "localPath": "edia/questions/pcp/17_1b.png",
+      "bytes": 1973,
+      "contentType": "image/png",
+      "sha256": "e701b13d8c47152249804f05ac5dabbbe5582eabe606650535059a70218a2953"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/17_1c_2.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/17_1c_2.png",
+      "localPath": "edia/questions/pcp/17_1c_2.png",
+      "bytes": 1699,
+      "contentType": "image/png",
+      "sha256": "fc94800f3fded2491406fd056348f462e63617058799654f374f6964d67950dd"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/22_1a.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/22_1a.png",
+      "localPath": "edia/questions/pcp/22_1a.png",
+      "bytes": 49520,
+      "contentType": "image/png",
+      "sha256": "28d6a3b5c311d4660b99b9ae28a691a2247b92cab2eaacc22ebc3ab9fd071fbc"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/22_1b.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/22_1b.png",
+      "localPath": "edia/questions/pcp/22_1b.png",
+      "bytes": 20141,
+      "contentType": "image/png",
+      "sha256": "b3e218fae4be35d7d0a111a16fa65a046d2f011c06cdbfb0cc41512141baee54"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/22_1c.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/22_1c.png",
+      "localPath": "edia/questions/pcp/22_1c.png",
+      "bytes": 19419,
+      "contentType": "image/png",
+      "sha256": "4554339266397732dfe67c0d950140c371fb0dbba69f0a704bd9a3daff421017"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/22_1d.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/22_1d.png",
+      "localPath": "edia/questions/pcp/22_1d.png",
+      "bytes": 45245,
+      "contentType": "image/png",
+      "sha256": "788c8d59234b0bf4881ee2a404f0346b18da0fd426697b0ea09904887f0ed5fd"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/22_3_1.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/22_3_1.png",
+      "localPath": "edia/questions/pcp/22_3_1.png",
+      "bytes": 61209,
+      "contentType": "image/png",
+      "sha256": "cb7f6b46350f4eaf8539d6bbd9d3f3a2931ddca689f4413d998ae6dc951259b2"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/22_3_2.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/22_3_2.png",
+      "localPath": "edia/questions/pcp/22_3_2.png",
+      "bytes": 62372,
+      "contentType": "image/png",
+      "sha256": "7bd4d14892c935c3cc35eff7e80e7fb050f07ad5e5d973d4b893ba38045904db"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/23_3.jpg",
+      "sourceUrl": "https://vodicak.app/questions/pcp/23_3.jpg",
+      "localPath": "edia/questions/pcp/23_3.jpg",
+      "bytes": 129793,
+      "contentType": "image/jpeg",
+      "sha256": "4eb2a66cd26c29c5ed318adc565f18c417209ad1a6f869f8f21d5afd17a1767a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/23_7_1.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/23_7_1.png",
+      "localPath": "edia/questions/pcp/23_7_1.png",
+      "bytes": 6998,
+      "contentType": "image/png",
+      "sha256": "f472ba7d9865792ccf1b7dad489e6b0ada1c992cbc644012d97718c086eaa5a1"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/23_7_2.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/23_7_2.png",
+      "localPath": "edia/questions/pcp/23_7_2.png",
+      "bytes": 10710,
+      "contentType": "image/png",
+      "sha256": "174b661b4cdd4152d701ffe4f9d08883b4e3fd99c9f6e1f1af3f3b30a255c68a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/25_2_1.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/25_2_1.png",
+      "localPath": "edia/questions/pcp/25_2_1.png",
+      "bytes": 22904,
+      "contentType": "image/png",
+      "sha256": "03f574620cec4b33512584ec7a85dd2ec07a585f2dc57cbf4f5269b461b67f46"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/25_2_2.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/25_2_2.png",
+      "localPath": "edia/questions/pcp/25_2_2.png",
+      "bytes": 21544,
+      "contentType": "image/png",
+      "sha256": "1a6d86a072eec8540e865c1d14c9a62c988beefac6b403f9a205df61fa4e08c3"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/25_2_3.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/25_2_3.png",
+      "localPath": "edia/questions/pcp/25_2_3.png",
+      "bytes": 17837,
+      "contentType": "image/png",
+      "sha256": "ca597fd4c675f553decb949c9e2864d3512b81fe16c1852d7a60b78384f65b04"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/25_2_4.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/25_2_4.png",
+      "localPath": "edia/questions/pcp/25_2_4.png",
+      "bytes": 32805,
+      "contentType": "image/png",
+      "sha256": "24a497718a6cd573ae145c34ec1f66b8be6954356baa50b10107d4bab4a46f08"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/27_5.png",
+      "sourceUrl": "https://vodicak.app/questions/pcp/27_5.png",
+      "localPath": "edia/questions/pcp/27_5.png",
+      "bytes": 852106,
+      "contentType": "image/png",
+      "sha256": "a15d76177b1d466693b504b347a98e605b5717174e0ccbe92e52b1f9fb21592f"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/29_1.jpg",
+      "sourceUrl": "https://vodicak.app/questions/pcp/29_1.jpg",
+      "localPath": "edia/questions/pcp/29_1.jpg",
+      "bytes": 210572,
+      "contentType": "image/jpeg",
+      "sha256": "044b78e60207ca93a767346ad1fb054eb57059c03e620c525fcd3521091135a0"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/30_1.jpg",
+      "sourceUrl": "https://vodicak.app/questions/pcp/30_1.jpg",
+      "localPath": "edia/questions/pcp/30_1.jpg",
+      "bytes": 12577,
+      "contentType": "image/jpeg",
+      "sha256": "24686220682f4abd21a1cd85d9b56ebe948a814248101b4adea0da5368206c7a"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pcp/9_3_0.jpg",
+      "sourceUrl": "https://vodicak.app/questions/pcp/9_3_0.jpg",
+      "localPath": "edia/questions/pcp/9_3_0.jpg",
+      "bytes": 18458,
+      "contentType": "image/jpeg",
+      "sha256": "8c3f4942434182abfa470b36a1e01ba13d3b740cdf2ce94c2ead19af9b9919c8"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pdf_extracted/q198_a.jpeg",
+      "sourceUrl": "https://vodicak.app/questions/pdf_extracted/q198_a.jpeg",
+      "localPath": "edia/questions/pdf_extracted/q198_a.jpeg",
+      "bytes": 3040,
+      "contentType": "image/jpeg",
+      "sha256": "d30f59150340a25adafc3daf93ade7405982308322c91f855e7b0e6947c3ac79"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pdf_extracted/q198_b.jpeg",
+      "sourceUrl": "https://vodicak.app/questions/pdf_extracted/q198_b.jpeg",
+      "localPath": "edia/questions/pdf_extracted/q198_b.jpeg",
+      "bytes": 3040,
+      "contentType": "image/jpeg",
+      "sha256": "d30f59150340a25adafc3daf93ade7405982308322c91f855e7b0e6947c3ac79"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pdf_extracted/q522_a.png",
+      "sourceUrl": "https://vodicak.app/questions/pdf_extracted/q522_a.png",
+      "localPath": "edia/questions/pdf_extracted/q522_a.png",
+      "bytes": 10559,
+      "contentType": "image/png",
+      "sha256": "d3495740a02f595ab3abeb2c5fc80a95f8bbf235578f95ddde1ea9bd785b91ba"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/pdf_extracted/q646_sign.png",
+      "sourceUrl": "https://vodicak.app/questions/pdf_extracted/q646_sign.png",
+      "localPath": "edia/questions/pdf_extracted/q646_sign.png",
+      "bytes": 15385,
+      "contentType": "image/png",
+      "sha256": "eb16d4a8198c019d97c9c225d0ace9905d7f0bf184fbd02c30d5e31002ca3a35"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/01.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/01.png",
+      "localPath": "edia/questions/tvv/01.png",
+      "bytes": 7681,
+      "contentType": "image/png",
+      "sha256": "a975a9228247833addf41db64ffb4989d05d2e63dcf55fe2c5df86f5ce81bcd0"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/03.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/03.png",
+      "localPath": "edia/questions/tvv/03.png",
+      "bytes": 3260,
+      "contentType": "image/png",
+      "sha256": "892f339142fdf959234735f635f9b19255bc252add69a4b48a1388e5974e1284"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/05.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/05.png",
+      "localPath": "edia/questions/tvv/05.png",
+      "bytes": 2510,
+      "contentType": "image/png",
+      "sha256": "23d51fbb01587dd80ae3d40dd122b9551828488276d43a7ef9a1d3a8c9a96282"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/06.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/06.png",
+      "localPath": "edia/questions/tvv/06.png",
+      "bytes": 4992,
+      "contentType": "image/png",
+      "sha256": "6bdf9152044a397d800c7aafa48b57ea10f2e8014e6a6381c58a0685c8a475d3"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/07.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/07.png",
+      "localPath": "edia/questions/tvv/07.png",
+      "bytes": 3495,
+      "contentType": "image/png",
+      "sha256": "a0e3594d5d5a22502159ee15f10e2271ea0ae25b044d61ee48947bd03fd7c9e1"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/08.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/08.png",
+      "localPath": "edia/questions/tvv/08.png",
+      "bytes": 860,
+      "contentType": "image/png",
+      "sha256": "d827d0806d626ff76153a976c1b3c03a6b5130f25d4df1cbfd0018c92ae3a25d"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/14.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/14.png",
+      "localPath": "edia/questions/tvv/14.png",
+      "bytes": 3583,
+      "contentType": "image/png",
+      "sha256": "282873004249f7dffa37abb0ec23fc1c9b440a5b83ec79f5be94296fdd32edf8"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/17.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/17.png",
+      "localPath": "edia/questions/tvv/17.png",
+      "bytes": 6866,
+      "contentType": "image/png",
+      "sha256": "18f35c473fd5184d5d7821a8b9d82ba8ec383e46f381a288616711c2957c37f7"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/18.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/18.png",
+      "localPath": "edia/questions/tvv/18.png",
+      "bytes": 3662,
+      "contentType": "image/png",
+      "sha256": "b232c7f493226fc2cb63a6ee76c1a4b3b7e7873c8ad74044157fe9d3de2aa0cd"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/21.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/21.png",
+      "localPath": "edia/questions/tvv/21.png",
+      "bytes": 6561,
+      "contentType": "image/png",
+      "sha256": "ba807727886f999fbc7611f93a19f487188efb88b218d0ac509f407854a5cc62"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/24.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/24.png",
+      "localPath": "edia/questions/tvv/24.png",
+      "bytes": 4692,
+      "contentType": "image/png",
+      "sha256": "c0c16cdbe42f75322472b6663f6411e078acbc74374426cf235de2418be9979d"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/26.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/26.png",
+      "localPath": "edia/questions/tvv/26.png",
+      "bytes": 4574,
+      "contentType": "image/png",
+      "sha256": "7fcebbc5a4dce64851a595b0efcc9b395d4eda0bcd2790a70de3241172d3f1fd"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/32.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/32.png",
+      "localPath": "edia/questions/tvv/32.png",
+      "bytes": 4518,
+      "contentType": "image/png",
+      "sha256": "29205d582341fd8625214c0a906aab4a671c88b1ebae22933d674628db52e6cb"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/33.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/33.png",
+      "localPath": "edia/questions/tvv/33.png",
+      "bytes": 4039,
+      "contentType": "image/png",
+      "sha256": "3d315b7985b17111cdc221bb8a522f5b45fe621ebf5c4e2288f33d108bc19d43"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/34.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/34.png",
+      "localPath": "edia/questions/tvv/34.png",
+      "bytes": 2453,
+      "contentType": "image/png",
+      "sha256": "69a022f2000401829f784cd4afe47289d494efaebc3915d673dfcd9d87fd649f"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/35.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/35.png",
+      "localPath": "edia/questions/tvv/35.png",
+      "bytes": 2317,
+      "contentType": "image/png",
+      "sha256": "56018d7cc0a5a31a5d555e24a6ad539c9c9e8c746337dfc7b47cc39b33059bad"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/37.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/37.png",
+      "localPath": "edia/questions/tvv/37.png",
+      "bytes": 4345,
+      "contentType": "image/png",
+      "sha256": "2e151042af4fce7ead2cdac10dbe10f77fad6ae9ffe449c6ec8d7435ca346e2b"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/40.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/40.png",
+      "localPath": "edia/questions/tvv/40.png",
+      "bytes": 3437,
+      "contentType": "image/png",
+      "sha256": "08b2fa17f093e208088e4df96090107f3fa1966b2555fccd493384d5c6000f08"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/42.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/42.png",
+      "localPath": "edia/questions/tvv/42.png",
+      "bytes": 3879,
+      "contentType": "image/png",
+      "sha256": "d7621597a9e9a4e5c2b3512f70f8a9d4bb19e3004a47b69f6a2810e2bd83c143"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/43.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/43.png",
+      "localPath": "edia/questions/tvv/43.png",
+      "bytes": 4518,
+      "contentType": "image/png",
+      "sha256": "abf0755581129bc0d647f8abeecbd32144c6a9141f9ec2e04ebc119983d9a250"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/tvv/47.png",
+      "sourceUrl": "https://vodicak.app/questions/tvv/47.png",
+      "localPath": "edia/questions/tvv/47.png",
+      "bytes": 5015,
+      "contentType": "image/png",
+      "sha256": "5b78e93041926b1e4952ff32c4638add340e4ed3ff58128e835eba102045d142"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/upp_or/27_30.jpg",
+      "sourceUrl": "https://vodicak.app/questions/upp_or/27_30.jpg",
+      "localPath": "edia/questions/upp_or/27_30.jpg",
+      "bytes": 148486,
+      "contentType": "image/jpeg",
+      "sha256": "83879cc3d84856229aea3f33a586d0786af559e83e45aabdda06046394856493"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/upp_or/27_50.jpg",
+      "sourceUrl": "https://vodicak.app/questions/upp_or/27_50.jpg",
+      "localPath": "edia/questions/upp_or/27_50.jpg",
+      "bytes": 157739,
+      "contentType": "image/jpeg",
+      "sha256": "f46cc57fe1e3a3c996cc487c41b2122cb758aae52fd2ec25c583a16ba41ce98c"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/upp_or/b_31a.png",
+      "sourceUrl": "https://vodicak.app/questions/upp_or/b_31a.png",
+      "localPath": "edia/questions/upp_or/b_31a.png",
+      "bytes": 15102,
+      "contentType": "image/png",
+      "sha256": "e1031af8f76c581680827c853218d278862a109df3886a1ec509f04cb107952b"
+    },
+    {
+      "status": "downloaded",
+      "sourcePath": "/questions/upp_or/c_15.jpg",
+      "sourceUrl": "https://vodicak.app/questions/upp_or/c_15.jpg",
+      "localPath": "edia/questions/upp_or/c_15.jpg",
+      "bytes": 7480,
+      "contentType": "image/jpeg",
+      "sha256": "395ca163004f178e97426de00d759b36f7b7a058fd2c705a3dbb8dae2070715d"
+    }
+  ],
+  "databaseTouched": false
+}

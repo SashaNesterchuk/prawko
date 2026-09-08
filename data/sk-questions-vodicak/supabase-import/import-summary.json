@@ -1,0 +1,41 @@
+{
+  "questionSetKey": "sk-v2-current",
+  "preparedAt": "2026-09-08T16:18:33.291Z",
+  "sourceSnapshotAt": "2026-09-08T14:59:56.033Z",
+  "sourceSnapshotHash": "03ef0a0b09f2d59794d0e30fcc337418d285961db2d9ec4589f19b74f029226c",
+  "questionCount": 1416,
+  "optionCount": 4248,
+  "topicCount": 10,
+  "categoryCounts": {
+    "AM": 882,
+    "A1": 882,
+    "A2": 882,
+    "A": 1006,
+    "B1": 882,
+    "B": 1066,
+    "BE": 1071,
+    "C1": 882,
+    "C1E": 882,
+    "C": 1134,
+    "CE": 1141,
+    "D1": 882,
+    "D1E": 882,
+    "D": 1142,
+    "DE": 1156,
+    "T": 1015
+  },
+  "universalQuestionCount": 882,
+  "categorySource": {
+    "pdf": "Testove otazky na teoreticku skusku z odbornej sposobilosti v Slovenskom....pdf",
+    "sha256": "4d139b112c24136d0c802327f433f92045c70aa60b890c0f84a432a0bbf5d0c9",
+    "mappedRows": 1416
+  },
+  "media": {
+    "questionRowsWithMedia": 343,
+    "references": 343,
+    "downloadedReferences": 332,
+    "unavailableReferences": 11,
+    "r2ObjectsPlanned": 259
+  },
+  "databaseTouched": false
+}

@@ -1,5 +1,5 @@
 import {
-  QUESTION_TOPIC_CATALOG,
+  getQuestionTopicCatalogForCountry,
   getQuestionTopicCatalogEntry,
   getQuestionTopicIdsForCountry,
   isQuestionTopicId,
@@ -13,7 +13,7 @@ import type { TFunction } from "i18next";
 import { getExamCountry } from "../../state/app-shell";
 
 export function getQuestionTopicCatalog() {
-  return QUESTION_TOPIC_CATALOG;
+  return getQuestionTopicCatalogForCountry(getExamCountry());
 }
 
 export function getQuestionTopicIds() {
@@ -44,6 +44,10 @@ export function getQuestionTopicTitle(
 
   if (locale === "cs") {
     return topic.titleCs;
+  }
+
+  if (locale === "sk") {
+    return "titleSk" in topic ? topic.titleSk : topic.titleEn;
   }
 
   return topic.titleUa;

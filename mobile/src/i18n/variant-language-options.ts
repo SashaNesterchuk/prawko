@@ -7,6 +7,10 @@ export const variantLanguageOptions = {
     label: "Ελληνικά",
     description: "Greek interface and driving theory content.",
   },
+  sk: {
+    label: "Slovenčina",
+    description: "Slovak interface and Slovak driving theory questions.",
+  },
 } as const;
 
 export function mergeResources(

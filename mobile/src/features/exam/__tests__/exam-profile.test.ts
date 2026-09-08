@@ -1,6 +1,8 @@
 import {
   CZECH_EXAM_BASKETS,
   CZECH_EXAM_PROFILE,
+  SLOVAK_EXAM_BASKETS,
+  SLOVAK_EXAM_PROFILE,
   WORD_EXAM_PROFILE,
   getExamProfile,
   getExamProfileForCountry,
@@ -33,6 +35,27 @@ describe("exam profile", () => {
         0
       )
     ).toBe(50);
+  });
+
+  it("uses the statutory Slovak category-B composition", () => {
+    const profile = getExamProfileForCountry("SK");
+    expect(profile).toEqual(SLOVAK_EXAM_PROFILE);
+    expect(profile.navigation).toBe("free");
+    expect(profile.perQuestionTimer).toBe(false);
+    expect(profile.totalQuestions).toBe(40);
+    expect(profile.maxPoints).toBe(100);
+    expect(profile.passingPoints).toBe(90);
+    expect(profile.durationMinutes).toBe(30);
+    expect(profile.strictBasketComposition).toBe(true);
+    expect(
+      SLOVAK_EXAM_BASKETS.reduce((sum, basket) => sum + basket.count, 0)
+    ).toBe(40);
+    expect(
+      SLOVAK_EXAM_BASKETS.reduce(
+        (sum, basket) => sum + basket.count * basket.points,
+        0
+      )
+    ).toBe(100);
   });
 
   it("reads flagged orders from session metadata", () => {

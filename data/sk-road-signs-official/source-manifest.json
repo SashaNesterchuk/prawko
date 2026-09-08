@@ -1,0 +1,69 @@
+{
+  "country": "SK",
+  "sourceLaw": "30/2020 Z. z.",
+  "sourceLawVersion": "2024-03-31",
+  "downloadedOn": "2026-09-08",
+  "rendering": {
+    "format": "png",
+    "dpi": 144,
+    "pageCount": 57
+  },
+  "annexes": [
+    {
+      "annex": 1,
+      "nameSk": "SYMBOLY",
+      "file": "source/20240331_5227675-2_symbols.pdf",
+      "sourceUrl": "https://static.slov-lex.sk/pdf/prilohy/SK/ZZ/2020/30/20240331_5227675-2.pdf",
+      "pages": 8,
+      "sha256": "011038dab588542fa10a69b3540d100b5e9e8d0097ac387da0634ccad48231af"
+    },
+    {
+      "annex": 2,
+      "nameSk": "VÝSTRAŽNÉ ZNAČKY",
+      "file": "source/20240331_5227678-2_warning-signs.pdf",
+      "sourceUrl": "https://static.slov-lex.sk/pdf/prilohy/SK/ZZ/2020/30/20240331_5227678-2.pdf",
+      "pages": 5,
+      "sha256": "3ee52380ccc8501950f3422b5ce943e6f32529295264d1fa2912e5b6290e1ff5"
+    },
+    {
+      "annex": 3,
+      "nameSk": "REGULAČNÉ ZNAČKY",
+      "file": "source/20240331_5227681-2_regulatory-signs.pdf",
+      "sourceUrl": "https://static.slov-lex.sk/pdf/prilohy/SK/ZZ/2020/30/20240331_5227681-2.pdf",
+      "pages": 12,
+      "sha256": "04e91ddacd53c4c72e616049a1a7c47b55f6141c9346a9e4b8bdff59c7eb46ea"
+    },
+    {
+      "annex": 4,
+      "nameSk": "INFORMAČNÉ ZNAČKY",
+      "file": "source/20240331_5393911-2_information-signs.pdf",
+      "sourceUrl": "https://static.slov-lex.sk/pdf/prilohy/SK/ZZ/2020/30/20240331_5393911-2.pdf",
+      "pages": 19,
+      "sha256": "16cb09220b65e403fc19e0c43d898ebb396bb8c682830c24a65f3ba896f790ed"
+    },
+    {
+      "annex": 5,
+      "nameSk": "DODATKOVÉ TABUĽKY",
+      "file": "source/20240331_5393913-2_supplementary-plates.pdf",
+      "sourceUrl": "https://static.slov-lex.sk/pdf/prilohy/SK/ZZ/2020/30/20240331_5393913-2.pdf",
+      "pages": 6,
+      "sha256": "cf6280389c5c41c77a466337cd4f384d4cfaf258c2ed584d72a67d5c009af676"
+    },
+    {
+      "annex": 6,
+      "nameSk": "VODOROVNÉ ZNAČKY",
+      "file": "source/20240331_5227689-2_road-markings.pdf",
+      "sourceUrl": "https://static.slov-lex.sk/pdf/prilohy/SK/ZZ/2020/30/20240331_5227689-2.pdf",
+      "pages": 4,
+      "sha256": "da79f988dcf941634bebb24d20e6b6ddb480ddece4f851d5f3a0b3e558eb91ca"
+    },
+    {
+      "annex": 7,
+      "nameSk": "DOPRAVNÉ ZARIADENIA",
+      "file": "source/20240331_5227691-2_traffic-devices.pdf",
+      "sourceUrl": "https://static.slov-lex.sk/pdf/prilohy/SK/ZZ/2020/30/20240331_5227691-2.pdf",
+      "pages": 3,
+      "sha256": "05b9d68f16e32e335de2cd09da912a121d73053d5c670be41e48cfb1f6347ecb"
+    }
+  ]
+}

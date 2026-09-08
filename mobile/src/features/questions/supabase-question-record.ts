@@ -92,12 +92,12 @@ export function mapSupabaseQuestionV2RecordToLocalQuestion(record: SupabaseQuest
   const fallback = getQuestionTopicFallbackFromTopicBlock(topicBlock);
   return {
     id: record.source_id, sourceRowNumber: record.source_row_number,
-    prompt: localizedText(prompt.pl, prompt.ua, prompt.en, prompt.de, prompt.cs, prompt.el),
-    explanation: localizedText(record.ai_explanations?.pl, record.ai_explanations?.ua, record.ai_explanations?.en, record.ai_explanations?.de, record.ai_explanations?.cs, record.ai_explanations?.el), answerType: record.answer_kind === "choice" ? "abc" : "boolean",
+    prompt: localizedText(prompt.pl, prompt.ua, prompt.en, prompt.de, prompt.cs, prompt.el, prompt.sk),
+    explanation: localizedText(record.ai_explanations?.pl, record.ai_explanations?.ua, record.ai_explanations?.en, record.ai_explanations?.de, record.ai_explanations?.cs, record.ai_explanations?.el, record.ai_explanations?.sk), answerType: record.answer_kind === "choice" ? "abc" : "boolean",
     correctAnswer: record.correct_option_id,
     choices: record.answer_kind === "choice" ? options.map((option) => ({
       id: option.id,
-      text: localizedText(option.text?.pl, option.text?.ua, option.text?.en, option.text?.de, option.text?.cs, option.text?.el),
+      text: localizedText(option.text?.pl, option.text?.ua, option.text?.en, option.text?.de, option.text?.cs, option.text?.el, option.text?.sk),
       mediaAsset: option.media?.find((media) => media.role === "primary")?.asset ?? null,
     })) : undefined,
     media: primary ? { type: primary.mediaType, asset: primary, pjm: questionAsset || Object.keys(answerAssets).length ? { questionAsset, answerAssets } : null } : null,
@@ -140,12 +140,13 @@ function localizedText(
   en: string | null | undefined,
   de?: string | null | undefined,
   cs?: string | null | undefined,
-  el?: string | null | undefined
+  el?: string | null | undefined,
+  sk?: string | null | undefined
 ): LocalizedQuestionText {
-  // Country catalogues (Czech/Greek) may only ship one language. Keep the
+  // Country catalogues (Czech/Greek/Slovak) may only ship one language. Keep the
   // historical pl → ua/en and en → de chain for Prawko, and only then fall
-  // back to cs/el so a Ukrainian UI still shows Czech text instead of blanks.
-  const lastResort = nonEmptyText(cs) ?? nonEmptyText(el) ?? "";
+  // back to cs/el/sk so a Ukrainian UI still shows source text instead of blanks.
+  const lastResort = nonEmptyText(cs) ?? nonEmptyText(el) ?? nonEmptyText(sk) ?? "";
   const plText = nonEmptyText(pl) ?? lastResort;
   const enText = nonEmptyText(en) ?? plText;
 
@@ -156,6 +157,7 @@ function localizedText(
     de: nonEmptyText(de) ?? enText,
     cs: nonEmptyText(cs) ?? enText,
     el: nonEmptyText(el) ?? enText,
+    sk: nonEmptyText(sk) ?? enText,
   };
 }
 

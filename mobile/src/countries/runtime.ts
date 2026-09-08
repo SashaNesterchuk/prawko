@@ -24,7 +24,9 @@ export function getMediaBaseUrl(): string {
   const envValue =
     config.mediaEnvKey === "EXPO_PUBLIC_CZECH_MEDIA_BASE_URL"
       ? process.env.EXPO_PUBLIC_CZECH_MEDIA_BASE_URL
-      : process.env.EXPO_PUBLIC_MEDIA_BASE_URL;
+      : config.mediaEnvKey === "EXPO_PUBLIC_SLOVAK_MEDIA_BASE_URL"
+        ? process.env.EXPO_PUBLIC_SLOVAK_MEDIA_BASE_URL
+        : process.env.EXPO_PUBLIC_MEDIA_BASE_URL;
 
   return envValue?.trim() ?? "";
 }

@@ -1,7 +1,7 @@
-export const CONTENT_LOCALES = ["pl", "ua", "en", "de", "cs", "el"] as const;
+export const CONTENT_LOCALES = ["pl", "ua", "en", "de", "cs", "el", "sk"] as const;
 export type ContentLocale = (typeof CONTENT_LOCALES)[number];
 
-export const SUPPORTED_LOCALES = ["pl", "ua", "en", "de", "es", "cs", "el"] as const;
+export const SUPPORTED_LOCALES = ["pl", "ua", "en", "de", "es", "cs", "el", "sk"] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 /** Question / exam content language for a UI locale (es falls back to English). */
@@ -12,7 +12,8 @@ export function getContentLocale(locale: SupportedLocale): ContentLocale {
     locale === "en" ||
     locale === "de" ||
     locale === "cs" ||
-    locale === "el"
+    locale === "el" ||
+    locale === "sk"
   ) {
     return locale;
   }

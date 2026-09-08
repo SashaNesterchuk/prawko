@@ -7,7 +7,11 @@ import {
   isExamQuestionTimedOut,
   resolveExamLaunchFromQuestionCount,
 } from "../exam-config";
-import { CZECH_EXAM_PROFILE, WORD_EXAM_PROFILE } from "../exam-profile";
+import {
+  CZECH_EXAM_PROFILE,
+  SLOVAK_EXAM_PROFILE,
+  WORD_EXAM_PROFILE,
+} from "../exam-profile";
 
 describe("resolveExamLaunchFromQuestionCount", () => {
   it("keeps the official simulator for all / full size", () => {
@@ -53,6 +57,10 @@ describe("exam config scales from the active profile", () => {
     expect(getExamDurationMinutes(25, CZECH_EXAM_PROFILE)).toBe(30);
     expect(getScaledExamPassPoints(50, CZECH_EXAM_PROFILE)).toBe(43);
     expect(getExamDurationMinutes(10, CZECH_EXAM_PROFILE)).toBe(12);
+    expect(getExamQuestionTarget("exam", null, SLOVAK_EXAM_PROFILE)).toBe(40);
+    expect(getExamDurationMinutes(40, SLOVAK_EXAM_PROFILE)).toBe(30);
+    expect(getScaledExamPassPoints(100, SLOVAK_EXAM_PROFILE)).toBe(90);
+    expect(getScaledExamPassPoints(99, SLOVAK_EXAM_PROFILE)).toBe(89);
   });
 });
 
