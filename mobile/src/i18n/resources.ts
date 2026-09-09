@@ -1,5 +1,6 @@
 import { czechTranslations } from "./cs";
 import { polishTranslations } from "./pl";
+import { slovakTranslations } from "./sk";
 
 const resourcesBase = {
   pl: {
@@ -2715,6 +2716,9 @@ export const resources = {
   ...resourcesBase,
   cs: {
     translation: czechTranslations,
+  },
+  sk: {
+    translation: slovakTranslations,
   },
   de: {
     translation: {

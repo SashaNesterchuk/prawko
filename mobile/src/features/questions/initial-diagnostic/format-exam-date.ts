@@ -8,6 +8,7 @@ const LOCALE_TAGS: Record<SupportedLocale, string> = {
   es: "es-ES",
   cs: "cs-CZ",
   el: "el-GR",
+  sk: "sk-SK",
 };
 
 export function formatDiagnosticExamDate(

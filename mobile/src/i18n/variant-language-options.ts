@@ -9,7 +9,8 @@ export const variantLanguageOptions = {
   },
   sk: {
     label: "Slovenčina",
-    description: "Slovak interface and Slovak driving theory questions.",
+    description:
+      "Slovenské rozhranie a slovenské otázky k teórii vodičského preukazu.",
   },
 } as const;
 

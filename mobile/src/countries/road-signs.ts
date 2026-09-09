@@ -1,4 +1,5 @@
 import type { CountryCode } from "@prawko/config";
+import type { RoadSignCatalogDefinition } from "../features/road-signs/content/variant-catalog";
 
 import { roadSignCatalog as czCatalog } from "../../variants/czech/road-sign-catalog";
 import {
@@ -86,14 +87,52 @@ const assets = {
   },
 } as const;
 
+const EMPTY_CATALOG: RoadSignCatalogDefinition = {
+  categories: [],
+  signs: [],
+};
+
+const EMPTY_CONTENT = {
+  getSignDescription: () => undefined,
+  getSignDisplayName: (_signId: string, _locale: string, fallbackCode?: string) =>
+    fallbackCode ?? "",
+  getSignMetadata: () => undefined,
+  getSignPracticeContent: () => undefined,
+  getSignPractices: () => [],
+  getSignSearchText: () => "",
+  getPrimarySignPractice: () => undefined,
+  hasSignMetadata: () => false,
+  hasSignPracticeContent: () => false,
+  listPracticeSignIds: () => [],
+  matchesSignSearch: () => false,
+} as const;
+
+const EMPTY_ASSETS = {
+  getSignAssetComponent: () => undefined,
+  getSignRasterSource: () => undefined,
+  signAssets: {},
+} as const;
+
 export function getRoadSignCatalogForCountry(country: CountryCode) {
-  return catalogs[country];
+  if (country === "PL" || country === "CZ") {
+    return catalogs[country];
+  }
+
+  return EMPTY_CATALOG;
 }
 
 export function getRoadSignContentForCountry(country: CountryCode) {
-  return content[country];
+  if (country === "PL" || country === "CZ") {
+    return content[country];
+  }
+
+  return EMPTY_CONTENT;
 }
 
 export function getRoadSignAssetsForCountry(country: CountryCode) {
-  return assets[country];
+  if (country === "PL" || country === "CZ") {
+    return assets[country];
+  }
+
+  return EMPTY_ASSETS;
 }

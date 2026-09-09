@@ -12,10 +12,12 @@ describe("normalizeSupportedLocale", () => {
     expect(normalizeSupportedLocale("ua")).toBe("ua");
   });
 
-  it("keeps Czech and Polish phone languages", () => {
+  it("keeps Czech, Polish, and Slovak phone languages", () => {
     expect(normalizeSupportedLocale("cs")).toBe("cs");
     expect(normalizeSupportedLocale("cs-CZ")).toBe("cs");
     expect(normalizeSupportedLocale("pl-PL")).toBe("pl");
+    expect(normalizeSupportedLocale("sk")).toBe("sk");
+    expect(normalizeSupportedLocale("sk-SK")).toBe("sk");
   });
 });
 
