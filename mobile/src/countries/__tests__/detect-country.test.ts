@@ -8,6 +8,7 @@ jest.mock("react-native-purchases", () => ({
   __esModule: true,
   default: {
     getStorefront: jest.fn(),
+    isConfigured: jest.fn(async () => true),
   },
 }));
 
@@ -18,15 +19,19 @@ jest.mock("../../config/env", () => ({
 }));
 
 const mockedEnv = mobileEnv as { enableE2ETestMode: boolean };
-const getStorefront = (
-  Purchases as unknown as { getStorefront: jest.Mock }
-).getStorefront;
+const mockedPurchases = Purchases as unknown as {
+  getStorefront: jest.Mock;
+  isConfigured: jest.Mock;
+};
+const getStorefront = mockedPurchases.getStorefront;
 
 describe("detectExamCountry", () => {
   const originalE2eCountry = process.env.EXPO_PUBLIC_E2E_EXAM_COUNTRY;
 
   afterEach(() => {
     mockedEnv.enableE2ETestMode = false;
+    mockedPurchases.isConfigured.mockResolvedValue(true);
+    getStorefront.mockReset();
     if (originalE2eCountry === undefined) {
       delete process.env.EXPO_PUBLIC_E2E_EXAM_COUNTRY;
     } else {
@@ -130,5 +135,19 @@ describe("detectExamCountry", () => {
       country: "CZ",
       source: "e2e",
     });
+  });
+
+  it("skips storefront until RevenueCat is configured", async () => {
+    mockedPurchases.isConfigured.mockResolvedValue(false);
+    getStorefront.mockResolvedValue("CZ");
+    jest.mocked(getLocales).mockReturnValue([
+      { regionCode: "PL", languageCode: "pl", languageTag: "pl-PL" } as never,
+    ]);
+
+    await expect(detectExamCountry()).resolves.toEqual({
+      country: "PL",
+      source: "device_region",
+    });
+    expect(getStorefront).not.toHaveBeenCalled();
   });
 });

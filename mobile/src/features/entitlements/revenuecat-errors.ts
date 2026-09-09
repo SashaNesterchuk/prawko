@@ -1,11 +1,66 @@
+import { buildDiagnosticDetail } from "../../analytics/diagnostic-detail";
+import {
+  ANALYTICS_PROPERTIES,
+  type AnalyticsProperties,
+} from "../../analytics/catalog";
+
 export function isRevenueCatPurchaseCancelled(error: unknown) {
   return Boolean((error as { userCancelled?: unknown })?.userCancelled);
+}
+
+export function getRevenueCatErrorCode(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const record = error as {
+    code?: unknown;
+    readableErrorCode?: unknown;
+    status?: unknown;
+  };
+
+  if (typeof record.code === "number" && Number.isFinite(record.code)) {
+    return String(record.code);
+  }
+
+  if (typeof record.code === "string" && record.code.trim()) {
+    return record.code.trim();
+  }
+
+  if (typeof record.status === "number" && Number.isFinite(record.status)) {
+    return String(record.status);
+  }
+
+  if (
+    typeof record.readableErrorCode === "string" &&
+    record.readableErrorCode.trim()
+  ) {
+    return record.readableErrorCode.trim();
+  }
+
+  return null;
+}
+
+export function isRevenueCatOfflineConnectionError(error: unknown) {
+  const code = getRevenueCatErrorCode(error);
+  const readable = getRevenueCatReadableErrorCode(error);
+
+  return (
+    code === "35" ||
+    code === "OFFLINE_CONNECTION_ERROR" ||
+    readable === "35" ||
+    readable === "OFFLINE_CONNECTION_ERROR"
+  );
 }
 
 export function getRevenueCatErrorMessage(error: unknown) {
   const message = getErrorMessage(error);
   const underlying = getUnderlyingErrorMessage(error);
   const combined = [message, underlying].filter(Boolean).join(" ");
+
+  if (isRevenueCatOfflineConnectionError(error)) {
+    return "The purchase request failed because the device is offline.";
+  }
 
   if (!combined) {
     return "The purchase action could not be completed.";
@@ -67,4 +122,56 @@ function getUnderlyingErrorMessage(error: unknown) {
   return typeof underlying === "string" && underlying.trim()
     ? underlying.trim()
     : null;
+}
+
+export function getRevenueCatReadableErrorCode(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const readable = (error as { readableErrorCode?: unknown }).readableErrorCode;
+
+  return typeof readable === "string" && readable.trim()
+    ? readable.trim()
+    : null;
+}
+
+/** Low-cardinality why string for capture/track. Never use the forbidden `message` key. */
+export function getRevenueCatWhy(error: unknown) {
+  const code = getRevenueCatErrorCode(error);
+  const readable = getRevenueCatReadableErrorCode(error);
+
+  if (code && readable && readable !== code) {
+    return `${code}:${readable}`;
+  }
+
+  return (
+    code ??
+    readable ??
+    (error instanceof Error && error.name.trim() ? error.name.trim() : null) ??
+    "unknown"
+  );
+}
+
+export function getRevenueCatDiagnostic(input: {
+  extra?: AnalyticsProperties;
+  kind?: string | null;
+  step: string;
+  why: string;
+}): AnalyticsProperties {
+  const extra = input.extra ?? {};
+  const kind = input.kind ?? null;
+
+  return {
+    [ANALYTICS_PROPERTIES.step]: input.step,
+    [ANALYTICS_PROPERTIES.why]: input.why,
+    kind,
+    [ANALYTICS_PROPERTIES.detail]: buildDiagnosticDetail({
+      [ANALYTICS_PROPERTIES.step]: input.step,
+      [ANALYTICS_PROPERTIES.why]: input.why,
+      kind,
+      ...extra,
+    }),
+    ...extra,
+  };
 }

@@ -3,6 +3,7 @@ import { AD_POLICY } from "@prawko/config";
 import {
   clearAppBackgroundMark,
   createFreshSessionState,
+  getAdSessionSnapshot,
   getLastAdShownAt,
   isAppResumeAdsSuppressed,
   isExamSessionActive,
@@ -37,6 +38,32 @@ describe("ad-session-policy", () => {
       expect(state.questionsAnsweredSinceLastAd).toBe(0);
       expect(state.lastActivityAt).toBe(Date.now());
       expect(state.sessionStartedAt).toBe(Date.now());
+    });
+  });
+
+  describe("getAdSessionSnapshot", () => {
+    it("reports answers, cap, and elapsed since last ad", () => {
+      expect(getAdSessionSnapshot()).toEqual({
+        answersNeeded: AD_POLICY.questionsBetweenInterstitials,
+        answersSinceLastAd: 0,
+        cooldownSeconds: AD_POLICY.minSecondsBetweenAds,
+        elapsedSeconds: null,
+        maxAds: AD_POLICY.maxAdsPerSession,
+        shownThisSession: 0,
+      });
+
+      recordQuestionAnsweredForAds();
+      recordAdShown();
+      jest.advanceTimersByTime(5_000);
+
+      expect(getAdSessionSnapshot()).toEqual({
+        answersNeeded: AD_POLICY.questionsBetweenInterstitials,
+        answersSinceLastAd: 0,
+        cooldownSeconds: AD_POLICY.minSecondsBetweenAds,
+        elapsedSeconds: 5,
+        maxAds: AD_POLICY.maxAdsPerSession,
+        shownThisSession: 1,
+      });
     });
   });
 

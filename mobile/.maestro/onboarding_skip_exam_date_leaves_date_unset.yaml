@@ -31,13 +31,8 @@ tags:
       id: "screen-home"
     timeout: 20000
 
-- tapOn:
-    id: "home-start-spotlight-skip"
-
-- extendedWaitUntil:
-    notVisible:
-      id: "home-start-spotlight"
-    timeout: 10000
+- assertNotVisible:
+    id: "home-start-spotlight"
 
 - waitForAnimationToEnd:
     timeout: 5000

@@ -205,8 +205,8 @@ export const FEATURE_FLAGS = {
 
 export const AD_POLICY = {
   questionsBetweenInterstitials: 12,
-  minSecondsBetweenAds: 180,
-  maxAdsPerSession: 6,
+  minSecondsBetweenAds: 160,
+  maxAdsPerSession: 20,
   sessionInactivityResetMinutes: 30,
   /** Deprecated in Free + Ads / Plus v1; app-resume ads stay disabled. */
   appResumeBackgroundMinutes: 10,

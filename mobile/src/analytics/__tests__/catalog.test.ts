@@ -1,6 +1,7 @@
 import {
   ANALYTICS_EVENTS,
   ANALYTICS_EXAM_COUNTRY_SOURCES,
+  ANALYTICS_EXAM_RESTART_CHOICES,
   ANALYTICS_PROPERTIES,
   ANALYTICS_SCREENS,
   getAnalyticsErrorCode,
@@ -50,11 +51,21 @@ describe("analytics catalog", () => {
     expect(ANALYTICS_PROPERTIES.examCountry).toBe("exam_country");
     expect(ANALYTICS_PROPERTIES.previous).toBe("previous");
     expect(ANALYTICS_PROPERTIES.source).toBe("source");
+    expect(ANALYTICS_PROPERTIES.after).toBe("after");
+    expect(ANALYTICS_PROPERTIES.shouldShow).toBe("should_show");
+    expect(ANALYTICS_PROPERTIES.step).toBe("step");
+    expect(ANALYTICS_PROPERTIES.why).toBe("why");
+    expect(ANALYTICS_PROPERTIES.detail).toBe("detail");
+    expect(ANALYTICS_PROPERTIES.choice).toBe("choice");
     expect(ANALYTICS_EXAM_COUNTRY_SOURCES.storefront).toBe("storefront");
     expect(ANALYTICS_EXAM_COUNTRY_SOURCES.deviceRegion).toBe("device_region");
     expect(ANALYTICS_EXAM_COUNTRY_SOURCES.legacyOnboarded).toBe(
       "legacy_onboarded"
     );
+    expect(ANALYTICS_EXAM_RESTART_CHOICES.watchAd).toBe("watch_ad");
+    expect(ANALYTICS_EXAM_RESTART_CHOICES.upgrade).toBe("upgrade");
+    expect(ANALYTICS_EXAM_RESTART_CHOICES.dismiss).toBe("dismiss");
+    expect(ANALYTICS_EXAM_RESTART_CHOICES.plus).toBe("plus");
   });
 
   it("normalizes unknown errors without sending their message", () => {
@@ -62,6 +73,7 @@ describe("analytics catalog", () => {
       "network_failed"
     );
     expect(getAnalyticsErrorCode({ status: 503 })).toBe("503");
+    expect(getAnalyticsErrorCode({ code: 35 })).toBe("35");
     expect(getAnalyticsErrorCode(new Error("sensitive details"))).toBe("Error");
     expect(getAnalyticsErrorCode("sensitive details")).toBe("unknown_error");
   });
@@ -103,6 +115,10 @@ describe("analytics catalog", () => {
     expect(resolveScreenRoute("/(tabs)/index")).toMatchObject({
       routePattern: "/(tabs)/index",
       screenName: "home",
+    });
+    expect(resolveScreenRoute("/exam/answers")).toMatchObject({
+      routePattern: "/exam/answers",
+      screenName: "exam_answers",
     });
   });
 });

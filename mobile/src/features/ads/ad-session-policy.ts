@@ -107,6 +107,20 @@ export function getLastAdShownAt() {
   return sessionState.lastAdShownAt;
 }
 
+export function getAdSessionSnapshot() {
+  return {
+    answersNeeded: AD_POLICY.questionsBetweenInterstitials,
+    answersSinceLastAd: sessionState.questionsAnsweredSinceLastAd,
+    cooldownSeconds: AD_POLICY.minSecondsBetweenAds,
+    elapsedSeconds:
+      sessionState.lastAdShownAt == null
+        ? null
+        : Math.max(0, Math.round((Date.now() - sessionState.lastAdShownAt) / 1000)),
+    maxAds: AD_POLICY.maxAdsPerSession,
+    shownThisSession: sessionState.adsShownThisSession,
+  };
+}
+
 /** Test-only: wipe module session so suites stay isolated. */
 export function resetAdSessionStateForTests() {
   sessionState = createFreshSessionState();

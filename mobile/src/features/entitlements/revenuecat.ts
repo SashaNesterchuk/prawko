@@ -29,10 +29,23 @@ import {
   withStoreRequestTimeout,
 } from "./store-request-timeout";
 
-export {
+import {
+  getRevenueCatDiagnostic,
+  getRevenueCatErrorCode,
   getRevenueCatErrorMessage,
+  getRevenueCatWhy,
+  isRevenueCatOfflineConnectionError,
   isRevenueCatPurchaseCancelled,
 } from "./revenuecat-errors";
+
+export {
+  getRevenueCatDiagnostic,
+  getRevenueCatErrorCode,
+  getRevenueCatErrorMessage,
+  getRevenueCatWhy,
+  isRevenueCatOfflineConnectionError,
+  isRevenueCatPurchaseCancelled,
+};
 
 type RevenueCatModule = typeof import("react-native-purchases");
 type RevenueCatUIModule = typeof import("react-native-purchases-ui");
@@ -41,6 +54,7 @@ export type RevenueCatSnapshot = {
   featureEntitlements: ReturnType<typeof createEmptyFeatureEntitlements>;
   isConfigured: boolean;
   offerings: RevenueCatPackageSummary[];
+  offeringsError: string | null;
   purchaseAccess: PurchaseAccessState | null;
 };
 
@@ -99,16 +113,18 @@ export async function fetchRevenueCatSnapshot(
   }
 
   const Purchases = (await getRevenueCatModule()).default;
-  const [customerInfo, offerings] = await withStoreRequestTimeout(
-    Promise.all([Purchases.getCustomerInfo(), Purchases.getOfferings()]),
+  const customerInfo = await withStoreRequestTimeout(
+    Purchases.getCustomerInfo(),
     STORE_REQUEST_TIMEOUT_MS,
     STORE_OFFERS_TIMEOUT_MESSAGE
   );
+  const { offerings, offeringsError } = await loadOfferingsSafely(Purchases);
 
   return mapRevenueCatSnapshot({
     customerInfo,
     isConfigured: true,
     offerings,
+    offeringsError,
   });
 }
 
@@ -158,6 +174,7 @@ export async function purchaseRevenueCatPackage(input: {
     customerInfo: result.customerInfo,
     isConfigured: true,
     offerings,
+    offeringsError: null,
   });
 }
 
@@ -169,15 +186,14 @@ export async function restoreRevenueCatPurchases(appUserId: string) {
   }
 
   const Purchases = (await getRevenueCatModule()).default;
-  const [customerInfo, offerings] = await Promise.all([
-    Purchases.restorePurchases(),
-    Purchases.getOfferings(),
-  ]);
+  const customerInfo = await Purchases.restorePurchases();
+  const { offerings, offeringsError } = await loadOfferingsSafely(Purchases);
 
   return mapRevenueCatSnapshot({
     customerInfo,
     isConfigured: true,
     offerings,
+    offeringsError,
   });
 }
 
@@ -263,7 +279,8 @@ export async function presentRevenueCatCustomerCenter(input: {
 
 export async function subscribeToRevenueCatCustomerInfo(
   appUserId: string,
-  onUpdate: (snapshot: RevenueCatSnapshot) => void
+  onUpdate: (snapshot: RevenueCatSnapshot) => void,
+  onError?: (error: unknown) => void
 ) {
   const isConfigured = await ensureRevenueCatReady(appUserId);
 
@@ -283,6 +300,7 @@ export async function subscribeToRevenueCatCustomerInfo(
       .then(onUpdate)
       .catch((error) => {
         console.warn("Failed to map RevenueCat customer info update.", error);
+        onError?.(error);
       });
   };
 
@@ -331,9 +349,7 @@ export function matchRevenueCatProductId(
 
     if (
       aliases.some((alias) =>
-        candidates.some(
-          (candidate) => candidate === alias || candidate.includes(alias)
-        )
+        candidates.some((candidate) => matchesPackageAlias(candidate, alias))
       )
     ) {
       return productId;
@@ -341,6 +357,21 @@ export function matchRevenueCatProductId(
   }
 
   return null;
+}
+
+export function matchesPackageAlias(candidate: string, alias: string) {
+  const value = candidate.trim().toLowerCase();
+  const needle = alias.trim().toLowerCase();
+
+  if (!value || !needle) {
+    return false;
+  }
+
+  if (value === needle) {
+    return true;
+  }
+
+  return value.split(/[^a-z0-9$]+/).includes(needle);
 }
 
 /** Prefer yearly → lifetime → monthly for marketing surfaces and paywall default. */
@@ -365,11 +396,12 @@ function createEmptyRevenueCatSnapshot(
     featureEntitlements: createEmptyFeatureEntitlements(),
     isConfigured,
     offerings: [],
+    offeringsError: null,
     purchaseAccess: null,
   };
 }
 
-async function ensureRevenueCatReady(appUserId: string) {
+export async function ensureRevenueCatReady(appUserId: string) {
   const apiKey = getRevenueCatPublicApiKey();
 
   if (!apiKey || !appUserId) {
@@ -449,13 +481,41 @@ function getRevenueCatPublicApiKey() {
 
 async function buildSnapshotFromCustomerInfo(customerInfo: CustomerInfo) {
   const Purchases = (await getRevenueCatModule()).default;
-  const offerings = await Purchases.getOfferings();
+  const { offerings, offeringsError } = await loadOfferingsSafely(Purchases);
 
   return mapRevenueCatSnapshot({
     customerInfo,
     isConfigured: true,
     offerings,
+    offeringsError,
   });
+}
+
+async function loadOfferingsSafely(Purchases: {
+  getOfferings: () => Promise<PurchasesOfferings>;
+}) {
+  try {
+    const offerings = await withStoreRequestTimeout(
+      Purchases.getOfferings(),
+      STORE_REQUEST_TIMEOUT_MS,
+      STORE_OFFERS_TIMEOUT_MESSAGE
+    );
+
+    return { offerings, offeringsError: null };
+  } catch (error) {
+    console.warn("Failed to load RevenueCat offerings.", error);
+    return {
+      offerings: createEmptyPurchasesOfferings(),
+      offeringsError: getRevenueCatErrorCode(error) ?? "unknown",
+    };
+  }
+}
+
+function createEmptyPurchasesOfferings(): PurchasesOfferings {
+  return {
+    all: {},
+    current: null,
+  };
 }
 
 function mapPaywallResult(result: PAYWALL_RESULT): RevenueCatPaywallOutcome {
@@ -478,6 +538,7 @@ function mapRevenueCatSnapshot(input: {
   customerInfo: CustomerInfo;
   isConfigured: boolean;
   offerings: PurchasesOfferings;
+  offeringsError?: string | null;
 }): RevenueCatSnapshot {
   const featureEntitlements = createEmptyFeatureEntitlements();
   const activeEntitlements = input.customerInfo.entitlements.active;
@@ -493,6 +554,7 @@ function mapRevenueCatSnapshot(input: {
     featureEntitlements,
     isConfigured: input.isConfigured,
     offerings: mapOfferings(input.offerings),
+    offeringsError: input.offeringsError ?? null,
     purchaseAccess:
       Object.keys(activeEntitlements).length > 0
         ? {

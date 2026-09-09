@@ -2,6 +2,15 @@ const mockIsAdMobEnabled = jest.fn(() => true);
 const mockIsInterstitialLoaded = jest.fn(() => false);
 const mockEnsureInterstitialReady = jest.fn(async () => false);
 const mockShowPreloadedInterstitial = jest.fn(async () => false);
+const mockGetLastInterstitialWhy = jest.fn(() => "idle");
+const mockGetAdSessionSnapshot = jest.fn(() => ({
+  answersNeeded: 12,
+  answersSinceLastAd: 0,
+  cooldownSeconds: 160,
+  elapsedSeconds: null,
+  maxAds: 20,
+  shownThisSession: 0,
+}));
 
 const mockShouldShow = jest.fn(() => ({
   allowed: true as boolean,
@@ -21,6 +30,7 @@ jest.mock("../interstitial-controller", () => ({
   ensureInterstitialReady: (...args: unknown[]) =>
     mockEnsureInterstitialReady(...args),
   showPreloadedInterstitial: () => mockShowPreloadedInterstitial(),
+  getLastInterstitialWhy: () => mockGetLastInterstitialWhy(),
 }));
 
 jest.mock("../ad-session-policy", () => ({
@@ -31,6 +41,7 @@ jest.mock("../ad-session-policy", () => ({
     mockSuppressAppResumeAds(...args),
   clearAppBackgroundMark: () => mockClearAppBackgroundMark(),
   isExamSessionActive: () => mockIsExamSessionActive(),
+  getAdSessionSnapshot: () => mockGetAdSessionSnapshot(),
 }));
 
 jest.mock("@prawko/config", () => ({
@@ -41,6 +52,13 @@ jest.mock("@prawko/config", () => ({
 
 jest.mock("../../../providers/AnalyticsProvider", () => ({
   useAnalytics: () => ({ track: jest.fn() }),
+}));
+
+jest.mock("../../../providers/ErrorLoggingProvider", () => ({
+  useErrorLogger: () => ({
+    captureError: jest.fn(),
+    captureFallback: jest.fn(),
+  }),
 }));
 
 jest.mock("../../../state/entitlements", () => ({
@@ -68,6 +86,15 @@ describe("show-interstitial", () => {
     mockEnsureInterstitialReady.mockResolvedValue(false);
     mockShowPreloadedInterstitial.mockResolvedValue(false);
     mockShouldShow.mockReturnValue({ allowed: true, reason: null });
+    mockGetLastInterstitialWhy.mockReturnValue("idle");
+    mockGetAdSessionSnapshot.mockReturnValue({
+      answersNeeded: 12,
+      answersSinceLastAd: 0,
+      cooldownSeconds: 160,
+      elapsedSeconds: null,
+      maxAds: 20,
+      shownThisSession: 0,
+    });
     mockRecordAdShown.mockReset();
     mockSuppressAppResumeAds.mockReset();
     mockClearAppBackgroundMark.mockReset();
@@ -96,7 +123,7 @@ describe("show-interstitial", () => {
   });
 
   describe("showInterstitialIfAllowed", () => {
-    it("skips without tracking for trigger_not_ready", async () => {
+    it("tracks skip for trigger_not_ready with should_show=no", async () => {
       mockShouldShow.mockReturnValue({
         allowed: false,
         reason: "trigger_not_ready",
@@ -110,7 +137,21 @@ describe("show-interstitial", () => {
         })
       ).resolves.toBe(false);
 
-      expect(track).not.toHaveBeenCalled();
+      expect(track).toHaveBeenCalledWith(
+        "ad_skipped",
+        expect.objectContaining({
+          after: "after_question_answer",
+          reason: "trigger_not_ready",
+          should_show: "no",
+          step: "policy",
+          why: "trigger_not_ready",
+        })
+      );
+      expect(track.mock.calls[0][1]).toEqual(
+        expect.objectContaining({
+          detail: expect.stringContaining("should_show=no"),
+        })
+      );
     });
 
     it("tracks skip for policy denials other than trigger_not_ready", async () => {
@@ -222,9 +263,12 @@ describe("show-interstitial", () => {
     it("does not retry after a failed show — fail-open keeps the result tappable", async () => {
       mockIsInterstitialLoaded.mockReturnValue(true);
       mockShowPreloadedInterstitial.mockResolvedValue(false);
+      mockGetLastInterstitialWhy.mockReturnValue("open_timeout");
+      const captureError = jest.fn();
 
       await expect(
         showInterstitialIfAllowed({
+          captureError,
           hasPlusAccess: false,
           track,
           trigger: "after_exam_complete",
@@ -235,7 +279,24 @@ describe("show-interstitial", () => {
       expect(mockShowPreloadedInterstitial).toHaveBeenCalledTimes(1);
       expect(track).toHaveBeenCalledWith(
         "ad_failed",
-        expect.objectContaining({ reason: "show_returned_false" })
+        expect.objectContaining({
+          after: "after_exam_complete",
+          reason: "open_timeout",
+          should_show: "yes",
+          step: "native_show",
+          why: "open_timeout",
+        })
+      );
+      expect(captureError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          area: "ads",
+          eventName: "ad_failed",
+          metadata: expect.objectContaining({
+            should_show: "yes",
+            step: "native_show",
+            why: "open_timeout",
+          }),
+        })
       );
     });
 
@@ -338,6 +399,7 @@ describe("show-interstitial", () => {
     it("does not retry unlock show — fail-open instead of stacking overlays", async () => {
       mockIsInterstitialLoaded.mockReturnValue(true);
       mockShowPreloadedInterstitial.mockResolvedValue(false);
+      mockGetLastInterstitialWhy.mockReturnValue("show_returned_false");
 
       await expect(
         showInterstitialForUnlockGate({
@@ -349,7 +411,11 @@ describe("show-interstitial", () => {
       expect(mockShowPreloadedInterstitial).toHaveBeenCalledTimes(1);
       expect(track).toHaveBeenCalledWith(
         "ad_failed",
-        expect.objectContaining({ reason: "show_returned_false" })
+        expect.objectContaining({
+          reason: "show_returned_false",
+          should_show: "yes",
+          step: "native_show",
+        })
       );
     });
   });
@@ -414,7 +480,11 @@ describe("show-interstitial", () => {
       expect(mockEnsureInterstitialReady).not.toHaveBeenCalled();
       expect(track).toHaveBeenCalledWith(
         "ad_skipped",
-        expect.objectContaining({ reason: "not_loaded" })
+        expect.objectContaining({
+          reason: "not_loaded",
+          should_show: "yes",
+          step: "wait_for_load",
+        })
       );
     });
   });

@@ -479,7 +479,7 @@ function getTaskCopy(
           cs: `Učit: ${topic ?? ""}`,
         }),
         description: copyFor(contentLocale, {
-          pl: "Przejdz nowy blok pytan i utrwal zasady.",
+          pl: "Przerób nowy blok pytań i utrwal zasady.",
           ua: "Пройди новий тематичний блок і закріпи правила.",
           en: "Work through a new topic block and lock in the rules.",
           de: "Arbeite einen neuen Themenblock durch und festige die Regeln.",
@@ -488,13 +488,13 @@ function getTaskCopy(
     case "review_weak_spots":
       return {
         title: copyFor(contentLocale, {
-          pl: "Slabe miejsca",
+          pl: "Słabe miejsca",
           ua: "Слабкі місця",
           en: "Weak spots",
           de: "Schwachstellen",
         }),
         description: copyFor(contentLocale, {
-          pl: "Powtorz pytania, na ktorych najlatwiej tracisz punkty.",
+          pl: "Powtórz pytania, na których najłatwiej tracisz punkty.",
           ua: "Повтори питання, на яких ти найчастіше втрачаєш бали.",
           en: "Replay the questions most likely to cost you points.",
           de: "Wiederhole die Fragen, bei denen du am leichtesten Punkte verlierst.",
@@ -503,13 +503,13 @@ function getTaskCopy(
     case "mini_test":
       return {
         title: copyFor(contentLocale, {
-          pl: "Mini test",
+          pl: "Minitest",
           ua: "Міні тест",
           en: "Mini test",
           de: "Minittest",
         }),
         description: copyFor(contentLocale, {
-          pl: "Krotki egzamin kontrolny, zeby sprawdzic tempo i uwage.",
+          pl: "Krótki egzamin kontrolny, żeby sprawdzić tempo i uwagę.",
           ua: "Короткий контрольний тест, щоб перевірити темп і уважність.",
           en: "A short controlled exam block to test pace and focus.",
           de: "Ein kurzer Kontrolltest fuer Tempo und Konzentration.",
@@ -518,13 +518,13 @@ function getTaskCopy(
     case "full_exam":
       return {
         title: copyFor(contentLocale, {
-          pl: "Pelny egzamin",
+          pl: "Pełny egzamin",
           ua: "Повний іспит",
           en: "Full exam",
           de: "Volle Pruefung",
         }),
         description: copyFor(contentLocale, {
-          pl: "Symulacja calego egzaminu przed finalnym sprintem.",
+          pl: "Symulacja całego egzaminu przed ostatnim sprintem.",
           ua: "Симуляція повного іспиту перед фінальним спринтом.",
           en: "A full exam simulation before the final sprint.",
           de: "Eine volle Pruefungssimulation vor dem finalen Sprint.",
@@ -533,13 +533,13 @@ function getTaskCopy(
     case "review_wrong_answers":
       return {
         title: copyFor(contentLocale, {
-          pl: "Powtorka bledow",
+          pl: "Powtórka błędów",
           ua: "Повтор помилок",
           en: "Wrong answer review",
           de: "Fehlerwiederholung",
         }),
         description: copyFor(contentLocale, {
-          pl: "Wroc do pytan, ktore juz raz zabraly Ci punkty.",
+          pl: "Wróć do pytań, które już raz zabrały Ci punkty.",
           ua: "Повернись до питань, які вже забрали в тебе бали.",
           en: "Return to the questions that already cost you points.",
           de: "Kehre zu Fragen zurueck, die dir schon Punkte gekostet haben.",
@@ -548,13 +548,13 @@ function getTaskCopy(
     case "review_saved":
       return {
         title: copyFor(contentLocale, {
-          pl: "Saved questions",
+          pl: "Zapisane pytania",
           ua: "Збережені питання",
           en: "Saved questions",
           de: "Gespeicherte Fragen",
         }),
         description: copyFor(contentLocale, {
-          pl: "Osobista kolejka pytan zapisanych na pozniej.",
+          pl: "Twoja kolejka pytań zapisanych na później.",
           ua: "Персональна черга питань, які ти відклав на потім.",
           en: "A personal queue of questions you saved for later.",
           de: "Eine persoenliche Warteschlange gespeicherter Fragen.",

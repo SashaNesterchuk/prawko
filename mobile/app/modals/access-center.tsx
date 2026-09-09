@@ -9,7 +9,10 @@ import { AppScreen } from "../../src/components/shell/AppScreen";
 import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
+  getRevenueCatDiagnostic,
   getRevenueCatErrorMessage,
+  getRevenueCatWhy,
+  isRevenueCatConfiguredForCurrentPlatform,
   presentRevenueCatCustomerCenter,
   restoreRevenueCatPurchases,
 } from "../../src/features/entitlements/revenuecat";
@@ -17,6 +20,7 @@ import { formatPlanDate } from "../../src/features/study-plan/generate-local-stu
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import {
   ANALYTICS_EVENTS,
+  ANALYTICS_PROPERTIES,
   getAnalyticsErrorCode,
 } from "../../src/analytics/catalog";
 import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
@@ -24,7 +28,7 @@ import {
   useEntitlementStore,
   useHasPlusAccess,
   usePurchaseAccess,
-  useRevenueCatConfigured,
+  useRevenueCatHydrationError,
 } from "../../src/state/entitlements";
 import { useAppUserId } from "../../src/identity/AppIdentityProvider";
 import { useAppShellStore, useCurrentUser } from "../../src/state/app-shell";
@@ -46,12 +50,10 @@ export default function AccessCenterModalScreen() {
   const authMode = useAppShellStore((state) => state.authMode);
   const hasPlusAccess = useHasPlusAccess();
   const purchaseAccess = usePurchaseAccess();
-  const revenueCatConfigured = useRevenueCatConfigured();
+  const sdkConfigured = isRevenueCatConfiguredForCurrentPlatform();
+  const revenueCatHydrationError = useRevenueCatHydrationError();
   const hydrateRevenueCatSnapshot = useEntitlementStore(
     (state) => state.hydrateRevenueCatSnapshot
-  );
-  const setRevenueCatStatus = useEntitlementStore(
-    (state) => state.setRevenueCatStatus
   );
   const [isRestoring, setIsRestoring] = useState(false);
   const [isOpeningCustomerCenter, setIsOpeningCustomerCenter] = useState(false);
@@ -64,15 +66,21 @@ export default function AccessCenterModalScreen() {
     : null;
 
   async function handleRestorePurchase() {
-    if (!currentUser || authMode !== "supabase") {
-      setRestoreFeedback({
-        kind: "error",
-        message: t("paywall.directRequiresAuth"),
+    if (!sdkConfigured) {
+      captureError({
+        area: "revenuecat",
+        eventName: "paywall_not_configured",
+        message: "restore_purchases:not_configured",
+        metadata: getRevenueCatDiagnostic({
+          extra: {
+            source: "access_center",
+          },
+          kind: "restore",
+          step: "restore_purchases",
+          why: "not_configured",
+        }),
+        severity: "warning",
       });
-      return;
-    }
-
-    if (!revenueCatConfigured) {
       setRestoreFeedback({
         kind: "error",
         message: t("paywall.directMissingConfig"),
@@ -82,7 +90,6 @@ export default function AccessCenterModalScreen() {
 
     setIsRestoring(true);
     setRestoreFeedback(null);
-    setRevenueCatStatus("loading");
     track(ANALYTICS_EVENTS.purchaseRestoreStarted.key, {
       source: "access_center",
     });
@@ -116,6 +123,7 @@ export default function AccessCenterModalScreen() {
         message: t("paywall.restoreSuccess"),
       });
     } catch (error) {
+      const why = getRevenueCatWhy(error);
       const message = getRevenueCatErrorMessage(error);
 
       captureError({
@@ -123,14 +131,20 @@ export default function AccessCenterModalScreen() {
         error,
         eventName: "access_center_purchase_restore_failed",
         message: "Purchase restore failed from the access center.",
-        metadata: {
-          source: "access_center",
-        },
+        metadata: getRevenueCatDiagnostic({
+          extra: {
+            source: "access_center",
+          },
+          kind: "restore",
+          step: "restore_purchases",
+          why,
+        }),
       });
-      setRevenueCatStatus("ready");
       track(ANALYTICS_EVENTS.purchaseRestoreFailed.key, {
         error_code: getAnalyticsErrorCode(error),
         source: "access_center",
+        [ANALYTICS_PROPERTIES.step]: "restore_purchases",
+        [ANALYTICS_PROPERTIES.why]: why,
       });
       setRestoreFeedback({
         kind: "error",
@@ -150,7 +164,21 @@ export default function AccessCenterModalScreen() {
       return;
     }
 
-    if (!revenueCatConfigured) {
+    if (!sdkConfigured) {
+      captureError({
+        area: "revenuecat",
+        eventName: "paywall_not_configured",
+        message: "customer_center:not_configured",
+        metadata: getRevenueCatDiagnostic({
+          extra: {
+            source: "access_center",
+          },
+          kind: "customer_center",
+          step: "open_customer_center",
+          why: "not_configured",
+        }),
+        severity: "warning",
+      });
       setRestoreFeedback({
         kind: "error",
         message: t("paywall.directMissingConfig"),
@@ -172,14 +200,21 @@ export default function AccessCenterModalScreen() {
         },
       });
     } catch (error) {
+      const why = getRevenueCatWhy(error);
+
       captureError({
         area: "payments",
         error,
         eventName: "customer_center_open_failed",
         message: "Failed to open RevenueCat Customer Center.",
-        metadata: {
-          source: "access_center",
-        },
+        metadata: getRevenueCatDiagnostic({
+          extra: {
+            source: "access_center",
+          },
+          kind: "customer_center",
+          step: "open_customer_center",
+          why,
+        }),
       });
       setRestoreFeedback({
         kind: "error",
@@ -245,7 +280,7 @@ export default function AccessCenterModalScreen() {
                 : t("profile.purchaseAccessMissing")}
             </CText>
           </View>
-          {revenueCatConfigured ? (
+          {sdkConfigured && hasRealAuth ? (
             <View style={styles.inlineAction}>
               <AppButton
                 variant="secondary"
@@ -264,8 +299,10 @@ export default function AccessCenterModalScreen() {
         <AppCard>
           <CText style={styles.sectionLabel}>{t("paywall.purchaseAccessTitle")}</CText>
           <CText style={styles.bodyText}>{t("accessCenter.restoreBody")}</CText>
-          {!revenueCatConfigured ? (
+          {!sdkConfigured ? (
             <CText style={styles.helperText}>{t("paywall.directMissingConfig")}</CText>
+          ) : revenueCatHydrationError ? (
+            <CText style={styles.helperText}>{t("paywall.directHydrationFailed")}</CText>
           ) : null}
           {restoreFeedback ? (
             <StatusCard
@@ -276,7 +313,7 @@ export default function AccessCenterModalScreen() {
           <View style={styles.restoreActions}>
             <AppButton
               variant="secondary"
-              disabled={isRestoring || !revenueCatConfigured}
+              disabled={isRestoring || !sdkConfigured}
               label={t(
                 isRestoring
                   ? "paywall.restoreCtaLoading"

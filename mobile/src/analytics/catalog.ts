@@ -160,7 +160,8 @@ export const ANALYTICS_EVENTS = {
   },
   examRestartSelected: {
     key: "exam_restart_selected",
-    description: "The learner chose an exam restart path.",
+    description:
+      "The learner chose an exam restart path. choice: watch_ad, upgrade, dismiss, plus. Dismiss is close/back on the gate; plus skips the gate. Home exam tile is a separate start (exam_start_requested source=manual), not this event.",
   },
   questionBookmarkChanged: {
     key: "question_bookmark_changed",
@@ -256,23 +257,28 @@ export const ANALYTICS_EVENTS = {
   },
   adRequested: {
     key: "ad_requested",
-    description: "An interstitial ad opportunity was accepted.",
+    description:
+      "Policy allowed an interstitial. Includes after, should_show, step, why, detail.",
   },
   adShown: {
     key: "ad_shown",
-    description: "An interstitial ad was displayed.",
+    description:
+      "An interstitial was displayed. Includes after, should_show, step, why, detail.",
   },
   adDismissed: {
     key: "ad_dismissed",
-    description: "An interstitial ad was dismissed.",
+    description:
+      "An interstitial was dismissed. Includes after, should_show, step, why, detail.",
   },
   adSkipped: {
     key: "ad_skipped",
-    description: "An interstitial ad opportunity was skipped.",
+    description:
+      "An interstitial did not show. Includes after, should_show, step, why, detail for every skip including trigger_not_ready.",
   },
   adFailed: {
     key: "ad_failed",
-    description: "An interstitial ad failed to load or display.",
+    description:
+      "An interstitial failed after policy allowed it. Includes after, should_show, step, why, detail.",
   },
   offlinePackDownloadStarted: {
     key: "offline_pack_download_started",
@@ -337,7 +343,8 @@ export const ANALYTICS_EVENTS = {
   },
   clientErrorLogged: {
     key: "client_error_logged",
-    description: "A normalized client error was captured.",
+    description:
+      "A normalized client error was captured. Ads/RevenueCat put why in step, why, detail — not message.",
   },
   clientFallbackUsed: {
     key: "client_fallback_used",
@@ -393,6 +400,10 @@ export function getAnalyticsErrorCode(error: unknown) {
 
     if (typeof record.code === "string" && record.code.trim()) {
       return record.code.trim();
+    }
+
+    if (typeof record.code === "number" && Number.isFinite(record.code)) {
+      return String(record.code);
     }
 
     if (typeof record.status === "number" && Number.isFinite(record.status)) {
@@ -452,15 +463,21 @@ export type AnalyticsScreenName =
   (typeof ANALYTICS_SCREENS)[keyof typeof ANALYTICS_SCREENS];
 
 /**
- * Super-property and payload keys for exam-country analytics.
- * Dashboard breakdowns must use these strings, not ad-hoc aliases.
+ * Canonical payload keys. Call sites and dashboard breakdowns must use these
+ * strings, not ad-hoc aliases.
  */
 export const ANALYTICS_PROPERTIES = {
+  after: "after",
   appUserId: "app_user_id",
+  choice: "choice",
+  detail: "detail",
   examCountry: "exam_country",
   previous: "previous",
+  shouldShow: "should_show",
   source: "source",
+  step: "step",
   supabaseUserId: "supabase_user_id",
+  why: "why",
 } as const;
 
 export const ANALYTICS_EXAM_COUNTRY_SOURCES = {
@@ -474,3 +491,13 @@ export const ANALYTICS_EXAM_COUNTRY_SOURCES = {
 
 export type AnalyticsExamCountrySource =
   (typeof ANALYTICS_EXAM_COUNTRY_SOURCES)[keyof typeof ANALYTICS_EXAM_COUNTRY_SOURCES];
+
+export const ANALYTICS_EXAM_RESTART_CHOICES = {
+  dismiss: "dismiss",
+  plus: "plus",
+  upgrade: "upgrade",
+  watchAd: "watch_ad",
+} as const;
+
+export type AnalyticsExamRestartChoice =
+  (typeof ANALYTICS_EXAM_RESTART_CHOICES)[keyof typeof ANALYTICS_EXAM_RESTART_CHOICES];

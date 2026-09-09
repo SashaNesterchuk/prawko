@@ -24,3 +24,4 @@ data/questions/interim/generated/**
 data/questions/normalized/generated/**
 data/questions/exports/generated/**
 data/questions/delivery/generated/**
+docs/analytics/*.json

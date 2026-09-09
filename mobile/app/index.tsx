@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { AppScreen } from "../src/components/shell/AppScreen";
 import { LoadingStateView } from "../src/components/shell/StateViews";
 import { finalizeLocalOnboarding } from "../src/features/onboarding/finalize-local-onboarding";
+import { useAnalytics } from "../src/providers/AnalyticsProvider";
 import {
   canFinalizeOnboarding,
   useHasHydrated,
@@ -14,6 +15,7 @@ import {
 
 export default function IndexScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const hasHydrated = useHasHydrated();
   const sessionResolved = useAppShellStore((state) => state.sessionResolved);
   const examCountry = useAppShellStore((state) => state.examCountry);
@@ -45,8 +47,8 @@ export default function IndexScreen() {
       return;
     }
 
-    finalizeLocalOnboarding();
-  }, [shouldFinalizeOnboarding]);
+    finalizeLocalOnboarding(undefined, track);
+  }, [shouldFinalizeOnboarding, track]);
 
   if (!hasHydrated || !sessionResolved || !examCountry) {
     return (

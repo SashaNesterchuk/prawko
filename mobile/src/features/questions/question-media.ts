@@ -88,17 +88,22 @@ export function getQuestionMediaPreviewUrl(
   return getQuestionDeliveryPosterUrl(media.asset);
 }
 
+export { getQuestionImagePreviewErrorCode } from "./question-image-preview-error";
+
 export type QuestionMediaPrefetchUrls = {
   /** Still images + video posters (safe for Image.prefetch). */
   imageUrls: string[];
-  /** Video file URLs (warm via expo-video players / cache). */
+  /**
+   * Video file URLs. Do not warm these with expo-video `{ useCaching: true }`
+   * players — concurrent cache registrations SIGSEGV on iOS.
+   */
   videoUrls: string[];
 };
 
 /**
  * Collect every media URL worth warming before a question is shown.
- * Images/posters are cheap; video bytes are separate so callers can
- * bound concurrent video players.
+ * Images/posters are cheap; video bytes stay listed but must not be opened
+ * through expo-video's shared cache.
  */
 export function collectQuestionMediaPrefetchUrls(
   media: QuestionMedia | null | undefined

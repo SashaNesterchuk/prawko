@@ -10,7 +10,8 @@ import { ActionTile } from "../../src/components/shell/ActionTile";
 import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
 import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
-import { HomeStartSpotlightLayer } from "../../src/components/shell/HomeStartSpotlightHost";
+// First-start spotlight is temporarily unused; keep the import for later.
+// import { HomeStartSpotlightLayer } from "../../src/components/shell/HomeStartSpotlightHost";
 import {
   ReadinessIndexCard,
   resolveReadinessLevel,
@@ -28,7 +29,7 @@ import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import {
   FIRST_START_QUESTION_COUNT,
-  shouldShowHomeStartSpotlight,
+  // shouldShowHomeStartSpotlight,
   type FirstStartCtaSource,
 } from "../../src/features/home/first-start";
 import {
@@ -69,7 +70,7 @@ import {
   useReadinessSnapshotStore,
   type ReadinessSnapshot,
 } from "../../src/state/readiness-snapshot";
-import { isE2EHomeChromeUnlocked } from "../../src/testing/e2e/state";
+// import { isE2EHomeChromeUnlocked } from "../../src/testing/e2e/state";
 import { Icon, IconName } from "../../src/components/icons";
 
 function HomeActionIcon({
@@ -98,9 +99,9 @@ export default function HomeTabScreen() {
   const styles = useStyles({ safeBottom });
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
-  const homeStartSpotlightDismissed = useAppShellStore(
-    (state) => state.homeStartSpotlightDismissed
-  );
+  // const homeStartSpotlightDismissed = useAppShellStore(
+  //   (state) => state.homeStartSpotlightDismissed
+  // );
   const dismissHomeStartSpotlight = useAppShellStore(
     (state) => state.dismissHomeStartSpotlight
   );
@@ -136,8 +137,8 @@ export default function HomeTabScreen() {
   const readinessCardRef = useRef<View>(null);
   const readinessCardLayoutRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
   const [readinessCardLayoutNonce, setReadinessCardLayoutNonce] = useState(0);
-  const didTrackSpotlightRef = useRef(false);
-  const unlockHomeChrome = isE2EHomeChromeUnlocked();
+  // const didTrackSpotlightRef = useRef(false);
+  // const unlockHomeChrome = isE2EHomeChromeUnlocked();
 
   useEffect(() => {
     if (!isFocused) {
@@ -255,12 +256,14 @@ export default function HomeTabScreen() {
 
   const isReadinessLoading = readinessView == null;
   const isReadinessEmpty = readinessView?.isEmpty ?? false;
-  const showStartSpotlight = shouldShowHomeStartSpotlight({
-    isReadinessEmpty,
-    isReadinessLoading,
-    spotlightDismissed: homeStartSpotlightDismissed,
-    unlockHomeChrome,
-  });
+  // First-start tooltip is temporarily unused; restore by swapping this back.
+  const showStartSpotlight = false;
+  // const showStartSpotlight = shouldShowHomeStartSpotlight({
+  //   isReadinessEmpty,
+  //   isReadinessLoading,
+  //   spotlightDismissed: homeStartSpotlightDismissed,
+  //   unlockHomeChrome,
+  // });
   const readinessPercent = readinessView?.percent ?? 0;
   const readinessLevel = resolveReadinessLevel(readinessPercent);
   const readinessWeekChangePercent = readinessView?.weekChangePercent ?? null;
@@ -342,16 +345,16 @@ export default function HomeTabScreen() {
     [openHomeDailySession]
   );
 
-  useEffect(() => {
-    if (!showStartSpotlight || didTrackSpotlightRef.current) {
-      return;
-    }
-
-    didTrackSpotlightRef.current = true;
-    track(ANALYTICS_EVENTS.firstStartShown.key, {
-      question_limit: FIRST_START_QUESTION_COUNT,
-    });
-  }, [showStartSpotlight, track]);
+  // useEffect(() => {
+  //   if (!showStartSpotlight || didTrackSpotlightRef.current) {
+  //     return;
+  //   }
+  //
+  //   didTrackSpotlightRef.current = true;
+  //   track(ANALYTICS_EVENTS.firstStartShown.key, {
+  //     question_limit: FIRST_START_QUESTION_COUNT,
+  //   });
+  // }, [showStartSpotlight, track]);
 
   const tiles: ActionTileItem[] = [
     {
@@ -540,6 +543,7 @@ export default function HomeTabScreen() {
         </ScrollView>
       </SafeAreaView>
       {countDialog}
+      {/*
       <HomeStartSpotlightLayer
         visible={showStartSpotlight}
         anchorRef={readinessCardRef}
@@ -563,6 +567,7 @@ export default function HomeTabScreen() {
           });
         }}
       />
+      */}
     </GreenWaveScreen>
   );
 }

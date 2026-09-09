@@ -1,5 +1,6 @@
 # Feature: Home first start
-# Scenario: Spotlight on the empty readiness card starts the 10-question untimed assessment
+# Scenario: First-start Home (FIRST_START) does not show the spotlight; the empty
+# readiness card starts the 10-question untimed assessment
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -13,17 +14,17 @@ tags:
       FIRST_START: "true"
       TARGET_ID: screen-home
 
-- extendedWaitUntil:
-    visible:
-      id: "home-start-spotlight-target"
-    timeout: 15000
+- assertNotVisible:
+    id: "home-start-spotlight"
+- assertVisible:
+    id: "home-readiness-index"
 - assertVisible:
     id: "action-tile-trainer"
 - assertVisible:
     id: "home-tile-blitz"
 
 - tapOn:
-    id: "home-start-spotlight-target"
+    id: "home-readiness-index"
 
 - extendedWaitUntil:
     visible:

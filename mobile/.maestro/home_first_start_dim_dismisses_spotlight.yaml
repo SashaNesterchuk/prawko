@@ -1,5 +1,5 @@
 # Feature: Home first start
-# Scenario: Tap the dimmed overlay dismisses the spotlight like Skip
+# Scenario: First-start Home does not show the dimmed spotlight overlay; tiles stay tappable
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -13,18 +13,10 @@ tags:
       FIRST_START: "true"
       TARGET_ID: screen-home
 
-- extendedWaitUntil:
-    visible:
-      id: "home-start-spotlight"
-    timeout: 15000
-
-- tapOn:
+- assertNotVisible:
+    id: "home-start-spotlight"
+- assertNotVisible:
     id: "home-start-spotlight-dismiss"
-
-- extendedWaitUntil:
-    notVisible:
-      id: "home-start-spotlight"
-    timeout: 10000
 
 - assertVisible:
     id: "tab-index"

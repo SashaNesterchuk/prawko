@@ -47,6 +47,7 @@ jest.mock("react-native-google-mobile-ads", () => ({
 import { AppState } from "react-native";
 import {
   ensureInterstitialReady,
+  getLastInterstitialWhy,
   initializeAdMobSdk,
   isInterstitialLoaded,
   isInterstitialShowing,
@@ -107,6 +108,12 @@ describe("interstitial-controller", () => {
     stop();
   });
 
+  it("records missing unit id as last why", () => {
+    mockGetInterstitialAdUnitId.mockReturnValue("");
+    startInterstitialPreload();
+    expect(getLastInterstitialWhy()).toBe("missing_unit_id");
+  });
+
   it("preloads, marks loaded on LOADED, and clears on stop", () => {
     startInterstitialPreload();
     const ad = getLatestMockInterstitial()!;
@@ -127,6 +134,7 @@ describe("interstitial-controller", () => {
 
     ad.emit(AdEventType.ERROR, { message: "no fill" });
     expect(isInterstitialLoaded()).toBe(false);
+    expect(getLastInterstitialWhy()).toBe("load_error:unknown_error");
 
     jest.advanceTimersByTime(750);
     expect(ad.load).toHaveBeenCalledTimes(1);

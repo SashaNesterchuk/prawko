@@ -133,7 +133,10 @@ export function normalizeErrorDetails(error: unknown) {
       : null;
 
   return {
-    code: sanitizeString(record?.code),
+    code:
+      typeof record?.code === "number" && Number.isFinite(record.code)
+        ? String(record.code)
+        : sanitizeString(record?.code),
     message:
       sanitizeString(record?.message) ??
       sanitizeString(record?.error_description) ??
@@ -150,6 +153,10 @@ function getErrorCode(error: Error) {
 
   if (typeof record.code === "string" && record.code.trim()) {
     return record.code.trim();
+  }
+
+  if (typeof record.code === "number" && Number.isFinite(record.code)) {
+    return String(record.code);
   }
 
   if (typeof record.status === "number" && Number.isFinite(record.status)) {

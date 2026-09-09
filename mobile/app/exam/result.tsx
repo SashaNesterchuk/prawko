@@ -43,7 +43,12 @@ import { getQuestionUserState } from "../../src/features/questions/question-engi
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
 import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefetchQuestionMedia";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
-import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_EXAM_RESTART_CHOICES,
+  ANALYTICS_PROPERTIES,
+  ANALYTICS_SCREENS,
+} from "../../src/analytics/catalog";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
 import {
@@ -450,6 +455,10 @@ export default function ExamResultScreen() {
 
   function handleNewAttempt() {
     if (hasPlusAccess) {
+      track(ANALYTICS_EVENTS.examRestartSelected.key, {
+        [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.plus,
+        source: "exam_result",
+      });
       startNewExam();
       return;
     }
@@ -459,6 +468,18 @@ export default function ExamResultScreen() {
     });
     setIsRestartGateVisible(true);
     void preloadInterstitial();
+  }
+
+  function handleCloseGate() {
+    if (isWatchingAd) {
+      return;
+    }
+
+    setIsRestartGateVisible(false);
+    track(ANALYTICS_EVENTS.examRestartSelected.key, {
+      [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.dismiss,
+      source: "exam_result",
+    });
   }
 
   async function handleWatchAd() {
@@ -478,7 +499,7 @@ export default function ExamResultScreen() {
 
       track(ANALYTICS_EVENTS.examRestartSelected.key, {
         ad_shown: shown,
-        choice: "watch_ad",
+        [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.watchAd,
         source: "exam_result",
       });
       startNewExam();
@@ -486,7 +507,7 @@ export default function ExamResultScreen() {
       console.warn("Exam restart ad failed.", error);
       track(ANALYTICS_EVENTS.examRestartSelected.key, {
         ad_shown: false,
-        choice: "watch_ad",
+        [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.watchAd,
         source: "exam_result",
       });
       startNewExam();
@@ -498,7 +519,7 @@ export default function ExamResultScreen() {
   function handlePremium() {
     setIsRestartGateVisible(false);
     track(ANALYTICS_EVENTS.examRestartSelected.key, {
-      choice: "upgrade",
+      [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.upgrade,
       source: "exam_result",
     });
     router.replace({
@@ -528,6 +549,10 @@ export default function ExamResultScreen() {
     track(ANALYTICS_EVENTS.examAnswersReviewOpened.key, {
       mode: loadedSnapshot.session.mode,
       question_total: sortedQuestions.length,
+    });
+    track(ANALYTICS_EVENTS.screenViewed.key, {
+      route_pattern: "/exam/answers",
+      screen_name: ANALYTICS_SCREENS.examAnswers,
     });
     setReviewIndex(0);
   }
@@ -630,13 +655,7 @@ export default function ExamResultScreen() {
         }
         premiumLabel={t("exam.restartGatePremiumCta")}
         isWatchingAd={isWatchingAd}
-        onClose={() => {
-          if (isWatchingAd) {
-            return;
-          }
-
-          setIsRestartGateVisible(false);
-        }}
+        onClose={handleCloseGate}
         onDismiss={() => {
           modalHideResolverRef.current?.();
         }}

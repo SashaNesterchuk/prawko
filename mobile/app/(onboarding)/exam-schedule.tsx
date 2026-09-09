@@ -69,7 +69,7 @@ export default function ExamScheduleScreen() {
       exam_date_provided: Boolean(date),
       step: "exam_schedule",
     });
-    finalizeLocalOnboarding();
+    finalizeLocalOnboarding(undefined, track);
     router.replace("/(tabs)");
   };
 

@@ -5,6 +5,7 @@ import {
   MobileAds,
 } from "react-native-google-mobile-ads";
 
+import { getAnalyticsErrorCode } from "../../analytics/catalog";
 import {
   getInterstitialAdUnitId,
   isAdMobEnabled,
@@ -21,7 +22,16 @@ let isShowing = false;
 let isLoadInFlight = false;
 let loadWaiters: Array<(loaded: boolean) => void> = [];
 let autoRetryTimer: ReturnType<typeof setTimeout> | null = null;
+let lastInterstitialWhy = "idle";
 const showingListeners = new Set<InterstitialShowingListener>();
+
+export function getLastInterstitialWhy() {
+  return lastInterstitialWhy;
+}
+
+function setLastInterstitialWhy(why: string) {
+  lastInterstitialWhy = why;
+}
 
 function setShowing(next: boolean) {
   if (isShowing === next) {
@@ -173,6 +183,7 @@ export function resetInterstitialControllerForTests() {
   resetInterstitialInstance();
   sdkInitialized = false;
   idleWait = waitForPresentationReady;
+  lastInterstitialWhy = "idle";
 }
 
 export async function initializeAdMobSdk() {
@@ -191,12 +202,14 @@ export async function initializeAdMobSdk() {
     logAd("SDK initialized", { unitId: getInterstitialAdUnitId() });
   } catch (error) {
     console.warn("Failed to initialize AdMob SDK.", error);
+    setLastInterstitialWhy(`sdk_init_failed:${getAnalyticsErrorCode(error)}`);
     setLoaded(false);
   }
 }
 
 export function startInterstitialPreload() {
   if (!isAdMobEnabled()) {
+    setLastInterstitialWhy("disabled");
     setLoaded(false);
     return () => undefined;
   }
@@ -207,6 +220,7 @@ export function startInterstitialPreload() {
 
   if (!unitId) {
     console.warn("[AdMob] Missing interstitial unit id.");
+    setLastInterstitialWhy("missing_unit_id");
     setLoaded(false);
     return () => undefined;
   }
@@ -228,6 +242,7 @@ export function startInterstitialPreload() {
   unsubscribers.push(
     interstitial.addAdEventListener(AdEventType.ERROR, (error) => {
       console.warn("[AdMob] Interstitial ERROR", error);
+      setLastInterstitialWhy(`load_error:${getAnalyticsErrorCode(error)}`);
       isLoadInFlight = false;
       setLoaded(false);
       setShowing(false);
@@ -299,12 +314,15 @@ export async function ensureInterstitialReady(options?: {
   );
 
   if (!isAdMobEnabled()) {
+    setLastInterstitialWhy("disabled");
     return false;
   }
 
+  setLastInterstitialWhy("ensure_start");
   await initializeAdMobSdk();
 
   if (interstitialLoaded) {
+    setLastInterstitialWhy("already_loaded");
     return true;
   }
 
@@ -319,11 +337,15 @@ export async function ensureInterstitialReady(options?: {
 
     const loaded = await waitForSingleLoad(perAttemptMs);
     if (loaded) {
+      setLastInterstitialWhy("already_loaded");
       return true;
     }
   }
 
   logAd("ensure ready failed — skipping ad");
+  if (lastInterstitialWhy === "ensure_start") {
+    setLastInterstitialWhy("ensure_timeout");
+  }
   return false;
 }
 
@@ -342,6 +364,7 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
     // Never tear down a live show from a concurrent caller — that creates
     // ghost overlays that eat touches on the result screen.
     logAd("show skipped — already showing");
+    setLastInterstitialWhy("already_showing");
     return false;
   }
 
@@ -349,6 +372,12 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
     const ready = await ensureInterstitialReady();
     if (!ready || !interstitial) {
       logAd("show aborted — not loaded after ensure");
+      if (
+        lastInterstitialWhy === "already_loaded" ||
+        lastInterstitialWhy === "ensure_start"
+      ) {
+        setLastInterstitialWhy("not_loaded_after_ensure");
+      }
       return false;
     }
   }
@@ -360,12 +389,14 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
     await idleWait();
   } catch (error) {
     console.warn("[AdMob] idle wait failed before show", error);
+    setLastInterstitialWhy(`idle_wait_failed:${getAnalyticsErrorCode(error)}`);
     setShowing(false);
     return false;
   }
 
   if (!current || interstitial !== current) {
     logAd("show aborted — instance changed during idle wait");
+    setLastInterstitialWhy("instance_changed");
     setShowing(false);
     return false;
   }
@@ -398,6 +429,7 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
       unsubscribeClosed();
       unsubscribeError();
       setShowing(false);
+      setLastInterstitialWhy(reason);
       logAd(shown ? "show finished OK" : "show finished FAIL", {
         didOpen,
         reason,

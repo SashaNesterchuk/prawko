@@ -407,7 +407,7 @@ function buildNameQuestion(
   return {
     id: `${signId}-name`,
     prompt: {
-      pl: "Jak nazywa sie ten znak?",
+      pl: "Jak nazywa się ten znak?",
       ua: "Як називається цей знак?",
       en: "What is the name of this sign?",
     },
@@ -448,7 +448,7 @@ function buildCodeQuestion(
   return {
     id: `${signId}-code`,
     prompt: {
-      pl: "Ktory kod odpowiada temu znakowi?",
+      pl: "Który kod odpowiada temu znakowi?",
       ua: "Який код відповідає цьому знаку?",
       en: "Which code matches this sign?",
     },
@@ -479,7 +479,7 @@ function buildCategoryQuestion(
   return {
     id: `${signId}-category`,
     prompt: {
-      pl: "Do jakiej kategorii nalezy ten znak?",
+      pl: "Do jakiej kategorii należy ten znak?",
       ua: "До якої категорії належить цей знак?",
       en: "Which category does this sign belong to?",
     },

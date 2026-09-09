@@ -1012,6 +1012,8 @@ export const czechTranslations = {
     directSubtitle: "Jednorázový nákup: bez reklam a AI asistent.",
     directRequiresAuth: "Přihlas se, aby se Plus navázalo na účet.",
     directMissingConfig: "Nákup Plus v tomto sestavení ještě není dostupný.",
+    directHydrationFailed:
+      "Nabídku Plus se nepodařilo načíst. Zkontrolujte připojení a zkuste to znovu.",
     directLoading: "Načítáme nabídku Plus...",
     directNoOffers: "Nabídka Plus zatím není dostupná.",
     directNoOfferSelected: "Než budeš pokračovat, vyber nabídku Plus.",

@@ -51,12 +51,21 @@ export async function detectExamCountry(): Promise<ExamCountryDetection> {
 }
 
 async function readStorefrontCountry(): Promise<CountryCode | null> {
-  const getStorefront = (
-    Purchases as { getStorefront?: () => Promise<string | null> }
-  ).getStorefront;
+  const purchases = Purchases as unknown as {
+    getStorefront?: () => Promise<string | null>;
+    isConfigured?: () => boolean | Promise<boolean>;
+  };
+  const getStorefront = purchases.getStorefront;
 
   if (typeof getStorefront !== "function") {
     return null;
+  }
+
+  if (typeof purchases.isConfigured === "function") {
+    const configured = await purchases.isConfigured();
+    if (!configured) {
+      return null;
+    }
   }
 
   try {

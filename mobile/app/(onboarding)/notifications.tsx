@@ -67,7 +67,7 @@ export default function NotificationsScreen() {
       }
     }
 
-    finalizeLocalOnboarding();
+    finalizeLocalOnboarding(undefined, track);
     track(ANALYTICS_EVENTS.onboardingStepCompleted.key, {
       notifications_requested: requestPermission,
       step: "notifications",

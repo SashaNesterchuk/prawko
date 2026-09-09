@@ -42,6 +42,7 @@ type EntitlementStatus = "idle" | "loading" | "ready";
 type RevenueCatStatus = "idle" | "loading" | "ready";
 
 type EntitlementState = {
+  beginRevenueCatHydration: () => void;
   clearEntitlements: (status?: EntitlementStatus) => void;
   clearRevenueCatState: (status?: RevenueCatStatus) => void;
   /** __DEV__ only: force Plus on/off. `null` = use real entitlements. */
@@ -56,11 +57,14 @@ type EntitlementState = {
     featureEntitlements: FeatureEntitlementMap;
     isConfigured: boolean;
     offerings: RevenueCatPackageSummary[];
+    offeringsError?: string | null;
     purchaseAccess: PurchaseAccessState | null;
   }) => void;
+  markRevenueCatHydrationFailed: (errorCode?: string | null) => void;
   purchaseAccess: PurchaseAccessState | null;
   revenueCatConfigured: boolean;
   revenueCatFeatureEntitlements: FeatureEntitlementMap;
+  revenueCatHydrationError: string | null;
   revenueCatOfferings: RevenueCatPackageSummary[];
   revenueCatStatus: RevenueCatStatus;
   schoolAccess: SchoolAccessState | null;
@@ -77,6 +81,11 @@ export function createEmptyFeatureEntitlements(): FeatureEntitlementMap {
 }
 
 export const useEntitlementStore = create<EntitlementState>()((set) => ({
+  beginRevenueCatHydration: () =>
+    set({
+      revenueCatConfigured: true,
+      revenueCatStatus: "loading",
+    }),
   clearEntitlements: (status = "idle") =>
     set({
       entitlementStatus: status,
@@ -88,6 +97,7 @@ export const useEntitlementStore = create<EntitlementState>()((set) => ({
       purchaseAccess: null,
       revenueCatConfigured: false,
       revenueCatFeatureEntitlements: createEmptyFeatureEntitlements(),
+      revenueCatHydrationError: null,
       revenueCatOfferings: [],
       revenueCatStatus: status,
     }),
@@ -107,6 +117,7 @@ export const useEntitlementStore = create<EntitlementState>()((set) => ({
     featureEntitlements,
     isConfigured,
     offerings,
+    offeringsError = null,
     purchaseAccess,
   }) =>
     set({
@@ -116,12 +127,20 @@ export const useEntitlementStore = create<EntitlementState>()((set) => ({
         ...createEmptyFeatureEntitlements(),
         ...featureEntitlements,
       },
+      revenueCatHydrationError: offeringsError,
       revenueCatOfferings: offerings,
+      revenueCatStatus: "ready",
+    }),
+  markRevenueCatHydrationFailed: (errorCode = null) =>
+    set({
+      revenueCatConfigured: true,
+      revenueCatHydrationError: errorCode?.trim() ? errorCode.trim() : "unknown",
       revenueCatStatus: "ready",
     }),
   purchaseAccess: null,
   revenueCatConfigured: false,
   revenueCatFeatureEntitlements: createEmptyFeatureEntitlements(),
+  revenueCatHydrationError: null,
   revenueCatOfferings: [],
   revenueCatStatus: "idle",
   schoolAccess: null,
@@ -144,6 +163,10 @@ export function usePurchaseAccess() {
 
 export function useRevenueCatConfigured() {
   return useEntitlementStore((state) => state.revenueCatConfigured);
+}
+
+export function useRevenueCatHydrationError() {
+  return useEntitlementStore((state) => state.revenueCatHydrationError);
 }
 
 export function useRevenueCatOfferings() {
@@ -175,11 +198,26 @@ export function useHasFeatureAccess(feature: AppFeature) {
   );
 }
 
+export function hasGrantedPlusAccess(
+  purchaseFeatureEntitlements: FeatureEntitlementMap,
+  remoteFeatureEntitlements: FeatureEntitlementMap
+) {
+  return (
+    purchaseFeatureEntitlements.premium_access ||
+    purchaseFeatureEntitlements.ai_question_chat ||
+    remoteFeatureEntitlements.premium_access ||
+    remoteFeatureEntitlements.ai_question_chat
+  );
+}
+
 export function useHasPlusAccess() {
   const currentUser = useAppShellStore((state) => getCurrentUserFromState(state));
   const debugPlusOverride = useEntitlementStore((state) => state.debugPlusOverride);
   const purchaseFeatureEntitlements = useEntitlementStore(
     (state) => state.revenueCatFeatureEntitlements
+  );
+  const remoteFeatureEntitlements = useEntitlementStore(
+    (state) => state.featureEntitlements
   );
 
   if ((__DEV__ || mobileEnv.enableE2ETestMode) && debugPlusOverride !== null) {
@@ -194,9 +232,9 @@ export function useHasPlusAccess() {
     return true;
   }
 
-  return (
-    purchaseFeatureEntitlements.premium_access ||
-    purchaseFeatureEntitlements.ai_question_chat
+  return hasGrantedPlusAccess(
+    purchaseFeatureEntitlements,
+    remoteFeatureEntitlements
   );
 }
 

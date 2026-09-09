@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { ANALYTICS_PROPERTIES } from "../../analytics/catalog";
 import type { SupportedLocale } from "@prawko/config";
 import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
@@ -23,6 +24,7 @@ import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
 import { useTheme } from "../../providers/ThemeProvider";
 import { useAppShellStore } from "../../state/app-shell";
 import { getQuestionStillImageResizeMode } from "./question-image-fit";
+import { getQuestionImagePreviewErrorCode } from "./question-image-preview-error";
 import {
   getQuestionDeliveryAssetUrl,
   getQuestionDeliveryPosterUrl,
@@ -213,7 +215,7 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
           resizeMode={imageResizeMode}
           style={styles.preview}
           onLoad={() => setIsLoaded(true)}
-          onError={() => {
+          onError={(event) => {
             setPreviewFailed(true);
 
             if (didLogPreviewFailureRef.current) {
@@ -221,8 +223,12 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
             }
 
             didLogPreviewFailureRef.current = true;
+            const errorCode = getQuestionImagePreviewErrorCode(
+              event.nativeEvent
+            );
             captureError({
               area: "question_media",
+              error: { code: errorCode },
               eventName: "question_media_preview_failed",
               message: "Question media preview failed to load.",
               metadata: {
@@ -234,6 +240,7 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
                 storage_path: media.asset.storagePath,
                 preview_url: previewUrl,
                 asset_url: assetUrl,
+                [ANALYTICS_PROPERTIES.why]: errorCode,
               },
               severity: "warning",
             });
@@ -278,13 +285,12 @@ function InlineQuestionVideo({
   url: string;
 }) {
   const { colors } = useTheme();
-  const player = useVideoPlayer(
-    { uri: url, useCaching: true },
-    (instance) => {
-      instance.loop = false;
-      instance.timeUpdateEventInterval = 0.1;
-    }
-  );
+  // Direct URI, no `{ useCaching: true }`: expo-video's VideoCacheManager
+  // SIGSEGVs in registerOpenFile when several question videos overlap.
+  const player = useVideoPlayer(url, (instance) => {
+    instance.loop = false;
+    instance.timeUpdateEventInterval = 0.1;
+  });
   const { isPlaying } = useEvent(player, "playingChange", {
     isPlaying: player.playing,
   });

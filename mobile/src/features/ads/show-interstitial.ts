@@ -1,12 +1,19 @@
+import { FEATURE_FLAGS } from "@prawko/config";
 import { usePathname } from "expo-router";
 import { useCallback } from "react";
-import { FEATURE_FLAGS } from "@prawko/config";
 
-import { ANALYTICS_EVENTS, type AnalyticsProperties } from "../../analytics/catalog";
-import { useAnalytics } from "../../providers/AnalyticsProvider";
+import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPERTIES,
+  getAnalyticsErrorCode,
+  type AnalyticsProperties,
+} from "../../analytics/catalog";
 import type { AnalyticsTrack } from "../../providers/AnalyticsProvider";
+import { useAnalytics } from "../../providers/AnalyticsProvider";
+import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
 import { useHasPlusAccess } from "../../state/entitlements";
-import { isAdMobEnabled } from "./admob-config";
+import type { CaptureErrorInput } from "../errors/error-logging";
+import { buildAdDecisionProperties, type AdDecisionStep } from "./ad-analytics";
 import {
   clearAppBackgroundMark,
   isExamSessionActive,
@@ -16,10 +23,12 @@ import {
   type AdInterstitialTrigger,
   type AdSkipReason,
 } from "./ad-session-policy";
+import { isAdMobEnabled } from "./admob-config";
 import {
+  ensureInterstitialReady,
+  getLastInterstitialWhy,
   isInterstitialLoaded,
   showPreloadedInterstitial,
-  ensureInterstitialReady,
 } from "./interstitial-controller";
 
 /** Cap intentional warm-up so exam result never waits more than a few seconds. */
@@ -29,6 +38,7 @@ export const INTERSTITIAL_ENSURE_OPTIONS = {
 } as const;
 
 type ShowInterstitialInput = {
+  captureError?: (input: CaptureErrorInput) => void;
   hasPlusAccess: boolean;
   pathname?: string | null;
   practiceAnsweredCount?: number | null;
@@ -59,43 +69,116 @@ function getAdOpportunityType(trigger: AdInterstitialTrigger) {
   }
 }
 
+function buildAdEventProperties(
+  input: ShowInterstitialInput,
+  decision: {
+    shouldShow: boolean;
+    step: AdDecisionStep;
+    why: string;
+  }
+): AnalyticsProperties {
+  return {
+    ...buildAdDecisionProperties({
+      after: input.trigger,
+      loaded: isInterstitialLoaded(),
+      pathname: input.pathname,
+      shouldShow: decision.shouldShow,
+      step: decision.step,
+      waitForLoad: Boolean(input.waitForLoad),
+      why: decision.why,
+    }),
+    reason: decision.why,
+    trigger: input.trigger,
+    type: getAdOpportunityType(input.trigger),
+  };
+}
+
+function captureAdMiss(
+  input: ShowInterstitialInput,
+  eventName: "ad_not_shown" | "ad_failed",
+  properties: AnalyticsProperties,
+  error?: unknown
+) {
+  input.captureError?.({
+    area: "ads",
+    error,
+    eventName,
+    message: String(
+      properties[ANALYTICS_PROPERTIES.detail] ??
+        properties[ANALYTICS_PROPERTIES.why] ??
+        eventName
+    ),
+    metadata: {
+      [ANALYTICS_PROPERTIES.after]:
+        properties[ANALYTICS_PROPERTIES.after] ?? input.trigger,
+      [ANALYTICS_PROPERTIES.shouldShow]:
+        properties[ANALYTICS_PROPERTIES.shouldShow] ?? "yes",
+      [ANALYTICS_PROPERTIES.step]: properties[ANALYTICS_PROPERTIES.step] ?? null,
+      [ANALYTICS_PROPERTIES.why]: properties[ANALYTICS_PROPERTIES.why] ?? null,
+      [ANALYTICS_PROPERTIES.detail]:
+        properties[ANALYTICS_PROPERTIES.detail] ?? null,
+      trigger: input.trigger,
+    },
+    severity: eventName === "ad_failed" ? "error" : "warning",
+  });
+}
+
 function trackAdOpportunity(input: ShowInterstitialInput, adsEnabled: boolean) {
   input.track(ANALYTICS_EVENTS.adRequested.key, {
     ads_enabled: adsEnabled,
-    trigger: input.trigger,
-    type: getAdOpportunityType(input.trigger),
+    ...buildAdEventProperties(input, {
+      shouldShow: true,
+      step: input.waitForLoad ? "ensure_load" : "wait_for_load",
+      why: "allowed",
+    }),
   });
 }
 
 function trackAdSkipped(
   input: ShowInterstitialInput,
-  reason: AdSkipReason
+  reason: string,
+  step: AdDecisionStep,
+  shouldShow: boolean
 ) {
-  input.track(ANALYTICS_EVENTS.adSkipped.key, {
-    reason,
-    trigger: input.trigger,
-    type: getAdOpportunityType(input.trigger),
+  const properties = buildAdEventProperties(input, {
+    shouldShow,
+    step,
+    why: reason,
   });
+  input.track(ANALYTICS_EVENTS.adSkipped.key, properties);
+
+  if (shouldShow) {
+    captureAdMiss(input, "ad_not_shown", properties);
+  }
 }
 
-function trackAdFailed(input: ShowInterstitialInput, reason: string) {
-  input.track(ANALYTICS_EVENTS.adFailed.key, {
-    reason,
-    trigger: input.trigger,
-    type: getAdOpportunityType(input.trigger),
+function trackAdFailed(
+  input: ShowInterstitialInput,
+  reason: string,
+  step: AdDecisionStep,
+  error?: unknown
+) {
+  const properties = buildAdEventProperties(input, {
+    shouldShow: true,
+    step,
+    why: reason,
   });
+  input.track(ANALYTICS_EVENTS.adFailed.key, properties);
+  captureAdMiss(input, "ad_failed", properties, error);
 }
 
 function trackAdShown(
   input: ShowInterstitialInput,
   extra?: AnalyticsProperties
 ) {
-  const payload = {
-    trigger: input.trigger,
-    type: getAdOpportunityType(input.trigger),
+  input.track(ANALYTICS_EVENTS.adShown.key, {
+    ...buildAdEventProperties(input, {
+      shouldShow: true,
+      step: "native_show",
+      why: "shown",
+    }),
     ...extra,
-  };
-  input.track(ANALYTICS_EVENTS.adShown.key, payload);
+  });
 }
 
 function trackAdDismissed(
@@ -103,8 +186,11 @@ function trackAdDismissed(
   extra?: AnalyticsProperties
 ) {
   input.track(ANALYTICS_EVENTS.adDismissed.key, {
-    trigger: input.trigger,
-    type: getAdOpportunityType(input.trigger),
+    ...buildAdEventProperties(input, {
+      shouldShow: true,
+      step: "native_show",
+      why: getLastInterstitialWhy(),
+    }),
     ...extra,
   });
 }
@@ -118,7 +204,7 @@ async function presentInterstitial(input: ShowInterstitialInput): Promise<boolea
   if (!shown) {
     // Do not retry immediately — a flashed native overlay plus a second show
     // stacks ghost windows that freeze the exam result screen.
-    trackAdFailed(input, "show_returned_false");
+    trackAdFailed(input, getLastInterstitialWhy() || "show_returned_false", "native_show");
     return false;
   }
 
@@ -148,15 +234,17 @@ export async function showInterstitialIfAllowed(
   });
 
   if (!policy.allowed) {
-    if (policy.reason && policy.reason !== "trigger_not_ready") {
-      trackAdSkipped(input, policy.reason);
-    }
-
+    trackAdSkipped(
+      input,
+      policy.reason ?? "trigger_not_ready",
+      "policy",
+      false
+    );
     return false;
   }
 
   if (!FEATURE_FLAGS.enableAds) {
-    trackAdSkipped(input, "disabled");
+    trackAdSkipped(input, "disabled", "policy", false);
     return false;
   }
 
@@ -164,13 +252,27 @@ export async function showInterstitialIfAllowed(
 
   if (!isInterstitialLoaded()) {
     if (!input.waitForLoad) {
-      trackAdSkipped(input, "not_loaded");
+      trackAdSkipped(
+        input,
+        getLastInterstitialWhy() === "idle"
+          ? "not_loaded"
+          : `not_loaded:${getLastInterstitialWhy()}`,
+        "wait_for_load",
+        true
+      );
       return false;
     }
 
     const ready = await ensureInterstitialReady(INTERSTITIAL_ENSURE_OPTIONS);
     if (!ready) {
-      trackAdSkipped(input, "not_loaded");
+      trackAdSkipped(
+        input,
+        getLastInterstitialWhy() === "idle"
+          ? "not_loaded"
+          : `not_loaded:${getLastInterstitialWhy()}`,
+        "ensure_load",
+        true
+      );
       return false;
     }
   }
@@ -199,22 +301,22 @@ export async function showInterstitialForUnlockGate(
   };
 
   if (input.hasPlusAccess) {
-    trackAdSkipped(normalizedInput, "plus_user");
+    trackAdSkipped(normalizedInput, "plus_user", "policy", false);
     return false;
   }
 
   if (!adsEnabled || !FEATURE_FLAGS.enableAds) {
-    trackAdSkipped(normalizedInput, "disabled");
+    trackAdSkipped(normalizedInput, "disabled", "policy", false);
     return false;
   }
 
   if (routeBlocked) {
-    trackAdSkipped(normalizedInput, "blocked_route");
+    trackAdSkipped(normalizedInput, "blocked_route", "policy", false);
     return false;
   }
 
   if (isExamSessionActive()) {
-    trackAdSkipped(normalizedInput, "exam_active");
+    trackAdSkipped(normalizedInput, "exam_active", "policy", false);
     return false;
   }
 
@@ -223,46 +325,39 @@ export async function showInterstitialForUnlockGate(
   if (!isInterstitialLoaded()) {
     const ready = await ensureInterstitialReady(INTERSTITIAL_ENSURE_OPTIONS);
     if (!ready) {
-      trackAdSkipped(normalizedInput, "not_loaded");
+      trackAdSkipped(
+        normalizedInput,
+        getLastInterstitialWhy() === "idle"
+          ? "not_loaded"
+          : `not_loaded:${getLastInterstitialWhy()}`,
+        "ensure_load",
+        true
+      );
       return false;
     }
   }
 
   // Interstitial briefly backgrounds the app — don't treat that as app_resume.
-  suppressAppResumeAds();
-  clearAppBackgroundMark();
-
-  const shown = await showPreloadedInterstitial();
-
-  if (!shown) {
-    trackAdFailed(normalizedInput, "show_returned_false");
-    return false;
-  }
-
-  trackAdShown(normalizedInput);
-  recordAdShown();
-  clearAppBackgroundMark();
-  trackAdDismissed(normalizedInput);
-  return true;
+  return presentInterstitial(normalizedInput);
 }
 
 export function maybeShowInterstitial(
   trigger: AdInterstitialTrigger,
   input: Omit<ShowInterstitialInput, "trigger" | "waitForLoad">
 ) {
-  void showInterstitialIfAllowed({
+  const normalizedInput: ShowInterstitialInput = {
     ...input,
     trigger,
     waitForLoad: false,
-  }).catch((error) => {
+  };
+
+  void showInterstitialIfAllowed(normalizedInput).catch((error) => {
     console.warn("Failed to show interstitial ad.", error);
     trackAdFailed(
-      {
-        ...input,
-        trigger,
-        waitForLoad: false,
-      },
-      error instanceof Error ? error.name || "unknown_error" : "unknown_error"
+      normalizedInput,
+      getAnalyticsErrorCode(error),
+      "native_show",
+      error
     );
   });
 }
@@ -273,6 +368,7 @@ export function maybeShowInterstitial(
  */
 export function useAdInterstitialActions() {
   const { track } = useAnalytics();
+  const { captureError } = useErrorLogger();
   const hasPlusAccess = useHasPlusAccess();
   const pathname = usePathname();
 
@@ -281,8 +377,50 @@ export function useAdInterstitialActions() {
       return Promise.resolve(false);
     }
 
-    return ensureInterstitialReady(INTERSTITIAL_ENSURE_OPTIONS).catch(() => false);
-  }, [hasPlusAccess]);
+    return ensureInterstitialReady(INTERSTITIAL_ENSURE_OPTIONS)
+      .then((ready) => {
+        if (!ready) {
+          const why = getLastInterstitialWhy() || "not_loaded";
+          const properties = buildAdDecisionProperties({
+            after: "preload",
+            loaded: false,
+            pathname,
+            shouldShow: false,
+            step: "preload",
+            waitForLoad: true,
+            why,
+          });
+          captureError({
+            area: "ads",
+            eventName: "ad_preload_failed",
+            message: String(properties.detail ?? why),
+            metadata: properties,
+            severity: "warning",
+          });
+        }
+
+        return ready;
+      })
+      .catch((error) => {
+        captureError({
+          area: "ads",
+          error,
+          eventName: "ad_preload_failed",
+          message: "Interstitial preload threw.",
+          metadata: buildAdDecisionProperties({
+            after: "preload",
+            loaded: false,
+            pathname,
+            shouldShow: false,
+            step: "preload",
+            waitForLoad: true,
+            why: getAnalyticsErrorCode(error),
+          }),
+          severity: "warning",
+        });
+        return false;
+      });
+  }, [captureError, hasPlusAccess, pathname]);
 
   const showInterstitialForTrigger = useCallback(
     (
@@ -292,6 +430,7 @@ export function useAdInterstitialActions() {
       }
     ) =>
       showInterstitialIfAllowed({
+        captureError,
         hasPlusAccess,
         pathname,
         practiceAnsweredCount: options?.practiceAnsweredCount,
@@ -299,7 +438,7 @@ export function useAdInterstitialActions() {
         trigger,
         waitForLoad: options?.waitForLoad ?? true,
       }),
-    [hasPlusAccess, pathname, track]
+    [captureError, hasPlusAccess, pathname, track]
   );
 
   return {
@@ -313,6 +452,7 @@ export function useAdInterstitialActions() {
       options?: Pick<ShowInterstitialInput, "practiceAnsweredCount">
     ) =>
       maybeShowInterstitial(trigger, {
+        captureError,
         hasPlusAccess,
         pathname,
         practiceAnsweredCount: options?.practiceAnsweredCount,
@@ -321,6 +461,7 @@ export function useAdInterstitialActions() {
     showInterstitialForTrigger,
     showInterstitialForUnlockGate: () =>
       showInterstitialForUnlockGate({
+        captureError,
         hasPlusAccess,
         pathname,
         track,

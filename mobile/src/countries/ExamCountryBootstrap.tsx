@@ -13,12 +13,18 @@ import {
   type AnalyticsExamCountrySource,
 } from "../analytics/catalog";
 import { mobileEnv } from "../config/env";
+import {
+  ensureRevenueCatReady,
+  isRevenueCatConfiguredForCurrentPlatform,
+} from "../features/entitlements/revenuecat";
+import { useAppUserId } from "../identity/AppIdentityProvider";
 import { useAnalytics } from "../providers/AnalyticsProvider";
 import { useAppShellStore, useHasHydrated } from "../state/app-shell";
 import { detectExamCountry } from "./detect-country";
 
 export function ExamCountryBootstrap({ children }: PropsWithChildren) {
   const hasHydrated = useHasHydrated();
+  const appUserId = useAppUserId();
   const { track } = useAnalytics();
   const examCountry = useAppShellStore((state) => state.examCountry);
   const onboardingCompleted = useAppShellStore(
@@ -69,20 +75,28 @@ export function ExamCountryBootstrap({ children }: PropsWithChildren) {
       return;
     }
 
-    void detectExamCountry()
-      .then((detection) => {
+    void (async () => {
+      if (isRevenueCatConfiguredForCurrentPlatform()) {
+        try {
+          await ensureRevenueCatReady(appUserId);
+        } catch {
+          // Storefront is optional; device region still works.
+        }
+      }
+
+      try {
+        const detection = await detectExamCountry();
         assignCountry(detection.country, detection.source);
-      })
-      .catch(() => {
+      } catch {
         assignCountry(
           DEFAULT_COUNTRY_CODE,
           ANALYTICS_EXAM_COUNTRY_SOURCES.default,
         );
-      })
-      .finally(() => {
+      } finally {
         inFlightRef.current = false;
-      });
-  }, [examCountry, hasHydrated, onboardingCompleted, resolveExamCountry, track]);
+      }
+    })();
+  }, [appUserId, examCountry, hasHydrated, onboardingCompleted, resolveExamCountry, track]);
 
   return children;
 }
