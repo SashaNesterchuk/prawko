@@ -8,6 +8,10 @@ export function pickLocalized(
     return value.cs ?? value.en;
   }
 
+  if (locale === "sk") {
+    return value.sk ?? value.en;
+  }
+
   if (locale === "pl" || locale === "ua" || locale === "en") {
     return value[locale];
   }
@@ -27,10 +31,12 @@ export function buildSearchText(
     name.ua,
     name.en,
     name.cs,
+    name.sk,
     description?.pl,
     description?.ua,
     description?.en,
     description?.cs,
+    description?.sk,
   ]
     .filter(Boolean)
     .join(" ")

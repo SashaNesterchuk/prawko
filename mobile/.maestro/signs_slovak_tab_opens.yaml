@@ -1,0 +1,20 @@
+# Feature: Slovak signs
+# Scenario: Slovakia exam country shows the signs tab and hub, not an empty fallback
+appId: com.mindjar.prawko
+tags:
+  - signs
+  - slovakia
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: signs
+      TARGET_ID: screen-signs
+      EXAM_COUNTRY: SK
+      LOCALE: sk
+
+- assertVisible:
+    id: "tab-signs"
+
+- assertVisible:
+    id: "signs-train-all"

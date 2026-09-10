@@ -60,3 +60,8 @@ media fields. The source identity to match is `source_id` (for example,
 The initial import retains `official_media_available` and official answer IDs in
 `official_metadata`, so a later attachment process can match the source without
 changing question text or answers.
+
+Learner explanations for `cz-v2-current` are rewritten by the system in
+[`docs/rewrite-explanations-v2.md`](rewrite-explanations-v2.md)
+(`scripts/rewrite-explanations-v2/`). Apply is an UPDATE of
+`question_ai_explanations_v2` only; it does not change question rows.

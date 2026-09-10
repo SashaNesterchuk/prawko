@@ -39,11 +39,31 @@ import {
   getSignRasterSource as getPlSignRasterSource,
   signAssets as plSignAssets,
 } from "../../variants/prawko/road-sign-assets";
+import { roadSignCatalog as skCatalog } from "../../variants/slovak/road-sign-catalog";
+import {
+  getSignDescription as getSkSignDescription,
+  getSignDisplayName as getSkSignDisplayName,
+  getSignMetadata as getSkSignMetadata,
+  getSignPracticeContent as getSkSignPracticeContent,
+  getSignPractices as getSkSignPractices,
+  getSignSearchText as getSkSignSearchText,
+  getPrimarySignPractice as getSkPrimarySignPractice,
+  hasSignMetadata as hasSkSignMetadata,
+  hasSignPracticeContent as hasSkSignPracticeContent,
+  listPracticeSignIds as listSkPracticeSignIds,
+  matchesSignSearch as matchesSkSignSearch,
+} from "../../variants/slovak/road-sign-content";
+import {
+  getSignAssetComponent as getSkSignAssetComponent,
+  getSignRasterSource as getSkSignRasterSource,
+  signAssets as skSignAssets,
+} from "../../variants/slovak/road-sign-assets";
 
-const catalogs = {
+const catalogs: Record<CountryCode, RoadSignCatalogDefinition> = {
   PL: plCatalog,
   CZ: czCatalog,
-} as const;
+  SK: skCatalog,
+};
 
 const content = {
   PL: {
@@ -72,6 +92,19 @@ const content = {
     listPracticeSignIds: listCzPracticeSignIds,
     matchesSignSearch: matchesCzSignSearch,
   },
+  SK: {
+    getSignDescription: getSkSignDescription,
+    getSignDisplayName: getSkSignDisplayName,
+    getSignMetadata: getSkSignMetadata,
+    getSignPracticeContent: getSkSignPracticeContent,
+    getSignPractices: getSkSignPractices,
+    getSignSearchText: getSkSignSearchText,
+    getPrimarySignPractice: getSkPrimarySignPractice,
+    hasSignMetadata: hasSkSignMetadata,
+    hasSignPracticeContent: hasSkSignPracticeContent,
+    listPracticeSignIds: listSkPracticeSignIds,
+    matchesSignSearch: matchesSkSignSearch,
+  },
 } as const;
 
 const assets = {
@@ -85,54 +118,21 @@ const assets = {
     getSignRasterSource: getCzSignRasterSource,
     signAssets: czSignAssets,
   },
-} as const;
-
-const EMPTY_CATALOG: RoadSignCatalogDefinition = {
-  categories: [],
-  signs: [],
-};
-
-const EMPTY_CONTENT = {
-  getSignDescription: () => undefined,
-  getSignDisplayName: (_signId: string, _locale: string, fallbackCode?: string) =>
-    fallbackCode ?? "",
-  getSignMetadata: () => undefined,
-  getSignPracticeContent: () => undefined,
-  getSignPractices: () => [],
-  getSignSearchText: () => "",
-  getPrimarySignPractice: () => undefined,
-  hasSignMetadata: () => false,
-  hasSignPracticeContent: () => false,
-  listPracticeSignIds: () => [],
-  matchesSignSearch: () => false,
-} as const;
-
-const EMPTY_ASSETS = {
-  getSignAssetComponent: () => undefined,
-  getSignRasterSource: () => undefined,
-  signAssets: {},
+  SK: {
+    getSignAssetComponent: getSkSignAssetComponent,
+    getSignRasterSource: getSkSignRasterSource,
+    signAssets: skSignAssets,
+  },
 } as const;
 
 export function getRoadSignCatalogForCountry(country: CountryCode) {
-  if (country === "PL" || country === "CZ") {
-    return catalogs[country];
-  }
-
-  return EMPTY_CATALOG;
+  return catalogs[country];
 }
 
 export function getRoadSignContentForCountry(country: CountryCode) {
-  if (country === "PL" || country === "CZ") {
-    return content[country];
-  }
-
-  return EMPTY_CONTENT;
+  return content[country];
 }
 
 export function getRoadSignAssetsForCountry(country: CountryCode) {
-  if (country === "PL" || country === "CZ") {
-    return assets[country];
-  }
-
-  return EMPTY_ASSETS;
+  return assets[country];
 }

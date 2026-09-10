@@ -8,11 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		265DE01522F2C27DD08F3114 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 89B7AFE3E3B1AF35869353F6 /* PrivacyInfo.xcprivacy */; };
-		3C3496E757B92D696AEB37B4 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB55465BD0D96367B4E30691 /* ExpoModulesProvider.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		66D1AF013B67332C1AD94DF5 /* libPods-Prawko.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20DD1DB175D54C058BF9D97F /* libPods-Prawko.a */; };
+		3E63D43EE8B4D9B76BE33CBF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BFFCB3A20193465EAC370BAC /* PrivacyInfo.xcprivacy */; };
+		473084B3446682171667F794 /* libPods-Prawko.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 59D04C8F3385A7130B1368C6 /* libPods-Prawko.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		CCE4F6A1F3A625F80AA11F7F /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31A094D81C1017AE60DD8676 /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -20,13 +20,13 @@
 		13B07F961A680F5B00A75B9A /* Prawko.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Prawko.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Prawko/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Prawko/Info.plist; sourceTree = "<group>"; };
-		1F6759DD11CC181B2D4E417F /* Pods-Prawko.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Prawko.debug.xcconfig"; path = "Target Support Files/Pods-Prawko/Pods-Prawko.debug.xcconfig"; sourceTree = "<group>"; };
-		20DD1DB175D54C058BF9D97F /* libPods-Prawko.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Prawko.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		225FD40A9CCFAA2E88E6E9B3 /* Pods-Prawko.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Prawko.release.xcconfig"; path = "Target Support Files/Pods-Prawko/Pods-Prawko.release.xcconfig"; sourceTree = "<group>"; };
-		89B7AFE3E3B1AF35869353F6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Prawko/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		31A094D81C1017AE60DD8676 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Prawko/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		4770F9525E2F5D3EF7B05C79 /* Pods-Prawko.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Prawko.release.xcconfig"; path = "Target Support Files/Pods-Prawko/Pods-Prawko.release.xcconfig"; sourceTree = "<group>"; };
+		59D04C8F3385A7130B1368C6 /* libPods-Prawko.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Prawko.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8890DE129007B4062E61290E /* Pods-Prawko.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Prawko.debug.xcconfig"; path = "Target Support Files/Pods-Prawko/Pods-Prawko.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Prawko/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		EB55465BD0D96367B4E30691 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Prawko/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		BFFCB3A20193465EAC370BAC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Prawko/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Prawko/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Prawko-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Prawko-Bridging-Header.h"; path = "Prawko/Prawko-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				66D1AF013B67332C1AD94DF5 /* libPods-Prawko.a in Frameworks */,
+				473084B3446682171667F794 /* libPods-Prawko.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				89B7AFE3E3B1AF35869353F6 /* PrivacyInfo.xcprivacy */,
+				BFFCB3A20193465EAC370BAC /* PrivacyInfo.xcprivacy */,
 			);
 			name = Prawko;
 			sourceTree = "<group>";
@@ -62,17 +62,9 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				20DD1DB175D54C058BF9D97F /* libPods-Prawko.a */,
+				59D04C8F3385A7130B1368C6 /* libPods-Prawko.a */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		2FC8231DC60CB3EF90AD6A40 /* Prawko */ = {
-			isa = PBXGroup;
-			children = (
-				EB55465BD0D96367B4E30691 /* ExpoModulesProvider.swift */,
-			);
-			name = Prawko;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -89,8 +81,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				DBC3E389F3FD173976968248 /* Pods */,
-				FDC0D6DF586EA1429FD29FE7 /* ExpoModulesProviders */,
+				9956C072A3535EEDFD2F6894 /* Pods */,
+				E231083D5062A7373578DDBC /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -105,6 +97,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		9956C072A3535EEDFD2F6894 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				8890DE129007B4062E61290E /* Pods-Prawko.debug.xcconfig */,
+				4770F9525E2F5D3EF7B05C79 /* Pods-Prawko.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -114,20 +116,18 @@
 			path = Prawko/Supporting;
 			sourceTree = "<group>";
 		};
-		DBC3E389F3FD173976968248 /* Pods */ = {
+		BF40DBAB491E17DE8ACF81FC /* Prawko */ = {
 			isa = PBXGroup;
 			children = (
-				1F6759DD11CC181B2D4E417F /* Pods-Prawko.debug.xcconfig */,
-				225FD40A9CCFAA2E88E6E9B3 /* Pods-Prawko.release.xcconfig */,
+				31A094D81C1017AE60DD8676 /* ExpoModulesProvider.swift */,
 			);
-			name = Pods;
-			path = Pods;
+			name = Prawko;
 			sourceTree = "<group>";
 		};
-		FDC0D6DF586EA1429FD29FE7 /* ExpoModulesProviders */ = {
+		E231083D5062A7373578DDBC /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				2FC8231DC60CB3EF90AD6A40 /* Prawko */,
+				BF40DBAB491E17DE8ACF81FC /* Prawko */,
 			);
 			name = ExpoModulesProviders;
 			sourceTree = "<group>";
@@ -140,14 +140,14 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Prawko" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				6A7EEAC264A76D06C18A1024 /* [Expo] Configure project */,
+				72777DEEEAC0BDCDE99A8095 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				1EAD30FB2689D33D95560EAC /* [CP] Embed Pods Frameworks */,
-				8A7F14DF320F5AFAB61E39F3 /* [CP-User] [RNGoogleMobileAds] Configuration */,
+				6A3014927418D4EF61EF2C7C /* [CP] Embed Pods Frameworks */,
+				B763185AE4A95E4CCF6C6DE4 /* [CP-User] [RNGoogleMobileAds] Configuration */,
 			);
 			buildRules = (
 			);
@@ -197,7 +197,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				265DE01522F2C27DD08F3114 /* PrivacyInfo.xcprivacy in Resources */,
+				3E63D43EE8B4D9B76BE33CBF /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,7 +243,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		1EAD30FB2689D33D95560EAC /* [CP] Embed Pods Frameworks */ = {
+		6A3014927418D4EF61EF2C7C /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -277,7 +277,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Prawko/Pods-Prawko-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		6A7EEAC264A76D06C18A1024 /* [Expo] Configure project */ = {
+		72777DEEEAC0BDCDE99A8095 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -349,7 +349,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Prawko/Pods-Prawko-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		8A7F14DF320F5AFAB61E39F3 /* [CP-User] [RNGoogleMobileAds] Configuration */ = {
+		B763185AE4A95E4CCF6C6DE4 /* [CP-User] [RNGoogleMobileAds] Configuration */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -370,7 +370,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				3C3496E757B92D696AEB37B4 /* ExpoModulesProvider.swift in Sources */,
+				CCE4F6A1F3A625F80AA11F7F /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -379,7 +379,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1F6759DD11CC181B2D4E417F /* Pods-Prawko.debug.xcconfig */;
+			baseConfigurationReference = 8890DE129007B4062E61290E /* Pods-Prawko.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -417,7 +417,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 225FD40A9CCFAA2E88E6E9B3 /* Pods-Prawko.release.xcconfig */;
+			baseConfigurationReference = 4770F9525E2F5D3EF7B05C79 /* Pods-Prawko.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

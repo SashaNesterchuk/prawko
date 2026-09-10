@@ -1,0 +1,52 @@
+# Feature: Slovak offline pack
+# Scenario: SK Plus download of the offline pack stays on the SK signs tab path
+appId: com.mindjar.prawko
+tags:
+  - offline
+  - signs
+  - slovakia
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      EXAM_COUNTRY: SK
+      LOCALE: sk
+      OFFLINE_PACK_STATUS: missing
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-profile
+
+- tapOn:
+    id: "profile-row-offline-mode"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-offline-mode"
+    timeout: 15000
+
+- tapOn:
+    id: "offline-mode-primary-action"
+
+- extendedWaitUntil:
+    visible:
+      id: "offline-mode-pack-state-ready"
+    timeout: 20000
+
+- tapOn:
+    id: "offline-mode-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
+- tapOn:
+    id: "tab-signs"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-signs"
+    timeout: 15000
+
+- assertVisible:
+    id: "signs-train-all"

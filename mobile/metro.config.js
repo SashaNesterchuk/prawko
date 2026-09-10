@@ -6,6 +6,7 @@ const workspaceRoot = path.resolve(projectRoot, "..");
 const roadSignsDataRoots = [
   path.resolve(workspaceRoot, "data/pl-road-signs-wikimedia"),
   path.resolve(workspaceRoot, "data/cz-road-signs-dopravni-znaceni-eu"),
+  path.resolve(workspaceRoot, "data/sk-road-signs-wikimedia"),
 ];
 
 const config = getDefaultConfig(projectRoot);

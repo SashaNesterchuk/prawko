@@ -432,6 +432,23 @@ export function getOfflineQuestionPosterUrl(
   );
 }
 
+/**
+ * Slovak sign thumbs downloaded with the SK offline pack. Used whenever the
+ * file is already on disk, including airplane mode before the question catalog
+ * flips to the offline copy. PL/CZ signs stay bundled and never call this.
+ */
+export function getOfflineRoadSignImageUri(signId: string) {
+  if (Platform.OS === "web" || getExamCountry() !== "SK") {
+    return null;
+  }
+
+  const { SK_ROAD_SIGN_OFFLINE_BUCKET } = getSlovakOfflineSignModule();
+  return peekOfflineAssetUriIfPresent(
+    SK_ROAD_SIGN_OFFLINE_BUCKET,
+    `${signId}.png`
+  );
+}
+
 export function cancelOfflinePackDownload() {
   offlinePackDownloadCancelRequested = true;
 
@@ -553,15 +570,7 @@ export async function downloadOfflinePack({
         getRemainingBytes(assets)
       );
 
-      if (asset.file.exists) {
-        asset.file.delete();
-      }
-
-      throwIfOfflinePackDownloadCancelled();
-
-      await File.downloadFileAsync(asset.url, asset.file, {
-        idempotent: true,
-      });
+      await downloadOfflineAssetFile(asset);
 
       if (!isOfflineAssetComplete(asset)) {
         throw new Error(`Downloaded asset is incomplete: ${asset.key}`);
@@ -799,6 +808,8 @@ function buildOfflinePackPlanSummary(
     }
   }
 
+  totalBytes += addSlovakRoadSignOfflinePlan(assetKeys).extraBytes;
+
   const plan: OfflinePackPlan = {
     assetCount: assetKeys.size,
     // Real signature is computed only for download / explicit catalog matching.
@@ -1003,6 +1014,8 @@ function buildOfflineAssetEntries(questionBank: LocalQuestion[]) {
     }
   }
 
+  appendSlovakRoadSignOfflineFileEntries(entries);
+
   return Array.from(entries.values()).sort((left, right) =>
     left.key.localeCompare(right.key)
   );
@@ -1194,6 +1207,10 @@ function getOfflineAssetUriIfComplete(bucket: string, storagePath: string) {
     return null;
   }
 
+  return peekOfflineAssetUriIfPresent(bucket, storagePath);
+}
+
+function peekOfflineAssetUriIfPresent(bucket: string, storagePath: string) {
   const key = buildOfflineAssetKey(bucket, storagePath);
   const cached = offlineAssetUriCache.get(key);
 
@@ -1204,14 +1221,97 @@ function getOfflineAssetUriIfComplete(bucket: string, storagePath: string) {
   }
 
   const file = getOfflineAssetFile(bucket, storagePath);
-  const uri = isOfflineAssetComplete({
-    expectedBytes: lookupOfflineAssetBytes(bucket, storagePath),
-    file,
-  })
-    ? file.uri
-    : null;
+  const uri =
+    file.exists && file.size > 0 ? file.uri : null;
   offlineAssetUriCache.set(key, uri);
   return uri;
+}
+
+function getSlovakOfflineSignModule() {
+  return require("./sk-road-sign-offline") as typeof import("./sk-road-sign-offline");
+}
+
+function addSlovakRoadSignOfflinePlan(assetKeys: Set<string>) {
+  if (getExamCountry() !== "SK") {
+    return { extraBytes: 0 };
+  }
+
+  let extraBytes = 0;
+  for (const sign of getSlovakOfflineSignModule().listSlovakOfflineSignAssetPlans()) {
+    if (assetKeys.has(sign.key)) {
+      continue;
+    }
+
+    assetKeys.add(sign.key);
+    extraBytes += sign.expectedBytes;
+  }
+
+  return { extraBytes };
+}
+
+function appendSlovakRoadSignOfflineFileEntries(
+  entries: Map<string, OfflineAssetEntry>
+) {
+  if (getExamCountry() !== "SK") {
+    return;
+  }
+
+  const { listSlovakOfflineSignAssetPlans, SK_ROAD_SIGN_OFFLINE_BUCKET } =
+    getSlovakOfflineSignModule();
+
+  for (const sign of listSlovakOfflineSignAssetPlans()) {
+    if (entries.has(sign.key)) {
+      continue;
+    }
+
+    entries.set(sign.key, {
+      bucket: SK_ROAD_SIGN_OFFLINE_BUCKET,
+      expectedBytes: sign.expectedBytes,
+      file: getOfflineAssetFile(SK_ROAD_SIGN_OFFLINE_BUCKET, sign.storagePath),
+      key: sign.key,
+      storagePath: sign.storagePath,
+      url: sign.url,
+    });
+  }
+}
+
+async function downloadOfflineAssetFile(asset: OfflineAssetEntry) {
+  const maxAttempts = asset.bucket === "sk-road-signs" ? 4 : 1;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    throwIfOfflinePackDownloadCancelled();
+
+    if (asset.file.exists) {
+      asset.file.delete();
+    }
+
+    try {
+      await File.downloadFileAsync(asset.url, asset.file, {
+        idempotent: true,
+      });
+
+      if (isOfflineAssetComplete(asset)) {
+        return;
+      }
+
+      lastError = new Error(`Downloaded asset is incomplete: ${asset.key}`);
+    } catch (error) {
+      lastError = error;
+    }
+
+    if (attempt < maxAttempts - 1) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 400 * (attempt + 1));
+      });
+    }
+  }
+
+  if (lastError instanceof Error) {
+    throw lastError;
+  }
+
+  throw new Error(`Downloaded asset is incomplete: ${asset.key}`);
 }
 
 function computeTransferProgress(assets: OfflineAssetEntry[]) {

@@ -35,7 +35,7 @@ describe("country registry", () => {
       defaultLocale: "sk",
       supportedLocales: ["sk"],
       categories: ["B"],
-      features: { roadSigns: false },
+      features: { roadSigns: true },
       exam: {
         id: "etesty",
         totalQuestions: 40,

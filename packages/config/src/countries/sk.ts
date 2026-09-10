@@ -40,9 +40,7 @@ export const SK_COUNTRY_CONFIG: CountryConfig = {
     specialistSeconds: 0,
     strictBasketComposition: true,
   },
-  // There is no Slovak sign registry in the app yet. Keeping this disabled
-  // prevents Czech/Polish national sign assets being shown for Slovakia.
-  features: { roadSigns: false },
+  features: { roadSigns: true },
   mediaEnvKey: "EXPO_PUBLIC_SLOVAK_MEDIA_BASE_URL",
   questionImageResizeMode: "contain",
   questionSetKey: "sk-v2-current",

@@ -1,0 +1,16 @@
+---
+description: Repeatable CZ/SK/PL learner-explanation rewrite for question_ai_explanations_v2. Use when the user mentions explanations, autoškola/autoškola texts, dump/generate/apply, or rewriting SK/CZ/PL.
+alwaysApply: true
+---
+
+# Learner explanations (system, not a one-off)
+
+When the user wants better exam explanations, SK/CZ/PL rewrites, or `question_ai_explanations_v2` — this is the system. Do not hunt for a new script and do not fork `scripts/`.
+
+- **Front door:** `docs/rewrite-explanations-v2.md`
+- **Runbook:** `scripts/rewrite-explanations-v2/README.md`
+- **Country config only:** `scripts/rewrite-explanations-v2/packs.py`
+- **Work (gitignored):** `supabase/backups/rewrite-explanations-v2/<cz|sk|pl>/`
+- **Skill:** `.cursor/skills/rewrite-explanations/SKILL.md`
+
+Hard rules: never DELETE/INSERT explanation rows; apply is `explanations || patch` for write locales; do not apply until `preview` + a sample look good; Prawko dump/apply uses the Supabase CLI token (project `ybqoporhnnbaluhaoppo`), never dashboard `SUPABASE_*`; new country = fill a pack, not a new CLI.

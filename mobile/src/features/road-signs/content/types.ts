@@ -3,7 +3,7 @@ import type { RoadSignCategoryId } from "../types";
 export type AppLocale = "pl" | "ua" | "en";
 
 export type LocalizedString = Record<AppLocale, string> &
-  Partial<Record<"cs", string>>;
+  Partial<Record<"cs" | "sk", string>>;
 
 export type SignPracticeOption = {
   id: string;

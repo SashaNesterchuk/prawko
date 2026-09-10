@@ -69,6 +69,7 @@ pnpm test:e2e:studio
 | `profile_offline_incomplete_pack_shows_resume.yaml` | Incomplete pack shows resume + remove |
 | `profile_offline_downloading_can_be_stopped.yaml` | Downloading pack can be stopped → incomplete |
 | `profile_offline_ready_pack_can_be_removed.yaml` | Ready pack can be removed from device |
+| `offline_sk_pack_download_opens_signs.yaml` | SK Plus downloads the offline pack, then the Signs tab still opens |
 | `trainer_offline_missing_pack_is_blocked.yaml` | Trainer → offline gate when no ready pack |
 | `trainer_offline_ready_pack_starts_questions.yaml` | Trainer → offline start with ready pack |
 | `exam_offline_missing_pack_is_blocked.yaml` | Practice exam → offline gate when no ready pack |
@@ -87,6 +88,7 @@ pnpm test:e2e:studio
 | `traps_exit_then_start_is_fresh.yaml` | Answer traps → Finish → start again at question 1 |
 | `trainer_random_answer_covers_all_question_topics.yaml` | Random training answer closes every assigned topic card |
 | `topic_training_answer_covers_all_question_topics.yaml` | Topic training closes every assigned card while the question remains new in another topic queue |
+| `signs_slovak_tab_opens.yaml` | SK exam country bootstrap → Signs tab and hub are visible |
 | `signs_training_starts_from_tab.yaml` | Signs tab → train all → sign test session |
 | `signs_category_training_starts.yaml` | Direct sign category bootstrap → category training |
 | `signs_directional_category_opens.yaml` | Direct bootstrap into directional signs (E) |

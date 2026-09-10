@@ -19,6 +19,8 @@ describe("Slovak UI copy", () => {
     expect(slovakTranslations.question.correctFeedbackTitle).toBe("Správne");
     expect(slovakTranslations.exam.resultPassedTitle).toBe("Splnené");
     expect(slovakTranslations.countries.SK.name).toBe("Slovensko");
+    expect(slovakTranslations.signs.categories.A.title).toBe("Výstražné značky");
+    expect(slovakTranslations.signs.searchHintDescription).toContain("201");
     const trafficRules = getQuestionTopicCatalogEntry("road_traffic_rules");
     const safeDriving = getQuestionTopicCatalogEntry("safe_driving_principles");
     expect("titleSk" in trafficRules ? trafficRules.titleSk : undefined).toBe(

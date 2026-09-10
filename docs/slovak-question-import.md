@@ -59,3 +59,8 @@ importer inserts only missing topics and questions by their source identity;
 existing rows are left untouched. Upload the R2
 plan and configure the Slovak public R2 base URL before activating the country
 in a client build.
+
+To rewrite `question_ai_explanations_v2` for SK, follow
+[`docs/rewrite-explanations-v2.md`](rewrite-explanations-v2.md).
+Adjust the SK pack in `scripts/rewrite-explanations-v2/packs.py`; do not fork
+the CLI. Apply is UPDATE-only.
