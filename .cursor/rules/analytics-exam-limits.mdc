@@ -1,0 +1,19 @@
+---
+description: Do not treat exam restart analytics as a Home/daily exam cap
+alwaysApply: true
+---
+
+# Exam restart is not a product limit
+
+`exam_restart_gate_shown` / `exam_restart_selected` fire only from the result screen **New attempt** button (`ExamRestartGateDialog`). They are not a daily cap.
+
+Do not say or imply:
+
+- the gate blocks the Home or Learn exam tile
+- `dismiss` prevents another exam
+- paywall copy `1/день` is enforced
+- grinders “didn’t see Plus because the gate worked”
+
+Home/Learn call `openExam()` → `/exam` → `exam_start_requested source=manual` with no Plus check. After `dismiss` the modal closes; Close goes Home; the tile starts a new exam immediately. Passed-result primary CTA is Home, so the gate often never shows.
+
+Source: `docs/analytics/keys.md` (Exam), `mobile/app/exam/result.tsx`, `mobile/src/features/questions/useQuestionModeCountDialog.tsx`.

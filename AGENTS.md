@@ -13,3 +13,7 @@ Never DELETE/INSERT those rows. Apply is UPDATE merge. Skill: `.cursor/skills/re
 ## Mobile e2e
 
 UI/behavior fixes in `mobile/` follow `.cursor/rules/e2e-with-fixes.mdc` (Maestro is part of the fix).
+
+## Analytics (exam restart)
+
+`exam_restart_*` is the result-screen modal only, not a Home/daily exam cap. Reading dumps: [docs/analytics/keys.md](docs/analytics/keys.md). Do not infer that the gate blocks the exam tile.

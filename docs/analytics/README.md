@@ -7,7 +7,10 @@
 | [keys.md](./keys.md) | Словарь: события, экраны, свойства, воронки, режимы |
 | [2026-09-08-brief.md](./2026-09-08-brief.md) | Выжимка за 8 сентября 2026 |
 | [2026-09-08.md](./2026-09-08.md) | Полный разбор того же дня |
-| [prawko-posthog-dump-2026-09-08.json](./prawko-posthog-dump-2026-09-08.json) | Сырой дамп PostHog за тот день (~8.5 MB, в git не коммитится) |
+| [2026-09-12-2026-09-20.md](./2026-09-12-2026-09-20.md) | Разбор 12–20 сентября 2026 (воронки, ошибки, отвалы) |
+| [prawko-posthog-dump-2026-09-08.json](./prawko-posthog-dump-2026-09-08.json) | Сырой дамп PostHog за 8 сентября (~8.5 MB, в git не коммитится) |
+| [prawko-posthog-dump-2026-09-12-2026-09-20.json](./prawko-posthog-dump-2026-09-12-2026-09-20.json) | Сырой дамп PostHog за 12–20 сентября (~171 MB, в git не коммитится) |
+| [apple/2026-09-12-2026-09-20.md](./apple/2026-09-12-2026-09-20.md) | Apple Search Ads за то же окно (кампании, ключи, сверка с инсталлами) |
 
 PostHog EU, проект `249243`. JSON-дампы в этой папке в `.gitignore`.
 
@@ -76,6 +79,10 @@ SDK годится для «открыл / ушёл в фон». В продук
 Sanitize выкидывает свободный текст и секреты: `email`, `full_name`, `password`, `school_code`, `message`, `prompt`, `answer_given`, `selected_answer`, `component_stack`.
 
 Ошибки нормализуются в `error_code` / `error_name` / `area`. Картинки вопросов сегодня часто приходят без `error_code` — это дыра инструментации, не «ошибки нет».
+
+### Exam restart — не лимит
+
+`exam_restart_gate_shown` / `exam_restart_selected` — модалка **New attempt** на экране результата. Это не дневной кап и не гейт плитки Home/Learn. `exam_start_requested source=manual` после Home — обычный старт, не «гейт пропустили». `dismiss` только закрывает шит. Текст paywall `1/день` в коде не enforced. Подробнее: [keys.md](./keys.md) (Exam).
 
 ### Воронки дашборда
 

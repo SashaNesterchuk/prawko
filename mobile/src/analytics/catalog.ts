@@ -156,12 +156,13 @@ export const ANALYTICS_EVENTS = {
   },
   examRestartGateShown: {
     key: "exam_restart_gate_shown",
-    description: "The free-user exam restart gate was shown.",
+    description:
+      "The result-screen restart modal was shown after New attempt. Not a daily exam cap and not shown from the Home/Learn exam tile.",
   },
   examRestartSelected: {
     key: "exam_restart_selected",
     description:
-      "The learner chose an exam restart path. choice: watch_ad, upgrade, dismiss, plus. Dismiss is close/back on the gate; plus skips the gate. Home exam tile is a separate start (exam_start_requested source=manual), not this event.",
+      "Choice on that result-screen modal only: watch_ad, upgrade, dismiss, plus. Dismiss closes the modal and stays on result. Home/Learn exam tile does not check this gate — it is exam_start_requested source=manual, unlimited for free.",
   },
   questionBookmarkChanged: {
     key: "question_bookmark_changed",

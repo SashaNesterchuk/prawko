@@ -66,6 +66,12 @@ describe("analytics catalog", () => {
     expect(ANALYTICS_EXAM_RESTART_CHOICES.upgrade).toBe("upgrade");
     expect(ANALYTICS_EXAM_RESTART_CHOICES.dismiss).toBe("dismiss");
     expect(ANALYTICS_EXAM_RESTART_CHOICES.plus).toBe("plus");
+    expect(ANALYTICS_EVENTS.examRestartGateShown.description).toMatch(
+      /result-screen/i
+    );
+    expect(ANALYTICS_EVENTS.examRestartSelected.description).toMatch(
+      /Home\/Learn exam tile does not check this gate/
+    );
   });
 
   it("normalizes unknown errors without sending their message", () => {

@@ -147,10 +147,12 @@ Skip и start у одного человека в разные визиты — 
 | `exam_session_completed` | Есть счёт. Смотреть `passed` |
 | `exam_session_ended` | Вышли или истекло. `end_reason`, `status` |
 | `exam_answers_review_opened` | Открыли разбор |
-| `exam_restart_gate_shown` | Гейт рестарта для free |
-| `exam_restart_selected` | Выбрали путь рестарта |
+| `exam_restart_gate_shown` | Модалка «ещё раз» на экране **результата**, только кнопка New attempt |
+| `exam_restart_selected` | Ответ на эту модалку. `choice`: `watch_ad`, `upgrade`, `dismiss`, `plus` |
 
-`exam_session_ended.status`: `abandoned` — дроп; `completed` + `end_reason: learner_finish` — нормальное завершение (иногда дублирует complete). Настоящий mid-exam дроп: `end_reason: user_ended_early`.
+Это **не** лимит экзаменов и **не** гейт на плитке Home/Learn. `openExam()` → `/exam` не смотрит Plus и не показывает модалку. `exam_start_requested source=manual` после Home — обход, не «гейт пропустили». `dismiss` только закрывает модалку, на результате остаются; Close ведёт на Home, оттуда новый экзамен сразу. Текст paywall `1/день` — копирайт, в коде дневного капа нет. После сдачи primary CTA — Home, гейт даже не показывается.
+
+`exam_session_ended.status`: `abandoned` — дроп; `completed` + `end_reason: learner_finish` — нормальное завершение (иногда дублирует complete). Настоящий mid-exam дроп: `end_reason: user_ended_early`. Пустой выход без ответов: `end_reason: miss_click_empty_exit`.
 
 `passed` на complete — сдал / не сдал, не «дошёл до конца». PL обычно 32 вопроса, CZ 25.
 
@@ -257,7 +259,7 @@ Skip и start у одного человека в разные визиты — 
 
 **Training.** `training_mode_selected` → `training_session_started` → `training_session_completed`. Рядом: abandoned, empty. Сплит: `mode`.
 
-**Exam.** `exam_start_requested` → `exam_session_started` → `exam_session_completed`. Рядом: ended, restart gate. Сплит: `passed`.
+**Exam.** `exam_start_requested` → `exam_session_started` → `exam_session_completed`. Рядом: ended, restart **modal on result** (не кап Home). Сплит: `passed`.
 
 **Paywall.** `paywall_viewed` → `paywall_package_selected` → `purchase_started` → `purchase_succeeded`. Рядом: cancelled, failed. Сплиты: `source`, `step`, `why`.
 
