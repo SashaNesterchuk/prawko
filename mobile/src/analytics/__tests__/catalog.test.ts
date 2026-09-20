@@ -47,6 +47,16 @@ describe("analytics catalog", () => {
       "diagnostic_reminder_resolved"
     );
     expect(ANALYTICS_PROPERTIES.appUserId).toBe("app_user_id");
+    expect(ANALYTICS_PROPERTIES.adFormat).toBe("ad_format");
+    expect(ANALYTICS_PROPERTIES.adNetwork).toBe("ad_network");
+    expect(ANALYTICS_PROPERTIES.adUnitId).toBe("ad_unit_id");
+    expect(ANALYTICS_PROPERTIES.currency).toBe("currency");
+    expect(ANALYTICS_PROPERTIES.placement).toBe("placement");
+    expect(ANALYTICS_PROPERTIES.revenue).toBe("revenue");
+    expect(ANALYTICS_PROPERTIES.revenuePrecision).toBe("revenue_precision");
+    expect(ANALYTICS_EVENTS.adImpressionRevenue.key).toBe(
+      "ad_impression_revenue"
+    );
     expect(ANALYTICS_PROPERTIES.supabaseUserId).toBe("supabase_user_id");
     expect(ANALYTICS_PROPERTIES.examCountry).toBe("exam_country");
     expect(ANALYTICS_PROPERTIES.previous).toBe("previous");

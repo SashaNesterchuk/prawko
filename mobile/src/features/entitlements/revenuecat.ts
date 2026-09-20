@@ -170,12 +170,15 @@ export async function purchaseRevenueCatPackage(input: {
 
   const result = await Purchases.purchasePackage(targetPackage);
 
-  return mapRevenueCatSnapshot({
-    customerInfo: result.customerInfo,
-    isConfigured: true,
-    offerings,
-    offeringsError: null,
-  });
+  return {
+    snapshot: mapRevenueCatSnapshot({
+      customerInfo: result.customerInfo,
+      isConfigured: true,
+      offerings,
+      offeringsError: null,
+    }),
+    transactionId: result.transaction?.transactionIdentifier ?? null,
+  };
 }
 
 export async function restoreRevenueCatPurchases(appUserId: string) {
@@ -587,6 +590,7 @@ function mapOfferings(offerings: PurchasesOfferings) {
 
 function mapRevenueCatPackage(item: PurchasesPackage): RevenueCatPackageSummary {
   return {
+    currencyCode: item.product.currencyCode,
     description: item.product.description,
     identifier: item.identifier,
     offeringIdentifier: item.presentedOfferingContext.offeringIdentifier,

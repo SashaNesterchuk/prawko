@@ -24,6 +24,7 @@ tags:
     env:
       DESTINATION: question-result
       HOME_DAILY: done
+      PLUS_ACCESS: "true"
       TARGET_ID: screen-question-result
 
 - assertVisible:

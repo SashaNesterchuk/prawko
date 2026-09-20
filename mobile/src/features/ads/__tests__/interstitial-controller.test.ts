@@ -34,6 +34,17 @@ jest.mock("react-native-google-mobile-ads", () => ({
     ERROR: "error",
     OPENED: "opened",
     CLOSED: "closed",
+    PAID: "paid",
+  },
+  RevenuePrecisions: {
+    0: "UNKNOWN",
+    1: "ESTIMATED",
+    2: "PUBLISHER_PROVIDED",
+    3: "PRECISE",
+    UNKNOWN: 0,
+    ESTIMATED: 1,
+    PUBLISHER_PROVIDED: 2,
+    PRECISE: 3,
   },
   TestIds: {
     INTERSTITIAL: "ca-app-pub-3940256099942544/4411468910",
@@ -52,6 +63,7 @@ import {
   isInterstitialLoaded,
   isInterstitialShowing,
   resetInterstitialControllerForTests,
+  setAdRevenueListener,
   setInterstitialIdleWaitForTests,
   showPreloadedInterstitial,
   startInterstitialPreload,
@@ -125,6 +137,91 @@ describe("interstitial-controller", () => {
     stopInterstitialPreload();
     expect(isInterstitialLoaded()).toBe(false);
     expect(isInterstitialShowing()).toBe(false);
+  });
+
+  it("forwards paid impression revenue with the active placement", async () => {
+    const listener = jest.fn();
+    setAdRevenueListener(listener);
+    startInterstitialPreload();
+    const ad = loadCurrentAd();
+
+    const showPromise = showPreloadedInterstitial("after_training");
+    await afterIdleWait();
+    ad.emit(AdEventType.PAID, {
+      adNetwork: "AdMob Network",
+      currency: "USD",
+      precision: 1,
+      value: 0.0025,
+    });
+    ad.emit(AdEventType.OPENED);
+    ad.emit(AdEventType.CLOSED);
+
+    await expect(showPromise).resolves.toBe(true);
+    expect(listener).toHaveBeenCalledWith({
+      adFormat: "interstitial",
+      adNetwork: "AdMob Network",
+      adUnitId: "ca-app-pub-3940256099942544/4411468910",
+      currency: "USD",
+      placement: "after_training",
+      precision: "estimated",
+      revenue: 0.0025,
+    });
+    setAdRevenueListener(null);
+  });
+
+  it("uses the winning adapter source when the paid payload has no adNetwork", async () => {
+    const listener = jest.fn();
+    setAdRevenueListener(listener);
+    startInterstitialPreload();
+    const ad = loadCurrentAd();
+
+    const showPromise = showPreloadedInterstitial("training_questions");
+    await afterIdleWait();
+    ad.emit(AdEventType.PAID, {
+      currency: "USD",
+      precision: 3,
+      responseInfo: {
+        loadedAdapterResponse: {
+          adSourceName: "AppLovin",
+          adapterClassName: "GADMediationAdapterAppLovin",
+        },
+      },
+      value: 0.01,
+    });
+    ad.emit(AdEventType.OPENED);
+    ad.emit(AdEventType.CLOSED);
+
+    await expect(showPromise).resolves.toBe(true);
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        adNetwork: "AppLovin",
+        placement: "training_questions",
+        precision: "precise",
+        revenue: 0.01,
+      })
+    );
+    setAdRevenueListener(null);
+  });
+
+  it("does not forward paid events with unparseable revenue", async () => {
+    const listener = jest.fn();
+    setAdRevenueListener(listener);
+    startInterstitialPreload();
+    const ad = loadCurrentAd();
+
+    const showPromise = showPreloadedInterstitial();
+    await afterIdleWait();
+    ad.emit(AdEventType.PAID, {
+      currency: "USD",
+      precision: 1,
+      value: "n/a",
+    });
+    ad.emit(AdEventType.OPENED);
+    ad.emit(AdEventType.CLOSED);
+
+    await expect(showPromise).resolves.toBe(true);
+    expect(listener).not.toHaveBeenCalled();
+    setAdRevenueListener(null);
   });
 
   it("schedules a quiet reload after ERROR", () => {

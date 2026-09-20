@@ -658,6 +658,10 @@ sign_test
 other
 ```
 
+`app_user_id` already goes on every event as a super-property — do not duplicate it in the payload.
+
+`ad_network` comes from the winning mediation source on the native paid callback (`adSourceName`, else adapter class). Until a native rebuild with the library patch, older binaries may send `unknown`.
+
 Не рассчитывать revenue из eCPM самостоятельно.
 
 ---

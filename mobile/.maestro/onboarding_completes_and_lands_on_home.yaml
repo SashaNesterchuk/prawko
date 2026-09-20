@@ -17,3 +17,8 @@ tags:
     id: "action-tile-trainer"
 - assertVisible:
     id: "home-tile-blitz"
+- scrollUntilVisible:
+    element:
+      id: "home-exam-date"
+    direction: DOWN
+    timeout: 10000

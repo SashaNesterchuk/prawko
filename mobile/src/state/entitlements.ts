@@ -24,6 +24,7 @@ export type PurchaseAccessState = {
 };
 
 export type RevenueCatPackageSummary = {
+  currencyCode: string;
   description: string;
   identifier: string;
   offeringIdentifier: string;

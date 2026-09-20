@@ -38,6 +38,7 @@ import type {
 } from "../../src/features/exam/types";
 import { useAdInterstitialActions } from "../../src/features/ads/show-interstitial";
 import { maybeRequestInAppReview } from "../../src/features/profile/request-in-app-review";
+import { useMonetizationStore } from "../../src/features/monetization/monetization-store";
 import { getQuestionTopicTitle } from "../../src/features/question-topics/catalog";
 import { getQuestionUserState } from "../../src/features/questions/question-engine";
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
@@ -72,7 +73,6 @@ export default function ExamResultScreen() {
   }>();
   const {
     preloadInterstitial,
-    showInterstitialForTrigger,
     showInterstitialForUnlockGate,
   } = useAdInterstitialActions();
   const hasPlusAccess = useHasPlusAccess();
@@ -83,6 +83,12 @@ export default function ExamResultScreen() {
   );
   const toggleBookmark = useQuestionProgressStore(
     (state) => state.toggleBookmark
+  );
+  const recordExamCompleted = useMonetizationStore(
+    (state) => state.recordExamCompleted
+  );
+  const requestMonetizationSurface = useMonetizationStore(
+    (state) => state.requestSurface
   );
 
   const rawSessionId = getSingleParam(params.sessionId);
@@ -222,14 +228,6 @@ export default function ExamResultScreen() {
       }
 
       void (async () => {
-        if (!hasPlusAccess) {
-          try {
-            await showInterstitialForTrigger("after_exam_complete");
-          } catch (error) {
-            console.warn("Exam result interstitial failed open.", error);
-          }
-        }
-
         if (cancelled) {
           return;
         }
@@ -247,7 +245,7 @@ export default function ExamResultScreen() {
       cancelled = true;
       task.cancel?.();
     };
-  }, [hasPlusAccess, showInterstitialForTrigger, snapshot, track]);
+  }, [snapshot, track]);
 
   // Only bounce an *active* session back to the player — never while reviewing
   // answers, and never for finished sessions (completed/abandoned/expired).
@@ -283,6 +281,13 @@ export default function ExamResultScreen() {
     }
 
     didTrackCompletionRef.current = snapshot.session.id;
+    const completion = recordExamCompleted(
+      snapshot.session.id,
+      snapshot.session.totalQuestionsTarget
+    );
+    if (completion.isNew) {
+      requestMonetizationSurface("paywall", "after_exam");
+    }
     track(ANALYTICS_EVENTS.examSessionCompleted.key, {
       correct_count: snapshot.session.correctAnswersCount,
       duration_seconds: getExamDurationSeconds(snapshot.session),
@@ -293,7 +298,12 @@ export default function ExamResultScreen() {
       total_points_target: snapshot.session.totalPointsTarget,
       wrong_count: snapshot.session.wrongAnswersCount,
     });
-  }, [snapshot, track]);
+  }, [
+    recordExamCompleted,
+    requestMonetizationSurface,
+    snapshot,
+    track,
+  ]);
   const topicStats = useMemo(
     () => (snapshot ? buildExamTopicStats(snapshot) : []),
     [snapshot]

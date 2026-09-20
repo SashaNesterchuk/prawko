@@ -35,6 +35,7 @@ type BootstrapParams = {
   reachability?: string | string[];
   signCategoryId?: string | string[];
   topicId?: string | string[];
+  trainingCompletedLifetime?: string | string[];
   firstStart?: string | string[];
 };
 
@@ -68,6 +69,9 @@ export default function E2EBootstrapScreen() {
   const topicId = getSingleParam(params.topicId);
   const daysUntilExam = parsePositiveInteger(getSingleParam(params.daysUntilExam));
   const firstStart = parseOptionalBoolean(getSingleParam(params.firstStart));
+  const trainingCompletedLifetime = parseNonNegativeInteger(
+    getSingleParam(params.trainingCompletedLifetime)
+  );
 
   useEffect(() => {
     if (
@@ -100,6 +104,7 @@ export default function E2EBootstrapScreen() {
         seedQuestionResultOutcome:
           destination === "question-result-failed" ? "poor" : "good",
         seedDiagnosticResult: destination === "diagnostic-result",
+        trainingCompletedLifetime,
         unlockHomeChrome: firstStart === true ? false : true,
       });
 
@@ -136,6 +141,7 @@ export default function E2EBootstrapScreen() {
     reviewStartOrder,
     signCategoryId,
     topicId,
+    trainingCompletedLifetime,
   ]);
 
   const isEnabled = mobileEnv.enableE2ETestMode;
@@ -172,6 +178,13 @@ function parsePositiveInteger(value: string | undefined) {
 
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function parseNonNegativeInteger(value: string | undefined) {
+  if (!value) return null;
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
 function parseOptionalBoolean(value: string | undefined) {

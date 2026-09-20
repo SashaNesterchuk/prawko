@@ -49,6 +49,7 @@ import { rehydrateCountryScopedStores } from "../../countries/CountryScopedStore
 import { useAppShellStore } from "../../state/app-shell";
 import { useQuestionCatalogStore } from "../../state/question-catalog";
 import { useQuestionProgressStore } from "../../state/question-progress";
+import { useMonetizationStore } from "../../features/monetization/monetization-store";
 import {
   configureE2ETestOverrides,
   resetE2ETestOverrides,
@@ -94,6 +95,7 @@ type PrepareE2EAppStateInput = {
   seedQuestionResult?: boolean | null;
   seedQuestionResultOutcome?: "good" | "poor" | null;
   seedDiagnosticResult?: boolean | null;
+  trainingCompletedLifetime?: number | null;
   unlockHomeChrome?: boolean | null;
 };
 
@@ -156,6 +158,12 @@ export async function prepareE2EAppState(
 
   finalizeLocalOnboarding();
   useAppShellStore.setState({ homeStartSpotlightDismissed: false });
+  if (input.trainingCompletedLifetime != null) {
+    useMonetizationStore.setState({
+      countedTrainingSessionIds: [],
+      trainingCompletedLifetime: input.trainingCompletedLifetime,
+    });
+  }
 
   await waitForQuestionProgressHydrated();
   await waitForQuestionCatalogResolved();

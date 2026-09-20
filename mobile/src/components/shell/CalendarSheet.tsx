@@ -155,7 +155,7 @@ export function CalendarSheet({
       onRequestClose={onClose}
     >
       <Pressable style={styles.backdrop} onPress={onClose} />
-      <View style={styles.sheet}>
+      <View style={styles.sheet} testID="exam-date-calendar">
         <View style={styles.grabber} />
 
         <View style={styles.header}>
@@ -208,6 +208,7 @@ export function CalendarSheet({
                 disabled={isPast}
                 onPress={() => setSelected(cell)}
                 style={styles.cell}
+                testID={isToday ? "exam-date-calendar-today" : undefined}
               >
                 <View
                   style={[
@@ -235,6 +236,7 @@ export function CalendarSheet({
           <Pressable
             accessibilityRole="button"
             onPress={onClear}
+            testID="exam-date-calendar-clear"
             style={({ pressed }) => [
               styles.clearButton,
               pressed ? styles.pressed : null,
@@ -251,6 +253,7 @@ export function CalendarSheet({
                 onConfirm(selected);
               }
             }}
+            testID="exam-date-calendar-confirm"
             style={({ pressed }) => [
               styles.confirmButton,
               !selected ? styles.confirmDisabled : null,

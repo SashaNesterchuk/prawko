@@ -11,6 +11,7 @@ tags:
     file: subflows/launch_onboarded_destination.yaml
     env:
       DESTINATION: question-result-failed
+      PLUS_ACCESS: "true"
       TARGET_ID: screen-question-result
 
 - assertVisible:

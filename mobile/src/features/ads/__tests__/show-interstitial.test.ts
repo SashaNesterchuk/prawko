@@ -29,7 +29,8 @@ jest.mock("../interstitial-controller", () => ({
   isInterstitialLoaded: () => mockIsInterstitialLoaded(),
   ensureInterstitialReady: (...args: unknown[]) =>
     mockEnsureInterstitialReady(...args),
-  showPreloadedInterstitial: () => mockShowPreloadedInterstitial(),
+  showPreloadedInterstitial: (...args: unknown[]) =>
+    mockShowPreloadedInterstitial(...args),
   getLastInterstitialWhy: () => mockGetLastInterstitialWhy(),
 }));
 
@@ -247,6 +248,7 @@ describe("show-interstitial", () => {
       expect(mockSuppressAppResumeAds).toHaveBeenCalled();
       expect(mockClearAppBackgroundMark).toHaveBeenCalled();
       expect(mockRecordAdShown).toHaveBeenCalled();
+      expect(mockShowPreloadedInterstitial).toHaveBeenCalledWith("after_exam");
       expect(track).toHaveBeenCalledWith(
         "ad_shown",
         expect.objectContaining({

@@ -21,6 +21,7 @@ import { RemoteLearningStateProvider } from "./RemoteLearningStateProvider";
 import { SessionProvider } from "./SessionProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { UserProvider } from "./UserProvider";
+import { PremiumTeaserHost } from "../features/monetization/PremiumTeaserHost";
 
 export function AppProviders({
   appUserId,
@@ -47,7 +48,10 @@ export function AppProviders({
                                 <LocaleSyncProvider>
                                   <UserProvider>
                                     <QuestionCatalogProvider>
-                                      <AdProvider>{children}</AdProvider>
+                                      <AdProvider>
+                                        {children}
+                                        <PremiumTeaserHost />
+                                      </AdProvider>
                                     </QuestionCatalogProvider>
                                   </UserProvider>
                                 </LocaleSyncProvider>

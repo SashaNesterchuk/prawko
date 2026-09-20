@@ -22,13 +22,14 @@ env:
   SIGN_CATEGORY_ID: ${SIGN_CATEGORY_ID || "A"}
   TOPIC_ID: ${TOPIC_ID || "signs_signals"}
   TARGET_ID: ${TARGET_ID || "screen-home"}
+  TRAINING_COMPLETED_LIFETIME: ${TRAINING_COMPLETED_LIFETIME || ""}
 ---
 - launchApp:
     clearState: true
     clearKeychain: true
 
 - openLink:
-    link: "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&enableAds=${ENABLE_ADS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&examCountry=${EXAM_COUNTRY}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}&firstStart=${FIRST_START}&homeDaily=${HOME_DAILY}"
+    link: "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&enableAds=${ENABLE_ADS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&examCountry=${EXAM_COUNTRY}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}&firstStart=${FIRST_START}&homeDaily=${HOME_DAILY}&trainingCompletedLifetime=${TRAINING_COMPLETED_LIFETIME}"
 
 - runFlow:
     when:

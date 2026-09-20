@@ -12,6 +12,7 @@ export const AdEventType = {
   ERROR: "error",
   OPENED: "opened",
   CLOSED: "closed",
+  PAID: "paid",
 } as const;
 
 let latestInterstitial: MockInterstitial | null = null;

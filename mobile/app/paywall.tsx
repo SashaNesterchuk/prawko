@@ -59,6 +59,10 @@ import {
 } from "../src/state/entitlements";
 import { useAppUserId } from "../src/identity/AppIdentityProvider";
 import { useAppShellStore } from "../src/state/app-shell";
+import {
+  getMonetizationContextProperties,
+  getMonetizationOfferSnapshot,
+} from "../src/features/monetization/monetization-analytics";
 
 export default function PaywallPage() {
   const { t } = useTranslation();
@@ -72,10 +76,13 @@ export default function PaywallPage() {
     feature?: string | string[];
     locale?: string | string[];
     mode?: string | string[];
+    moment?: string | string[];
+    presentation?: string | string[];
     questionId?: string | string[];
     questionLimit?: string | string[];
     returnTo?: string | string[];
     selectedAnswer?: string | string[];
+    source?: string | string[];
     studyPlanTaskId?: string | string[];
   }>();
   const appUserId = useAppUserId();
@@ -111,12 +118,17 @@ export default function PaywallPage() {
   const returnExamMode = getSingleParam(params.mode);
   const returnExamQuestionLimit = getSingleParam(params.questionLimit);
   const returnExamStudyPlanTaskId = getSingleParam(params.studyPlanTaskId);
+  const requestedSource = getSingleParam(params.source);
+  const paywallMoment = getSingleParam(params.moment) ?? "profile";
+  const paywallPresentation =
+    getSingleParam(params.presentation) ?? "modal";
   const paywallSource =
-    returnTo === "exam"
+    requestedSource ??
+    (returnTo === "exam"
       ? "exam_restart"
       : highlightedFeature === "ai_question_chat" || returnTo === "ai-chat"
         ? "ai_chat"
-        : "profile";
+        : "profile");
 
   const continueAfterUnlock = () => {
     if (returnTo === "ai-chat" && returnQuestionId) {
@@ -160,6 +172,11 @@ export default function PaywallPage() {
     [revenueCatOfferings]
   );
   const didTrackViewRef = useRef(false);
+  const paywallShownAtRef = useRef<number | null>(null);
+  const dismissMethodRef = useRef("swipe");
+  const purchaseSucceededRef = useRef(false);
+  const trackRef = useRef(track);
+  trackRef.current = track;
   const didStartOfferRefreshRef = useRef(
     !sdkConfigured || revenueCatOfferings.length > 0
   );
@@ -333,12 +350,14 @@ export default function PaywallPage() {
   ]);
 
   useEffect(() => {
-    if (didTrackViewRef.current || offerRefreshState !== "done") {
+    if (didTrackViewRef.current) {
       return;
     }
 
     didTrackViewRef.current = true;
+    paywallShownAtRef.current = Date.now();
     track(ANALYTICS_EVENTS.paywallViewed.key, {
+      ...getMonetizationContextProperties(),
       auth_mode: authMode,
       feature: highlightedFeature ?? null,
       has_plus_access: hasPlusAccess,
@@ -348,12 +367,15 @@ export default function PaywallPage() {
       plus_purchase_enabled: FEATURE_FLAGS.enablePlusPurchase,
       revenuecat_configured: sdkConfigured,
       source: paywallSource,
+      moment: paywallMoment,
+      presentation: paywallPresentation,
     });
   }, [
     authMode,
     hasPlusAccess,
     highlightedFeature,
-    offerRefreshState,
+    paywallMoment,
+    paywallPresentation,
     paywallSource,
     purchaseAccess,
     revenueCatHydrationError,
@@ -361,6 +383,28 @@ export default function PaywallPage() {
     sdkConfigured,
     track,
   ]);
+
+  useEffect(() => {
+    return () => {
+      if (
+        purchaseSucceededRef.current ||
+        paywallShownAtRef.current == null
+      ) {
+        return;
+      }
+
+      trackRef.current(ANALYTICS_EVENTS.paywallDismissed.key, {
+        ...getMonetizationOfferSnapshot(),
+        dismiss_method: dismissMethodRef.current,
+        moment: paywallMoment,
+        source: paywallSource,
+        time_visible_ms: Math.max(
+          0,
+          Date.now() - paywallShownAtRef.current
+        ),
+      });
+    };
+  }, [paywallMoment, paywallSource]);
 
   const showPurchaseError = (message: string) => {
     setPurchaseFeedback({
@@ -415,31 +459,54 @@ export default function PaywallPage() {
       }
 
       track(ANALYTICS_EVENTS.purchaseStarted.key, {
+        currency: targetPackage.currencyCode,
         feature: highlightedFeature ?? "premium_access",
+        offering_id: targetPackage.offeringIdentifier,
         offering_identifier: targetPackage.offeringIdentifier,
+        package_id: targetPackage.identifier,
         package_identifier: targetPackage.identifier,
         package_type: targetPackage.packageType,
         price: targetPackage.price,
+        product_id: targetPackage.productIdentifier,
         product_identifier: targetPackage.productIdentifier,
+        moment: paywallMoment,
         source: paywallSource,
         ui: "package",
       });
 
-      const snapshot = await purchaseRevenueCatPackage({
+      const purchaseResult = await purchaseRevenueCatPackage({
         appUserId,
         identifier: targetPackage.identifier,
         offeringIdentifier: targetPackage.offeringIdentifier,
       });
+      const { snapshot } = purchaseResult;
+      const entitlementActive =
+        snapshot.featureEntitlements.premium_access ||
+        snapshot.featureEntitlements.ai_question_chat;
 
+      if (!entitlementActive) {
+        throw new Error(
+          "RevenueCat purchase completed without an active Premium entitlement."
+        );
+      }
+
+      purchaseSucceededRef.current = true;
       hydrateRevenueCatSnapshot(snapshot);
       track(ANALYTICS_EVENTS.purchaseSucceeded.key, {
         active_entitlements_count:
           snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
+        currency: targetPackage.currencyCode,
+        moment: paywallMoment,
+        offering_id: targetPackage.offeringIdentifier,
         offering_identifier: targetPackage.offeringIdentifier,
+        package_id: targetPackage.identifier,
         package_identifier: targetPackage.identifier,
         package_type: targetPackage.packageType,
+        price: targetPackage.price,
+        product_id: targetPackage.productIdentifier,
         product_identifier: targetPackage.productIdentifier,
         source: paywallSource,
+        transaction_id: purchaseResult.transactionId,
         ui: "package",
       });
       setPurchaseFeedback({
@@ -452,11 +519,15 @@ export default function PaywallPage() {
     } catch (error) {
       if (isRevenueCatPurchaseCancelled(error)) {
         track(ANALYTICS_EVENTS.purchaseCancelled.key, {
+          currency: selectedPackage?.currencyCode ?? null,
+          moment: paywallMoment,
           offering_identifier: selectedPackage?.offeringIdentifier ?? null,
           package_identifier: selectedPackage?.identifier ?? null,
           package_type: selectedPackage?.packageType ?? null,
+          price: selectedPackage?.price ?? null,
+          product_id: selectedPackage?.productIdentifier ?? null,
           product_identifier: selectedPackage?.productIdentifier ?? null,
-          source: "paywall",
+          source: paywallSource,
         });
         setPurchaseFeedback({
           kind: "error",
@@ -488,11 +559,16 @@ export default function PaywallPage() {
         }),
       });
       track(ANALYTICS_EVENTS.purchaseFailed.key, {
+        currency: selectedPackage?.currencyCode ?? null,
         error_code: getAnalyticsErrorCode(error),
+        error_message: message,
+        moment: paywallMoment,
         offering_identifier: selectedPackage?.offeringIdentifier ?? null,
         package_identifier: selectedPackage?.identifier ?? null,
         package_type: selectedPackage?.packageType ?? null,
+        product_id: selectedPackage?.productIdentifier ?? null,
         product_identifier: selectedPackage?.productIdentifier ?? null,
+        price: selectedPackage?.price ?? null,
         source: paywallSource,
         [ANALYTICS_PROPERTIES.step]: "purchase_package",
         [ANALYTICS_PROPERTIES.why]: why,
@@ -520,11 +596,23 @@ export default function PaywallPage() {
     track(ANALYTICS_EVENTS.purchaseRestoreStarted.key, {
       source: "paywall",
     });
+    track(ANALYTICS_EVENTS.restoreStarted.key, {
+      moment: paywallMoment,
+      source: paywallSource,
+    });
 
     try {
       const snapshot = await restoreRevenueCatPurchases(appUserId);
 
       hydrateRevenueCatSnapshot(snapshot);
+      const entitlementActive =
+        snapshot.featureEntitlements.premium_access ||
+        snapshot.featureEntitlements.ai_question_chat;
+      track(ANALYTICS_EVENTS.restoreSucceeded.key, {
+        entitlement_active: entitlementActive,
+        moment: paywallMoment,
+        source: paywallSource,
+      });
 
       if (
         !snapshot.featureEntitlements.premium_access &&
@@ -542,6 +630,7 @@ export default function PaywallPage() {
           snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
         source: "paywall",
       });
+      purchaseSucceededRef.current = true;
       setPurchaseFeedback({
         kind: "success",
         message: t("paywall.restoreSuccess"),
@@ -570,6 +659,11 @@ export default function PaywallPage() {
         source: "paywall",
         [ANALYTICS_PROPERTIES.step]: "restore_purchases",
         [ANALYTICS_PROPERTIES.why]: why,
+      });
+      track(ANALYTICS_EVENTS.restoreFailed.key, {
+        error_code: getAnalyticsErrorCode(error),
+        moment: paywallMoment,
+        source: paywallSource,
       });
       showPurchaseError(message);
     } finally {
@@ -663,7 +757,10 @@ export default function PaywallPage() {
         <View style={styles.header}>
           <NavigationButton
             accessibilityLabel={t("common.close")}
-            onPress={() => router.back()}
+            onPress={() => {
+              dismissMethodRef.current = "close_button";
+              router.back();
+            }}
             tone="onAccent"
             type="close"
           />

@@ -212,9 +212,25 @@ export const ANALYTICS_EVENTS = {
     key: "sign_test_ended",
     description: "A road-sign test session completed or was abandoned.",
   },
+  premiumPromptShown: {
+    key: "premium_prompt_shown",
+    description: "The automatic Premium teaser became visible.",
+  },
+  premiumPromptClicked: {
+    key: "premium_prompt_clicked",
+    description: "The learner opened the paywall from the Premium teaser.",
+  },
+  premiumPromptDismissed: {
+    key: "premium_prompt_dismissed",
+    description: "The Premium teaser closed without opening the paywall.",
+  },
   paywallViewed: {
     key: "paywall_viewed",
     description: "The Plus paywall became visible.",
+  },
+  paywallDismissed: {
+    key: "paywall_dismissed",
+    description: "The Plus paywall closed without a successful purchase.",
   },
   paywallPackageSelected: {
     key: "paywall_package_selected",
@@ -252,6 +268,18 @@ export const ANALYTICS_EVENTS = {
     key: "purchase_restore_failed",
     description: "Purchase restoration failed.",
   },
+  restoreStarted: {
+    key: "restore_started",
+    description: "Purchase restoration was initiated.",
+  },
+  restoreSucceeded: {
+    key: "restore_succeeded",
+    description: "Purchase restoration completed, with or without access.",
+  },
+  restoreFailed: {
+    key: "restore_failed",
+    description: "Purchase restoration failed.",
+  },
   customerCenterOpened: {
     key: "customer_center_opened",
     description: "RevenueCat customer center was opened.",
@@ -280,6 +308,11 @@ export const ANALYTICS_EVENTS = {
     key: "ad_failed",
     description:
       "An interstitial failed after policy allowed it. Includes after, should_show, step, why, detail.",
+  },
+  adImpressionRevenue: {
+    key: "ad_impression_revenue",
+    description:
+      "Google Mobile Ads impression-level paid revenue. Properties: revenue, currency, ad_unit_id, ad_format, ad_network, revenue_precision, placement. app_user_id is a super-property. Use SDK value, never derive from eCPM.",
   },
   offlinePackDownloadStarted: {
     key: "offline_pack_download_started",
@@ -469,11 +502,18 @@ export type AnalyticsScreenName =
  */
 export const ANALYTICS_PROPERTIES = {
   after: "after",
+  adFormat: "ad_format",
+  adNetwork: "ad_network",
+  adUnitId: "ad_unit_id",
   appUserId: "app_user_id",
   choice: "choice",
+  currency: "currency",
   detail: "detail",
   examCountry: "exam_country",
+  placement: "placement",
   previous: "previous",
+  revenue: "revenue",
+  revenuePrecision: "revenue_precision",
   shouldShow: "should_show",
   source: "source",
   step: "step",

@@ -3,9 +3,15 @@ import {
   AdEventType,
   InterstitialAd,
   MobileAds,
+  type PaidEvent,
 } from "react-native-google-mobile-ads";
 
 import { getAnalyticsErrorCode } from "../../analytics/catalog";
+import {
+  AD_PLACEMENTS,
+  buildAdRevenueEvent,
+  type AdRevenueEvent,
+} from "./ad-analytics";
 import {
   getInterstitialAdUnitId,
   isAdMobEnabled,
@@ -13,6 +19,18 @@ import {
 } from "./admob-config";
 
 type InterstitialShowingListener = (showing: boolean) => void;
+export type { AdRevenueEvent };
+
+type NativePaidEvent = PaidEvent & {
+  adNetwork?: string | null;
+  responseInfo?: {
+    adapterClassName?: string | null;
+    loadedAdapterResponse?: {
+      adapterClassName?: string | null;
+      adSourceName?: string | null;
+    } | null;
+  };
+};
 
 let interstitial: InterstitialAd | null = null;
 let unsubscribers: Array<() => void> = [];
@@ -24,6 +42,14 @@ let loadWaiters: Array<(loaded: boolean) => void> = [];
 let autoRetryTimer: ReturnType<typeof setTimeout> | null = null;
 let lastInterstitialWhy = "idle";
 const showingListeners = new Set<InterstitialShowingListener>();
+let currentPlacement: string = AD_PLACEMENTS.other;
+let paidEventListener: ((event: AdRevenueEvent) => void) | null = null;
+
+export function setAdRevenueListener(
+  listener: ((event: AdRevenueEvent) => void) | null
+) {
+  paidEventListener = listener;
+}
 
 export function getLastInterstitialWhy() {
   return lastInterstitialWhy;
@@ -184,6 +210,8 @@ export function resetInterstitialControllerForTests() {
   sdkInitialized = false;
   idleWait = waitForPresentationReady;
   lastInterstitialWhy = "idle";
+  currentPlacement = AD_PLACEMENTS.other;
+  paidEventListener = null;
 }
 
 export async function initializeAdMobSdk() {
@@ -265,6 +293,27 @@ export function startInterstitialPreload() {
       autoRetryTimer = setTimeout(() => {
         requestLoad();
       }, 250);
+    })
+  );
+
+  const addPaidEventListener = interstitial.addAdEventListener.bind(
+    interstitial
+  ) as unknown as (
+    type: AdEventType.PAID,
+    listener: (event: PaidEvent) => void
+  ) => () => void;
+  unsubscribers.push(
+    addPaidEventListener(AdEventType.PAID, (event) => {
+      const revenueEvent = buildAdRevenueEvent({
+        adUnitId: unitId,
+        paid: event as NativePaidEvent,
+        placement: currentPlacement,
+      });
+      if (!revenueEvent) {
+        return;
+      }
+
+      paidEventListener?.(revenueEvent);
     })
   );
 
@@ -359,7 +408,9 @@ export function waitForInterstitialLoaded(timeoutMs = 5_000): Promise<boolean> {
  * Never leaves `isShowing` stuck. Does not tear down the native instance on
  * AppState flicker — that is what leaves a transparent overlay on the result.
  */
-export async function showPreloadedInterstitial(): Promise<boolean> {
+export async function showPreloadedInterstitial(
+  placement: string = AD_PLACEMENTS.other
+): Promise<boolean> {
   if (isShowing) {
     // Never tear down a live show from a concurrent caller — that creates
     // ghost overlays that eat touches on the result screen.
@@ -383,6 +434,7 @@ export async function showPreloadedInterstitial(): Promise<boolean> {
   }
 
   const current = interstitial;
+  currentPlacement = placement;
   setShowing(true);
 
   try {

@@ -351,11 +351,15 @@ export function formatProfileExamDate(
       ? "uk-UA"
       : locale === "pl"
         ? "pl-PL"
-        : locale === "de"
-          ? "de-DE"
-          : locale === "es"
-            ? "es-ES"
-            : "en-GB";
+        : locale === "cs"
+          ? "cs-CZ"
+          : locale === "sk"
+            ? "sk-SK"
+          : locale === "de"
+            ? "de-DE"
+            : locale === "es"
+              ? "es-ES"
+              : "en-GB";
 
   return new Intl.DateTimeFormat(localeTag, {
     day: "numeric",

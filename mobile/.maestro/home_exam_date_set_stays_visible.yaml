@@ -1,0 +1,39 @@
+# Feature: Home exam date
+# Scenario: A set exam date stays on Home and reopens the calendar
+appId: com.mindjar.prawko
+tags:
+  - home
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      TARGET_ID: screen-home
+
+- assertVisible:
+    id: "screen-home"
+
+- scrollUntilVisible:
+    element:
+      id: "home-exam-date"
+    direction: DOWN
+    timeout: 10000
+
+- tapOn:
+    id: "home-exam-date"
+
+- extendedWaitUntil:
+    visible:
+      id: "exam-date-calendar"
+    timeout: 10000
+
+- tapOn:
+    id: "exam-date-calendar-clear"
+
+- extendedWaitUntil:
+    notVisible:
+      id: "exam-date-calendar"
+    timeout: 10000
+
+- assertVisible:
+    id: "home-exam-date"

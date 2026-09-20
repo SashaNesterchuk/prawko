@@ -1,0 +1,68 @@
+diff --git a/android/src/main/java/io/invertase/googlemobileads/ReactNativeGoogleMobileAdsFullScreenAdModule.kt b/android/src/main/java/io/invertase/googlemobileads/ReactNativeGoogleMobileAdsFullScreenAdModule.kt
+index 968fdd16486968e91b8a8516131da2445db27d22..1dfc41957f8fb8318fbd4fe7ab33bffe57e0a184 100644
+--- a/android/src/main/java/io/invertase/googlemobileads/ReactNativeGoogleMobileAdsFullScreenAdModule.kt
++++ b/android/src/main/java/io/invertase/googlemobileads/ReactNativeGoogleMobileAdsFullScreenAdModule.kt
+@@ -156,6 +156,17 @@ abstract class ReactNativeGoogleMobileAdsFullScreenAdModule<T>(
+           payload.putDouble("value", 1e-6 * adValue.getValueMicros());
+           payload.putDouble("precision", 1.0 * adValue.getPrecisionType());
+           payload.putString("currency", adValue.getCurrencyCode());
++          val loadedAdapter = when (ad) {
++            is AdManagerInterstitialAd -> ad.responseInfo?.loadedAdapterResponseInfo
++            is AppOpenAd -> ad.responseInfo?.loadedAdapterResponseInfo
++            is RewardedAd -> ad.responseInfo?.loadedAdapterResponseInfo
++            is RewardedInterstitialAd -> ad.responseInfo?.loadedAdapterResponseInfo
++            else -> null
++          }
++          val adNetwork = loadedAdapter?.adSourceName?.takeIf { it.isNotEmpty() }
++            ?: loadedAdapter?.adapterClassName?.takeIf { it.isNotEmpty() }
++            ?: "unknown"
++          payload.putString("adNetwork", adNetwork)
+           sendAdEvent(
+             ReactNativeGoogleMobileAdsEvent.GOOGLE_MOBILE_ADS_EVENT_PAID,
+             requestId,
+diff --git a/ios/RNGoogleMobileAds/RNGoogleMobileAdsFullScreenAd.mm b/ios/RNGoogleMobileAds/RNGoogleMobileAdsFullScreenAd.mm
+index 23741e702252dcf50cb8d33051d74b1d162e0d42..8888975d0c513096c7edf1428e93d79114007f88 100644
+--- a/ios/RNGoogleMobileAds/RNGoogleMobileAdsFullScreenAd.mm
++++ b/ios/RNGoogleMobileAds/RNGoogleMobileAdsFullScreenAd.mm
+@@ -20,6 +20,28 @@
+ #import "RNGoogleMobileAdsFullScreenAd.h"
+ #import "RNGoogleMobileAdsCommon.h"
+ 
++static NSString *RNGoogleMobileAdsPaidAdNetwork(id ad) {
++  GADResponseInfo *info = nil;
++  if ([ad isKindOfClass:[GADInterstitialAd class]]) {
++    info = [(GADInterstitialAd *)ad responseInfo];
++  } else if ([ad isKindOfClass:[GADRewardedAd class]]) {
++    info = [(GADRewardedAd *)ad responseInfo];
++  } else if ([ad isKindOfClass:[GADRewardedInterstitialAd class]]) {
++    info = [(GADRewardedInterstitialAd *)ad responseInfo];
++  } else if ([ad isKindOfClass:[GADAppOpenAd class]]) {
++    info = [(GADAppOpenAd *)ad responseInfo];
++  }
++
++  GADAdNetworkResponseInfo *loaded = info.loadedAdNetworkResponseInfo;
++  if (loaded.adSourceName.length > 0) {
++    return loaded.adSourceName;
++  }
++  if (loaded.adNetworkClassName.length > 0) {
++    return loaded.adNetworkClassName;
++  }
++  return @"unknown";
++}
++
+ @implementation RNGoogleMobileAdsFullScreenAd
+ 
+ - (instancetype)init {
+@@ -101,9 +123,10 @@
+                        adUnitId:adUnitId
+                           error:nil
+                            data:@{
+-                             @"value" : value.value,
++                             @"value" : @(value.value.doubleValue),
+                              @"precision" : @(value.precision),
+-                             @"currency" : value.currencyCode
++                             @"currency" : value.currencyCode ?: @"",
++                             @"adNetwork" : RNGoogleMobileAdsPaidAdNetwork(ad)
+                            }];
+         };
+ 

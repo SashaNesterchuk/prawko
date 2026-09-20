@@ -11,6 +11,7 @@ tags:
       DESTINATION: exam-result
       EXAM_SESSION_CATEGORY: A
       EXAM_SESSION_STATUS: completed
+      PLUS_ACCESS: "true"
       TARGET_ID: screen-exam-result-category-mismatch
 
 - tapOn:

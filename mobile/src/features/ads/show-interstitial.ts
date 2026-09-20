@@ -13,7 +13,11 @@ import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
 import { useHasPlusAccess } from "../../state/entitlements";
 import type { CaptureErrorInput } from "../errors/error-logging";
-import { buildAdDecisionProperties, type AdDecisionStep } from "./ad-analytics";
+import {
+  buildAdDecisionProperties,
+  getAdPlacement,
+  type AdDecisionStep,
+} from "./ad-analytics";
 import {
   clearAppBackgroundMark,
   isExamSessionActive,
@@ -30,6 +34,7 @@ import {
   isInterstitialLoaded,
   showPreloadedInterstitial,
 } from "./interstitial-controller";
+import { useMonetizationStore } from "../monetization/monetization-store";
 
 /** Cap intentional warm-up so exam result never waits more than a few seconds. */
 export const INTERSTITIAL_ENSURE_OPTIONS = {
@@ -199,7 +204,12 @@ async function presentInterstitial(input: ShowInterstitialInput): Promise<boolea
   suppressAppResumeAds();
   clearAppBackgroundMark();
 
-  const shown = await showPreloadedInterstitial();
+  const shown = await showPreloadedInterstitial(
+    getAdPlacement({
+      pathname: input.pathname,
+      trigger: input.trigger,
+    })
+  );
 
   if (!shown) {
     // Do not retry immediately — a flashed native overlay plus a second show
@@ -212,6 +222,12 @@ async function presentInterstitial(input: ShowInterstitialInput): Promise<boolea
   recordAdShown();
   clearAppBackgroundMark();
   trackAdDismissed(input);
+  const adsShown = useMonetizationStore.getState().recordAdDismissed();
+  if (adsShown === 2) {
+    useMonetizationStore.getState().requestSurface("teaser", "after_ad_2");
+  } else if (adsShown === 4) {
+    useMonetizationStore.getState().requestSurface("paywall", "after_ad_4");
+  }
   return true;
 }
 

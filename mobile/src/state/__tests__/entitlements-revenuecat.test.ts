@@ -25,6 +25,7 @@ describe("RevenueCat entitlement store", () => {
 
   it("keeps previously loaded offerings if a later refresh fails", () => {
     const offering = {
+      currencyCode: "PLN",
       description: "Yearly",
       identifier: "$rc_annual",
       offeringIdentifier: "default",

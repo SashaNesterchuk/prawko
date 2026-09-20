@@ -205,8 +205,9 @@ Skip и start у одного человека в разные визиты — 
 | `ad_dismissed` | Закрыли. `why` = native close reason |
 | `ad_skipped` | Не показали. Каждый вызов, включая `trigger_not_ready` |
 | `ad_failed` | Политика разрешила, показ сломался |
+| `ad_impression_revenue` | Impression-level revenue из Google Mobile Ads paid callback. Суммировать `revenue` по `app_user_id` — ad LTV / install. Не считать из eCPM |
 
-На всех ad-событиях строки:
+На всех ad-событиях кроме `ad_impression_revenue` строки:
 
 - `after` — триггер (`after_question_answer`, `after_exam_complete`, …)
 - `should_show` — `yes` / `no`
@@ -215,6 +216,16 @@ Skip и start у одного человека в разные визиты — 
 - `detail` — одна строка: `after=… should_show=… step=… why=… answers=3/12 elapsed=42s/160s shown=1/20 loaded=yes wait=no route=/question`
 
 `should_show=no` + `step=policy` — не должны были показывать. `should_show=yes` и нет `ad_shown` — должны были, но не вышло.
+
+`ad_impression_revenue` поля (плюс супер-свойство `app_user_id`):
+
+- `revenue` — значение из SDK (валютные единицы, не micros)
+- `currency` — код валюты SDK, обычно `USD`
+- `ad_unit_id` — AdMob unit
+- `ad_format` — сейчас `interstitial`
+- `ad_network` — winning source (`adSourceName`), иначе adapter class, иначе `unknown`
+- `revenue_precision` — `unknown` / `estimated` / `publisher_provided` / `precise`
+- `placement` — `after_training` / `training_questions` / `after_exam` / `sign_test` / `other`
 
 `client_error_logged` `area=ads`: `ad_not_shown` (warning, должен был показаться), `ad_failed`, `ad_preload_failed`.
 
@@ -263,7 +274,7 @@ Skip и start у одного человека в разные визиты — 
 
 **Paywall.** `paywall_viewed` → `paywall_package_selected` → `purchase_started` → `purchase_succeeded`. Рядом: cancelled, failed. Сплиты: `source`, `step`, `why`.
 
-**Ads.** `ad_requested` → `ad_shown` → `ad_dismissed`. Рядом: skipped, failed. Сплиты: `after`, `should_show`, `why`, `step`.
+**Ads.** `ad_requested` → `ad_shown` → `ad_dismissed`. Рядом: skipped, failed, `ad_impression_revenue`. Сплиты: `after`, `should_show`, `why`, `step`, revenue `placement` / `ad_network`. Ad LTV: `sum(revenue)` / unique `app_user_id` на `ad_impression_revenue`.
 
 **Signs.** `sign_opened` → `sign_test_started` → `sign_test_ended`. Рядом: search. Тест без `sign_opened` — нормально, воронка тогда занижает старт.
 

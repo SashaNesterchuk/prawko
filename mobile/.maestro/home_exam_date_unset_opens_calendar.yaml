@@ -1,7 +1,8 @@
-# Feature: Onboarding exam date
-# Scenario: Skipping the exam date leaves profile date unset
+# Feature: Home exam date
+# Scenario: Skipping the exam date shows the Home card; setting a date keeps it
 appId: com.mindjar.prawko
 tags:
+  - home
   - onboarding
 ---
 - launchApp:
@@ -31,11 +32,29 @@ tags:
       id: "screen-home"
     timeout: 20000
 
-- assertNotVisible:
-    id: "home-start-spotlight"
+- scrollUntilVisible:
+    element:
+      id: "home-exam-date"
+    direction: DOWN
+    timeout: 10000
 
-- waitForAnimationToEnd:
-    timeout: 5000
+- tapOn:
+    id: "home-exam-date"
+
+- extendedWaitUntil:
+    visible:
+      id: "exam-date-calendar"
+    timeout: 10000
+
+- tapOn:
+    id: "exam-date-calendar-today"
+- tapOn:
+    id: "exam-date-calendar-confirm"
+
+- extendedWaitUntil:
+    notVisible:
+      id: "exam-date-calendar"
+    timeout: 10000
 
 - scrollUntilVisible:
     element:
@@ -59,4 +78,4 @@ tags:
     timeout: 15000
 
 - assertVisible:
-    id: "profile-exam-date-missing"
+    id: "profile-exam-date-set"

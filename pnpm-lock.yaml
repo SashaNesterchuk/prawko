@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  react-native-google-mobile-ads@16.3.4:
+    hash: d5lcgz5xg3e7icup7b7gtt45yy
+    path: patches/react-native-google-mobile-ads@16.3.4.patch
+
 importers:
 
   .:
@@ -118,7 +123,7 @@ importers:
         version: 2.32.0(react-native@0.86.2(@babel/core@7.29.0)(@react-native/metro-config@0.86.2(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.3))(react@19.2.3)
       react-native-google-mobile-ads:
         specifier: 16.3.4
-        version: 16.3.4(expo@57.0.16)(react@19.2.3)
+        version: 16.3.4(patch_hash=d5lcgz5xg3e7icup7b7gtt45yy)(expo@57.0.16)(react@19.2.3)
       react-native-purchases:
         specifier: ^10.7.0
         version: 10.7.0(react-native@0.86.2(@babel/core@7.29.0)(@react-native/metro-config@0.86.2(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.3))(react@19.2.3)
@@ -10005,7 +10010,7 @@ snapshots:
       react: 19.2.3
       react-native: 0.86.2(@babel/core@7.29.0)(@react-native/metro-config@0.86.2(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.3)
 
-  react-native-google-mobile-ads@16.3.4(expo@57.0.16)(react@19.2.3):
+  react-native-google-mobile-ads@16.3.4(patch_hash=d5lcgz5xg3e7icup7b7gtt45yy)(expo@57.0.16)(react@19.2.3):
     dependencies:
       '@iabtcf/core': 1.5.6
       use-deep-compare-effect: 1.8.1(react@19.2.3)

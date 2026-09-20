@@ -9,6 +9,8 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { ActionTile } from "../../src/components/shell/ActionTile";
 import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
 import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
+import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
+import { ExamDateCard } from "../../src/components/shell/ExamDateCard";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 // First-start spotlight is temporarily unused; keep the import for later.
 // import { HomeStartSpotlightLayer } from "../../src/components/shell/HomeStartSpotlightHost";
@@ -38,6 +40,7 @@ import {
   HOME_DAILY_QUESTION_COUNT,
 } from "../../src/features/home/home-daily-practice";
 import {
+  formatProfileExamDate,
   getReadinessPeriodChange,
   resolveReadinessPeriodChangeLabelKey,
 } from "../../src/features/profile/profile-stats";
@@ -46,11 +49,17 @@ import { resolveReadinessScore } from "../../src/features/questions/readiness-sc
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
 import {
+  applyExamDateChange,
+  parseNullableIsoDate,
+  toIsoDate,
+} from "../../src/features/study-plan/exam-date";
+import { getDaysUntilExamFromDate } from "../../src/features/study-plan/generate-local-study-plan";
+import {
   fetchRemoteHomeProgress,
   getWarsawIsoDate,
   type RemoteReadinessSummary,
 } from "../../src/features/study-plan/supabase-study-plan-progress";
-import { useAppShellStore, useCurrentUser } from "../../src/state/app-shell";
+import { useAppShellStore, useCurrentStudyPlan, useCurrentUser } from "../../src/state/app-shell";
 import {
   useEntitlementStore,
   useHasPlusAccess,
@@ -93,12 +102,22 @@ function HomeActionIcon({
 }
 
 export default function HomeTabScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
+  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
+  const currentStudyPlanRemoteId = useAppShellStore(
+    (state) => state.currentStudyPlanRemoteId
+  );
+  const hydrateRemoteStudyPlan = useAppShellStore(
+    (state) => state.hydrateRemoteStudyPlan
+  );
+  const patchExamDate = useAppShellStore((state) => state.patchExamDate);
+  const currentStudyPlan = useCurrentStudyPlan();
   // const homeStartSpotlightDismissed = useAppShellStore(
   //   (state) => state.homeStartSpotlightDismissed
   // );
@@ -132,6 +151,8 @@ export default function HomeTabScreen() {
   );
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
+  const [examDatePickerVisible, setExamDatePickerVisible] = useState(false);
+  const [isSavingExamDate, setIsSavingExamDate] = useState(false);
   const { openMode, openExam, openBlitz, dialog: countDialog } =
     useQuestionModeCountDialog();
   const readinessCardRef = useRef<View>(null);
@@ -284,6 +305,36 @@ export default function HomeTabScreen() {
   const wrongAnswers = stats.wrongAnswers;
   const examPassed =
     readinessSummary != null && readinessSummary.daysUntilExam <= 0;
+  // User-set date only — plan.examDate is a planning horizon, not a chosen exam date.
+  const examDate = studyPlanSetup.examDate ?? null;
+  const daysUntilExam =
+    examDate != null ? getDaysUntilExamFromDate(examDate) : null;
+  const examDateVariant =
+    examDate == null ? "unset" : daysUntilExam != null && daysUntilExam < 0
+      ? "past"
+      : "set";
+  const showRemoteExamPassedPrompt = examPassed && examDate == null;
+  const examDateCardEyebrow =
+    examDateVariant === "unset"
+      ? t("dash.examDateLabel", { defaultValue: "Дата іспиту" })
+      : examDateVariant === "past"
+        ? t("dash.statusEyebrow", { defaultValue: "Онови свій статус" })
+        : t("dash.examDateUntil", { defaultValue: "До іспиту" });
+  const examDateCardTitle =
+    examDateVariant === "unset"
+      ? t("dash.examDateUnset", { defaultValue: "не вказано" })
+      : examDateVariant === "past"
+        ? t("dash.statusTitle", { defaultValue: "Як пройшов іспит?" })
+        : daysUntilExam === 0
+          ? t("dash.examDateToday", { defaultValue: "Сьогодні" })
+          : t("dash.examDateDays", {
+              count: Math.max(0, daysUntilExam ?? 0),
+              defaultValue: "{{count}} днів",
+            });
+  const examDateCardTrailing =
+    examDateVariant === "set" && examDate != null
+      ? formatProfileExamDate(examDate, preferredLocale)
+      : undefined;
 
   const readinessLevelLabel = t(`dash.readinessLevel.${readinessLevel}`, {
     defaultValue:
@@ -344,6 +395,37 @@ export default function HomeTabScreen() {
     },
     [openHomeDailySession]
   );
+
+  const handleConfirmExamDate = async (date: Date) => {
+    if (isSavingExamDate) {
+      return;
+    }
+
+    setIsSavingExamDate(true);
+    try {
+      await applyExamDateChange({
+        authMode,
+        currentStudyPlan,
+        currentStudyPlanRemoteId,
+        examDate: toIsoDate(date),
+        hydrateRemoteStudyPlan,
+        preferredCategory,
+        preferredLocale,
+        patchExamDate,
+        schoolCode: studyPlanSetup.schoolCode,
+      });
+      setExamDatePickerVisible(false);
+      track(ANALYTICS_EVENTS.settingsChanged.key, {
+        days_until_exam: getDaysUntilExamFromDate(toIsoDate(date)),
+        setting: "exam_date",
+        value: "set",
+      });
+    } catch (error) {
+      console.warn("Failed to update exam date.", error);
+    } finally {
+      setIsSavingExamDate(false);
+    }
+  };
 
   // useEffect(() => {
   //   if (!showStartSpotlight || didTrackSpotlightRef.current) {
@@ -529,7 +611,23 @@ export default function HomeTabScreen() {
             ) : null}
           </View>
 
-          {examPassed ? (
+          <ExamDateCard
+            variant={examDateVariant}
+            eyebrow={examDateCardEyebrow}
+            title={examDateCardTitle}
+            trailingLabel={examDateCardTrailing}
+            onPress={() => {
+              if (examDateVariant === "past") {
+                router.navigate("/modals/plan-adjust");
+                return;
+              }
+
+              setExamDatePickerVisible(true);
+            }}
+            testID="home-exam-date"
+          />
+
+          {showRemoteExamPassedPrompt ? (
             <StatusPromptCard
               eyebrow={t("dash.statusEyebrow", {
                 defaultValue: "Онови свій статус",
@@ -543,6 +641,18 @@ export default function HomeTabScreen() {
         </ScrollView>
       </SafeAreaView>
       {countDialog}
+      <CalendarSheet
+        visible={examDatePickerVisible}
+        locale={i18n.language}
+        initialDate={parseNullableIsoDate(examDate)}
+        confirmLabel={t("onboarding.examDateConfirm")}
+        clearLabel={t("onboarding.examDateClear")}
+        onClose={() => setExamDatePickerVisible(false)}
+        onConfirm={(date) => {
+          void handleConfirmExamDate(date);
+        }}
+        onClear={() => setExamDatePickerVisible(false)}
+      />
       {/*
       <HomeStartSpotlightLayer
         visible={showStartSpotlight}
