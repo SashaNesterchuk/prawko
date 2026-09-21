@@ -46,6 +46,12 @@ describe("analytics catalog", () => {
     expect(ANALYTICS_EVENTS.diagnosticReminderResolved.key).toBe(
       "diagnostic_reminder_resolved"
     );
+    expect(ANALYTICS_EVENTS.homeContextualShown.key).toBe(
+      "home_contextual_shown"
+    );
+    expect(ANALYTICS_EVENTS.homeContextualSelected.key).toBe(
+      "home_contextual_selected"
+    );
     expect(ANALYTICS_PROPERTIES.appUserId).toBe("app_user_id");
     expect(ANALYTICS_PROPERTIES.adFormat).toBe("ad_format");
     expect(ANALYTICS_PROPERTIES.adNetwork).toBe("ad_network");

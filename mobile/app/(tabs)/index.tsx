@@ -12,6 +12,7 @@ import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
 import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
 import { ExamDateCard } from "../../src/components/shell/ExamDateCard";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import { HomeContextualCard } from "../../src/components/shell/HomeContextualCard";
 // First-start spotlight is temporarily unused; keep the import for later.
 // import { HomeStartSpotlightLayer } from "../../src/components/shell/HomeStartSpotlightHost";
 import {
@@ -34,6 +35,9 @@ import {
   // shouldShowHomeStartSpotlight,
   type FirstStartCtaSource,
 } from "../../src/features/home/first-start";
+import { useHomeContextualBlock } from "../../src/features/home/useHomeContextualBlock";
+import { getHomeContextualDebugPreviewLabel } from "../../src/features/home/home-contextual";
+import { useHomeContextualStore } from "../../src/features/home/home-contextual-store";
 import {
   createHomeDailySessionKey,
   getHomeDailyPracticeStatus,
@@ -59,6 +63,7 @@ import {
   getWarsawIsoDate,
   type RemoteReadinessSummary,
 } from "../../src/features/study-plan/supabase-study-plan-progress";
+import { useMonetizationStore } from "../../src/features/monetization/monetization-store";
 import { useAppShellStore, useCurrentStudyPlan, useCurrentUser } from "../../src/state/app-shell";
 import {
   useEntitlementStore,
@@ -127,6 +132,15 @@ export default function HomeTabScreen() {
   const hasPlusAccess = useHasPlusAccess();
   const setDebugPlusOverride = useEntitlementStore(
     (state) => state.setDebugPlusOverride
+  );
+  const requestPremiumTeaser = useMonetizationStore(
+    (state) => state.requestSurface
+  );
+  const debugContextualPreview = useHomeContextualStore(
+    (state) => state.debugPreview
+  );
+  const cycleDebugContextualPreview = useHomeContextualStore(
+    (state) => state.cycleDebugPreview
   );
   const isFocused = useIsFocused();
   const currentUser = useCurrentUser();
@@ -303,6 +317,12 @@ export default function HomeTabScreen() {
         }
       );
   const wrongAnswers = stats.wrongAnswers;
+  const contextualCard = useHomeContextualBlock({
+    isNewUser: isReadinessEmpty,
+    isReadinessLoading,
+    reviewDue: stats.reviewDue,
+    wrongAnswers,
+  });
   const examPassed =
     readinessSummary != null && readinessSummary.daysUntilExam <= 0;
   // User-set date only — plan.examDate is a planning horizon, not a chosen exam date.
@@ -570,6 +590,17 @@ export default function HomeTabScreen() {
           </View>
 
           <View style={styles.stack}>
+            {contextualCard ? (
+              <HomeContextualCard
+                cta={contextualCard.cta}
+                icon={contextualCard.icon}
+                kindTestID={contextualCard.testID}
+                onPress={contextualCard.onPress}
+                subtitle={contextualCard.subtitle}
+                title={contextualCard.title}
+              />
+            ) : null}
+
             <ActionTile
               fullWidth
               accent="amber"
@@ -593,21 +624,51 @@ export default function HomeTabScreen() {
             <ActionTileGrid items={tiles} />
 
             {__DEV__ ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setDebugPlusOverride(!hasPlusAccess)}
-                style={({ pressed }) => [
-                  styles.debugPremiumButton,
-                  hasPlusAccess
-                    ? styles.debugPremiumOn
-                    : styles.debugPremiumOff,
-                  pressed ? styles.debugPremiumPressed : null,
-                ]}
-              >
-                <CText style={styles.debugPremiumLabel}>
-                  {hasPlusAccess ? "DEV Plus: ON" : "DEV Plus: OFF"}
-                </CText>
-              </Pressable>
+              <>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setDebugPlusOverride(!hasPlusAccess)}
+                  style={({ pressed }) => [
+                    styles.debugPremiumButton,
+                    hasPlusAccess
+                      ? styles.debugPremiumOn
+                      : styles.debugPremiumOff,
+                    pressed ? styles.debugPremiumPressed : null,
+                  ]}
+                >
+                  <CText style={styles.debugPremiumLabel}>
+                    {hasPlusAccess ? "DEV Plus: ON" : "DEV Plus: OFF"}
+                  </CText>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => requestPremiumTeaser("teaser", "manual_test")}
+                  style={({ pressed }) => [
+                    styles.debugPremiumButton,
+                    styles.debugPremiumOff,
+                    pressed ? styles.debugPremiumPressed : null,
+                  ]}
+                  testID="home-debug-premium-teaser"
+                >
+                  <CText style={styles.debugPremiumLabel}>DEV Teaser</CText>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => cycleDebugContextualPreview()}
+                  style={({ pressed }) => [
+                    styles.debugPremiumButton,
+                    debugContextualPreview === "auto"
+                      ? styles.debugPremiumOff
+                      : styles.debugPremiumOn,
+                    pressed ? styles.debugPremiumPressed : null,
+                  ]}
+                  testID="home-debug-contextual"
+                >
+                  <CText style={styles.debugPremiumLabel}>
+                    {getHomeContextualDebugPreviewLabel(debugContextualPreview)}
+                  </CText>
+                </Pressable>
+              </>
             ) : null}
           </View>
 

@@ -1,14 +1,16 @@
 # Feature: Premium monetization
-# Scenario: First completed training shows the teaser, whose CTA opens paywall.
+# Scenario: After an odd dismissed interstitial (1st, 3rd, 5th, any placement)
+# appears; CTA opens the existing paywall.
 appId: com.mindjar.prawko
 tags:
   - monetization
-  - training
+  - ads
 ---
 - runFlow:
     file: subflows/launch_onboarded_destination.yaml
     env:
       DESTINATION: question-result
+      PREMIUM_TEASER_MOMENT: after_ad
       TARGET_ID: premium-teaser
 
 - extendedWaitUntil:

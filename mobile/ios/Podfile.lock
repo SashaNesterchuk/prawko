@@ -2531,7 +2531,7 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../../node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.86.2_@babel+core@7.29.0_@react_tog7mbwgh4vntfofhv6vgnppt4/node_modules/@react-native-async-storage/async-storage`)"
   - "RNCMaskedView (from `../../node_modules/.pnpm/@react-native-masked-view+masked-view@0.3.2_react-native@0.86.2_@babel+core@7.29.0_@react-nat_jl7vofx6wkjbdqgdmzhmqhuije/node_modules/@react-native-masked-view/masked-view`)"
   - "RNGestureHandler (from `../../node_modules/.pnpm/react-native-gesture-handler@2.32.0_react-native@0.86.2_@babel+core@7.29.0_@react-native+metr_5xdizns4lgmaayo6xlnirhghgi/node_modules/react-native-gesture-handler`)"
-  - "RNGoogleMobileAds (from `../../node_modules/.pnpm/react-native-google-mobile-ads@16.3.4_expo@57.0.16_react@19.2.3/node_modules/react-native-google-mobile-ads`)"
+  - "RNGoogleMobileAds (from `../../node_modules/.pnpm/react-native-google-mobile-ads@16.3.4_patch_hash=d5lcgz5xg3e7icup7b7gtt45yy_expo@57.0.16_react@19.2.3/node_modules/react-native-google-mobile-ads`)"
   - "RNPaywalls (from `../../node_modules/.pnpm/react-native-purchases-ui@10.7.0_react-native-purchases@10.7.0_react-native@0.86.2_@babel+cor_klvrb2ayw2bvo3a3kkwgvfbqwe/node_modules/react-native-purchases-ui`)"
   - "RNPurchases (from `../../node_modules/.pnpm/react-native-purchases@10.7.0_react-native@0.86.2_@babel+core@7.29.0_@react-native+metro-conf_4ouhynhymel5dwnnypctdwmirq/node_modules/react-native-purchases`)"
   - "RNReanimated (from `../../node_modules/.pnpm/react-native-reanimated@4.5.1_react-native-worklets@0.10.1_@babel+core@7.29.0_@react-native+m_soe6uv36aqgjedwfpzmp3ufq7a/node_modules/react-native-reanimated`)"
@@ -2767,7 +2767,7 @@ EXTERNAL SOURCES:
   RNGestureHandler:
     :path: "../../node_modules/.pnpm/react-native-gesture-handler@2.32.0_react-native@0.86.2_@babel+core@7.29.0_@react-native+metr_5xdizns4lgmaayo6xlnirhghgi/node_modules/react-native-gesture-handler"
   RNGoogleMobileAds:
-    :path: "../../node_modules/.pnpm/react-native-google-mobile-ads@16.3.4_expo@57.0.16_react@19.2.3/node_modules/react-native-google-mobile-ads"
+    :path: "../../node_modules/.pnpm/react-native-google-mobile-ads@16.3.4_patch_hash=d5lcgz5xg3e7icup7b7gtt45yy_expo@57.0.16_react@19.2.3/node_modules/react-native-google-mobile-ads"
   RNPaywalls:
     :path: "../../node_modules/.pnpm/react-native-purchases-ui@10.7.0_react-native-purchases@10.7.0_react-native@0.86.2_@babel+cor_klvrb2ayw2bvo3a3kkwgvfbqwe/node_modules/react-native-purchases-ui"
   RNPurchases:

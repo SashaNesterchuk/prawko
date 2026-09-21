@@ -1,0 +1,33 @@
+# Feature: Home contextual card
+# Scenario: A returning user with unresolved mistakes sees the next-action
+# card and can start a mistakes session from it
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+  - contextual
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      HOME_CONTEXTUAL: mistakes
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-home
+
+- assertVisible:
+    id: "screen-home"
+- assertVisible:
+    id: "home-contextual-card"
+- assertVisible:
+    id: "home-contextual-mistakes"
+- assertVisible:
+    id: "home-exam-date"
+
+- tapOn:
+    id: "home-contextual-card"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 20000

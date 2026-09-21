@@ -96,6 +96,13 @@ export function resolveScreenRoute(pathname: string): AnalyticsScreenRoute {
   );
 }
 
+export function isHomeScreenFromSegments(segments: readonly string[]) {
+  return (
+    resolveScreenRoute(analyticsPathFromSegments(segments)).screenName ===
+    ANALYTICS_SCREENS.home
+  );
+}
+
 function exact(
   expectedPathname: string,
   screenName: AnalyticsScreenRoute["screenName"]

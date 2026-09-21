@@ -43,6 +43,7 @@ import { syncQuestionBookmarkState } from "../supabase-question-state";
 import { usePrefetchQuestionMedia } from "../usePrefetchQuestionMedia";
 
 import { isHomeDailySessionKey } from "../../home/home-daily-practice";
+import { captureHomeContextualCompletion } from "../../home/home-contextual-record";
 import { shouldAutoShowPracticeSessionCompleteAd } from "../initial-diagnostic/session-ads";
 import { getTrainingResultOutcome } from "./training-result-stats";
 import { useQuestionRouteParams } from "./route-params";
@@ -94,9 +95,6 @@ export function useQuestionTrainingSession() {
   const recordTrainingCompleted = useMonetizationStore(
     (state) => state.recordTrainingCompleted
   );
-  const requestMonetizationSurface = useMonetizationStore(
-    (state) => state.requestSurface
-  );
 
   const [displayLocale, setDisplayLocale] =
     useState<SupportedLocale>(preferredLocale);
@@ -108,8 +106,6 @@ export function useQuestionTrainingSession() {
   const trackedSessionIdRef = useRef<string | null>(null);
   const trackedCompletedSessionIdRef = useRef<string | null>(null);
   const trackedEmptySessionIdRef = useRef<string | null>(null);
-  const didScheduleCompletionMonetizationRef = useRef(false);
-  const monetizationSessionIdRef = useRef<string | null>(null);
   const shouldAttemptPracticeAdRef = useRef(false);
   const showExitDialogRef = useRef(false);
   const modalHideResolverRef = useRef<(() => void) | null>(null);
@@ -326,21 +322,15 @@ export function useQuestionTrainingSession() {
       return;
     }
 
-    if (monetizationSessionIdRef.current !== activeSession.id) {
-      monetizationSessionIdRef.current = activeSession.id;
-      didScheduleCompletionMonetizationRef.current = false;
-    }
     trackedCompletedSessionIdRef.current = activeSession.id;
-    const completion = recordTrainingCompleted(activeSession.id);
-    if (completion.isNew) {
-      didScheduleCompletionMonetizationRef.current =
-        requestMonetizationSurface(
-        completion.count === 1 ? "teaser" : "paywall",
-        completion.count === 1
-          ? "after_first_training"
-          : "after_second_training"
-        );
-    }
+    captureHomeContextualCompletion({
+      answeredCount: summary.answered,
+      mode: activeSession.request.mode,
+      sessionId: activeSession.id,
+      topicId: activeSession.request.topic ?? null,
+      totalCount: summary.total,
+    });
+    recordTrainingCompleted(activeSession.id);
     track(ANALYTICS_EVENTS.trainingSessionCompleted.key, {
       correct_count: summary.correct,
       incorrect_count: summary.wrong,
@@ -355,11 +345,11 @@ export function useQuestionTrainingSession() {
     isCompleted,
     sessionPassed,
     sessionResultPercent,
+    summary.answered,
     summary.correct,
     summary.total,
     summary.wrong,
     recordTrainingCompleted,
-    requestMonetizationSurface,
     track,
   ]);
 
@@ -617,11 +607,9 @@ export function useQuestionTrainingSession() {
       }
 
       void (async () => {
-        if (!didScheduleCompletionMonetizationRef.current) {
-          await showInterstitialForTrigger("after_practice_session_complete", {
-            practiceAnsweredCount: summary.answered,
-          });
-        }
+        await showInterstitialForTrigger("after_practice_session_complete", {
+          practiceAnsweredCount: summary.answered,
+        });
 
         if (cancelled) {
           return;

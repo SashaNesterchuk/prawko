@@ -107,6 +107,21 @@ Skip и start у одного человека в разные визиты — 
 
 ---
 
+## Home contextual
+
+Компактная карточка между индексом готовности и «Швидка сесія». Не дублирует readiness и не трогает дату экзамена. Только returning user (индекс готовности уже не пустой).
+
+Приоритет: `completion` (один раз после возврата) → персональный next action → ничего.
+
+| Событие | Значение |
+|---|---|
+| `home_contextual_shown` | Показали карточку. `kind`: `completion` / `resume` / `mistakes` / `review` / `weak_topic` |
+| `home_contextual_selected` | Тап. Тот же `kind` |
+
+`completion` — короткое пост-действие после тренировки / экзамена / повторения. На следующем открытии Home больше не держать: либо next action, либо пусто.
+
+---
+
 ## Training
 
 | Событие | Значение |
@@ -176,8 +191,11 @@ Skip и start у одного человека в разные визиты — 
 
 | Событие | Значение |
 |---|---|
-| `paywall_viewed` | Показали Plus. `source`, `offers_count`, `revenuecat_configured` (API key / SDK для платформы, не «последний fetch успешен»), опционально `hydration_error_code` |
-| `paywall_package_selected` | Выбрали пакет |
+| `paywall_viewed` | Показали Plus. `source`, `offers_count`, `revenuecat_configured` (API key / SDK для платформы, не «последний fetch успешен»), опционально `hydration_error_code`. `moment`: `after_exam` / `premium_prompt` / `profile` / `manual_test` |
+| `premium_prompt_shown` | Bottom sheet с оффером Plus. `moment`: `app_open` / `after_ad` / `manual_test`. `app_open` — returning Home, считает session-limit 2/session. `after_ad` — нечётные закрытые interstitial (1, 3, 5…), cap 2 не действует, пауза 2 минуты между фактическими показами |
+| `premium_prompt_clicked` | CTA тизера открыл paywall |
+| `premium_prompt_dismissed` | Тизер закрыли без CTA. `dismiss_method`: `close_button` / `swipe` / `outside_tap` |
+| `paywall_package_selected` | Исторический ключ. Селектора пакетов больше нет: один lifetime, сразу `purchase_started` |
 | `purchase_started` | Нативный checkout |
 | `purchase_succeeded` | Доступ выдан |
 | `purchase_cancelled` | Отмена стора |
@@ -272,7 +290,7 @@ Skip и start у одного человека в разные визиты — 
 
 **Exam.** `exam_start_requested` → `exam_session_started` → `exam_session_completed`. Рядом: ended, restart **modal on result** (не кап Home). Сплит: `passed`.
 
-**Paywall.** `paywall_viewed` → `paywall_package_selected` → `purchase_started` → `purchase_succeeded`. Рядом: cancelled, failed. Сплиты: `source`, `step`, `why`.
+**Paywall.** `paywall_viewed` → `purchase_started` → `purchase_succeeded`. Рядом: cancelled, failed. Сплиты: `source`, `step`, `why`. `paywall_package_selected` больше не шлётся.
 
 **Ads.** `ad_requested` → `ad_shown` → `ad_dismissed`. Рядом: skipped, failed, `ad_impression_revenue`. Сплиты: `after`, `should_show`, `why`, `step`, revenue `placement` / `ad_network`. Ad LTV: `sum(revenue)` / unique `app_user_id` на `ad_impression_revenue`.
 

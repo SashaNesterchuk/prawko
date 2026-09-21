@@ -8,7 +8,9 @@ import { useHasHydrated } from "../../src/state/app-shell";
 import {
   prepareE2EAppState,
   resolveE2EDestination,
+  type E2EHomeContextual,
   type E2EHomeDailyStatus,
+  type E2EPremiumTeaserMoment,
 } from "../../src/testing/e2e/bootstrap";
 import type {
   E2EOfflinePackStatus,
@@ -27,6 +29,7 @@ type BootstrapParams = {
   examStartOrder?: string | string[];
   examCountry?: string | string[];
   homeDaily?: string | string[];
+  homeContextual?: string | string[];
   locale?: string | string[];
   offlinePackCategory?: string | string[];
   offlinePackStatus?: string | string[];
@@ -37,6 +40,7 @@ type BootstrapParams = {
   topicId?: string | string[];
   trainingCompletedLifetime?: string | string[];
   firstStart?: string | string[];
+  premiumTeaserMoment?: string | string[];
 };
 
 export default function E2EBootstrapScreen() {
@@ -62,6 +66,7 @@ export default function E2EBootstrapScreen() {
   );
   const examCountry = getSingleParam(params.examCountry);
   const homeDaily = parseHomeDailyStatus(getSingleParam(params.homeDaily));
+  const homeContextual = parseHomeContextual(getSingleParam(params.homeContextual));
   const reviewStartOrder = parsePositiveInteger(
     getSingleParam(params.examStartOrder)
   );
@@ -71,6 +76,9 @@ export default function E2EBootstrapScreen() {
   const firstStart = parseOptionalBoolean(getSingleParam(params.firstStart));
   const trainingCompletedLifetime = parseNonNegativeInteger(
     getSingleParam(params.trainingCompletedLifetime)
+  );
+  const premiumTeaserMoment = parsePremiumTeaserMoment(
+    getSingleParam(params.premiumTeaserMoment)
   );
 
   useEffect(() => {
@@ -92,6 +100,7 @@ export default function E2EBootstrapScreen() {
         examSessionStatus,
         examCountry,
         homeDaily,
+        homeContextual,
         locale,
         offlinePackCategory,
         offlinePackStatus,
@@ -104,6 +113,7 @@ export default function E2EBootstrapScreen() {
         seedQuestionResultOutcome:
           destination === "question-result-failed" ? "poor" : "good",
         seedDiagnosticResult: destination === "diagnostic-result",
+        premiumTeaserMoment,
         trainingCompletedLifetime,
         unlockHomeChrome: firstStart === true ? false : true,
       });
@@ -132,6 +142,7 @@ export default function E2EBootstrapScreen() {
     firstStart,
     hasHydrated,
     homeDaily,
+    homeContextual,
     locale,
     offlinePackCategory,
     offlinePackStatus,
@@ -142,6 +153,7 @@ export default function E2EBootstrapScreen() {
     signCategoryId,
     topicId,
     trainingCompletedLifetime,
+    premiumTeaserMoment,
   ]);
 
   const isEnabled = mobileEnv.enableE2ETestMode;
@@ -213,6 +225,32 @@ function parseHomeDailyStatus(
       return "done";
     case "in_progress":
       return "in_progress";
+    default:
+      return null;
+  }
+}
+
+function parsePremiumTeaserMoment(
+  value: string | undefined
+): E2EPremiumTeaserMoment | null {
+  switch (value?.trim().toLowerCase()) {
+    case "after_ad":
+      return "after_ad";
+    case "app_open":
+      return "app_open";
+    default:
+      return null;
+  }
+}
+
+function parseHomeContextual(
+  value: string | undefined
+): E2EHomeContextual | null {
+  switch (value?.trim().toLowerCase()) {
+    case "mistakes":
+      return "mistakes";
+    case "completion":
+      return "completion";
     default:
       return null;
   }

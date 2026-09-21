@@ -180,15 +180,12 @@ export default function PaywallPage() {
   const didStartOfferRefreshRef = useRef(
     !sdkConfigured || revenueCatOfferings.length > 0
   );
-  const [selectedPackageKey, setSelectedPackageKey] = useState<string | null>(null);
   const [offerRefreshState, setOfferRefreshState] = useState<
     "idle" | "loading" | "done"
   >(() =>
     !sdkConfigured || revenueCatOfferings.length > 0 ? "done" : "loading"
   );
-  const selectedPackage =
-    revenueCatOfferings.find((item) => getPackageKey(item) === selectedPackageKey) ??
-    recommendedPackage;
+  const selectedPackage = recommendedPackage;
   const selectedProductId = selectedPackage
     ? matchRevenueCatProductId(selectedPackage)
     : null;
@@ -283,12 +280,6 @@ export default function PaywallPage() {
       severity: input.severity ?? "error",
     });
   };
-
-  useEffect(() => {
-    if (!selectedPackageKey && recommendedPackage) {
-      setSelectedPackageKey(getPackageKey(recommendedPackage));
-    }
-  }, [recommendedPackage, selectedPackageKey]);
 
   useEffect(() => {
     if (didStartOfferRefreshRef.current) {
@@ -813,65 +804,6 @@ export default function PaywallPage() {
               rows={comparisonRows}
             />
 
-            {!hasPlusAccess && revenueCatOfferings.length > 0 ? (
-              <View style={styles.packageList}>
-                {revenueCatOfferings.map((item) => {
-                  const key = getPackageKey(item);
-                  const productId = matchRevenueCatProductId(item);
-                  const isSelected =
-                    selectedPackage != null && getPackageKey(selectedPackage) === key;
-                  const label =
-                    productId === "monthly"
-                      ? t("paywall.packageMonthly")
-                      : productId === "yearly"
-                        ? t("paywall.packageYearly")
-                        : productId === "lifetime"
-                          ? t("paywall.packageLifetime")
-                          : item.title;
-
-                  return (
-                    <Pressable
-                      key={key}
-                      accessibilityRole="button"
-                      onPress={() => {
-                        setSelectedPackageKey(key);
-                        track(ANALYTICS_EVENTS.paywallPackageSelected.key, {
-                          offering_identifier: item.offeringIdentifier,
-                          package_identifier: item.identifier,
-                          package_type: item.packageType,
-                          product_identifier: item.productIdentifier,
-                          source: paywallSource,
-                        });
-                      }}
-                      style={({ pressed }) => [
-                        styles.packageChip,
-                        isSelected ? styles.packageChipSelected : null,
-                        pressed ? styles.pressed : null,
-                      ]}
-                    >
-                      <CText
-                        semiBold
-                        style={[
-                          styles.packageChipLabel,
-                          isSelected ? styles.packageChipLabelSelected : null,
-                        ]}
-                      >
-                        {label}
-                      </CText>
-                      <CText
-                        style={[
-                          styles.packageChipPrice,
-                          isSelected ? styles.packageChipLabelSelected : null,
-                        ]}
-                      >
-                        {item.priceString}
-                      </CText>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            ) : null}
-
             {!hasPlusAccess ? (
               <View style={styles.noAdsBadge}>
                 <CText style={styles.noAdsBadgeText}>
@@ -1006,13 +938,6 @@ function isAppFeature(value: string | undefined): value is AppFeature {
   return APP_FEATURES.includes(value as AppFeature);
 }
 
-function getPackageKey(item: {
-  identifier: string;
-  offeringIdentifier: string;
-}) {
-  return `${item.offeringIdentifier}:${item.identifier}`;
-}
-
 function useStyles() {
   return useResponsiveStyles(({ accents, colors, radius, responsiveFont, spacing }) => ({
     safeArea: {
@@ -1076,39 +1001,6 @@ function useStyles() {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
       color: colors.onAccentMuted,
-    },
-    packageList: {
-      width: "100%",
-      gap: spacing.exact(8),
-    },
-    packageChip: {
-      width: "100%",
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: spacing.exact(16),
-      paddingVertical: spacing.exact(14),
-      borderRadius: radius.xl,
-      borderWidth: 1,
-      borderColor: colors.glassThin,
-      backgroundColor: colors.glassThin,
-    },
-    packageChipSelected: {
-      borderColor: accents.amber.fill,
-      backgroundColor: accents.amber.fill,
-    },
-    packageChipLabel: {
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(22),
-      color: colors.onAccent,
-    },
-    packageChipPrice: {
-      fontSize: responsiveFont(15),
-      lineHeight: responsiveFont(22),
-      color: colors.onAccentMuted,
-    },
-    packageChipLabelSelected: {
-      color: colors.onAccent,
     },
     noAdsBadge: {
       alignSelf: "center",

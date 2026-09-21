@@ -43,6 +43,10 @@ pnpm test:e2e:studio
 | `home_exam_starts_session.yaml` | Home → Exam tile → official 32-question simulator (no count picker) |
 | `home_exam_date_unset_opens_calendar.yaml` | Skip exam date → Home exam-date card → calendar today → confirm keeps the card and Profile shows the date |
 | `home_exam_date_set_stays_visible.yaml` | Onboarded Home with a set exam date still shows the exam-date card and reopens the calendar |
+| `home_contextual_hidden_for_new_user.yaml` | First-start Home does not show the retention/completion card |
+| `home_contextual_mistakes_opens_session.yaml` | Returning user with mistakes sees the next-action card; tap starts a mistakes session |
+| `home_contextual_completion_shows_once.yaml` | Just-completed session shows the completion card once; the next Home visit does not keep it as completion |
+| `home_contextual_resume_opens_session.yaml` | In-progress daily 10 shows the resume card and continues the unfinished set |
 | `profile_exam_country_screen_opens.yaml` | Profile → Exam country screen with PL and CZ tiles |
 | `profile_exam_country_switch_cz_exam.yaml` | Profile → CZ → language tiles only cs/en → official 25-question eTesty exam |
 | `profile_exam_country_switch_back_keeps_pl.yaml` | PL exam progress stays namespaced: CZ exam starts at 25 questions, switching back restores the 32-question WORD exam |
@@ -67,8 +71,8 @@ pnpm test:e2e:studio
 | `profile_category_can_switch.yaml` | Profile → Category screen → select A (not only B) |
 | `profile_offline_without_plus_opens_paywall.yaml` | Profile → Offline mode row → paywall (free) |
 | `paywall_activate_stays_on_paywall.yaml` | Guest Activate on paywall stays on paywall (never App access) |
-| `premium_first_training_shows_teaser.yaml` | First completed training shows the Premium teaser; CTA opens the existing paywall |
-| `premium_second_training_opens_paywall.yaml` | Second completed training skips the teaser and opens paywall directly |
+| `premium_after_ad_shows_teaser.yaml` | After the 1st / 3rd / 5th dismissed ad (any placement) the Premium teaser is shown; CTA opens the existing paywall |
+| `premium_training_result_hides_teaser.yaml` | Finished training result does not show the Premium teaser or paywall |
 | `premium_exam_result_opens_paywall.yaml` | Completed exam renders the result and then opens paywall directly |
 | `profile_offline_missing_pack_can_download.yaml` | Offline mode → download missing pack (e2e) |
 | `profile_offline_incomplete_pack_shows_resume.yaml` | Incomplete pack shows resume + remove |
@@ -121,7 +125,7 @@ Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `stati
 3. Use `subflows/launch_onboarded_destination.yaml` for any scenario that does not need to re-test onboarding itself.
 4. Pass `DESTINATION` / `TARGET_ID` through `runFlow.env` so each new flow lands on the screen it cares about.
 5. Override `LOCALE`, `CATEGORY`, `DAYS_UNTIL_EXAM`, `EXAM_COUNTRY` (`PL` / `CZ`), `SIGN_CATEGORY_ID`, and `TOPIC_ID` only when the scenario needs them.
-6. Use `PLUS_ACCESS`, `ENABLE_ADS` (`true` only on freeze-regression flows), `FIRST_START` (`true` for an empty first-start Home; the Home spotlight call site is currently commented out), `HOME_DAILY` (`done` / `in_progress` to seed today’s 10-question set), `QUESTION_SCENARIO` (`topic-progress`), `REACHABILITY`, `OFFLINE_PACK_STATUS` (`missing` / `ready` / `incomplete` / `downloading`), `OFFLINE_PACK_CATEGORY`, `EXAM_SESSION_STATUS`, `EXAM_SESSION_CATEGORY`, `EXAM_START_ORDER`, and `TRAINING_COMPLETED_LIFETIME` for deterministic E2E-only state overrides. Default onboarded bootstrap skips the first-start spotlight.
+6. Use `PLUS_ACCESS`, `ENABLE_ADS` (`true` only on freeze-regression flows), `FIRST_START` (`true` for an empty first-start Home; the Home spotlight call site is currently commented out), `HOME_DAILY` (`done` / `in_progress` to seed today’s 10-question set), `HOME_CONTEXTUAL` (`mistakes` / `completion` for the Home retention card), `QUESTION_SCENARIO` (`topic-progress`), `REACHABILITY`, `OFFLINE_PACK_STATUS` (`missing` / `ready` / `incomplete` / `downloading`), `OFFLINE_PACK_CATEGORY`, `EXAM_SESSION_STATUS`, `EXAM_SESSION_CATEGORY`, `EXAM_START_ORDER`, `TRAINING_COMPLETED_LIFETIME`, and `PREMIUM_TEASER_MOMENT` (`after_ad` / `app_open` to seed the Premium teaser without waiting for a native interstitial) for deterministic E2E-only state overrides. Default onboarded bootstrap skips the first-start spotlight.
 7. Reuse `subflows/start_default_question_count.yaml` anywhere a trainer or signs picker opens before practice starts.
 8. Practice answers can use generic selectors like `question-choice-index-0` and `sign-test-option-index-0`, so flows do not depend on catalog data.
 9. Keep `subflows/complete_onboarding.yaml` only for fresh-install onboarding coverage.

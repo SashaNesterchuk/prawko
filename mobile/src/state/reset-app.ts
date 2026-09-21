@@ -15,6 +15,7 @@ import { useReviewPromptStore } from "./review-prompt";
 import { useSignBookmarksStore } from "./sign-bookmarks";
 import { useSignPracticeProgressStore } from "./sign-practice-progress";
 import { useMonetizationStore } from "../features/monetization/monetization-store";
+import { useHomeContextualStore } from "../features/home/home-contextual-store";
 
 /**
  * Wipes every persisted store and resets in-memory state so the app behaves like
@@ -43,6 +44,7 @@ export async function resetAppToFreshStart() {
   useFreeTierQuestionUsageStore.setState({ answeredQuestionsByDate: {} });
   useReviewPromptStore.getState().resetPrompt();
   useMonetizationStore.getState().resetMonetization();
+  useHomeContextualStore.getState().resetHomeContextual();
   useAiChatStore.setState({
     conversations: {},
     latestConversationByQuestionId: {},

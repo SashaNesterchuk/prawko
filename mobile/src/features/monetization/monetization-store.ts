@@ -3,11 +3,8 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 export type MonetizationMoment =
-  | "after_first_training"
-  | "after_second_training"
   | "after_exam"
-  | "after_ad_2"
-  | "after_ad_4"
+  | "after_ad"
   | "app_open"
   | "manual_test";
 
@@ -97,23 +94,25 @@ function getLocalDateKey(now = new Date()) {
 
 function getPriority(moment: MonetizationMoment) {
   if (moment === "after_exam") return 4;
-  if (
-    moment === "after_first_training" ||
-    moment === "after_second_training"
-  ) {
-    return 3;
-  }
-  if (moment === "after_ad_2" || moment === "after_ad_4") return 2;
+  if (moment === "after_ad") return 2;
   return 1;
+}
+
+export function shouldShowTeaserAfterAd(adsShown: number) {
+  return adsShown > 0 && adsShown % 2 === 1;
 }
 
 export function canShowMonetizationSurface(
   surface: MonetizationSurface,
-  now = Date.now()
+  now = Date.now(),
+  moment?: MonetizationMoment
 ) {
+  const ignoreSessionCap =
+    moment === "after_ad" || moment === "manual_test";
+
   if (surface === "teaser") {
     return (
-      sessionState.teasersShown < TEASER_LIMIT &&
+      (ignoreSessionCap || sessionState.teasersShown < TEASER_LIMIT) &&
       (sessionState.lastTeaserShownAt == null ||
         now - sessionState.lastTeaserShownAt >= TEASER_MIN_INTERVAL_MS)
     );
@@ -187,6 +186,10 @@ export const useMonetizationStore = create<MonetizationState>()(
         set((state) => ({
           adsShownLifetime: state.adsShownLifetime + 1,
         }));
+        if (shouldShowTeaserAfterAd(sessionState.adsShown)) {
+          // Any interstitial placement: training, exam, questions, resume.
+          get().requestSurface("teaser", "after_ad");
+        }
         return sessionState.adsShown;
       },
       recordExamCompleted: (sessionId, answeredCount) => {
@@ -240,12 +243,18 @@ export const useMonetizationStore = create<MonetizationState>()(
         return { count: nextCount, isNew: true };
       },
       requestSurface: (surface, moment) => {
-        if (!canShowMonetizationSurface(surface)) {
+        const isManualTest = moment === "manual_test";
+
+        if (!isManualTest && !canShowMonetizationSurface(surface, Date.now(), moment)) {
           return false;
         }
 
         const pending = get().pendingRequest;
-        if (pending && getPriority(pending.moment) >= getPriority(moment)) {
+        if (
+          !isManualTest &&
+          pending &&
+          getPriority(pending.moment) >= getPriority(moment)
+        ) {
           return false;
         }
 

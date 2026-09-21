@@ -222,12 +222,7 @@ async function presentInterstitial(input: ShowInterstitialInput): Promise<boolea
   recordAdShown();
   clearAppBackgroundMark();
   trackAdDismissed(input);
-  const adsShown = useMonetizationStore.getState().recordAdDismissed();
-  if (adsShown === 2) {
-    useMonetizationStore.getState().requestSurface("teaser", "after_ad_2");
-  } else if (adsShown === 4) {
-    useMonetizationStore.getState().requestSurface("paywall", "after_ad_4");
-  }
+  useMonetizationStore.getState().recordAdDismissed();
   return true;
 }
 

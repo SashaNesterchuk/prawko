@@ -59,47 +59,11 @@ Dismiss:
 
 ---
 
-### После первой завершённой training session
+### После training session
 
-Когда пользователь:
+После тренировки **не** показывать teaser и **не** открывать paywall.
 
-```text
-training_session_completed
-```
-
-и возвращается на результат/Home:
-
-### показать Premium teaser.
-
-Не full paywall.
-
-Логика:
-
-```text
-finish training
-→ показать result
-→ через ~500–1000ms показать Premium teaser
-```
-
----
-
-### После второй завершённой training session
-
-Если пользователь ещё не Premium:
-
-### открыть сразу существующий Premium paywall.
-
-То есть:
-
-```text
-finish second training
-→ result screen
-→ Premium modal
-```
-
-Без дополнительного teaser.
-
-Это уже пользователь, который дважды получил value.
+Реклама после тренировки остаётся. Teaser, если нужно, придёт с `app_open` или после нечётных закрытых реклам (1, 3, 5…), откуда бы interstitial ни показался.
 
 ---
 
@@ -134,39 +98,28 @@ Exam completed
 
 Не после каждой рекламы.
 
-Считать количество показанных interstitial в текущей session.
+Считать все закрытые interstitial в текущей session. Placement не важен: training, exam, questions, resume — один счётчик.
 
 После:
 
 ```text
-2nd ad shown + dismissed in current session
+1st, 3rd, 5th, … ad shown + dismissed
 ```
 
 показать:
 
 ### Premium teaser.
 
-После:
-
-```text
-4th ad shown + dismissed
-```
-
-открыть:
-
-### Premium paywall directly.
+Не full paywall после рекламы.
 
 То есть сама реклама создаёт естественный upgrade trigger:
 
 ```text
+ad → "убери рекламу навсегда"
 ad
+ad → teaser
 ad
-→ "убери рекламу навсегда"
-
-ещё использование
-ad
-ad
-→ full Premium paywall
+ad → teaser
 ```
 
 ---
@@ -238,7 +191,9 @@ Maximum:
 2 teaser shows / app session
 ```
 
-Минимум между teaser:
+Это лимит для `app_open` (и manual не считается). `after_ad` этот cap не использует.
+
+Минимум между фактическими показами teaser (включая `after_ad`):
 
 ```text
 2 minutes
@@ -266,7 +221,7 @@ Manual paywall из Profile не считать в этот limit.
 
 # 6. Priority, если одновременно сработало несколько моментов
 
-Например пользователь завершил training и одновременно достиг лимита ads.
+Например пользователь закрыл рекламу и одновременно открыл приложение.
 
 Не показывать два UI подряд.
 
@@ -274,8 +229,6 @@ Priority:
 
 ```text
 exam_completed
->
-training_completed
 >
 ad_threshold
 >
@@ -337,8 +290,7 @@ product_id
 `moment`:
 
 ```text
-after_first_training
-after_ad_2
+after_ad
 app_open
 manual_test
 ```
@@ -451,9 +403,7 @@ profile
 `moment`:
 
 ```text
-after_second_training
 after_exam
-after_ad_4
 premium_prompt
 profile
 ```
@@ -740,11 +690,9 @@ moment
 Чтобы увидеть:
 
 ```text
-after_first_training → purchase 3%
-after_second_training → 8%
-after_exam → 12%
-after_ad_4 → 17%
-app_open → 2%
+after_ad → purchase
+after_exam → purchase
+app_open → purchase
 ```
 
 И тогда уже не гадать, **когда продавать Premium**, а оставить наиболее прибыльные моменты.

@@ -1,19 +1,32 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Application from "expo-application";
-import { router, usePathname } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, usePathname, useSegments } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { InteractionManager, Pressable, View } from "react-native";
+import {
+  InteractionManager,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
+import Animated from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { isHomeScreenFromSegments } from "../../analytics/screenRoutes";
+import { AppButton } from "../../components/shell/AppButton";
+import { NavigationButton } from "../../components/shell/NavigationButton";
 import { CText, useResponsiveStyles } from "../../portable-ui";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
+import { useTheme } from "../../providers/ThemeProvider";
 import { useHasPlusAccess } from "../../state/entitlements";
 import { useAppShellStore, useHasHydrated } from "../../state/app-shell";
 import { getMonetizationContextProperties } from "./monetization-analytics";
@@ -32,8 +45,17 @@ type DismissMethod = "close_button" | "swipe" | "outside_tap";
 
 export function PremiumTeaserHost() {
   const { t } = useTranslation();
-  const styles = useStyles();
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const sheetHeight = useMemo(
+    () => Math.round(Math.max(380, windowHeight * 0.44)),
+    [windowHeight]
+  );
+  const styles = useStyles(sheetHeight, insets.bottom);
+  const snapPoints = useMemo(() => [sheetHeight], [sheetHeight]);
   const pathname = usePathname();
+  const segments = useSegments();
+  const isHomeScreen = isHomeScreenFromSegments(segments);
   const { track } = useAnalytics();
   const hasPlusAccess = useHasPlusAccess();
   const appShellHydrated = useHasHydrated();
@@ -50,6 +72,7 @@ export function PremiumTeaserHost() {
     (state) => state.resolveRequest
   );
   const recordLaunch = useMonetizationStore((state) => state.recordLaunch);
+  const launchCount = useMonetizationStore((state) => state.launchCount);
   const requestSurface = useMonetizationStore(
     (state) => state.requestSurface
   );
@@ -57,6 +80,7 @@ export function PremiumTeaserHost() {
     (state) => state.setInstalledAt
   );
   const didRecordLaunchRef = useRef(false);
+  const didEvaluateAppOpenRef = useRef(false);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const activeTeaserRequestRef = useRef<MonetizationRequest | null>(null);
   const dismissMethodRef = useRef<DismissMethod>("swipe");
@@ -91,27 +115,48 @@ export function PremiumTeaserHost() {
       .then(setInstalledAt)
       .catch(() => undefined)
       .finally(() => {
-        const { isFirstEverLaunch } = recordLaunch();
-        const state = useMonetizationStore.getState();
-
-        if (
-          !isFirstEverLaunch &&
-          onboardingCompleted &&
-          pathname === "/" &&
-          (state.trainingCompletedLifetime > 0 ||
-            state.examCompletedLifetime > 0)
-        ) {
-          requestSurface("teaser", "app_open");
-        }
+        recordLaunch();
       });
   }, [
     appShellHydrated,
     monetizationHydrated,
-    onboardingCompleted,
-    pathname,
     recordLaunch,
-    requestSurface,
     setInstalledAt,
+  ]);
+
+  useEffect(() => {
+    if (
+      didEvaluateAppOpenRef.current ||
+      launchCount < 1 ||
+      !appShellHydrated ||
+      !monetizationHydrated ||
+      !onboardingCompleted ||
+      !isHomeScreen
+    ) {
+      return;
+    }
+
+    didEvaluateAppOpenRef.current = true;
+    if (hasPlusAccess) {
+      return;
+    }
+
+    const state = useMonetizationStore.getState();
+    if (
+      launchCount >= 2 &&
+      (state.trainingCompletedLifetime > 0 ||
+        state.examCompletedLifetime > 0)
+    ) {
+      requestSurface("teaser", "app_open");
+    }
+  }, [
+    appShellHydrated,
+    hasPlusAccess,
+    isHomeScreen,
+    launchCount,
+    monetizationHydrated,
+    onboardingCompleted,
+    requestSurface,
   ]);
 
   useEffect(() => {
@@ -125,7 +170,7 @@ export function PremiumTeaserHost() {
       return;
     }
 
-    if (hasPlusAccess) {
+    if (hasPlusAccess && pendingRequest.moment !== "manual_test") {
       resolveRequest(pendingRequest.id);
       return;
     }
@@ -138,18 +183,24 @@ export function PremiumTeaserHost() {
       return;
     }
 
-    const delayMs =
-      pendingRequest.moment === "after_exam"
-        ? 1_000
-        : pendingRequest.moment === "app_open"
-          ? 1_000
-          : 700;
+    if (pendingRequest.moment === "app_open" && !isHomeScreen) {
+      return;
+    }
+
+    const delayMs = pendingRequest.moment === "manual_test" ? 0 : 200;
     let cancelled = false;
     const timeout = setTimeout(() => {
       const task = InteractionManager.runAfterInteractions(() => {
         if (cancelled) return;
 
-        if (!canShowMonetizationSurface(pendingRequest.surface)) {
+        if (
+          pendingRequest.moment !== "manual_test" &&
+          !canShowMonetizationSurface(
+            pendingRequest.surface,
+            Date.now(),
+            pendingRequest.moment
+          )
+        ) {
           resolveRequest(pendingRequest.id);
           return;
         }
@@ -185,6 +236,7 @@ export function PremiumTeaserHost() {
     appShellHydrated,
     hasPlusAccess,
     isAdShowing,
+    isHomeScreen,
     monetizationHydrated,
     onboardingCompleted,
     pathname,
@@ -198,11 +250,19 @@ export function PremiumTeaserHost() {
         {...props}
         appearsOnIndex={0}
         disappearsOnIndex={-1}
+        opacity={0.45}
         onPress={() => {
           dismissMethodRef.current = "outside_tap";
         }}
         pressBehavior="close"
       />
+    ),
+    []
+  );
+
+  const renderBackground = useCallback(
+    (props: { style?: StyleProp<ViewStyle> }) => (
+      <PremiumTeaserBackground style={props.style} />
     ),
     []
   );
@@ -220,11 +280,14 @@ export function PremiumTeaserHost() {
 
       didTrackShownRequestRef.current = activeRequest.id;
       shownAtRef.current = Date.now();
-      markMonetizationSurfaceShown("teaser");
+      if (activeRequest.moment !== "manual_test") {
+        markMonetizationSurfaceShown("teaser");
+      }
       track(ANALYTICS_EVENTS.premiumPromptShown.key, {
         ...getMonetizationContextProperties(),
         moment: activeRequest.moment,
-        source: "automatic",
+        source:
+          activeRequest.moment === "manual_test" ? "manual_test" : "automatic",
       });
     },
     [track]
@@ -238,7 +301,8 @@ export function PremiumTeaserHost() {
       track(ANALYTICS_EVENTS.premiumPromptDismissed.key, {
         dismiss_method: dismissMethodRef.current,
         moment: activeRequest.moment,
-        source: "automatic",
+        source:
+          activeRequest.moment === "manual_test" ? "manual_test" : "automatic",
         time_visible_ms: Math.max(0, Date.now() - shownAtRef.current),
       });
     }
@@ -261,7 +325,8 @@ export function PremiumTeaserHost() {
     track(ANALYTICS_EVENTS.premiumPromptClicked.key, {
       ...getMonetizationContextProperties(),
       moment: activeRequest.moment,
-      source: "automatic",
+      source:
+        activeRequest.moment === "manual_test" ? "manual_test" : "automatic",
       time_visible_ms:
         shownAtRef.current == null
           ? 0
@@ -288,124 +353,124 @@ export function PremiumTeaserHost() {
     <BottomSheetModal
       ref={bottomSheetRef}
       backdropComponent={renderBackdrop}
+      backgroundComponent={renderBackground}
       backgroundStyle={styles.sheetBackground}
-      enableDynamicSizing
+      enableDynamicSizing={false}
       enablePanDownToClose
-      handleIndicatorStyle={styles.handle}
+      handleComponent={null}
       onChange={handleSheetChanged}
       onDismiss={handleDismissed}
+      snapPoints={snapPoints}
     >
-      <BottomSheetView style={styles.content} testID="premium-teaser">
-        <View style={styles.header}>
-          <View style={styles.icon}>
-            <MaterialCommunityIcons
-              color={styles.iconGlyph.color}
-              name="crown-outline"
-              size={24}
-            />
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            hitSlop={12}
+      <View style={styles.content} testID="premium-teaser">
+        <View style={styles.closeRow}>
+          <NavigationButton
+            accessibilityLabel={t("common.close")}
             onPress={handleClose}
             testID="premium-teaser-close"
-          >
-            <MaterialCommunityIcons
-              color={styles.closeGlyph.color}
-              name="close"
-              size={24}
-            />
-          </Pressable>
+            type="close"
+          />
         </View>
 
         <View style={styles.copy}>
-          <CText bold style={styles.title}>
-            {t("paywall.teaserTitle", { price: displayPrice })}
+          <View style={styles.titleBlock}>
+            <CText bold center s24 style={styles.title}>
+              <MaterialCommunityIcons
+                color={styles.iconGlyph.color}
+                name="crown-outline"
+                size={32}
+              />   {t("paywall.comparisonTitle")}
+            </CText>
+          </View>
+
+          <CText bold center s32 style={styles.price}>
+            {t("paywall.priceHeadline", { price: displayPrice })}
           </CText>
-          <CText style={styles.subtitle}>{t("paywall.teaserSubtitle")}</CText>
+
+          <CText center s18 style={styles.subtitle}>
+            {t("paywall.subtitle")}
+          </CText>
         </View>
 
-        <Pressable
-          accessibilityRole="button"
+        <AppButton
+          label={t("paywall.teaserCta")}
           onPress={handleOpenPaywall}
-          style={({ pressed }) => [
-            styles.cta,
-            pressed ? styles.pressed : null,
-          ]}
           testID="premium-teaser-cta"
-        >
-          <CText semiBold style={styles.ctaLabel}>
-            {t("paywall.teaserCta")}
-          </CText>
-        </Pressable>
-      </BottomSheetView>
+        />
+      </View>
     </BottomSheetModal>
   );
 }
 
-function useStyles() {
+function PremiumTeaserBackground({
+  style,
+}: {
+  style?: StyleProp<ViewStyle>;
+}) {
+  const { accents, background, colors, radius } = useTheme();
+
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          backgroundColor: colors.paper,
+          borderTopLeftRadius: radius.xxxl,
+          borderTopRightRadius: radius.xxxl,
+          overflow: "hidden",
+        },
+      ]}
+    >
+      <LinearGradient
+        colors={[accents.green.wash, background.end, colors.paper]}
+        end={{ x: 0.5, y: 1 }}
+        locations={[0, 0.48, 1]}
+        pointerEvents="none"
+        start={{ x: 0.5, y: 0 }}
+        style={StyleSheet.absoluteFill}
+      />
+    </Animated.View>
+  );
+}
+
+function useStyles(sheetHeight: number, bottomInset: number) {
   return useResponsiveStyles(
-    ({ accents, colors, radius, responsiveFont, spacing }) => ({
+    ({ accents, colors, radius, spacing }) => ({
       sheetBackground: {
-        backgroundColor: colors.surface,
-        borderTopLeftRadius: radius.xl,
-        borderTopRightRadius: radius.xl,
-      },
-      handle: {
-        backgroundColor: colors.borderSoft,
+        backgroundColor: colors.paper,
+        borderTopLeftRadius: radius.xxxl,
+        borderTopRightRadius: radius.xxxl,
       },
       content: {
-        gap: spacing.exact(18),
+        height: sheetHeight,
+        paddingBottom: spacing.exact(24) + bottomInset,
         paddingHorizontal: spacing.exact(24),
-        paddingBottom: spacing.exact(32),
+        paddingTop: spacing.exact(8),
       },
-      header: {
-        alignItems: "center",
-        flexDirection: "row",
-        justifyContent: "space-between",
-      },
-      icon: {
-        alignItems: "center",
-        backgroundColor: accents.amber.wash,
-        borderRadius: radius.pill,
-        height: spacing.exact(44),
-        justifyContent: "center",
-        width: spacing.exact(44),
-      },
-      iconGlyph: {
-        color: accents.amber.ink,
-      },
-      closeGlyph: {
-        color: colors.textMuted,
+      closeRow: {
+        alignItems: "flex-end",
       },
       copy: {
-        gap: spacing.exact(6),
+        flex: 1,
+      },
+      titleBlock: {
+        marginBottom: spacing.exact(32),
+        alignItems: "center",
       },
       title: {
         color: colors.textPrimary,
-        fontSize: responsiveFont(22),
-        lineHeight: responsiveFont(28),
+      },
+      price: {
+        color: colors.textPrimary,
+        letterSpacing: -0.64,
+        lineHeight: 36,
+        marginBottom: spacing.exact(16),
       },
       subtitle: {
-        color: colors.textMuted,
-        fontSize: responsiveFont(16),
-        lineHeight: responsiveFont(24),
+        color: colors.textSecondary,
       },
-      cta: {
-        alignItems: "center",
-        backgroundColor: accents.amber.fill,
-        borderRadius: radius.pill,
-        justifyContent: "center",
-        minHeight: spacing.exact(52),
-        paddingHorizontal: spacing.exact(24),
-      },
-      ctaLabel: {
-        color: colors.onAccent,
-        fontSize: responsiveFont(18),
-        lineHeight: responsiveFont(24),
-      },
-      pressed: {
-        opacity: 0.85,
+      iconGlyph: {
+        color: accents.amber.fill,
       },
     })
   );

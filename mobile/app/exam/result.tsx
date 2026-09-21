@@ -38,6 +38,7 @@ import type {
 } from "../../src/features/exam/types";
 import { useAdInterstitialActions } from "../../src/features/ads/show-interstitial";
 import { maybeRequestInAppReview } from "../../src/features/profile/request-in-app-review";
+import { captureHomeContextualCompletion } from "../../src/features/home/home-contextual-record";
 import { useMonetizationStore } from "../../src/features/monetization/monetization-store";
 import { getQuestionTopicTitle } from "../../src/features/question-topics/catalog";
 import { getQuestionUserState } from "../../src/features/questions/question-engine";
@@ -281,6 +282,14 @@ export default function ExamResultScreen() {
     }
 
     didTrackCompletionRef.current = snapshot.session.id;
+    const answeredCount =
+      snapshot.session.correctAnswersCount + snapshot.session.wrongAnswersCount;
+    captureHomeContextualCompletion({
+      answeredCount,
+      mode: "exam",
+      sessionId: snapshot.session.id,
+      totalCount: snapshot.session.totalQuestionsTarget,
+    });
     const completion = recordExamCompleted(
       snapshot.session.id,
       snapshot.session.totalQuestionsTarget

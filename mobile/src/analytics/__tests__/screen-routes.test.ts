@@ -1,6 +1,7 @@
 import { ANALYTICS_SCREENS } from "../catalog";
 import {
   analyticsPathFromSegments,
+  isHomeScreenFromSegments,
   resolveScreenRoute,
 } from "../screenRoutes";
 
@@ -36,6 +37,14 @@ describe("resolveScreenRoute", () => {
       routePattern: "/(tabs)/index",
       screenName: ANALYTICS_SCREENS.home,
     });
+  });
+
+  it("treats only the Home tab as Home, not the root gate", () => {
+    expect(isHomeScreenFromSegments([])).toBe(false);
+    expect(isHomeScreenFromSegments(["index"])).toBe(false);
+    expect(isHomeScreenFromSegments(["(tabs)"])).toBe(true);
+    expect(isHomeScreenFromSegments(["(tabs)", "index"])).toBe(true);
+    expect(isHomeScreenFromSegments(["(tabs)", "learn"])).toBe(false);
   });
 
   it("maps grouped tab paths to the same screens as ungrouped ones", () => {

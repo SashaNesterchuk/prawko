@@ -1,0 +1,41 @@
+# Feature: Home contextual card
+# Scenario: After a just-completed session, Home shows the completion card
+# once; the next Home visit does not keep it as completion
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+  - contextual
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      HOME_CONTEXTUAL: completion
+      TARGET_ID: screen-home
+
+- assertVisible:
+    id: "screen-home"
+- assertVisible:
+    id: "home-contextual-card"
+- assertVisible:
+    id: "home-contextual-completion"
+
+- tapOn:
+    id: "tab-profile"
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
+- tapOn:
+    id: "tab-index"
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 15000
+
+- assertNotVisible:
+    id: "home-contextual-completion"
+- assertNotVisible:
+    id: "home-contextual-card"

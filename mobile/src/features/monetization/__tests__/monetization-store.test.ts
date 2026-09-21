@@ -39,7 +39,7 @@ describe("monetization session policy", () => {
     const store = useMonetizationStore.getState();
 
     expect(store.requestSurface("teaser", "app_open")).toBe(true);
-    expect(store.requestSurface("teaser", "after_ad_2")).toBe(true);
+    expect(store.requestSurface("teaser", "after_ad")).toBe(true);
     expect(store.requestSurface("teaser", "app_open")).toBe(false);
     expect(store.requestSurface("paywall", "after_exam")).toBe(true);
 
@@ -78,5 +78,84 @@ describe("monetization session policy", () => {
       trainingCompletedLifetime: 2,
     });
     expect(getMonetizationSessionSnapshot().trainingCompleted).toBe(2);
+  });
+
+  it("lets a manual test teaser bypass session caps", () => {
+    const start = 1_000_000;
+    markMonetizationSurfaceShown("teaser", start);
+    markMonetizationSurfaceShown("teaser", start + 120_000);
+
+    expect(canShowMonetizationSurface("teaser", start + 500_000)).toBe(false);
+    expect(
+      useMonetizationStore.getState().requestSurface("teaser", "manual_test")
+    ).toBe(true);
+    expect(useMonetizationStore.getState().pendingRequest?.moment).toBe(
+      "manual_test"
+    );
+  });
+
+  it("requests a teaser after odd dismissed ads, from any placement", () => {
+    const store = useMonetizationStore.getState();
+
+    expect(store.recordAdDismissed()).toBe(1);
+    expect(useMonetizationStore.getState().pendingRequest).toMatchObject({
+      moment: "after_ad",
+      surface: "teaser",
+    });
+
+    store.closeSurface();
+    expect(store.recordAdDismissed()).toBe(2);
+    expect(useMonetizationStore.getState().pendingRequest).toBeNull();
+
+    expect(store.recordAdDismissed()).toBe(3);
+    expect(useMonetizationStore.getState().pendingRequest).toMatchObject({
+      moment: "after_ad",
+      surface: "teaser",
+    });
+
+    store.closeSurface();
+    expect(store.recordAdDismissed()).toBe(4);
+    expect(useMonetizationStore.getState().pendingRequest).toBeNull();
+
+    expect(store.recordAdDismissed()).toBe(5);
+    expect(useMonetizationStore.getState().pendingRequest).toMatchObject({
+      moment: "after_ad",
+      surface: "teaser",
+    });
+  });
+
+  it("lets after-ad teasers bypass the two-show cap after cooldown", () => {
+    jest.useFakeTimers();
+    try {
+      jest.setSystemTime(1_000_000);
+      markMonetizationSurfaceShown("teaser", 1_000_000);
+      markMonetizationSurfaceShown("teaser", 1_120_000);
+      jest.setSystemTime(1_240_000);
+
+      expect(canShowMonetizationSurface("teaser")).toBe(false);
+      expect(canShowMonetizationSurface("teaser", 1_240_000, "app_open")).toBe(
+        false
+      );
+      expect(
+        useMonetizationStore.getState().requestSurface("teaser", "app_open")
+      ).toBe(false);
+      expect(
+        useMonetizationStore.getState().requestSurface("teaser", "after_ad")
+      ).toBe(true);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("still enforces the two-minute gap for after_ad teasers", () => {
+    const start = 1_000_000;
+    markMonetizationSurfaceShown("teaser", start);
+
+    expect(
+      canShowMonetizationSurface("teaser", start + 119_999, "after_ad")
+    ).toBe(false);
+    expect(
+      canShowMonetizationSurface("teaser", start + 120_000, "after_ad")
+    ).toBe(true);
   });
 });

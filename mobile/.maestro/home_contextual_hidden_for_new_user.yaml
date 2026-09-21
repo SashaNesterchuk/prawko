@@ -1,0 +1,22 @@
+# Feature: Home contextual card
+# Scenario: A new user with an empty readiness index does not see the
+# retention / completion card
+appId: com.mindjar.prawko
+tags:
+  - smoke
+  - home
+  - contextual
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      FIRST_START: "true"
+      TARGET_ID: screen-home
+
+- assertVisible:
+    id: "screen-home"
+- assertVisible:
+    id: "home-readiness-index"
+- assertNotVisible:
+    id: "home-contextual-card"

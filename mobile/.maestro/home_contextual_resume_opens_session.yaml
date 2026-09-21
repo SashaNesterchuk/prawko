@@ -1,0 +1,31 @@
+# Feature: Home contextual card
+# Scenario: An in-progress daily session shows the resume card and continues
+# the unfinished set
+appId: com.mindjar.prawko
+tags:
+  - home
+  - contextual
+  - daily
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      HOME_DAILY: in_progress
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-home
+
+- assertVisible:
+    id: "screen-home"
+- assertVisible:
+    id: "home-contextual-card"
+- assertVisible:
+    id: "home-contextual-resume"
+
+- tapOn:
+    id: "home-contextual-card"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 20000

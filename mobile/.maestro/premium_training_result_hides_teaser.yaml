@@ -1,0 +1,27 @@
+# Feature: Premium monetization
+# Scenario: A finished training result does not open the Premium teaser
+# or paywall. Those surfaces are reserved for app open and odd dismissed ads.
+appId: com.mindjar.prawko
+tags:
+  - monetization
+  - training
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: question-result
+      TARGET_ID: screen-question-result
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-result"
+    timeout: 10000
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertNotVisible:
+    id: "premium-teaser"
+
+- assertNotVisible:
+    id: "screen-paywall"

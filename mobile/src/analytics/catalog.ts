@@ -98,6 +98,16 @@ export const ANALYTICS_EVENTS = {
     description:
       "The learner enabled, deferred, or dismissed the study-reminder sheet.",
   },
+  homeContextualShown: {
+    key: "home_contextual_shown",
+    description:
+      "The Home retention card was shown. kind: completion, resume, mistakes, review, or weak_topic. Returning users only; completion is one-shot.",
+  },
+  homeContextualSelected: {
+    key: "home_contextual_selected",
+    description:
+      "The learner tapped the Home retention card. kind matches home_contextual_shown.",
+  },
   trainingModeSelected: {
     key: "training_mode_selected",
     description: "A training mode and question count were selected.",
@@ -214,7 +224,8 @@ export const ANALYTICS_EVENTS = {
   },
   premiumPromptShown: {
     key: "premium_prompt_shown",
-    description: "The automatic Premium teaser became visible.",
+    description:
+      "The automatic Premium teaser became visible. moment: app_open, after_ad (1st/3rd/5th dismissed interstitial, any placement), or manual_test.",
   },
   premiumPromptClicked: {
     key: "premium_prompt_clicked",

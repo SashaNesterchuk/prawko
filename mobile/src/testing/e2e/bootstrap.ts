@@ -49,7 +49,11 @@ import { rehydrateCountryScopedStores } from "../../countries/CountryScopedStore
 import { useAppShellStore } from "../../state/app-shell";
 import { useQuestionCatalogStore } from "../../state/question-catalog";
 import { useQuestionProgressStore } from "../../state/question-progress";
-import { useMonetizationStore } from "../../features/monetization/monetization-store";
+import {
+  useMonetizationStore,
+  type MonetizationMoment,
+} from "../../features/monetization/monetization-store";
+import { useHomeContextualStore } from "../../features/home/home-contextual-store";
 import {
   configureE2ETestOverrides,
   resetE2ETestOverrides,
@@ -77,6 +81,11 @@ export type E2EDestination =
   | "diagnostic-result";
 
 export type E2EHomeDailyStatus = "done" | "in_progress";
+export type E2EHomeContextual = "mistakes" | "completion";
+export type E2EPremiumTeaserMoment = Extract<
+  MonetizationMoment,
+  "after_ad" | "app_open"
+>;
 
 type PrepareE2EAppStateInput = {
   category?: string | null;
@@ -85,6 +94,7 @@ type PrepareE2EAppStateInput = {
   examSessionCategory?: string | null;
   examSessionStatus?: RemoteExamSessionStatus | null;
   homeDaily?: E2EHomeDailyStatus | null;
+  homeContextual?: E2EHomeContextual | null;
   locale?: SupportedLocale | null;
   enableAds?: boolean | null;
   offlinePackCategory?: string | null;
@@ -95,6 +105,7 @@ type PrepareE2EAppStateInput = {
   seedQuestionResult?: boolean | null;
   seedQuestionResultOutcome?: "good" | "poor" | null;
   seedDiagnosticResult?: boolean | null;
+  premiumTeaserMoment?: E2EPremiumTeaserMoment | null;
   trainingCompletedLifetime?: number | null;
   unlockHomeChrome?: boolean | null;
 };
@@ -167,6 +178,7 @@ export async function prepareE2EAppState(
 
   await waitForQuestionProgressHydrated();
   await waitForQuestionCatalogResolved();
+  await waitForMonetizationHydrated();
 
   if (input.questionScenario) {
     const questionIds = getQuestionBank().map((question) => question.id);
@@ -200,6 +212,19 @@ export async function prepareE2EAppState(
           outcome: input.seedQuestionResultOutcome === "poor" ? "poor" : "good",
         })
       : null;
+
+  if (input.homeContextual) {
+    seedE2EHomeContextual({
+      examCountry,
+      variant: input.homeContextual,
+    });
+  }
+
+  if (input.premiumTeaserMoment) {
+    useMonetizationStore
+      .getState()
+      .requestSurface("teaser", input.premiumTeaserMoment);
+  }
 
   return {
     seededExamSessionId,
@@ -371,6 +396,29 @@ function waitForQuestionProgressHydrated(timeoutMs = 5000) {
     }, timeoutMs);
 
     const unsubscribe = useQuestionProgressStore.subscribe((state) => {
+      if (!state.hasHydrated) {
+        return;
+      }
+
+      clearTimeout(timeoutId);
+      unsubscribe();
+      resolve();
+    });
+  });
+}
+
+function waitForMonetizationHydrated(timeoutMs = 5000) {
+  if (useMonetizationStore.getState().hasHydrated) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      unsubscribe();
+      reject(new Error("Timed out waiting for monetization hydration."));
+    }, timeoutMs);
+
+    const unsubscribe = useMonetizationStore.subscribe((state) => {
       if (!state.hasHydrated) {
         return;
       }
@@ -783,4 +831,74 @@ function seedE2EHomeDailySession(input: {
   });
 
   return routeSessionKey;
+}
+
+function seedE2EReturningReadiness() {
+  const nowMs = Date.now();
+  useAppShellStore.setState({ homeStartSpotlightDismissed: true });
+  useQuestionProgressStore.setState({
+    readinessAssessment: {
+      completedAt: new Date(nowMs).toISOString(),
+      correct: 6,
+      scorePercent: 60,
+      sessionId: "e2e-prior-diagnostic",
+      total: INITIAL_DIAGNOSTIC_QUESTION_COUNT,
+    },
+  });
+}
+
+function seedE2EHomeContextual(input: {
+  examCountry: CountryCode;
+  variant: E2EHomeContextual;
+}) {
+  seedE2EReturningReadiness();
+
+  if (input.variant === "completion") {
+    useHomeContextualStore.setState({
+      hasHydrated: true,
+      pending: {
+        answeredCount: 12,
+        completedAt: Date.now(),
+        examCountry: input.examCountry,
+        id: "e2e-home-completion",
+        kind: "training",
+        mode: "learning",
+        readinessDelta: 2,
+        shownOnHome: false,
+        topicId: null,
+        totalCount: 12,
+      },
+    });
+    return;
+  }
+
+  const sourceQuestions = getQuestionBank().slice(0, 5);
+  if (sourceQuestions.length === 0) {
+    throw new Error("E2E home contextual seed needs a local question bank.");
+  }
+
+  const now = new Date().toISOString();
+  const questionUserState: QuestionUserStateMap = Object.fromEntries(
+    sourceQuestions.map((question) => [
+      question.id,
+      {
+        ...createEmptyQuestionUserState(question.id),
+        lastSeenAt: now,
+        lastWrongAt: now,
+        timesSeen: 1,
+        timesWrong: 1,
+      },
+    ])
+  );
+
+  useQuestionProgressStore.setState({
+    questionUserState,
+    readinessAssessment: {
+      completedAt: now,
+      correct: 6,
+      scorePercent: 60,
+      sessionId: "e2e-prior-diagnostic",
+      total: INITIAL_DIAGNOSTIC_QUESTION_COUNT,
+    },
+  });
 }
