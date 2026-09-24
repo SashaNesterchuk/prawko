@@ -118,7 +118,7 @@ Skip и start у одного человека в разные визиты — 
 | `home_contextual_shown` | Показали карточку. `kind`: `completion` / `resume` / `mistakes` / `review` / `weak_topic` |
 | `home_contextual_selected` | Тап. Тот же `kind` |
 
-`completion` — короткое пост-действие после тренировки / экзамена / повторения. На следующем открытии Home больше не держать: либо next action, либо пусто.
+`completion` — короткое пост-действие после тренировки / экзамена / повторения. `shownOnHome` ставится в момент `home_contextual_shown`, поэтому карточка остаётся на текущем визите и не повторяется после фона. На следующем открытии Home её уже нет: либо next action, либо пусто.
 
 ---
 
@@ -160,14 +160,15 @@ Skip и start у одного человека в разные визиты — 
 | `exam_session_resumed` | Вернулись в активный экзамен |
 | `exam_question_answered` | Ответ в экзамене |
 | `exam_session_completed` | Есть счёт. Смотреть `passed` |
-| `exam_session_ended` | Вышли или истекло. `end_reason`, `status` |
+| `exam_session_ended` | Вышли после ответа или истекло. `end_reason`, `status` |
+| `exam_empty_exit` | Закрыли экзамен до первого ответа. Не брошенный экзамен. `answered_count` 0, `question_total`, `mode` |
 | `exam_answers_review_opened` | Открыли разбор |
 | `exam_restart_gate_shown` | Модалка «ещё раз» на экране **результата**, только кнопка New attempt |
 | `exam_restart_selected` | Ответ на эту модалку. `choice`: `watch_ad`, `upgrade`, `dismiss`, `plus` |
 
 Это **не** лимит экзаменов и **не** гейт на плитке Home/Learn. `openExam()` → `/exam` не смотрит Plus и не показывает модалку. `exam_start_requested source=manual` после Home — обход, не «гейт пропустили». `dismiss` только закрывает модалку, на результате остаются; Close ведёт на Home, оттуда новый экзамен сразу. Текст paywall `1/день` — копирайт, в коде дневного капа нет. После сдачи primary CTA — Home, гейт даже не показывается.
 
-`exam_session_ended.status`: `abandoned` — дроп; `completed` + `end_reason: learner_finish` — нормальное завершение (иногда дублирует complete). Настоящий mid-exam дроп: `end_reason: user_ended_early`. Пустой выход без ответов: `end_reason: miss_click_empty_exit`.
+`exam_session_ended.status`: `abandoned` — ответил и вышел; `completed` + `end_reason: learner_finish` — нормальное завершение (иногда дублирует complete). Настоящий mid-exam дроп: `end_reason: user_ended_early`. Пустой выход без ответов — отдельное событие `exam_empty_exit`, не `exam_session_ended`. В дампах до этого билда тот же выход лежит на `exam_session_ended` с `end_reason: miss_click_empty_exit`.
 
 `passed` на complete — сдал / не сдал, не «дошёл до конца». PL обычно 32 вопроса, CZ 25.
 
@@ -192,6 +193,7 @@ Skip и start у одного человека в разные визиты — 
 | Событие | Значение |
 |---|---|
 | `paywall_viewed` | Показали Plus. `source`, `offers_count`, `revenuecat_configured` (API key / SDK для платформы, не «последний fetch успешен»), опционально `hydration_error_code`. `moment`: `after_exam` / `premium_prompt` / `profile` / `manual_test` |
+| `paywall_dismissed` | Закрыли Plus без покупки. `dismiss_method`: `close_button` / `swipe` / `background`. `background` уходит при уходе приложения в фон; если экран ещё открыт после возврата, следующий выход пишется своим методом |
 | `premium_prompt_shown` | Bottom sheet с оффером Plus. `moment`: `app_open` / `after_ad` / `manual_test`. `app_open` — returning Home, считает session-limit 2/session. `after_ad` — нечётные закрытые interstitial (1, 3, 5…), cap 2 не действует, пауза 2 минуты между фактическими показами |
 | `premium_prompt_clicked` | CTA тизера открыл paywall |
 | `premium_prompt_dismissed` | Тизер закрыли без CTA. `dismiss_method`: `close_button` / `swipe` / `outside_tap` |
@@ -245,7 +247,7 @@ Skip и start у одного человека в разные визиты — 
 - `revenue_precision` — `unknown` / `estimated` / `publisher_provided` / `precise`
 - `placement` — `after_training` / `training_questions` / `after_exam` / `sign_test` / `other`
 
-`client_error_logged` `area=ads`: `ad_not_shown` (warning, должен был показаться), `ad_failed`, `ad_preload_failed`.
+`client_error_logged` `area=ads`: `ad_not_shown` (warning, должен был показаться), `ad_failed`, `ad_preload_failed`, `ad_impression_revenue_rejected` (`why: unparseable_revenue`).
 
 ---
 
@@ -288,7 +290,7 @@ Skip и start у одного человека в разные визиты — 
 
 **Training.** `training_mode_selected` → `training_session_started` → `training_session_completed`. Рядом: abandoned, empty. Сплит: `mode`.
 
-**Exam.** `exam_start_requested` → `exam_session_started` → `exam_session_completed`. Рядом: ended, restart **modal on result** (не кап Home). Сплит: `passed`.
+**Exam.** `exam_start_requested` → `exam_session_started` → `exam_session_completed`. Рядом: ended (ответил и вышел), `exam_empty_exit` (закрыл до ответа, не abandon), restart **modal on result** (не кап Home). Сплит: `passed`.
 
 **Paywall.** `paywall_viewed` → `purchase_started` → `purchase_succeeded`. Рядом: cancelled, failed. Сплиты: `source`, `step`, `why`. `paywall_package_selected` больше не шлётся.
 

@@ -63,7 +63,9 @@ import {
   isInterstitialLoaded,
   isInterstitialShowing,
   resetInterstitialControllerForTests,
+  PAID_LISTENER_GRACE_MS,
   setAdRevenueListener,
+  setAdRevenueRejectListener,
   setInterstitialIdleWaitForTests,
   showPreloadedInterstitial,
   startInterstitialPreload,
@@ -205,7 +207,9 @@ describe("interstitial-controller", () => {
 
   it("does not forward paid events with unparseable revenue", async () => {
     const listener = jest.fn();
+    const rejectListener = jest.fn();
     setAdRevenueListener(listener);
+    setAdRevenueRejectListener(rejectListener);
     startInterstitialPreload();
     const ad = loadCurrentAd();
 
@@ -220,6 +224,44 @@ describe("interstitial-controller", () => {
     ad.emit(AdEventType.CLOSED);
 
     await expect(showPromise).resolves.toBe(true);
+    expect(listener).not.toHaveBeenCalled();
+    expect(rejectListener).toHaveBeenCalledWith("unparseable_revenue");
+    setAdRevenueListener(null);
+    setAdRevenueRejectListener(null);
+  });
+
+  it("forwards paid revenue that arrives after CLOSED, within the grace window", async () => {
+    const listener = jest.fn();
+    setAdRevenueListener(listener);
+    startInterstitialPreload();
+    const ad = loadCurrentAd();
+
+    const showPromise = showPreloadedInterstitial("after_training");
+    await afterIdleWait();
+    ad.emit(AdEventType.OPENED);
+    ad.emit(AdEventType.CLOSED);
+    await expect(showPromise).resolves.toBe(true);
+
+    ad.emit(AdEventType.PAID, {
+      adNetwork: "AdMob Network",
+      currency: "USD",
+      precision: 1,
+      value: 0.0025,
+    });
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        placement: "after_training",
+        revenue: 0.0025,
+      })
+    );
+
+    listener.mockClear();
+    jest.advanceTimersByTime(PAID_LISTENER_GRACE_MS);
+    ad.emit(AdEventType.PAID, {
+      currency: "USD",
+      precision: 1,
+      value: 0.0025,
+    });
     expect(listener).not.toHaveBeenCalled();
     setAdRevenueListener(null);
   });

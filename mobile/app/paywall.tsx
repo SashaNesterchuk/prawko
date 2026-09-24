@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
+  AppState,
   Pressable,
   ScrollView,
   View,
@@ -174,9 +175,35 @@ export default function PaywallPage() {
   const didTrackViewRef = useRef(false);
   const paywallShownAtRef = useRef<number | null>(null);
   const dismissMethodRef = useRef("swipe");
+  const didTrackDismissRef = useRef(false);
   const purchaseSucceededRef = useRef(false);
+  const paywallMomentRef = useRef(paywallMoment);
+  const paywallSourceRef = useRef(paywallSource);
+  paywallMomentRef.current = paywallMoment;
+  paywallSourceRef.current = paywallSource;
   const trackRef = useRef(track);
   trackRef.current = track;
+  const trackPaywallDismissRef = useRef<(method: string) => void>(
+    () => undefined
+  );
+  trackPaywallDismissRef.current = (method: string) => {
+    if (
+      purchaseSucceededRef.current ||
+      paywallShownAtRef.current == null ||
+      didTrackDismissRef.current
+    ) {
+      return;
+    }
+
+    didTrackDismissRef.current = true;
+    trackRef.current(ANALYTICS_EVENTS.paywallDismissed.key, {
+      ...getMonetizationOfferSnapshot(),
+      dismiss_method: method,
+      moment: paywallMomentRef.current,
+      source: paywallSourceRef.current,
+      time_visible_ms: Math.max(0, Date.now() - paywallShownAtRef.current),
+    });
+  };
   const didStartOfferRefreshRef = useRef(
     !sdkConfigured || revenueCatOfferings.length > 0
   );
@@ -376,24 +403,23 @@ export default function PaywallPage() {
   ]);
 
   useEffect(() => {
-    return () => {
-      if (
-        purchaseSucceededRef.current ||
-        paywallShownAtRef.current == null
-      ) {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "background") {
+        trackPaywallDismissRef.current("background");
         return;
       }
 
-      trackRef.current(ANALYTICS_EVENTS.paywallDismissed.key, {
-        ...getMonetizationOfferSnapshot(),
-        dismiss_method: dismissMethodRef.current,
-        moment: paywallMoment,
-        source: paywallSource,
-        time_visible_ms: Math.max(
-          0,
-          Date.now() - paywallShownAtRef.current
-        ),
-      });
+      if (nextState === "active") {
+        didTrackDismissRef.current = false;
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      trackPaywallDismissRef.current(dismissMethodRef.current);
     };
   }, [paywallMoment, paywallSource]);
 

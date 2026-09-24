@@ -207,7 +207,10 @@ export function useHomeContextualBlock(input: {
     track(ANALYTICS_EVENTS.homeContextualShown.key, {
       kind,
     });
-  }, [debugPreview, isFocused, resolution, track]);
+    if (resolution.type === "completion") {
+      markCompletionShown(resolution.event.id);
+    }
+  }, [debugPreview, isFocused, markCompletionShown, resolution, track]);
 
   return useMemo(() => {
     if (resolution.type === "none") {

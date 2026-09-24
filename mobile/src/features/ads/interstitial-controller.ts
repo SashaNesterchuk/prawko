@@ -44,11 +44,26 @@ let lastInterstitialWhy = "idle";
 const showingListeners = new Set<InterstitialShowingListener>();
 let currentPlacement: string = AD_PLACEMENTS.other;
 let paidEventListener: ((event: AdRevenueEvent) => void) | null = null;
+let paidRejectListener: ((why: string) => void) | null = null;
+let detachPaidListener: (() => void) | null = null;
+let paidDetachTimers: Array<ReturnType<typeof setTimeout>> = [];
+
+/**
+ * AdMob often delivers PAID just after CLOSED. Tearing the listener down in
+ * the same turn drops the impression. Keep it on the shown instance briefly.
+ */
+export const PAID_LISTENER_GRACE_MS = 2_000;
 
 export function setAdRevenueListener(
   listener: ((event: AdRevenueEvent) => void) | null
 ) {
   paidEventListener = listener;
+}
+
+export function setAdRevenueRejectListener(
+  listener: ((why: string) => void) | null
+) {
+  paidRejectListener = listener;
 }
 
 export function getLastInterstitialWhy() {
@@ -171,6 +186,44 @@ function clearAutoRetry() {
   }
 }
 
+function schedulePaidListenerDetach(unsubscribe: (() => void) | null) {
+  if (!unsubscribe) {
+    return;
+  }
+
+  const timer = setTimeout(() => {
+    paidDetachTimers = paidDetachTimers.filter((item) => item !== timer);
+    try {
+      unsubscribe();
+    } catch {
+      // Best effort.
+    }
+  }, PAID_LISTENER_GRACE_MS);
+  paidDetachTimers.push(timer);
+}
+
+function detachCurrentPaidListener() {
+  const detach = detachPaidListener;
+  detachPaidListener = null;
+  if (!detach) {
+    return;
+  }
+
+  try {
+    detach();
+  } catch {
+    // Best effort.
+  }
+}
+
+function detachPaidListenerNow() {
+  for (const timer of paidDetachTimers) {
+    clearTimeout(timer);
+  }
+  paidDetachTimers = [];
+  detachCurrentPaidListener();
+}
+
 function requestLoad() {
   if (!interstitial || isShowing || interstitialLoaded || isLoadInFlight) {
     return;
@@ -206,12 +259,14 @@ export function resetInterstitialInstance() {
 
 /** Test-only: full module reset including SDK init flag. */
 export function resetInterstitialControllerForTests() {
+  detachPaidListenerNow();
   resetInterstitialInstance();
   sdkInitialized = false;
   idleWait = waitForPresentationReady;
   lastInterstitialWhy = "idle";
   currentPlacement = AD_PLACEMENTS.other;
   paidEventListener = null;
+  paidRejectListener = null;
 }
 
 export async function initializeAdMobSdk() {
@@ -242,6 +297,7 @@ export function startInterstitialPreload() {
     return () => undefined;
   }
 
+  detachCurrentPaidListener();
   resetInterstitialInstance();
 
   const unitId = getInterstitialAdUnitId();
@@ -302,20 +358,19 @@ export function startInterstitialPreload() {
     type: AdEventType.PAID,
     listener: (event: PaidEvent) => void
   ) => () => void;
-  unsubscribers.push(
-    addPaidEventListener(AdEventType.PAID, (event) => {
-      const revenueEvent = buildAdRevenueEvent({
-        adUnitId: unitId,
-        paid: event as NativePaidEvent,
-        placement: currentPlacement,
-      });
-      if (!revenueEvent) {
-        return;
-      }
+  detachPaidListener = addPaidEventListener(AdEventType.PAID, (event) => {
+    const revenueEvent = buildAdRevenueEvent({
+      adUnitId: unitId,
+      paid: event as NativePaidEvent,
+      placement: currentPlacement,
+    });
+    if (!revenueEvent) {
+      paidRejectListener?.("unparseable_revenue");
+      return;
+    }
 
-      paidEventListener?.(revenueEvent);
-    })
-  );
+    paidEventListener?.(revenueEvent);
+  });
 
   requestLoad();
 
@@ -323,6 +378,7 @@ export function startInterstitialPreload() {
 }
 
 export function stopInterstitialPreload() {
+  detachPaidListenerNow();
   resetInterstitialInstance();
 }
 
@@ -489,6 +545,10 @@ export async function showPreloadedInterstitial(
 
       // Recreate only after the native show settled (CLOSED / ERROR / timeout).
       // Tearing down on AppState flicker is what leaves a ghost touch layer.
+      // PAID stays on this instance for a short grace — AdMob emits it after CLOSED.
+      const shownPaidListener = detachPaidListener;
+      detachPaidListener = null;
+      schedulePaidListenerDetach(shownPaidListener);
       resetInterstitialInstance();
       startInterstitialPreload();
 

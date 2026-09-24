@@ -158,7 +158,12 @@ export const ANALYTICS_EVENTS = {
   },
   examSessionEnded: {
     key: "exam_session_ended",
-    description: "An exam was abandoned or expired.",
+    description: "An exam was abandoned or expired after the learner had started it.",
+  },
+  examEmptyExit: {
+    key: "exam_empty_exit",
+    description:
+      "The learner closed an exam before answering. Not an abandoned exam. The close button stays immediate.",
   },
   examAnswersReviewOpened: {
     key: "exam_answers_review_opened",

@@ -6,6 +6,7 @@ import { isAdMobEnabled } from "./admob-config";
 import {
   initializeAdMobSdk,
   setAdRevenueListener,
+  setAdRevenueRejectListener,
   startInterstitialPreload,
   stopInterstitialPreload,
 } from "./interstitial-controller";
@@ -30,8 +31,19 @@ export function AdProvider({ children }: PropsWithChildren) {
         buildAdImpressionRevenueProperties(event)
       );
     });
+    setAdRevenueRejectListener((why) => {
+      track(ANALYTICS_EVENTS.clientErrorLogged.key, {
+        area: "ads",
+        event_name: "ad_impression_revenue_rejected",
+        severity: "warning",
+        why,
+      });
+    });
 
-    return () => setAdRevenueListener(null);
+    return () => {
+      setAdRevenueListener(null);
+      setAdRevenueRejectListener(null);
+    };
   }, [track]);
 
   useEffect(() => {

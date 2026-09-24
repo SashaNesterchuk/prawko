@@ -950,14 +950,10 @@ export default function ExamSessionScreen() {
         sessionId,
         status: "abandoned",
       });
-      track(ANALYTICS_EVENTS.examSessionEnded.key, {
+      track(ANALYTICS_EVENTS.examEmptyExit.key, {
         answered_count: 0,
-        correct_count: 0,
-        end_reason: "miss_click_empty_exit",
         mode: discardedSnapshot.session.mode,
         question_total: discardedSnapshot.session.totalQuestionsTarget,
-        status: "abandoned",
-        wrong_count: 0,
       });
     } catch (error) {
       // Still leave — empty exit is a miss-click, not a result flow.
