@@ -33,6 +33,10 @@ type BootstrapParams = {
   locale?: string | string[];
   offlinePackCategory?: string | string[];
   offlinePackStatus?: string | string[];
+  explanationsExhausted?: string | string[];
+  freeExamUsed?: string | string[];
+  freeQuestionsExhausted?: string | string[];
+  monetizationV2?: string | string[];
   plusAccess?: string | string[];
   questionScenario?: string | string[];
   reachability?: string | string[];
@@ -49,6 +53,16 @@ export default function E2EBootstrapScreen() {
   const params = useLocalSearchParams<BootstrapParams>();
   const destination = getSingleParam(params.destination);
   const category = getSingleParam(params.category);
+  const explanationsExhausted = parseOptionalBoolean(
+    getSingleParam(params.explanationsExhausted)
+  );
+  const freeExamUsed = parseOptionalBoolean(getSingleParam(params.freeExamUsed));
+  const freeQuestionsExhausted = parseOptionalBoolean(
+    getSingleParam(params.freeQuestionsExhausted)
+  );
+  const monetizationV2 = parseOptionalBoolean(
+    getSingleParam(params.monetizationV2)
+  );
   const plusAccess = parseOptionalBoolean(getSingleParam(params.plusAccess));
   const enableAds = parseOptionalBoolean(getSingleParam(params.enableAds));
   const reachability = parseOptionalBoolean(getSingleParam(params.reachability));
@@ -104,6 +118,10 @@ export default function E2EBootstrapScreen() {
         locale,
         offlinePackCategory,
         offlinePackStatus,
+        explanationsExhausted,
+        freeExamUsed,
+        freeQuestionsExhausted,
+        monetizationV2,
         plusAccess,
         questionScenario,
         reachability,
@@ -146,6 +164,10 @@ export default function E2EBootstrapScreen() {
     locale,
     offlinePackCategory,
     offlinePackStatus,
+    explanationsExhausted,
+    freeExamUsed,
+    freeQuestionsExhausted,
+    monetizationV2,
     plusAccess,
     questionScenario,
     reachability,

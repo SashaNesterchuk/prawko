@@ -11,6 +11,8 @@ type QuestionFeedbackBottomSheetProps = {
   visible: boolean;
   isCorrectAnswer: boolean;
   explanationText: string | null;
+  explanationLocked?: boolean;
+  onUnlockExplanation?: () => void;
   isBookmarked: boolean;
   feedbackAccentFill: string;
   feedbackAccentInk: string;
@@ -28,6 +30,8 @@ export function QuestionFeedbackBottomSheet({
   visible,
   isCorrectAnswer,
   explanationText,
+  explanationLocked = false,
+  onUnlockExplanation,
   isBookmarked,
   feedbackAccentFill,
   feedbackAccentInk,
@@ -109,13 +113,14 @@ export function QuestionFeedbackBottomSheet({
         text={explanationText}
       />
 
-      {showExplain ? (
+      {showExplain || explanationLocked ? (
         <>
           <View style={styles.gapMd} />
           <Pressable
             accessibilityRole="button"
             style={styles.explainRow}
-            onPress={onExplain}
+            testID="question-explanation-locked"
+            onPress={explanationLocked ? onUnlockExplanation : onExplain}
           >
             <CText style={styles.explainText}>
               {isCorrectAnswer

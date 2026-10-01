@@ -1,0 +1,30 @@
+# Feature: Monetization V2
+# Scenario: Free profile shows Prawko Premium and opens the existing paywall.
+appId: com.mindjar.prawko
+tags:
+  - monetization
+  - monetization-v2
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-profile
+
+- assertVisible:
+    id: "profile-premium-banner"
+
+- tapOn:
+    id: "profile-premium-banner"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+
+- assertVisible:
+    id: "screen-paywall"
+- assertNotVisible:
+    id: "exam-unlock-sheet"

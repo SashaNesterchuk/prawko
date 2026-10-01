@@ -145,7 +145,19 @@ Skip и start у одного человека в разные визиты — 
 | `wrong_answers` | Ошибки |
 | `new_questions` | Новые |
 
-Полезные поля: `question_limit`, `question_total`, `question_index`, `topic_id`, `is_correct`, `passed`, `score_percent`, `answered_count`, `correct_count`, `media_type` (`video` / `image` / `none`).
+Полезные поля: `question_limit`, `question_total`, `question_index`, `topic_id`, `roadmap_step_id`, `is_correct`, `passed`, `score_percent`, `answered_count`, `correct_count`, `media_type` (`video` / `image` / `none`).
+
+`roadmap_step_id` (`PL:0:1`) есть на старте, ответе, завершении, abandon и empty. Без круга роадмапа значение `null`.
+
+---
+
+## Roadmap
+
+| Событие | Значение |
+|---|---|
+| `roadmap_step_opened` | Тап по кругу на Home. `roadmap_step_id`, `section_index`, `step_index`. `premium`: платный урок. `locked`: тап открыл paywall, а не тренировку |
+
+Бесплатный круг дальше идёт в `training_session_started`. Платный — в `premium_gate_viewed` и `paywall_viewed`. Карточка Unlock внизу роадмапа — не круг: у неё нет `roadmap_step_opened`, только гейт с `surface=home_unlock`.
 
 `question_total` без лимита может быть сотней+ — это длина банка, не выбранный размер слота.
 
@@ -192,11 +204,15 @@ Skip и start у одного человека в разные визиты — 
 
 | Событие | Значение |
 |---|---|
-| `paywall_viewed` | Показали Plus. `source`, `offers_count`, `revenuecat_configured` (API key / SDK для платформы, не «последний fetch успешен»), опционально `hydration_error_code`. `moment`: `after_exam` / `premium_prompt` / `profile` / `manual_test` |
+| `paywall_viewed` | Показали Plus. `source`, `offers_count`, `revenuecat_configured` (API key / SDK для платформы, не «последний fetch успешен»), опционально `hydration_error_code`. `moment`: `after_exam` / `premium_prompt` / `profile` / `manual_test`. Monetization V2 добавляет `product_id`, `price`, `currency` и `source`: `training_limit`, `wrong_answers`, `explanation`, `exam_limit`, `weak_spots`, `smart_reviews`, `trap_questions`, `statistics`, `profile`, `roadmap`, `ai_chat`, `offline_mode`. Если несколько экранов делят `source`, есть `surface`. С круга роадмапа ещё `roadmap_step_id` |
+| `premium_gate_viewed` | Упёрлись в лимит V2 или открыли премиум-вход, который сразу ведёт на paywall. `source` как у paywall. `surface` есть, когда `source` общий. Не путать с `exam_restart_gate_shown` |
+| `premium_gate_action` | `open_paywall` / `watch_ad` / `dismiss` на этом лимите. `surface` как у `premium_gate_viewed` |
+| `answer_explanation_viewed` | Полное объяснение у Premium. `access_method`: `premium` |
+| `ad_reward_earned` | SDK подтвердил награду. `placement=exam_unlock` даёт кредит экзамена, списание только на `exam_session_started` |
 | `paywall_dismissed` | Закрыли Plus без покупки. `dismiss_method`: `close_button` / `swipe` / `background`. `background` уходит при уходе приложения в фон; если экран ещё открыт после возврата, следующий выход пишется своим методом |
-| `premium_prompt_shown` | Bottom sheet с оффером Plus. `moment`: `app_open` / `after_ad` / `manual_test`. `app_open` — returning Home, считает session-limit 2/session. `after_ad` — нечётные закрытые interstitial (1, 3, 5…), cap 2 не действует, пауза 2 минуты между фактическими показами |
-| `premium_prompt_clicked` | CTA тизера открыл paywall |
-| `premium_prompt_dismissed` | Тизер закрыли без CTA. `dismiss_method`: `close_button` / `swipe` / `outside_tap` |
+| `premium_prompt_shown` | Исторический bottom sheet с оффером Plus. Больше не показывается: ни `app_open`, ни `after_ad` |
+| `premium_prompt_clicked` | Исторический CTA того шита. Новые события не пишутся |
+| `premium_prompt_dismissed` | Историческое закрытие шита. Новые события не пишутся |
 | `paywall_package_selected` | Исторический ключ. Селектора пакетов больше нет: один lifetime, сразу `purchase_started` |
 | `purchase_started` | Нативный checkout |
 | `purchase_succeeded` | Доступ выдан |
@@ -207,6 +223,8 @@ Skip и start у одного человека в разные визиты — 
 | `purchase_restore_empty` | Restore ничего не нашёл |
 | `purchase_restore_failed` | Restore сломался. `step`, `why` |
 | `customer_center_opened` | RevenueCat customer center |
+
+`surface` при `source=roadmap`: `home_step` (платный круг), `home_unlock` (карточка Unlock), `learn_topic`, `topics`, `statistics_topic`, `trainer_modes`, `question_start` (урок не пустили на старте сессии). Те же `surface` и `roadmap_step_id` лежат на `paywall_dismissed` и `purchase_*`.
 
 Пустой paywall: `revenuecat_configured: false` или `offers_count: 0`.
 
@@ -288,11 +306,13 @@ Skip и start у одного человека в разные визиты — 
 
 **First start.** `first_start_shown` → `first_start_started` → `diagnostic_result_action` → `diagnostic_reminder_shown`. Рядом: skip, reminder resolved. Сплиты: `source`, `action`.
 
-**Training.** `training_mode_selected` → `training_session_started` → `training_session_completed`. Рядом: abandoned, empty. Сплит: `mode`.
+**Roadmap.** `roadmap_step_opened` → `training_session_started` или `premium_gate_viewed` → `paywall_viewed`. Сплиты: `roadmap_step_id`, `surface`, `locked`.
+
+**Training.** `training_mode_selected` → `training_session_started` → `training_session_completed`. Рядом: abandoned, empty. Сплит: `mode`, `roadmap_step_id`.
+
+**Paywall.** `premium_gate_viewed` → `paywall_viewed` → `purchase_started` → `purchase_succeeded`. Рядом: cancelled, failed, dismissed. Сплиты: `source`, `surface`, `roadmap_step_id`. `paywall_package_selected` больше не шлётся.
 
 **Exam.** `exam_start_requested` → `exam_session_started` → `exam_session_completed`. Рядом: ended (ответил и вышел), `exam_empty_exit` (закрыл до ответа, не abandon), restart **modal on result** (не кап Home). Сплит: `passed`.
-
-**Paywall.** `paywall_viewed` → `purchase_started` → `purchase_succeeded`. Рядом: cancelled, failed. Сплиты: `source`, `step`, `why`. `paywall_package_selected` больше не шлётся.
 
 **Ads.** `ad_requested` → `ad_shown` → `ad_dismissed`. Рядом: skipped, failed, `ad_impression_revenue`. Сплиты: `after`, `should_show`, `why`, `step`, revenue `placement` / `ad_network`. Ad LTV: `sum(revenue)` / unique `app_user_id` на `ad_impression_revenue`.
 

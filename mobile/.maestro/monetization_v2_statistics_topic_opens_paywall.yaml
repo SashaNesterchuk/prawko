@@ -1,0 +1,26 @@
+# Feature: Monetization V2
+# Scenario: Statistics cannot open a Learn category outside the free slice
+appId: com.mindjar.prawko
+tags:
+  - monetization
+  - monetization-v2
+  - statistics
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: statistics
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-statistics
+
+- tapOn:
+    id: "statistics-topic-row-index-1"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+
+- assertNotVisible:
+    id: "screen-question"

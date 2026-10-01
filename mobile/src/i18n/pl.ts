@@ -1,6 +1,8 @@
 /**
  * Polish UI copy. Keep in sync with English keys in `resources.ts`.
  */
+import { roadmapCopyPl } from "./roadmap-copy";
+
 export const polishTranslations = {
   common: {
     back: "Wstecz",
@@ -46,6 +48,7 @@ export const polishTranslations = {
     tileTrapsTitle: "Pułapki",
     tileTrapsSubtitle: "Często mylone",
     readinessTitle: "Indeks gotowości",
+    examReadinessTitle: "Gotowość do egzaminu",
     readinessRingLabel: "gotowość",
     readinessDetails: "Sprawdź mój poziom",
     warmupTitle: "Szybka sesja",
@@ -1088,7 +1091,6 @@ export const polishTranslations = {
     rowOffline: "Tryb offline",
     rowOfflineSub: "Pełny dostęp do treningu bez internetu",
     freeExamLimit: "1/dzień",
-    freeDailyLimit: "20/dzień",
     freeReadinessGeneral: "ogólny",
     lifetimeNote: "Bez subskrypcji",
     lifetimeAccess: "Dostęp dożywotni",
@@ -1303,4 +1305,39 @@ export const polishTranslations = {
     notFoundTitle: "Nie znaleziono ekranu",
     notFoundSubtitle: "Ta ścieżka jeszcze nie istnieje w aplikacji.",
   },
+  monetizationV2: {
+    premiumName: "Prawko Premium",
+    profileSubtitle: "Pełny dostęp · Jedna płatność",
+    profileActive: "Aktywne",
+    trainingExhaustedTitle: "Wykorzystałeś darmowe pytania",
+    trainingExhaustedBody: "Odblokuj pełną bazę pytań bez limitu.",
+    unlockPremium: "Odblokuj Premium",
+    explanationPrompt: "Dlaczego ta odpowiedź jest poprawna?",
+    explanationLocked: "Pełne wyjaśnienie jest dostępne w Premium",
+    explanationCta: "Zobacz wyjaśnienie",
+    wrongAnswersPreview: "Darmowa próbka · {{count}} pytań",
+    wrongAnswersLocked: "Masz {{count}} pytań do powtórki",
+    examSheetTitle: "Jeszcze jeden egzamin?",
+    examSheetBody: "Ćwicz egzaminy bez ograniczeń z Prawko Premium.",
+    watchAd: "Obejrzyj reklamę i odblokuj 1 egzamin",
+    rewardedLeft: "Pozostało: {{count}} darmowe odblokowania",
+    weakSpotsTitle: "Słabe tematy",
+    weakSpotsBody: "Znaleźliśmy {{count}} obszary, które wymagają poprawy.",
+    weakSpotsCta: "Zobacz analizę",
+    premiumBadge: "Premium",
+    paywallHeadline: "Prawko Premium",
+    paywallSubhead: "Pełne przygotowanie do egzaminu bez ograniczeń",
+    paywallOnce: "jednorazowo",
+    paywallOnceNote: "Jedna płatność. Korzystasz tak długo, jak potrzebujesz.",
+    benefitQuestions: "Wszystkie pytania bez limitu",
+    benefitExams: "Nielimitowane egzaminy",
+    benefitMistakes: "Powtórka wszystkich błędów",
+    benefitExplanations: "Pełne wyjaśnienia odpowiedzi",
+    benefitWeak: "Analiza słabych tematów",
+    benefitStats: "Pełne statystyki",
+    benefitNoAds: "Bez reklam",
+    repeatMistakes: "Powtórz błędy",
+    seeExplanations: "Zobacz wyjaśnienia",
+  },
+  roadmap: roadmapCopyPl,
 } as const;

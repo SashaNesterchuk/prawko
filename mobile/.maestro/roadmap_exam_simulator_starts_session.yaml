@@ -1,0 +1,34 @@
+# Feature: Home
+# Scenario: Plus starts the official exam from the final roadmap step
+appId: com.mindjar.prawko
+tags:
+  - home
+  - exam
+  - roadmap
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-home
+
+- scrollUntilVisible:
+    element:
+      id: "roadmap-exam-simulator"
+    direction: DOWN
+    timeout: 20000
+
+- tapOn:
+    id: "roadmap-exam-simulator"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-session"
+    timeout: 20000
+
+- assertVisible:
+    id: "screen-exam-session"
+- assertVisible:
+    id: "exam-session-counter"
+    text: "Питання 1 з 32"

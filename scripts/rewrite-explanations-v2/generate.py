@@ -53,8 +53,12 @@ def context_sign_codes(question: dict, known: dict[str, str]) -> list[str]:
     ctx = (question.get("context") or {}).get("context") or {}
     codes = []
     for item in ctx.get("verified_signs") or []:
-        code = item.get("code") if isinstance(item, dict) else item
-        canonical = known.get(normalize_code(str(code or ""))) or known.get(str(code or ""))
+        raw_values = [item.get("number"), item.get("code")] if isinstance(item, dict) else [item]
+        canonical = ""
+        for raw in raw_values:
+            canonical = known.get(str(raw or "")) or known.get(normalize_code(str(raw or ""))) or ""
+            if canonical:
+                break
         if canonical:
             codes.append(canonical)
     return list(dict.fromkeys(codes))
@@ -154,7 +158,7 @@ def system_prompt(pack: CountryPack) -> str:
     return f"""You write driving-exam explanations that a learner reads after a wrong answer.
 Return one JSON object only, no markdown.
 Schema:
-{{"items":[{{"sourceId":"...","{pack.locale}":"...","signCodes":["A-8"],"lawCitations":["{pack.citation_example}"],"needsManualReview":false{"".join(', "' + loc + '":"..."' for loc in pack.write_locales if loc != pack.locale)}}}]}}
+{{"items":[{{"sourceId":"...","{pack.locale}":"...","signCodes":["{pack.schema_sign_example}"],"lawCitations":["{pack.citation_example}"],"needsManualReview":false{"".join(', "' + loc + '":"..."' for loc in pack.write_locales if loc != pack.locale)}}}]}}
 
 Hard rules:
 - Write the primary explanation in {pack.locale}. Also fill: {locales}.
@@ -162,10 +166,10 @@ Hard rules:
 - 2 to 4 sentences. {pack.min_chars}-{pack.max_chars} characters in {pack.locale}.
 - Teach the distinction the exam is testing. Name the rule in plain language, then the practical consequence.
 - For A/B/C, say why the other options fail using the actual difference (a word, number, sign, duty). Never say they fail because they "do not match the assignment".
-- If a traffic sign is decisive, write its exact catalogue code (example A-2, B-29, C-2e). Do not write a generic "{pack.sign_word}" without a code. Codes must come from candidateSigns or verifiedSignCodes. If unsure, omit the code.
+- If a traffic sign is decisive, write its exact catalogue code (example {pack.sign_code_examples}). Do not write a generic "{pack.sign_word}" without a code. Codes must come from candidateSigns or verifiedSignCodes. If unsure, omit the code.
 - Cite a legal paragraph ONLY if it is in retrievedLaw for that item and clearly applies. Copy the citation form like: {pack.citation_example}. If unsure, explain the rule without a paragraph number. Never invent a §.
 - Use only facts from the question, answers, context, retrievedLaw, existingExplanation when useful, and attached images. Do not invent what a photo shows if no image is attached.
-- Never invent road layout, other vehicles, weather, traffic lights, or hlavní/vedlejší unless that fact is in the question, an option, context.scene, or clearly visible in an attached image.
+- Never invent road layout, other vehicles, weather, traffic lights, or {pack.layout_warning} unless that fact is in the question, an option, context.scene, or clearly visible in an attached image.
 - If mediaAttached is true, the picture decides priority and yes/no. Describe only what you can see. If a sign/signal is unreadable, set needsManualReview true and explain from the written options — do not guess a sign number or a side road.
 - A wrong legal paragraph is worse than none. Cite retrievedLaw only when it clearly matches the visible/stated facts; otherwise explain the rule without §.
 - If existingExplanation.useful is true, keep its facts (the distinction, sign codes, why other options fail). Rewrite only to match the start/length rules. Do not drop a correct sign code that is already in it.
@@ -208,7 +212,7 @@ def item_input(
         ],
         "mediaAttached": media_attached,
         "visionRules": (
-            "Use the attached image. Do not invent vehicles, signs, weather, or vedlejší/hlavní not visible."
+            f"Use the attached image. Do not invent vehicles, signs, weather, or {pack.layout_warning} not visible."
             if media_attached
             else "No image attached. Do not invent what a photo would show."
         ),

@@ -108,13 +108,19 @@ export const ANALYTICS_EVENTS = {
     description:
       "The learner tapped the Home retention card. kind matches home_contextual_shown.",
   },
+  roadmapStepOpened: {
+    key: "roadmap_step_opened",
+    description:
+      "The learner tapped a Home roadmap lesson. roadmap_step_id, section_index, step_index. premium: paid lesson. locked: the tap opened the paywall.",
+  },
   trainingModeSelected: {
     key: "training_mode_selected",
     description: "A training mode and question count were selected.",
   },
   trainingSessionStarted: {
     key: "training_session_started",
-    description: "A question-training session was created.",
+    description:
+      "A question-training session was created. roadmap_step_id is set when the session came from a roadmap lesson.",
   },
   trainingSessionResumed: {
     key: "training_session_resumed",
@@ -230,15 +236,37 @@ export const ANALYTICS_EVENTS = {
   premiumPromptShown: {
     key: "premium_prompt_shown",
     description:
-      "The automatic Premium teaser became visible. moment: app_open, after_ad (1st/3rd/5th dismissed interstitial, any placement), or manual_test.",
+      "Historical Premium bottom sheet. It is no longer presented on app open or after an ad.",
   },
   premiumPromptClicked: {
     key: "premium_prompt_clicked",
-    description: "The learner opened the paywall from the Premium teaser.",
+    description:
+      "Historical tap on the Premium bottom sheet. New events are not emitted.",
   },
   premiumPromptDismissed: {
     key: "premium_prompt_dismissed",
-    description: "The Premium teaser closed without opening the paywall.",
+    description:
+      "Historical dismiss of the Premium bottom sheet. New events are not emitted.",
+  },
+  premiumGateViewed: {
+    key: "premium_gate_viewed",
+    description:
+      "The learner hit a Monetization V2 limit or a premium entry that opens the paywall. source matches paywall_viewed. surface splits a shared source: home_step, home_unlock, learn_topic, topics, statistics_topic, trainer_modes, question_start.",
+  },
+  premiumGateAction: {
+    key: "premium_gate_action",
+    description:
+      "Choice on a Monetization V2 gate: open_paywall, watch_ad, or dismiss. surface matches premium_gate_viewed when the entry is shared.",
+  },
+  answerExplanationViewed: {
+    key: "answer_explanation_viewed",
+    description:
+      "A full answer explanation was shown to a Premium learner. access_method: premium.",
+  },
+  adRewardEarned: {
+    key: "ad_reward_earned",
+    description:
+      "The rewarded ad SDK confirmed the reward. placement exam_unlock grants one exam credit, before the exam is created.",
   },
   paywallViewed: {
     key: "paywall_viewed",

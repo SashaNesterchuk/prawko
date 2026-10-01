@@ -44,12 +44,36 @@ import { usePrefetchQuestionMedia } from "../usePrefetchQuestionMedia";
 
 import { isHomeDailySessionKey } from "../../home/home-daily-practice";
 import { captureHomeContextualCompletion } from "../../home/home-contextual-record";
+import {
+  getFreeRoadmapTopicIds,
+  resolveTopicSessionAccess,
+} from "../../home/roadmap";
+import { useRoadmapProgressStore } from "../../home/roadmap-progress";
 import { shouldAutoShowPracticeSessionCompleteAd } from "../initial-diagnostic/session-ads";
 import { getTrainingResultOutcome } from "./training-result-stats";
 import { useQuestionRouteParams } from "./route-params";
 import { useTrainerStyles } from "./useTrainerStyles";
 import { getVisibleQuestionSteps } from "./visible-steps";
 import { useMonetizationStore } from "../../monetization/monetization-store";
+import { trackPremiumGateOpen } from "../../monetization/v2/analytics";
+import { buildPaywallHref } from "../../monetization/v2/paywall";
+import type { Href } from "expo-router";
+import {
+  isMonetizationV2Active,
+  useMonetizationV2Store,
+} from "../../monetization/v2/store";
+import {
+  freeQuestionsRemaining,
+  isTrainingQuotaMode,
+  resolveTrainingStart,
+  usesFreeTopicPool,
+  type TrainingAccessMethod,
+} from "../../monetization/v2/usage";
+import { readHasPlusAccess } from "../../../state/entitlements";
+
+function roadmapStepAnalytics(roadmapStepId: string | null | undefined) {
+  return { roadmap_step_id: roadmapStepId ?? null };
+}
 
 export function useQuestionTrainingSession() {
   const { t } = useTranslation();
@@ -57,7 +81,7 @@ export function useQuestionTrainingSession() {
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const routeParams = useQuestionRouteParams();
-  const { mode, questionLimit, sessionKey, studyPlanTaskId, timeLimitSeconds, topic } =
+  const { mode, questionLimit, roadmapStepId, sessionKey, studyPlanTaskId, timeLimitSeconds, topic, topics } =
     routeParams;
 
   const authMode = useAppShellStore((state) => state.authMode);
@@ -65,6 +89,7 @@ export function useQuestionTrainingSession() {
     (state) => state.currentStudyPlanRemoteId
   );
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const {
     maybeShowInterstitial,
@@ -104,6 +129,9 @@ export function useQuestionTrainingSession() {
   const questionStartedAtRef = useRef(Date.now());
   const didShowSessionCompleteAdRef = useRef(false);
   const trackedSessionIdRef = useRef<string | null>(null);
+  const trainingAccessMethodRef = useRef<TrainingAccessMethod>("free_quota");
+  const paywallRequestedRef = useRef(false);
+  const [paywallHref, setPaywallHref] = useState<Href | null>(null);
   const trackedCompletedSessionIdRef = useRef<string | null>(null);
   const trackedEmptySessionIdRef = useRef<string | null>(null);
   const shouldAttemptPracticeAdRef = useRef(false);
@@ -147,6 +175,9 @@ export function useQuestionTrainingSession() {
       currentSession.request.mode === mode &&
       currentSession.request.currentCategory === preferredCategory &&
       (currentSession.request.topic ?? null) === (topic ?? null) &&
+      (currentSession.request.topics ?? []).join("\0") ===
+        (topics ?? []).join("\0") &&
+      (currentSession.request.roadmapStepId ?? null) === (roadmapStepId ?? null) &&
       (currentSession.request.questionLimit ?? null) === (questionLimit ?? null) &&
       !isHomeDailySessionKey(currentSession.request.sessionKey) &&
       !isHomeDailySessionKey(sessionKey)
@@ -154,25 +185,122 @@ export function useQuestionTrainingSession() {
       return;
     }
 
+    const v2 = isMonetizationV2Active();
+    const isPlus = readHasPlusAccess();
+    const scopedTopicIds = [...(topic ? [topic] : []), ...(topics ?? [])];
+    const topicAccess = resolveTopicSessionAccess(examCountry, scopedTopicIds);
+    const savedMode = mode === "saved" || mode === "saved_sprint";
+    const freeTopicIds = getFreeRoadmapTopicIds(examCountry);
+    const unscopedFreeLimit = freeTopicIds.reduce((sum, topicId) => {
+      const access = resolveTopicSessionAccess(examCountry, [topicId]);
+      return sum + (access.freeQuestionLimit ?? 0);
+    }, 0);
+
+    if (v2 && !isPlus && topicAccess.locked && !savedMode) {
+      const usage = useMonetizationV2Store.getState().usage;
+      trackPremiumGateOpen(track, {
+        free_questions_remaining: freeQuestionsRemaining(usage),
+        source: "roadmap",
+        surface: "question_start",
+        ...roadmapStepAnalytics(roadmapStepId),
+      });
+      if (!paywallRequestedRef.current) {
+        paywallRequestedRef.current = true;
+        setPaywallHref(
+          buildPaywallHref({
+            roadmapStepId: roadmapStepId ?? undefined,
+            source: "roadmap",
+            surface: "question_start",
+            postPurchaseAction: {
+              type: "START_TRAINING",
+              mode,
+              topic,
+              topics: topics?.join(","),
+              questionLimit: questionLimit ?? undefined,
+            },
+          })
+        );
+      }
+      return;
+    }
+
+    const decision = resolveTrainingStart({
+      isPlus,
+      mode,
+      questionLimit: questionLimit ?? null,
+      topicFreeQuestionLimit:
+        v2 && !isPlus
+          ? (topicAccess.freeQuestionLimit ??
+            (scopedTopicIds.length === 0 && unscopedFreeLimit > 0
+              ? unscopedFreeLimit
+              : null))
+          : null,
+      usage: useMonetizationV2Store.getState().usage,
+      v2,
+    });
+
+    if (decision.action === "paywall") {
+      const usage = useMonetizationV2Store.getState().usage;
+      trackPremiumGateOpen(track, {
+        free_questions_remaining: freeQuestionsRemaining(usage),
+        source: decision.source,
+        ...roadmapStepAnalytics(roadmapStepId),
+      });
+      if (!paywallRequestedRef.current) {
+        paywallRequestedRef.current = true;
+        setPaywallHref(
+          buildPaywallHref({
+            roadmapStepId: roadmapStepId ?? undefined,
+            source: decision.source,
+            postPurchaseAction:
+              decision.source === "wrong_answers"
+                ? { type: "START_WRONG_ANSWERS" }
+                : decision.source === "training_limit" ||
+                    decision.source === "smart_reviews" ||
+                    decision.source === "trap_questions"
+                  ? {
+                      type: "START_TRAINING",
+                      mode,
+                      topic,
+                      topics: topics?.join(","),
+                      questionLimit: questionLimit ?? undefined,
+                    }
+                  : { type: "NONE" },
+          })
+        );
+      }
+      return;
+    }
+
+    trainingAccessMethodRef.current = decision.accessMethod;
     startOrResumeSession({
+      allowedTopicIds:
+        v2 && !isPlus && scopedTopicIds.length === 0 && usesFreeTopicPool(mode)
+          ? freeTopicIds
+          : undefined,
       currentCategory: preferredCategory,
       mode,
-      questionLimit,
+      questionLimit: decision.questionLimit,
+      roadmapStepId,
       timeLimitSeconds,
       topic,
+      topics,
       sessionKey,
       studyPlanTaskId,
     });
   }, [
+    examCountry,
     mode,
     preferredCategory,
     questionLimit,
     questionProgressHydrated,
+    roadmapStepId,
     sessionKey,
     startOrResumeSession,
     studyPlanTaskId,
     timeLimitSeconds,
     topic,
+    topics,
   ]);
 
   const summary = useMemo(
@@ -203,6 +331,15 @@ export function useQuestionTrainingSession() {
     ? getQuestionChoices(currentQuestion, displayLocale)
     : [];
   const isCompleted = Boolean(activeSession?.finishedAt && !activeSession.emptyReason);
+  const completeRoadmapStep = useRoadmapProgressStore((state) => state.completeStep);
+
+  useEffect(() => {
+    if (!isCompleted || !roadmapStepId) {
+      return;
+    }
+
+    completeRoadmapStep(roadmapStepId);
+  }, [completeRoadmapStep, isCompleted, roadmapStepId]);
   const isEmptyState = Boolean(activeSession?.emptyReason);
   const remainingSeconds = getRemainingSessionSeconds(
     activeSession,
@@ -299,6 +436,18 @@ export function useQuestionTrainingSession() {
     }
 
     trackedSessionIdRef.current = activeSession.id;
+
+    if (
+      trainingAccessMethodRef.current === "wrong_answers_preview" &&
+      isMonetizationV2Active()
+    ) {
+      useMonetizationV2Store.getState().markWrongAnswersPreviewUsed();
+    }
+
+    const usage = useMonetizationV2Store.getState().usage;
+    const accessMethod = readHasPlusAccess()
+      ? "premium"
+      : trainingAccessMethodRef.current;
     track(
       activeSession.answers && Object.keys(activeSession.answers).length > 0
         ? ANALYTICS_EVENTS.trainingSessionResumed.key
@@ -309,6 +458,14 @@ export function useQuestionTrainingSession() {
         question_total: activeSession.questionIds.length,
         time_limit_seconds: activeSession.request.timeLimitSeconds ?? null,
         topic_id: activeSession.request.topic ?? null,
+        ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
+        ...(isMonetizationV2Active()
+          ? {
+              access_method: accessMethod,
+              access_tier: readHasPlusAccess() ? "premium" : "free",
+              free_questions_remaining: freeQuestionsRemaining(usage),
+            }
+          : {}),
       }
     );
   }, [activeSession, preferredCategory, sessionKey, track]);
@@ -337,6 +494,7 @@ export function useQuestionTrainingSession() {
       mode: activeSession.request.mode,
       passed: sessionPassed,
       question_total: summary.total,
+      ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
       score_percent: sessionResultPercent,
       topic_id: activeSession.request.topic ?? null,
     });
@@ -366,6 +524,7 @@ export function useQuestionTrainingSession() {
     track(ANALYTICS_EVENTS.trainingSessionEmpty.key, {
       empty_reason: activeSession.emptyReason ?? "general_empty",
       mode: activeSession.request.mode,
+      ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
       topic_id: activeSession.request.topic ?? null,
     });
   }, [activeSession, isEmptyState, track]);
@@ -388,6 +547,14 @@ export function useQuestionTrainingSession() {
       return;
     }
 
+    if (
+      isMonetizationV2Active() &&
+      !readHasPlusAccess() &&
+      isTrainingQuotaMode(sessionMode)
+    ) {
+      useMonetizationV2Store.getState().recordTrainingQuestion(currentQuestion.id);
+    }
+
     recordQuestionAnsweredForAds();
     shouldAttemptPracticeAdRef.current = true;
     const answerDurationMs = Math.max(
@@ -406,6 +573,7 @@ export function useQuestionTrainingSession() {
       question_id: currentQuestion.id,
       question_index: (activeSession?.currentIndex ?? 0) + 1,
       question_total: summary.total,
+      ...roadmapStepAnalytics(activeSession?.request.roadmapStepId),
       scope: currentQuestion.scope,
       topic_block: currentQuestion.topicBlock,
       topic_id: sessionTopic ?? null,
@@ -423,7 +591,7 @@ export function useQuestionTrainingSession() {
       locale: displayLocale,
       studyPlanId: currentStudyPlanRemoteId,
       answerDurationMs,
-      explanationOpened: true,
+      explanationOpened: readHasPlusAccess(),
       aiChatUsed: false,
       metadata: {
         answered_at: answeredAttempt.answeredAt,
@@ -538,6 +706,7 @@ export function useQuestionTrainingSession() {
       incorrect_count: summary.wrong,
       mode: sessionMode,
       question_total: summary.total,
+      ...roadmapStepAnalytics(activeSession?.request.roadmapStepId),
       topic_id: sessionTopic ?? null,
     });
 
@@ -561,6 +730,7 @@ export function useQuestionTrainingSession() {
       });
     };
   }, [
+    activeSession,
     clearActiveSession,
     isCompleted,
     showInterstitialForTrigger,
@@ -650,6 +820,7 @@ export function useQuestionTrainingSession() {
 
   return {
     activeSession,
+    paywallHref,
     advanceSession,
     canGoPrevious,
     currentAnswer,

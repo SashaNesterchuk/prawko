@@ -1,6 +1,5 @@
 # Feature: Premium monetization
-# Scenario: After an odd dismissed interstitial (1st, 3rd, 5th, any placement)
-# appears; CTA opens the existing paywall.
+# Scenario: A dismissed ad does not open the premium bottom sheet or paywall.
 appId: com.mindjar.prawko
 tags:
   - monetization
@@ -11,20 +10,18 @@ tags:
     env:
       DESTINATION: question-result
       PREMIUM_TEASER_MOMENT: after_ad
-      TARGET_ID: premium-teaser
+      TARGET_ID: screen-question-result
 
 - extendedWaitUntil:
     visible:
-      id: "premium-teaser"
-    timeout: 5000
-
-- assertVisible:
-    id: "premium-teaser-cta"
-
-- tapOn:
-    id: "premium-teaser-cta"
-
-- extendedWaitUntil:
-    visible:
-      id: "screen-paywall"
+      id: "screen-question-result"
     timeout: 10000
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertNotVisible:
+    id: "premium-teaser"
+
+- assertNotVisible:
+    id: "screen-paywall"

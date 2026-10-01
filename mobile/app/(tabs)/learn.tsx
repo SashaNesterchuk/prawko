@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useIsFocused } from "expo-router/react-navigation";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,27 +12,26 @@ import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
 import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
 import { ActionTileSection } from "../../src/components/shell/ActionTileSection";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
+import {
+  ReadinessIndexBlock,
+  useReadinessCard,
+} from "../../src/features/home/ReadinessIndexBlock";
 import { QuestionCoverageCard } from "../../src/components/shell/QuestionCoverageCard";
 import { ScreenSection } from "../../src/components/shell/ScreenSection";
 import { TopicReadinessCard } from "../../src/components/shell/TopicReadinessCard";
-import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   getQuestionTopicIds,
   getQuestionTopicTitle,
 } from "../../src/features/question-topics/catalog";
-import {
-  getQuestionDisplayStats,
-  getTopicProgress,
-} from "../../src/features/questions/question-engine";
+import { getQuestionDisplayStats, getTopicProgress } from "../../src/features/questions/question-engine";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
-import {
-  fetchRemoteHomeProgress,
-  getWarsawIsoDate,
-  type RemoteReadinessSummary,
-} from "../../src/features/study-plan/supabase-study-plan-progress";
 import { useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
+import { getTopicLearnAccess } from "../../src/features/home/roadmap";
+import { useShowPremiumMark } from "../../src/features/monetization/v2/store";
+import { openTrackedPaywall } from "../../src/features/monetization/v2/analytics";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
@@ -60,7 +59,7 @@ export default function LearnTabScreen() {
   const { t } = useTranslation();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
-  const authMode = useAppShellStore((state) => state.authMode);
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionUserState = useQuestionProgressStore(
@@ -70,39 +69,10 @@ export default function LearnTabScreen() {
     (state) => state.topicQuestionProgress
   );
   const isFocused = useIsFocused();
-  const [readinessSummary, setReadinessSummary] =
-    useState<RemoteReadinessSummary | null>(null);
+  const readiness = useReadinessCard();
   const { openMode, openExam, openBlitz, dialog: countDialog } = useQuestionModeCountDialog();
-
-  useEffect(() => {
-    if (!isFocused) {
-      return;
-    }
-
-    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
-      setReadinessSummary(null);
-      return;
-    }
-
-    let cancelled = false;
-
-    void fetchRemoteHomeProgress(getWarsawIsoDate())
-      .then(({ readinessSummary: summary }) => {
-        if (!cancelled) {
-          setReadinessSummary(summary);
-        }
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          console.warn("Failed to fetch readiness summary for Learn.", error);
-          setReadinessSummary(null);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authMode, isFocused]);
+  const showPremiumMark = useShowPremiumMark();
+  const { track } = useAnalytics();
 
   const stats = useMemo(
     () => getQuestionDisplayStats(questionUserState),
@@ -143,7 +113,7 @@ export default function LearnTabScreen() {
   ]);
   const displayTopicCards = topicCards;
 
-  const dueReviews = readinessSummary?.dueReviews ?? stats.reviewDue;
+  const dueReviews = readiness.dueReviews;
 
   const openQuestionMode = (
     mode: Parameters<typeof buildQuestionRouteParams>[0]["mode"]
@@ -172,6 +142,7 @@ export default function LearnTabScreen() {
     {
       key: "exam",
       accent: "green",
+      premium: showPremiumMark,
       title: examTitle,
       subtitle: t("learn.tileExamSubtitle", {
         defaultValue: "Симуляція з таймером",
@@ -192,6 +163,7 @@ export default function LearnTabScreen() {
     {
       key: "mistakes",
       accent: "red",
+      premium: showPremiumMark,
       style: "faded",
       title: mistakesTitle,
       subtitle: t("learn.tileMistakesSubtitle", {
@@ -199,11 +171,19 @@ export default function LearnTabScreen() {
         count: stats.wrongAnswers,
       }),
       icon: <LearnActionIcon accent="red" name="alert" />,
-      onPress: () => router.navigate("/mistakes"),
+      onPress: () => {
+        if (showPremiumMark) {
+          openTrackedPaywall(track, { source: "wrong_answers" });
+          return;
+        }
+
+        router.navigate("/mistakes");
+      },
     },
     {
       key: "srs",
       accent: "amber",
+      premium: showPremiumMark,
       style: "faded",
       title: srsTitle,
       subtitle: t("learn.tileSrsSubtitle", {
@@ -211,26 +191,39 @@ export default function LearnTabScreen() {
         count: dueReviews,
       }),
       icon: <LearnActionIcon accent="amber" name="idea" />,
-      onPress: () =>
+      onPress: () => {
+        if (showPremiumMark) {
+          openTrackedPaywall(track, { source: "smart_reviews" });
+          return;
+        }
+
         openMode({
           mode: "review_due",
           title: srsTitle,
-        }),
+        });
+      },
     },
     {
       key: "traps",
       accent: "amber",
+      premium: showPremiumMark,
       style: "faded",
       title: trapsTitle,
       subtitle: t("learn.tileTrapsSubtitle", {
         defaultValue: "Найчастіше плутають",
       }),
       icon: <LearnActionIcon accent="amber" name="warning" />,
-      onPress: () =>
+      onPress: () => {
+        if (showPremiumMark) {
+          openTrackedPaywall(track, { source: "trap_questions" });
+          return;
+        }
+
         openMode({
           mode: "high_points",
           title: trapsTitle,
-        }),
+        });
+      },
     },
   ];
 
@@ -247,7 +240,11 @@ export default function LearnTabScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {stats.total > 0 ? (
+          <ReadinessIndexBlock
+            readiness={readiness}
+            testID="learn-readiness-index"
+          />
+          {/* {stats.total > 0 ? (
             <QuestionCoverageCard
               correct={stats.seenCorrect}
               seen={stats.seen}
@@ -258,7 +255,7 @@ export default function LearnTabScreen() {
               })}
               wrong={stats.seenWrong}
             />
-          ) : null}
+          ) : null} */}
           <View style={styles.stack}>
             <ActionTileGrid items={primaryTiles} />
 
@@ -312,25 +309,41 @@ export default function LearnTabScreen() {
               defaultValue: "Навчання за темами",
             })}
           >
-            {displayTopicCards.map(({ topicId, progress }, index) => (
-              <TopicReadinessCard
-                key={topicId}
-                title={getQuestionTopicTitle(topicId, preferredLocale)}
-                seen={progress.seen}
-                total={progress.total}
-                readiness={progress.progress}
-                correct={progress.correct}
-                wrong={progress.wrong}
-                progressTestID={`learn-topic-card-${topicId}`}
-                testID={`learn-topic-card-index-${index}`}
-                onPress={() =>
-                  router.navigate({
-                    pathname: "/topic/[topicId]",
-                    params: { topicId },
-                  })
-                }
-              />
-            ))}
+            {displayTopicCards.map(({ topicId, progress }, index) => {
+              const topicAccess = getTopicLearnAccess(examCountry, topicId);
+              const topicIsPremium =
+                showPremiumMark && topicAccess.kind === "premium";
+
+              return (
+                <TopicReadinessCard
+                  key={topicId}
+                  title={getQuestionTopicTitle(topicId, preferredLocale)}
+                  seen={progress.seen}
+                  total={progress.total}
+                  readiness={progress.progress}
+                  correct={progress.correct}
+                  wrong={progress.wrong}
+                  premium={topicIsPremium}
+                  progressTestID={`learn-topic-card-${topicId}`}
+                  testID={`learn-topic-card-index-${index}`}
+                  onPress={() => {
+                    if (topicIsPremium) {
+                      openTrackedPaywall(track, {
+                        properties: { topic_id: topicId },
+                        source: "roadmap",
+                        surface: "learn_topic",
+                      });
+                      return;
+                    }
+
+                    router.navigate({
+                      pathname: "/topic/[topicId]",
+                      params: { topicId },
+                    });
+                  }}
+                />
+              );
+            })}
           </ScreenSection>
         </ScrollView>
       </SafeAreaView>

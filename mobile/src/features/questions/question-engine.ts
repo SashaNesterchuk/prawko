@@ -1399,6 +1399,8 @@ function isSameQuestionSessionRequest(
     left.currentCategory === right.currentCategory &&
     left.mode === right.mode &&
     (left.topic ?? null) === (right.topic ?? null) &&
+    (left.topics ?? []).join("\0") === (right.topics ?? []).join("\0") &&
+    (left.roadmapStepId ?? null) === (right.roadmapStepId ?? null) &&
     (left.questionLimit ?? null) === (right.questionLimit ?? null) &&
     (left.timeLimitSeconds ?? null) === (right.timeLimitSeconds ?? null) &&
     (left.studyPlanTaskId ?? null) === (right.studyPlanTaskId ?? null)
@@ -1450,24 +1452,55 @@ export function resumeQuestionSession(
   };
 }
 
+function restrictToAllowedTopics(
+  questionIds: string[],
+  allowedTopicIds: readonly QuestionTopicId[] | undefined
+) {
+  if (!allowedTopicIds?.length) {
+    return questionIds;
+  }
+
+  const allowed = new Set(allowedTopicIds);
+
+  return questionIds.filter((questionId) => {
+    const question = getQuestionById(questionId);
+
+    return (
+      question != null &&
+      getQuestionTopicIds(question).some((topicId) => allowed.has(topicId))
+    );
+  });
+}
+
 function getQuestionIdsForMode(
   request: QuestionSessionRequest,
   userStates: QuestionUserStateMap,
   now: Date
 ) {
   const questionLimit = getNormalizedQuestionLimit(request.questionLimit);
+  const pool = (questionIds: string[]) =>
+    request.mode === "saved" ||
+    request.mode === "saved_sprint" ||
+    request.mode === "exam" ||
+    request.mode === "mini_test" ||
+    request.mode === "exam_tomorrow" ||
+    request.mode === "initial_diagnostic"
+      ? questionIds
+      : restrictToAllowedTopics(questionIds, request.allowedTopicIds);
 
   switch (request.mode) {
     case "learning": {
-      const learningIds = getLearningQuestionIds(
-        request.topic,
-        userStates,
-        now
+      const learningIds = pool(
+        getLearningQuestionIds(request.topic, userStates, now, request.topics)
       );
 
       // Topic-less limited sessions are the app's "random" entry points
       // (trainer random). Shuffle so each run differs.
-      if (request.topic == null && questionLimit != null) {
+      if (
+        request.topic == null &&
+        !request.topics?.length &&
+        questionLimit != null
+      ) {
         return takeRandomQuestionIds(learningIds, questionLimit);
       }
 
@@ -1475,39 +1508,42 @@ function getQuestionIdsForMode(
     }
     case "blitz":
       return applyQuestionLimit(
-        getBlitzQuestionIds(userStates, now),
+        pool(getBlitzQuestionIds(userStates, now)),
         questionLimit ?? BLITZ_MAX_QUESTIONS
       );
     case "new_questions":
       return applyQuestionLimit(
-        getNewQuestionIds(userStates, now, request.topic),
+        pool(getNewQuestionIds(userStates, now, request.topic)),
         questionLimit
       );
     case "weak_spots":
-      return applyQuestionLimit(getWeakSpotQuestionIds(userStates, now), questionLimit);
+      return applyQuestionLimit(
+        pool(getWeakSpotQuestionIds(userStates, now)),
+        questionLimit
+      );
     case "hard_questions":
       return applyQuestionLimit(
-        getHardQuestionIds(userStates, now, request.topic),
+        pool(getHardQuestionIds(userStates, now, request.topic)),
         questionLimit
       );
     case "high_points":
       return applyQuestionLimit(
-        getHighPointsQuestionIds(userStates, now, request.topic),
+        pool(getHighPointsQuestionIds(userStates, now, request.topic)),
         questionLimit
       );
     case "review_due":
       return applyQuestionLimit(
-        getReviewDueQuestionIds(userStates, now, request.topic),
+        pool(getReviewDueQuestionIds(userStates, now, request.topic)),
         questionLimit
       );
     case "seen_not_mastered":
       return applyQuestionLimit(
-        getSeenNotMasteredQuestionIds(userStates, now),
+        pool(getSeenNotMasteredQuestionIds(userStates, now)),
         questionLimit
       );
     case "wrong_answers":
       return applyQuestionLimit(
-        getWrongAnswerQuestionIds(userStates, now, request.topic),
+        pool(getWrongAnswerQuestionIds(userStates, now, request.topic)),
         questionLimit
       );
     case "saved":
@@ -1547,12 +1583,17 @@ function getQuestionIdsForMode(
 function getLearningQuestionIds(
   topic: LearningTopicId | undefined,
   userStates: QuestionUserStateMap,
-  now: Date
+  now: Date,
+  topics?: readonly QuestionTopicId[]
 ) {
   const questionBank = getQuestionBank();
-  const topicQuestions = topic
-    ? questionBank.filter((question) => questionMatchesTopic(question, topic))
-    : questionBank;
+  const topicQuestions = topics?.length
+    ? questionBank.filter((question) =>
+        topics.some((item) => questionMatchesTopic(question, item))
+      )
+    : topic
+      ? questionBank.filter((question) => questionMatchesTopic(question, topic))
+      : questionBank;
   const unseen = getUnseenQuestions(topicQuestions, userStates, now);
   const reviewDue = getReviewDueQuestions(topicQuestions, userStates, now);
   const wrong = getWrongQuestions(topicQuestions, userStates, now);

@@ -1,788 +1,921 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useIsFocused } from "expo-router/react-navigation";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, View } from "react-native";
+import { Alert, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ActionTile } from "../../src/components/shell/ActionTile";
-import { ActionTileGrid } from "../../src/components/shell/ActionTileGrid";
-import type { ActionTileItem } from "../../src/components/shell/ActionTileGrid";
-import { CalendarSheet } from "../../src/components/shell/CalendarSheet";
-import { ExamDateCard } from "../../src/components/shell/ExamDateCard";
+import { Icon } from "../../src/components/icons";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
-import { HomeContextualCard } from "../../src/components/shell/HomeContextualCard";
-// First-start spotlight is temporarily unused; keep the import for later.
-// import { HomeStartSpotlightLayer } from "../../src/components/shell/HomeStartSpotlightHost";
+import { ExamReadinessCard } from "../../src/components/shell/ExamReadinessCard";
+import { useReadinessCard } from "../../src/features/home/ReadinessIndexBlock";
 import {
-  ReadinessIndexCard,
-  resolveReadinessLevel,
-} from "../../src/components/shell/ReadinessIndexCard";
-import { StatusPromptCard } from "../../src/components/shell/StatusPromptCard";
-import { isMobileSupabaseConfigured } from "../../src/config/env";
+  getRoadmap,
+  type RoadmapSection,
+  type RoadmapStep,
+} from "../../src/features/home/roadmap";
 import {
-  CText,
-  getFontFamily,
-  useResponsiveFonts,
-  useResponsiveStyles,
-} from "../../src/portable-ui";
-import { useTheme } from "../../src/providers/ThemeProvider";
-import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
-import { useAnalytics } from "../../src/providers/AnalyticsProvider";
-import {
-  FIRST_START_QUESTION_COUNT,
-  // shouldShowHomeStartSpotlight,
-  type FirstStartCtaSource,
-} from "../../src/features/home/first-start";
-import { useHomeContextualBlock } from "../../src/features/home/useHomeContextualBlock";
-import { getHomeContextualDebugPreviewLabel } from "../../src/features/home/home-contextual";
-import { useHomeContextualStore } from "../../src/features/home/home-contextual-store";
-import {
-  createHomeDailySessionKey,
-  getHomeDailyPracticeStatus,
-  HOME_DAILY_QUESTION_COUNT,
-} from "../../src/features/home/home-daily-practice";
-import {
-  formatProfileExamDate,
-  getReadinessPeriodChange,
-  resolveReadinessPeriodChangeLabelKey,
-} from "../../src/features/profile/profile-stats";
-import { getQuestionDisplayStats } from "../../src/features/questions/question-engine";
-import { resolveReadinessScore } from "../../src/features/questions/readiness-score";
+  resolveRoadmapStepVisuals,
+  roadmapStepId,
+  useRoadmapProgressStore,
+  type RoadmapStepVisual,
+} from "../../src/features/home/roadmap-progress";
+import { getExamProfileForCountry } from "../../src/features/exam/exam-profile";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
-import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
-import {
-  applyExamDateChange,
-  parseNullableIsoDate,
-  toIsoDate,
-} from "../../src/features/study-plan/exam-date";
-import { getDaysUntilExamFromDate } from "../../src/features/study-plan/generate-local-study-plan";
-import {
-  fetchRemoteHomeProgress,
-  getWarsawIsoDate,
-  type RemoteReadinessSummary,
-} from "../../src/features/study-plan/supabase-study-plan-progress";
-import { useMonetizationStore } from "../../src/features/monetization/monetization-store";
-import { useAppShellStore, useCurrentStudyPlan, useCurrentUser } from "../../src/state/app-shell";
+import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { openTrackedPaywall } from "../../src/features/monetization/v2/analytics";
+import { openStoreReview } from "../../src/features/profile/store-review";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import {
   useEntitlementStore,
   useHasPlusAccess,
 } from "../../src/state/entitlements";
+import { useReviewPromptStore } from "../../src/state/review-prompt";
 import {
-  useQuestionCatalogResolved,
-  useQuestionCatalogVersion,
-} from "../../src/state/question-catalog";
-import {
-  useQuestionProgressHydrated,
-  useQuestionProgressStore,
-} from "../../src/state/question-progress";
-import {
-  resolveReadinessView,
-  useReadinessSnapshot,
-  useReadinessSnapshotHydrated,
-  useReadinessSnapshotStore,
-  type ReadinessSnapshot,
-} from "../../src/state/readiness-snapshot";
-// import { isE2EHomeChromeUnlocked } from "../../src/testing/e2e/state";
-import { Icon, IconName } from "../../src/components/icons";
+  CText,
+  getTypographyStyle,
+  useResponsiveFonts,
+  useResponsiveStyles,
+  withResponsiveFont,
+} from "../../src/portable-ui";
+import { useTheme } from "../../src/providers/ThemeProvider";
+import { useAppShellStore } from "../../src/state/app-shell";
 
-function HomeActionIcon({
-  accent,
-  name,
-}: {
-  accent: keyof ReturnType<typeof useTheme>["accents"];
-  name: IconName;
-}) {
-  const { accents } = useTheme();
-  const { responsiveFont } = useResponsiveFonts();
+type StepState = RoadmapStepVisual;
 
-  return (
-    <Icon
-      color={accents[accent].fill}
-      name={name}
-      size={responsiveFont(24)}
-    />
-  );
-}
+const STEPS_PER_ROW = 3;
 
-export default function HomeTabScreen() {
-  const { t, i18n } = useTranslation();
-  const { track } = useAnalytics();
-  const { bottom: safeBottom } = useSafeAreaInsets();
-  const styles = useStyles({ safeBottom });
-  const authMode = useAppShellStore((state) => state.authMode);
-  const preferredCategory = useAppShellStore((state) => state.preferredCategory);
-  const preferredLocale = useAppShellStore((state) => state.preferredLocale);
-  const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
-  const currentStudyPlanRemoteId = useAppShellStore(
-    (state) => state.currentStudyPlanRemoteId
-  );
-  const hydrateRemoteStudyPlan = useAppShellStore(
-    (state) => state.hydrateRemoteStudyPlan
-  );
-  const patchExamDate = useAppShellStore((state) => state.patchExamDate);
-  const currentStudyPlan = useCurrentStudyPlan();
-  // const homeStartSpotlightDismissed = useAppShellStore(
-  //   (state) => state.homeStartSpotlightDismissed
-  // );
-  const dismissHomeStartSpotlight = useAppShellStore(
-    (state) => state.dismissHomeStartSpotlight
-  );
+const PERK_KEYS = [
+  { icon: "repeat" as const, labelKey: "roadmap.perkLifetime" },
+  { icon: "chart" as const, labelKey: "roadmap.perkTopics" },
+  { icon: "like" as const, labelKey: "roadmap.perkPrice" },
+];
+
+export default function RoadmapScreen() {
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const hasPlusAccess = useHasPlusAccess();
   const setDebugPlusOverride = useEntitlementStore(
     (state) => state.setDebugPlusOverride
   );
-  const requestPremiumTeaser = useMonetizationStore(
-    (state) => state.requestSurface
+  const sections = getRoadmap(examCountry);
+  const readiness = useReadinessCard();
+  const completedStepIds = useRoadmapProgressStore(
+    (state) => state.completedStepIds
   );
-  const debugContextualPreview = useHomeContextualStore(
-    (state) => state.debugPreview
+  const roadmapProgress = useMemo(
+    () =>
+      resolveRoadmapStepVisuals(
+        examCountry,
+        sections,
+        completedStepIds,
+        hasPlusAccess
+      ),
+    [completedStepIds, examCountry, hasPlusAccess, sections]
   );
-  const cycleDebugContextualPreview = useHomeContextualStore(
-    (state) => state.cycleDebugPreview
-  );
-  const isFocused = useIsFocused();
-  const currentUser = useCurrentUser();
-  const currentUserId = currentUser?.id ?? null;
-  const questionCatalogVersion = useQuestionCatalogVersion();
-  const catalogResolved = useQuestionCatalogResolved();
-  const progressHydrated = useQuestionProgressHydrated();
-  const readinessSnapshot = useReadinessSnapshot();
-  const readinessSnapshotHydrated = useReadinessSnapshotHydrated();
-  const saveReadinessSnapshot = useReadinessSnapshotStore(
-    (state) => state.saveSnapshot
-  );
-  const questionUserState = useQuestionProgressStore(
-    (state) => state.questionUserState
-  );
-  const attempts = useQuestionProgressStore((state) => state.attempts);
-  const homeDailySession = useQuestionProgressStore(
-    (state) => state.homeDailySession
-  );
-  const readinessAssessment = useQuestionProgressStore(
-    (state) => state.readinessAssessment
-  );
-  const [readinessSummary, setReadinessSummary] =
-    useState<RemoteReadinessSummary | null>(null);
-  const [examDatePickerVisible, setExamDatePickerVisible] = useState(false);
-  const [isSavingExamDate, setIsSavingExamDate] = useState(false);
-  const { openMode, openExam, openBlitz, dialog: countDialog } =
-    useQuestionModeCountDialog();
-  const readinessCardRef = useRef<View>(null);
-  const readinessCardLayoutRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
-  const [readinessCardLayoutNonce, setReadinessCardLayoutNonce] = useState(0);
-  // const didTrackSpotlightRef = useRef(false);
-  // const unlockHomeChrome = isE2EHomeChromeUnlocked();
-
-  useEffect(() => {
-    if (!isFocused) {
-      return;
-    }
-
-    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
-      setReadinessSummary(null);
-      return;
-    }
-
-    let cancelled = false;
-
-    void fetchRemoteHomeProgress(getWarsawIsoDate())
-      .then(({ readinessSummary: summary }) => {
-        if (!cancelled) {
-          setReadinessSummary(summary);
-        }
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          console.warn("Failed to fetch readiness summary for Home.", error);
-          setReadinessSummary(null);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authMode, isFocused]);
-
-  const statsRef = useRef(getQuestionDisplayStats(questionUserState));
-  const stats = useMemo(() => {
-    if (!isFocused) {
-      return statsRef.current;
-    }
-
-    const next = getQuestionDisplayStats(questionUserState);
-    statsRef.current = next;
-    return next;
-  }, [isFocused, questionCatalogVersion, questionUserState]);
-
-  const readiness = resolveReadinessScore(readinessSummary?.readinessScore, {
-    attempts,
-    userStates: questionUserState,
-    planCompletionPercent: readinessSummary?.planCompletionPercent,
-    totalQuestions: stats.total,
-  });
-  const isLiveReadinessEmpty = stats.seen <= 0 && readinessAssessment == null;
-  const readinessPeriodChange = useMemo(() => {
-    if (!isFocused || isLiveReadinessEmpty) {
-      return null;
-    }
-
-    return getReadinessPeriodChange({
-      attempts,
-      userStates: questionUserState,
-      planCompletionPercent: readinessSummary?.planCompletionPercent,
-      totalQuestions: stats.total,
-      currentReadiness: readiness,
-    });
-  }, [
-    attempts,
-    isFocused,
-    isLiveReadinessEmpty,
-    questionUserState,
-    readiness,
-    readinessSummary?.planCompletionPercent,
-    stats.total,
-  ]);
-  const liveReadiness = useMemo<ReadinessSnapshot>(
-    () => ({
-      isEmpty: isLiveReadinessEmpty,
-      percent: readiness,
-      seen: stats.seen,
-      total: stats.total,
-      weekChangePercent: readinessPeriodChange?.deltaPercent ?? null,
-      weekChangePeriodDays: readinessPeriodChange?.periodDays ?? null,
-      userId: currentUserId,
-    }),
-    [
-      currentUserId,
-      isLiveReadinessEmpty,
-      readiness,
-      readinessPeriodChange,
-      stats.seen,
-      stats.total,
-    ]
-  );
-  // The progress blob and the remote catalog both settle late, so the card
-  // paints the last resolved snapshot instead of flashing the empty CTA.
-  const isLiveReadinessResolved = progressHydrated && catalogResolved;
-  const readinessView = resolveReadinessView({
-    live: liveReadiness,
-    snapshot: readinessSnapshot,
-    currentUserId,
-    isLiveResolved: isLiveReadinessResolved,
-    isProgressHydrated: progressHydrated,
-    isSnapshotHydrated: readinessSnapshotHydrated,
-  });
-
-  useEffect(() => {
-    if (!isFocused || !isLiveReadinessResolved || !readinessSnapshotHydrated) {
-      return;
-    }
-
-    saveReadinessSnapshot(liveReadiness);
-  }, [
-    isFocused,
-    isLiveReadinessResolved,
-    liveReadiness,
-    readinessSnapshotHydrated,
-    saveReadinessSnapshot,
-  ]);
-
-  const isReadinessLoading = readinessView == null;
-  const isReadinessEmpty = readinessView?.isEmpty ?? false;
-  // First-start tooltip is temporarily unused; restore by swapping this back.
-  const showStartSpotlight = false;
-  // const showStartSpotlight = shouldShowHomeStartSpotlight({
-  //   isReadinessEmpty,
-  //   isReadinessLoading,
-  //   spotlightDismissed: homeStartSpotlightDismissed,
-  //   unlockHomeChrome,
-  // });
-  const readinessPercent = readinessView?.percent ?? 0;
-  const readinessLevel = resolveReadinessLevel(readinessPercent);
-  const readinessWeekChangePercent = readinessView?.weekChangePercent ?? null;
-  const readinessWeekChangePeriodDays =
-    readinessView?.weekChangePeriodDays ?? null;
-  const readinessWeekChangeLabel =
-    readinessWeekChangePeriodDays == null
-      ? undefined
-      : t(
-        `dash.${resolveReadinessPeriodChangeLabelKey(
-          readinessWeekChangePeriodDays
-        )}`,
-        {
-          days: readinessWeekChangePeriodDays,
-          value: Math.abs(readinessWeekChangePercent ?? 0),
-        }
-      );
-  const wrongAnswers = stats.wrongAnswers;
-  const contextualCard = useHomeContextualBlock({
-    isNewUser: isReadinessEmpty,
-    isReadinessLoading,
-    reviewDue: stats.reviewDue,
-    wrongAnswers,
-  });
-  const examPassed =
-    readinessSummary != null && readinessSummary.daysUntilExam <= 0;
-  // User-set date only — plan.examDate is a planning horizon, not a chosen exam date.
-  const examDate = studyPlanSetup.examDate ?? null;
-  const daysUntilExam =
-    examDate != null ? getDaysUntilExamFromDate(examDate) : null;
-  const examDateVariant =
-    examDate == null ? "unset" : daysUntilExam != null && daysUntilExam < 0
-      ? "past"
-      : "set";
-  const showRemoteExamPassedPrompt = examPassed && examDate == null;
-  const examDateCardEyebrow =
-    examDateVariant === "unset"
-      ? t("dash.examDateLabel", { defaultValue: "Дата іспиту" })
-      : examDateVariant === "past"
-        ? t("dash.statusEyebrow", { defaultValue: "Онови свій статус" })
-        : t("dash.examDateUntil", { defaultValue: "До іспиту" });
-  const examDateCardTitle =
-    examDateVariant === "unset"
-      ? t("dash.examDateUnset", { defaultValue: "не вказано" })
-      : examDateVariant === "past"
-        ? t("dash.statusTitle", { defaultValue: "Як пройшов іспит?" })
-        : daysUntilExam === 0
-          ? t("dash.examDateToday", { defaultValue: "Сьогодні" })
-          : t("dash.examDateDays", {
-              count: Math.max(0, daysUntilExam ?? 0),
-              defaultValue: "{{count}} днів",
-            });
-  const examDateCardTrailing =
-    examDateVariant === "set" && examDate != null
-      ? formatProfileExamDate(examDate, preferredLocale)
-      : undefined;
-
-  const readinessLevelLabel = t(`dash.readinessLevel.${readinessLevel}`, {
-    defaultValue:
-      readinessLevel === "high"
-        ? "Високий"
-        : readinessLevel === "mid"
-          ? "Середній"
-          : "Низький",
-  });
-
-  const examTitle = t("dash.tileExamTitle", { defaultValue: "Іспит" });
-  const trapsTitle = t("dash.tileTrapsTitle", { defaultValue: "Пастки" });
-  const todayIso = getWarsawIsoDate();
-  const homeDailyStatus = getHomeDailyPracticeStatus({
-    session: homeDailySession,
-    today: todayIso,
-    category: preferredCategory,
-  });
-  const openHomeDailySession = useCallback(
-    (source: FirstStartCtaSource) => {
-      if (homeDailyStatus === "done") {
-        return;
-      }
-
-      dismissHomeStartSpotlight();
-      track(ANALYTICS_EVENTS.firstStartStarted.key, {
-        question_limit: FIRST_START_QUESTION_COUNT,
-        source,
-      });
-
-      track(ANALYTICS_EVENTS.trainingModeSelected.key, {
-        mode: "initial_diagnostic",
-        question_limit: FIRST_START_QUESTION_COUNT,
-        source,
-        topic_id: null,
-      });
-      router.navigate({
-        pathname: "/question",
-        params: buildQuestionRouteParams({
-          mode: "initial_diagnostic",
-          questionLimit: HOME_DAILY_QUESTION_COUNT,
-          sessionKey: createHomeDailySessionKey(todayIso, preferredCategory),
-        }),
-      });
-    },
-    [
-      dismissHomeStartSpotlight,
-      homeDailyStatus,
-      preferredCategory,
-      todayIso,
-      track,
-    ]
-  );
-
-  const startFirstSession = useCallback(
-    (source: FirstStartCtaSource) => {
-      openHomeDailySession(source);
-    },
-    [openHomeDailySession]
-  );
-
-  const handleConfirmExamDate = async (date: Date) => {
-    if (isSavingExamDate) {
-      return;
-    }
-
-    setIsSavingExamDate(true);
-    try {
-      await applyExamDateChange({
-        authMode,
-        currentStudyPlan,
-        currentStudyPlanRemoteId,
-        examDate: toIsoDate(date),
-        hydrateRemoteStudyPlan,
-        preferredCategory,
-        preferredLocale,
-        patchExamDate,
-        schoolCode: studyPlanSetup.schoolCode,
-      });
-      setExamDatePickerVisible(false);
-      track(ANALYTICS_EVENTS.settingsChanged.key, {
-        days_until_exam: getDaysUntilExamFromDate(toIsoDate(date)),
-        setting: "exam_date",
-        value: "set",
-      });
-    } catch (error) {
-      console.warn("Failed to update exam date.", error);
-    } finally {
-      setIsSavingExamDate(false);
-    }
-  };
-
-  // useEffect(() => {
-  //   if (!showStartSpotlight || didTrackSpotlightRef.current) {
-  //     return;
-  //   }
-  //
-  //   didTrackSpotlightRef.current = true;
-  //   track(ANALYTICS_EVENTS.firstStartShown.key, {
-  //     question_limit: FIRST_START_QUESTION_COUNT,
-  //   });
-  // }, [showStartSpotlight, track]);
-
-  const tiles: ActionTileItem[] = [
-    {
-      key: "trainer",
-      accent: "green",
-      title: t("dash.tileTrainerTitle", { defaultValue: "Тренування" }),
-      subtitle: t("dash.tileTrainerSubtitle", {
-        defaultValue: "Вільне тестування",
-      }),
-      icon: <HomeActionIcon accent="green" name="target" />,
-      onPress: () => router.navigate("/trainer-modes"),
-    },
-    {
-      key: "exam",
-      accent: "green",
-      title: examTitle,
-      subtitle: t("dash.tileExamSubtitle", {
-        defaultValue: "Симуляція з таймером",
-      }),
-      icon: <HomeActionIcon accent="green" name="exam" />,
-      onPress: () => openExam(),
-    },
-    {
-      key: "mistakes",
-      accent: "red",
-      title: t("dash.tileMistakesTitle", { defaultValue: "Помилки" }),
-      subtitle: t("dash.tileMistakesSubtitle", {
-        defaultValue: "{{count}} для повторення",
-        count: wrongAnswers,
-      }),
-      icon: <HomeActionIcon accent="red" name="alert" />,
-      onPress: () => router.navigate("/mistakes"),
-    },
-    {
-      key: "traps",
-      accent: "amber",
-      title: trapsTitle,
-      subtitle: t("dash.tileTrapsSubtitle", {
-        defaultValue: "Часто плутають",
-      }),
-      icon: <HomeActionIcon accent="amber" name="warning" />,
-      onPress: () =>
-        openMode({
-          mode: "high_points",
-          title: trapsTitle,
-        }),
-    },
-  ];
+  const { bottom: safeBottom } = useSafeAreaInsets();
+  const styles = useStyles({ safeBottom });
 
   return (
     <GreenWaveScreen>
-      <SafeAreaView
-        style={styles.safeArea}
-        edges={["top"]}
-        testID="screen-home"
-      >
-        <StatusBar style="dark" />
+      <StatusBar style="dark" />
+      <SafeAreaView edges={["top"]} style={styles.safeArea} testID="screen-home">
         <ScrollView
-          style={styles.scroll}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          style={styles.scroll}
         >
-          <View
-            ref={readinessCardRef}
-            collapsable={false}
-            onLayout={(event) => {
-              const { x, y, width, height } = event.nativeEvent.layout;
-              const previous = readinessCardLayoutRef.current;
-              if (
-                previous.x === x &&
-                previous.y === y &&
-                previous.width === width &&
-                previous.height === height
-              ) {
-                return;
-              }
-
-              readinessCardLayoutRef.current = { x, y, width, height };
-              if (showStartSpotlight) {
-                setReadinessCardLayoutNonce((current) => current + 1);
-              }
-            }}
-          >
-            <ReadinessIndexCard
-            empty={isReadinessEmpty}
-            loading={isReadinessLoading}
-            progress={readinessPercent}
-            testID="home-readiness-index"
-            title={t("dash.readinessTitle", {
-              defaultValue: "Індекс готовності",
+          <ExamReadinessCard
+            coveredLabel={`${roadmapProgress.completedCount} / ${roadmapProgress.totalCount}`}
+            detailsLabel={readiness.t("dash.readinessDetails", {
+              defaultValue: "Пройти тест",
             })}
-            subtitle={
-              isReadinessEmpty
-                ? t("dash.readinessEmptyDescription", {
-                  defaultValue:
-                    "Пройди швидкий тест, щоб оцінити свій рівень знань.",
-                })
-                : undefined
-            }
-            levelLabel={isReadinessEmpty ? undefined : readinessLevelLabel}
-            coveredCountLabel={
-              isReadinessEmpty || !readinessView
-                ? undefined
-                : `${readinessView.seen} / ${readinessView.total}`
-            }
-            coveredCaption={
-              isReadinessEmpty
-                ? undefined
-                : t("dash.readinessCovered", {
-                  defaultValue: "Охоплено питань",
-                })
-            }
-            detailsLabel={
-              isReadinessEmpty
-                ? t("dash.readinessDetails", {
-                  defaultValue: "Пройти тест",
-                })
-                : undefined
-            }
-            weekChangePercent={readinessWeekChangePercent}
-            weekChangeLabel={readinessWeekChangeLabel}
+            empty={readiness.isReadinessEmpty}
+            loading={readiness.isReadinessLoading}
             onPress={() => {
-              if (isReadinessEmpty) {
-                startFirstSession(showStartSpotlight ? "spotlight" : "card");
+              if (readiness.isReadinessEmpty) {
+                readiness.startFirstSession("card");
                 return;
               }
 
               router.navigate("/statistics");
             }}
+            progress={readiness.readinessPercent}
+            testID="home-exam-readiness"
+            title={readiness.t("dash.examReadinessTitle", {
+              defaultValue: "Готовність до іспиту",
+            })}
+            weekChangeLabel={readiness.readinessWeekChangeLabel}
+            weekChangePercent={readiness.readinessWeekChangePercent}
+          />
+          {sections.map((section, sectionIndex) => (
+            <SectionCard
+              key={section.id}
+              section={section}
+              sectionIndex={sectionIndex}
+              visuals={roadmapProgress.visuals[sectionIndex] ?? []}
+              premiumUnlocked={hasPlusAccess}
             />
-          </View>
+          ))}
 
-          <View style={styles.stack}>
-            {contextualCard ? (
-              <HomeContextualCard
-                cta={contextualCard.cta}
-                icon={contextualCard.icon}
-                kindTestID={contextualCard.testID}
-                onPress={contextualCard.onPress}
-                subtitle={contextualCard.subtitle}
-                title={contextualCard.title}
-              />
-            ) : null}
-
-            <ActionTile
-              fullWidth
-              accent="amber"
-              title={t("dash.warmupTitle", {
-                defaultValue: "Швидка сесія",
-              })}
-              subtitle={t("dash.warmupDescription", {
-                defaultValue: "Максимум питань за відведений час",
-              })}
-              icon={<HomeActionIcon accent="amber" name="bolt" />}
-              onPress={() =>
-                openBlitz({
-                  title: t("trainerModes.randomTitle", {
-                    defaultValue: "Випадкові питання",
-                  }),
-                })
-              }
-              testID="home-tile-blitz"
-            />
-
-            <ActionTileGrid items={tiles} />
-
-            {__DEV__ ? (
-              <>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => setDebugPlusOverride(!hasPlusAccess)}
-                  style={({ pressed }) => [
-                    styles.debugPremiumButton,
-                    hasPlusAccess
-                      ? styles.debugPremiumOn
-                      : styles.debugPremiumOff,
-                    pressed ? styles.debugPremiumPressed : null,
-                  ]}
-                >
-                  <CText style={styles.debugPremiumLabel}>
-                    {hasPlusAccess ? "DEV Plus: ON" : "DEV Plus: OFF"}
-                  </CText>
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => requestPremiumTeaser("teaser", "manual_test")}
-                  style={({ pressed }) => [
-                    styles.debugPremiumButton,
-                    styles.debugPremiumOff,
-                    pressed ? styles.debugPremiumPressed : null,
-                  ]}
-                  testID="home-debug-premium-teaser"
-                >
-                  <CText style={styles.debugPremiumLabel}>DEV Teaser</CText>
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => cycleDebugContextualPreview()}
-                  style={({ pressed }) => [
-                    styles.debugPremiumButton,
-                    debugContextualPreview === "auto"
-                      ? styles.debugPremiumOff
-                      : styles.debugPremiumOn,
-                    pressed ? styles.debugPremiumPressed : null,
-                  ]}
-                  testID="home-debug-contextual"
-                >
-                  <CText style={styles.debugPremiumLabel}>
-                    {getHomeContextualDebugPreviewLabel(debugContextualPreview)}
-                  </CText>
-                </Pressable>
-              </>
-            ) : null}
-          </View>
-
-          <ExamDateCard
-            variant={examDateVariant}
-            eyebrow={examDateCardEyebrow}
-            title={examDateCardTitle}
-            trailingLabel={examDateCardTrailing}
-            onPress={() => {
-              if (examDateVariant === "past") {
-                router.navigate("/modals/plan-adjust");
-                return;
-              }
-
-              setExamDatePickerVisible(true);
-            }}
-            testID="home-exam-date"
+          <ExamSimulatorCard
+            premiumUnlocked={hasPlusAccess}
+            questionCount={getExamProfileForCountry(examCountry).totalQuestions}
+            sections={sections}
+            visuals={roadmapProgress.visuals}
           />
 
-          {showRemoteExamPassedPrompt ? (
-            <StatusPromptCard
-              eyebrow={t("dash.statusEyebrow", {
-                defaultValue: "Онови свій статус",
-              })}
-              title={t("dash.statusTitle", {
-                defaultValue: "Як пройшов іспит?",
-              })}
-              onPress={() => router.navigate("/modals/plan-adjust")}
-            />
+          {hasPlusAccess ? <RatingCard /> : <UnlockCard />}
+          {__DEV__ ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setDebugPlusOverride(!hasPlusAccess)}
+              style={[
+                styles.debugPlusButton,
+                hasPlusAccess
+                  ? styles.debugPlusOn
+                  : styles.debugPlusOff,
+              ]}
+              testID="home-debug-plus"
+            >
+              <CText style={styles.debugPlusLabel}>
+                {hasPlusAccess ? "DEV Premium: ON" : "DEV Premium: OFF"}
+              </CText>
+            </Pressable>
           ) : null}
         </ScrollView>
       </SafeAreaView>
-      {countDialog}
-      <CalendarSheet
-        visible={examDatePickerVisible}
-        locale={i18n.language}
-        initialDate={parseNullableIsoDate(examDate)}
-        confirmLabel={t("onboarding.examDateConfirm")}
-        clearLabel={t("onboarding.examDateClear")}
-        onClose={() => setExamDatePickerVisible(false)}
-        onConfirm={(date) => {
-          void handleConfirmExamDate(date);
-        }}
-        onClear={() => setExamDatePickerVisible(false)}
-      />
-      {/*
-      <HomeStartSpotlightLayer
-        visible={showStartSpotlight}
-        anchorRef={readinessCardRef}
-        layoutNonce={readinessCardLayoutNonce}
-        title={t("dash.firstStartSpotlightTitle", {
-          defaultValue: "Zrób szybki test wiedzy",
-        })}
-        body={t("dash.firstStartSpotlightBody", {
-          count: FIRST_START_QUESTION_COUNT,
-          defaultValue:
-            "{{count}} pytań, bez limitu czasu. Zaraz zobaczysz, na czym stoisz.",
-        })}
-        skipLabel={t("dash.firstStartSpotlightSkip", {
-          defaultValue: "Pozniej",
-        })}
-        onStart={() => startFirstSession("spotlight")}
-        onSkip={() => {
-          dismissHomeStartSpotlight();
-          track(ANALYTICS_EVENTS.firstStartSkipped.key, {
-            question_limit: FIRST_START_QUESTION_COUNT,
-          });
-        }}
-      />
-      */}
     </GreenWaveScreen>
   );
 }
 
+
+function SectionCard({
+  premiumUnlocked,
+  section,
+  sectionIndex,
+  visuals,
+}: {
+  premiumUnlocked: boolean;
+  section: RoadmapSection;
+  sectionIndex: number;
+  visuals: RoadmapStepVisual[];
+}) {
+  const { t } = useTranslation();
+  const { accents } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles({ safeBottom: 0 });
+  const done = visuals.filter((visual) => visual === "completed").length;
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <View style={styles.sectionIcon}>
+          <Icon
+            color={accents.green.ink}
+            name={section.icon}
+            size={responsiveFont(20)}
+          />
+        </View>
+        <CText style={styles.sectionTitle}>
+          {`${sectionIndex + 1}. ${t(section.titleKey)}`}
+        </CText>
+        <CText style={styles.progress}>
+          {done}/{section.steps.length}
+        </CText>
+        <Icon
+          color="#8FA099"
+          name="chevron"
+          size={responsiveFont(18)}
+          style={styles.chevronUp}
+        />
+      </View>
+
+      <StepRows
+        examPrep={section.examPrep}
+        premiumUnlocked={premiumUnlocked}
+        sectionIndex={sectionIndex}
+        steps={section.steps}
+        topics={section.topics}
+        visuals={visuals}
+      />
+    </View>
+  );
+}
+
+function StepRows({
+  examPrep,
+  premiumUnlocked,
+  sectionIndex,
+  steps,
+  topics,
+  visuals,
+}: {
+  examPrep: boolean;
+  premiumUnlocked: boolean;
+  sectionIndex: number;
+  steps: RoadmapStep[];
+  topics: RoadmapSection["topics"];
+  visuals: RoadmapStepVisual[];
+}) {
+  const { t } = useTranslation();
+  const { track } = useAnalytics();
+  const examCountry = useAppShellStore((state) => state.examCountry);
+  const styles = useStyles({ safeBottom: 0 });
+  const rows: RoadmapStep[][] = [];
+
+  for (let index = 0; index < steps.length; index += STEPS_PER_ROW) {
+    rows.push(steps.slice(index, index + STEPS_PER_ROW));
+  }
+
+  return (
+    <View style={styles.snake}>
+      {rows.map((row, rowIndex) => (
+        <View key={row[0]?.labelKey} style={styles.stepRow}>
+          {row.length > 1 ? (
+            <View
+              style={[
+                styles.rowRail,
+                {
+                  left: `${50 / row.length}%`,
+                  right: `${50 / row.length}%`,
+                },
+              ]}
+            />
+          ) : null}
+          {row.map((step, columnIndex) => {
+            const stepIndex = rowIndex * STEPS_PER_ROW + columnIndex;
+            const state = visuals[stepIndex] ?? "upcoming";
+            const premiumLocked = state === "premium" && !premiumUnlocked;
+            const canStart =
+              state === "active" ||
+              state === "completed" ||
+              state === "upcoming" ||
+              (state === "premium" && premiumUnlocked);
+
+            const label = t(step.labelKey);
+            const bubble = (
+              <>
+                <StepBubble index={stepIndex + 1} state={state} />
+                <CText
+                  style={[
+                    styles.stepLabel,
+                    state === "active" || state === "completed"
+                      ? styles.stepLabelActive
+                      : null,
+                  ]}
+                >
+                  {label}
+                </CText>
+              </>
+            );
+
+            if (!canStart && !premiumLocked) {
+              return (
+                <View key={step.labelKey} style={styles.stepCell}>
+                  {bubble}
+                </View>
+              );
+            }
+
+            return (
+              <Pressable
+                accessibilityRole="button"
+                key={step.labelKey}
+                onPress={() => {
+                  const stepId = roadmapStepId(
+                    examCountry,
+                    sectionIndex,
+                    stepIndex
+                  );
+                  track(ANALYTICS_EVENTS.roadmapStepOpened.key, {
+                    locked: premiumLocked,
+                    premium: step.premium,
+                    roadmap_step_id: stepId,
+                    section_index: sectionIndex,
+                    step_index: stepIndex,
+                  });
+
+                  if (!canStart || premiumLocked) {
+                    openTrackedPaywall(track, {
+                      roadmapStepId: stepId,
+                      source: "roadmap",
+                      surface: "home_step",
+                    });
+                    return;
+                  }
+
+                  if (step.startsExam) {
+                    router.navigate({
+                      pathname: "/exam",
+                      params: buildExamRouteParams({ mode: "exam" }),
+                    });
+                    return;
+                  }
+
+                  router.navigate({
+                    pathname: "/question",
+                    params: buildQuestionRouteParams({
+                      mode: "learning",
+                      questionLimit: step.questionLimit,
+                      roadmapStepId: stepId,
+                      title: label,
+                      topic:
+                        !examPrep && topics.length === 1 ? topics[0] : undefined,
+                      topics:
+                        !examPrep && topics.length > 1 ? topics : undefined,
+                    }),
+                  });
+                }}
+                style={styles.stepCell}
+                testID={`roadmap-step-${sectionIndex}-${stepIndex}`}
+              >
+                {bubble}
+              </Pressable>
+            );
+          })}
+          {row.length < STEPS_PER_ROW
+            ? Array.from({ length: STEPS_PER_ROW - row.length }, (_, index) => (
+                <View key={`pad-${index}`} style={styles.stepCell} />
+              ))
+            : null}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function StepBubble({
+  index,
+  state,
+}: {
+  index: number;
+  state: StepState;
+}) {
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles({ safeBottom: 0 });
+  const active = state === "active";
+  const completed = state === "completed";
+
+  return (
+    <View style={styles.bubbleSlot}>
+      {active ? (
+        <>
+          <View style={styles.bubbleRingOuter} />
+          <View style={styles.bubbleRingInner} />
+        </>
+      ) : null}
+      <View
+        style={[
+          styles.bubble,
+          active || completed ? styles.bubbleActive : styles.bubbleIdle,
+        ]}
+      >
+        {completed ? (
+          <Icon color="#FFFFFF" name="checkmark" size={responsiveFont(18)} />
+        ) : (
+          <CText style={active ? styles.bubbleIndexActive : styles.bubbleIndex}>
+            {index}
+          </CText>
+        )}
+        {state === "premium" ? (
+          <View style={styles.crownBadge}>
+            <Icon color="#F0A93A" name="premiumSmall" size={responsiveFont(10)} />
+          </View>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+function ExamSimulatorCard({
+  premiumUnlocked,
+  questionCount,
+  sections,
+  visuals,
+}: {
+  premiumUnlocked: boolean;
+  questionCount: number;
+  sections: RoadmapSection[];
+  visuals: RoadmapStepVisual[][];
+}) {
+  const { t } = useTranslation();
+  const { track } = useAnalytics();
+  const { accents } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const examCountry = useAppShellStore((state) => state.examCountry);
+  const styles = useStyles({ safeBottom: 0 });
+  const sectionIndex = sections.findIndex((section) => section.examPrep);
+  const steps = sectionIndex >= 0 ? sections[sectionIndex].steps : [];
+  const examStep = steps.findIndex((step) => step.startsExam);
+  const stepIndex = examStep >= 0 ? examStep : Math.max(0, steps.length - 1);
+  const state = visuals[sectionIndex]?.[stepIndex] ?? "active";
+  const premiumLocked = state === "premium" && !premiumUnlocked;
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.finalHeader}>
+        <CText style={styles.finalEyebrow}>{t("roadmap.finalStepEyebrow")}</CText>
+        <View style={styles.finalTitleRow}>
+          <CText style={styles.finalTitle}>{t("roadmap.finalStepTitle")}</CText>
+          <View style={styles.finalBadge}>
+            <CText style={styles.finalBadgeLabel}>
+              {t("roadmap.finalStepBadge", { count: questionCount })}
+            </CText>
+          </View>
+        </View>
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          const stepId =
+            sectionIndex >= 0
+              ? roadmapStepId(examCountry, sectionIndex, stepIndex)
+              : null;
+
+          if (stepId) {
+            track(ANALYTICS_EVENTS.roadmapStepOpened.key, {
+              locked: premiumLocked,
+              premium: true,
+              roadmap_step_id: stepId,
+              section_index: sectionIndex,
+              step_index: stepIndex,
+            });
+          }
+
+          if (premiumLocked && stepId) {
+            openTrackedPaywall(track, {
+              roadmapStepId: stepId,
+              source: "roadmap",
+              surface: "home_step",
+            });
+            return;
+          }
+
+          router.navigate({
+            pathname: "/exam",
+            params: buildExamRouteParams({ mode: "exam" }),
+          });
+        }}
+        style={styles.finalButton}
+        testID="roadmap-exam-simulator"
+      >
+        <View style={styles.finalDisc}>
+          <Icon
+            color={accents.green.ink}
+            name="exam"
+            size={responsiveFont(52)}
+          />
+          {premiumLocked ? (
+            <View style={styles.finalCrown}>
+              <Icon
+                color="#F0A93A"
+                name="premiumSmall"
+                size={responsiveFont(12)}
+              />
+            </View>
+          ) : null}
+        </View>
+      </Pressable>
+    </View>
+  );
+}
+
+function UnlockCard() {
+  const { t } = useTranslation();
+  const { track } = useAnalytics();
+  const { accents } = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles({ safeBottom: 0 });
+
+  return (
+    <View style={styles.unlockCard} testID="home-unlock-card">
+      <View style={styles.crownHalo}>
+        <Icon color="#F0A93A" name="premium" size={responsiveFont(28)} />
+      </View>
+      <CText style={styles.unlockTitle}>{t("roadmap.unlockTitle")}</CText>
+      <CText style={styles.unlockBody}>{t("roadmap.unlockBody")}</CText>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() =>
+          openTrackedPaywall(track, {
+            source: "roadmap",
+            surface: "home_unlock",
+          })
+        }
+        style={styles.unlockButton}
+      >
+        <CText style={styles.unlockButtonLabel}>{t("roadmap.unlockCta")}</CText>
+        <Icon color="#FFFFFF" name="chevron" size={responsiveFont(16)} />
+      </Pressable>
+      <View style={styles.perks}>
+        {PERK_KEYS.map((perk) => (
+          <View key={perk.labelKey} style={styles.perk}>
+            <Icon
+              color={accents.green.ink}
+              name={perk.icon}
+              size={responsiveFont(22)}
+            />
+            <CText style={styles.perkLabel}>{t(perk.labelKey)}</CText>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function RatingCard() {
+  const { t } = useTranslation();
+  const { track } = useAnalytics();
+  const { responsiveFont } = useResponsiveFonts();
+  const styles = useStyles({ safeBottom: 0 });
+
+  const handleYes = () => {
+    track(ANALYTICS_EVENTS.appReviewRequested.key, {
+      mode: null,
+      source: "roadmap",
+    });
+    useReviewPromptStore.getState().markPrompted();
+    void openStoreReview().catch((error) => {
+      console.warn("Failed to open store review.", error);
+      track(ANALYTICS_EVENTS.appReviewFailed.key, {
+        mode: null,
+        reason: "store_unavailable",
+        source: "roadmap",
+      });
+      Alert.alert(
+        t("profile.reviewUnavailableTitle"),
+        t("profile.reviewUnavailableMessage")
+      );
+    });
+  };
+
+  return (
+    <View style={styles.ratingCard} testID="home-rating-card">
+      <CText style={styles.ratingTitle}>{t("roadmap.ratingTitle")}</CText>
+      <View style={styles.ratingActions}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            track(ANALYTICS_EVENTS.appReviewSkipped.key, {
+              mode: null,
+              reason: "not_enjoying",
+              source: "roadmap",
+            });
+          }}
+          style={styles.ratingButton}
+          testID="home-rating-no"
+        >
+          <Ionicons
+            color="#8E8E93"
+            name="thumbs-down-outline"
+            size={responsiveFont(22)}
+          />
+          <CText style={styles.ratingButtonLabel}>{t("roadmap.ratingNo")}</CText>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={handleYes}
+          style={styles.ratingButton}
+          testID="home-rating-yes"
+        >
+          <Ionicons
+            color="#8E8E93"
+            name="thumbs-up-outline"
+            size={responsiveFont(22)}
+          />
+          <CText style={styles.ratingButtonLabel}>{t("roadmap.ratingYes")}</CText>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 function useStyles({ safeBottom }: { safeBottom: number }) {
-  return useResponsiveStyles(({ colors, responsiveFont, spacing }) => ({
-    safeArea: {
-      flex: 1,
-    },
-    scroll: {
-      flex: 1,
-    },
-    content: {
-      paddingTop: spacing.exact(24),
-      paddingHorizontal: spacing.exact(24),
-      paddingBottom: spacing.exact(96) + safeBottom,
-      gap: spacing.exact(24),
-    },
-    stack: {
-      gap: spacing.exact(8),
-    },
-    debugPremiumButton: {
-      alignItems: "center",
-      borderRadius: spacing.exact(12),
-      borderWidth: 1,
-      marginTop: spacing.exact(8),
-      paddingHorizontal: spacing.exact(16),
-      paddingVertical: spacing.exact(12),
-    },
-    debugPremiumOn: {
-      backgroundColor: colors.accentSoft,
-      borderColor: colors.accent,
-    },
-    debugPremiumOff: {
-      backgroundColor: colors.paper,
-      borderColor: colors.line,
-    },
-    debugPremiumPressed: {
-      opacity: 0.85,
-    },
-    debugPremiumLabel: {
-      color: colors.ink,
-      fontFamily: getFontFamily("medium"),
-      fontSize: responsiveFont(13),
-    },
-  }));
+  return useResponsiveStyles(
+    ({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
+      safeArea: {
+        flex: 1,
+      },
+      scroll: {
+        flex: 1,
+      },
+      content: {
+        paddingTop: spacing.exact(8),
+        paddingHorizontal: spacing.exact(16),
+        paddingBottom: spacing.exact(96) + safeBottom,
+        gap: spacing.exact(12),
+      },
+      debugPlusButton: {
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: radius.pill,
+        paddingVertical: spacing.exact(14),
+      },
+      debugPlusOn: {
+        backgroundColor: "#14915A",
+      },
+      debugPlusOff: {
+        backgroundColor: "#8FA099",
+      },
+      debugPlusLabel: {
+        ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
+        color: colors.white,
+      },
+      card: {
+        backgroundColor: colors.white,
+        borderRadius: radius.xxxl,
+        paddingHorizontal: spacing.exact(16),
+        paddingTop: spacing.exact(16),
+        paddingBottom: spacing.exact(18),
+        gap: spacing.exact(16),
+        ...elevation.card,
+      },
+      cardHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(10),
+      },
+      sectionIcon: {
+        width: responsiveFont(36),
+        height: responsiveFont(36),
+        borderRadius: radius.pill,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: theme.accents.green.soft,
+      },
+      sectionTitle: {
+        flex: 1,
+        ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
+        color: colors.ink,
+      },
+      progress: {
+        ...withResponsiveFont(getTypographyStyle("bodyS"), responsiveFont),
+        color: colors.ink3,
+      },
+      chevronUp: {
+        transform: [{ rotate: "-90deg" }],
+      },
+      snake: {
+        gap: spacing.exact(8),
+      },
+      snakeRow: {
+        flexDirection: "row",
+        position: "relative",
+      },
+      snakeRowOffset: {
+        flexDirection: "row",
+        position: "relative",
+        marginHorizontal: "16.66%",
+      },
+      snakeCell: {
+        flex: 1,
+        alignItems: "center",
+        gap: spacing.exact(8),
+        zIndex: 1,
+      },
+      snakeRail: {
+        position: "absolute",
+        top: responsiveFont(22),
+        left: "16.66%",
+        right: "16.66%",
+        borderTopWidth: 1.5,
+        borderStyle: "dashed",
+        borderColor: "#D5DED8",
+      },
+      snakeBend: {
+        position: "absolute",
+        top: responsiveFont(-36),
+        right: "8%",
+        width: responsiveFont(72),
+        height: responsiveFont(56),
+      },
+      stepRow: {
+        flexDirection: "row",
+        position: "relative",
+      },
+      rowRail: {
+        position: "absolute",
+        top: responsiveFont(20),
+        borderTopWidth: 1.5,
+        borderStyle: "dashed",
+        borderColor: "#D5DED8",
+      },
+      stepCell: {
+        flex: 1,
+        alignItems: "center",
+        gap: spacing.exact(8),
+        zIndex: 1,
+      },
+      stepLabel: {
+        ...withResponsiveFont(getTypographyStyle("labelXS"), responsiveFont),
+        color: colors.ink2,
+        textAlign: "center",
+      },
+      stepLabelActive: {
+        ...withResponsiveFont(getTypographyStyle("labelXS"), responsiveFont),
+        color: colors.ink,
+      },
+      bubbleSlot: {
+        width: responsiveFont(44),
+        height: responsiveFont(44),
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      bubbleRingOuter: {
+        position: "absolute",
+        width: responsiveFont(68),
+        height: responsiveFont(68),
+        borderRadius: radius.pill,
+        backgroundColor: "rgba(31, 168, 106, 0.12)",
+      },
+      bubbleRingInner: {
+        position: "absolute",
+        width: responsiveFont(54),
+        height: responsiveFont(54),
+        borderRadius: radius.pill,
+        backgroundColor: "rgba(31, 168, 106, 0.22)",
+      },
+      bubble: {
+        width: responsiveFont(44),
+        height: responsiveFont(44),
+        borderRadius: radius.pill,
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      bubbleActive: {
+        backgroundColor: "#1FA86A",
+      },
+      bubbleIdle: {
+        backgroundColor: "#E7EEEA",
+      },
+      bubbleIndex: {
+        ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
+        color: "#C5D0CB",
+      },
+      bubbleIndexActive: {
+        ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
+        color: colors.white,
+      },
+      crownBadge: {
+        position: "absolute",
+        top: responsiveFont(-2),
+        right: responsiveFont(-2),
+        width: responsiveFont(16),
+        height: responsiveFont(16),
+        borderRadius: radius.pill,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#FFF6E4",
+      },
+      unlockCard: {
+        backgroundColor: colors.white,
+        borderRadius: radius.xxxl,
+        paddingHorizontal: spacing.exact(20),
+        paddingTop: spacing.exact(24),
+        paddingBottom: spacing.exact(20),
+        alignItems: "center",
+        gap: spacing.exact(8),
+        ...elevation.card,
+      },
+      crownHalo: {
+        width: responsiveFont(56),
+        height: responsiveFont(56),
+        borderRadius: radius.pill,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#FFF4D8",
+        marginBottom: spacing.exact(4),
+      },
+      unlockTitle: {
+        ...withResponsiveFont(getTypographyStyle("headingM"), responsiveFont),
+        color: colors.ink,
+        textAlign: "center",
+      },
+      unlockBody: {
+        ...withResponsiveFont(getTypographyStyle("bodyS"), responsiveFont),
+        color: colors.ink2,
+        textAlign: "center",
+        marginBottom: spacing.exact(8),
+      },
+      unlockButton: {
+        alignSelf: "stretch",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.exact(6),
+        backgroundColor: "#14915A",
+        borderRadius: radius.pill,
+        paddingVertical: spacing.exact(14),
+      },
+      unlockButtonLabel: {
+        ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
+        color: colors.white,
+      },
+      perks: {
+        flexDirection: "row",
+        alignSelf: "stretch",
+        marginTop: spacing.exact(12),
+        gap: spacing.exact(8),
+      },
+      perk: {
+        flex: 1,
+        alignItems: "center",
+        gap: spacing.exact(6),
+      },
+      perkLabel: {
+        ...withResponsiveFont(getTypographyStyle("labelXS"), responsiveFont),
+        color: colors.ink2,
+        textAlign: "center",
+      },
+      ratingCard: {
+        backgroundColor: colors.white,
+        borderRadius: radius.xxxl,
+        paddingHorizontal: spacing.exact(20),
+        paddingTop: spacing.exact(28),
+        paddingBottom: spacing.exact(24),
+        alignItems: "center",
+        gap: spacing.exact(20),
+        ...elevation.card,
+      },
+      ratingTitle: {
+        ...withResponsiveFont(getTypographyStyle("headingM"), responsiveFont),
+        color: colors.ink,
+        textAlign: "center",
+      },
+      ratingActions: {
+        flexDirection: "row",
+        alignSelf: "stretch",
+        gap: spacing.exact(12),
+      },
+      ratingButton: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.exact(8),
+        backgroundColor: "#F2F2F7",
+        borderRadius: radius.pill,
+        paddingVertical: spacing.exact(16),
+      },
+      ratingButtonLabel: {
+        ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
+        color: "#8E8E93",
+      },
+      finalHeader: {
+        gap: spacing.exact(2),
+      },
+      finalEyebrow: {
+        ...withResponsiveFont(getTypographyStyle("labelXS"), responsiveFont),
+        color: theme.accents.green.ink,
+        letterSpacing: 0.8,
+        textTransform: "uppercase",
+      },
+      finalTitleRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+      },
+      finalTitle: {
+        ...withResponsiveFont(getTypographyStyle("headingL"), responsiveFont),
+        color: colors.ink,
+        flexShrink: 1,
+      },
+      finalBadge: {
+        backgroundColor: theme.accents.green.soft,
+        borderRadius: radius.pill,
+        paddingHorizontal: spacing.exact(10),
+        paddingVertical: spacing.exact(4),
+      },
+      finalBadgeLabel: {
+        ...withResponsiveFont(getTypographyStyle("labelXS"), responsiveFont),
+        color: theme.accents.green.ink,
+      },
+      finalButton: {
+        alignItems: "center",
+        paddingVertical: spacing.exact(8),
+      },
+      finalDisc: {
+        width: responsiveFont(132),
+        height: responsiveFont(132),
+        borderRadius: radius.pill,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#E7F6EE",
+        ...elevation.card,
+      },
+      finalCrown: {
+        position: "absolute",
+        top: responsiveFont(10),
+        right: responsiveFont(10),
+        width: responsiveFont(22),
+        height: responsiveFont(22),
+        borderRadius: radius.pill,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#FFF6E4",
+      },
+    })
+  );
 }

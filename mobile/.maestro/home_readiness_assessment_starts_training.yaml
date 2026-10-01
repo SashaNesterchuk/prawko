@@ -1,5 +1,5 @@
-# Feature: Home readiness assessment
-# Scenario: Empty readiness CTA starts untimed initial diagnostic (not exam)
+# Feature: Learn readiness assessment
+# Scenario: Empty readiness CTA on Learn starts untimed initial diagnostic (not exam)
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -9,19 +9,21 @@ tags:
 - runFlow:
     file: subflows/launch_onboarded_destination.yaml
     env:
-      DESTINATION: home
-      TARGET_ID: screen-home
+      DESTINATION: learn
+      TARGET_ID: screen-learn
 
 - assertVisible:
-    id: "home-readiness-index"
+    id: "learn-readiness-index"
 - assertNotVisible:
-    id: "home-readiness-index-week-change"
+    id: "learn-readiness-index-week-change"
 # The card must resolve from the persisted snapshot, never stay a skeleton.
 - assertNotVisible:
-    id: "home-readiness-index-loading"
+    id: "learn-readiness-index-loading"
+- assertNotVisible:
+    id: "home-readiness-index"
 
 - tapOn:
-    id: "home-readiness-index"
+    id: "learn-readiness-index"
 
 - extendedWaitUntil:
     visible:

@@ -47,6 +47,9 @@ import {
   ANALYTICS_EVENTS,
   getAnalyticsErrorCode,
 } from "../src/analytics/catalog";
+import { trackPremiumGateOpen } from "../src/features/monetization/v2/analytics";
+import { openPaywall } from "../src/features/monetization/v2/paywall";
+import { useMonetizationV2Active } from "../src/features/monetization/v2/store";
 import { useAnalytics } from "../src/providers/AnalyticsProvider";
 
 type FeedbackState =
@@ -64,6 +67,7 @@ export default function OfflineModeScreen() {
   const { responsiveFont } = useResponsiveFonts();
   const isFocused = useIsFocused();
   const hasPlusAccess = useHasPlusAccess();
+  const monetizationV2 = useMonetizationV2Active();
   const iconSize = responsiveFont(18);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const questionCatalogResolved = useQuestionCatalogResolved();
@@ -85,9 +89,15 @@ export default function OfflineModeScreen() {
       track(ANALYTICS_EVENTS.offlineAccessBlocked.key, {
         source: "offline_mode",
       });
+      if (monetizationV2) {
+        trackPremiumGateOpen(track, { source: "offline_mode" });
+        openPaywall({ replace: true, source: "offline_mode" });
+        return;
+      }
+
       router.replace("/paywall");
     }
-  }, [hasPlusAccess, track]);
+  }, [hasPlusAccess, monetizationV2, track]);
 
   const refreshSnapshot = useCallback(async () => {
     // Paint metadata first — never block the screen on catalog hashing.

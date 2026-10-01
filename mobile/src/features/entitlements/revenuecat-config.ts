@@ -44,6 +44,7 @@ export const REVENUECAT_PACKAGE_ALIASES: Record<
   lifetime: [
     "lifetime",
     "com.prawko.lifetime",
+    "prawko_premium_lifetime",
     "$rc_lifetime",
     "LIFETIME",
   ],

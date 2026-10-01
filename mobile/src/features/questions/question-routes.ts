@@ -19,7 +19,10 @@ export function buildQuestionRouteParams(input: {
   sessionKey?: string;
   studyPlanTaskId?: string | null;
   timeLimitSeconds?: number | null;
+  title?: string | null;
   topic?: LearningTopicId;
+  topics?: readonly string[] | null;
+  roadmapStepId?: string | null;
 }) {
   const params: Record<string, string> = {
     mode: input.mode,
@@ -44,6 +47,20 @@ export function buildQuestionRouteParams(input: {
 
   if (isUuidString(input.studyPlanTaskId)) {
     params.studyPlanTaskId = input.studyPlanTaskId;
+  }
+
+  const title = input.title?.trim();
+  if (title) {
+    params.title = title;
+  }
+
+  const roadmapStepId = input.roadmapStepId?.trim();
+  if (roadmapStepId) {
+    params.roadmapStepId = roadmapStepId;
+  }
+
+  if (input.topics?.length) {
+    params.topics = input.topics.join(",");
   }
 
   return input.topic

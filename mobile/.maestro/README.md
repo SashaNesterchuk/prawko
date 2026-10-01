@@ -20,6 +20,8 @@ From `mobile/`:
 pnpm test:e2e
 # or one flow:
 pnpm test:e2e -- .maestro/onboarding_completes_and_lands_on_home.yaml
+# 20-minute free-user wander (excluded from the default suite):
+pnpm test:e2e:explore
 # interactive recorder / inspector:
 pnpm test:e2e:studio
 ```
@@ -38,7 +40,7 @@ pnpm test:e2e:studio
 | `diagnostic_result_work_on_mistakes.yaml` | Finished first diagnostic → Work on mistakes opens the mistakes monitor |
 | `home_opens_trainer_modes.yaml` | Home → Trainer tile, unique learned coverage card |
 | `home_blitz_opens_duration_dialog.yaml` | Home → Quick session → duration picker → timed blitz training |
-| `home_readiness_assessment_starts_training.yaml` | Empty readiness CTA (no period-change badge, never stuck on the loading skeleton) → untimed Quick check (not exam / Training) |
+| `home_readiness_assessment_starts_training.yaml` | Learn empty readiness CTA (not on Today; no period-change badge, never stuck on the loading skeleton) → untimed Quick check (not exam / Training) |
 | `home_traps_opens_count_dialog.yaml` | Home → Traps tile → count picker → training |
 | `home_exam_starts_session.yaml` | Home → Exam tile → official 32-question simulator (no count picker) |
 | `home_exam_date_unset_opens_calendar.yaml` | Skip exam date → Home exam-date card → calendar today → confirm keeps the card and Profile shows the date |
@@ -62,6 +64,13 @@ pnpm test:e2e:studio
 | `learn_mistakes_opens_session.yaml` | Learn → Fix mistakes → mistakes monitor empty state (hero + traps/SRS tiles) |
 | `learn_srs_opens_session.yaml` | Learn → Smart reviews → empty state (hero + traps/mistakes tiles) |
 | `learn_traps_opens_count_dialog.yaml` | Learn → Trap questions → count picker → training |
+| `monetization_v2_learn_premium_gates.yaml` | V2 free Learn: Smart reviews, Trap questions, and topics after the free slice open the paywall; the first topic still opens trainer modes |
+| `roadmap_later_step_opens_without_previous.yaml` | Home: the next free roadmap lesson opens without finishing the previous one |
+| `roadmap_exam_simulator_starts_session.yaml` | Plus Home: the final Exam simulator step starts the official 32-question exam |
+| `roadmap_plus_shows_rating.yaml` | Plus Home: bottom card asks for a rating instead of the unlock offer |
+| `monetization_v2_roadmap_premium_step.yaml` | V2 free Home: a premium roadmap lesson opens the paywall |
+| `monetization_v2_roadmap_plus_opens_lesson.yaml` | V2 Premium: the same roadmap lesson opens training |
+| `monetization_v2_statistics_topic_opens_paywall.yaml` | V2 free Statistics: a topic outside the free slice opens the paywall |
 | `learn_topic_mistakes_mode_available.yaml` | Learn → topic → category-scoped Fix mistakes mode tile |
 | `practice_exam_starts_session.yaml` | Practice screen → exam card → exam session |
 | `profile_offline_mode_screen_opens.yaml` | Profile → Offline mode screen (Plus) |
@@ -71,9 +80,15 @@ pnpm test:e2e:studio
 | `profile_category_can_switch.yaml` | Profile → Category screen → select A (not only B) |
 | `profile_offline_without_plus_opens_paywall.yaml` | Profile → Offline mode row → paywall (free) |
 | `paywall_activate_stays_on_paywall.yaml` | Guest Activate on paywall stays on paywall (never App access) |
-| `premium_after_ad_shows_teaser.yaml` | After the 1st / 3rd / 5th dismissed ad (any placement) the Premium teaser is shown; CTA opens the existing paywall |
+| `premium_after_ad_shows_teaser.yaml` | A dismissed ad does not open the premium bottom sheet or paywall |
 | `premium_training_result_hides_teaser.yaml` | Finished training result does not show the Premium teaser or paywall |
 | `premium_exam_result_opens_paywall.yaml` | Completed exam renders the result and then opens paywall directly |
+| `monetization_v2_profile_opens_paywall.yaml` | V2 free profile banner opens the existing paywall |
+| `monetization_v2_second_exam_opens_unlock_sheet.yaml` | V2 second exam opens the paywall directly, not the rewarded unlock sheet |
+| `monetization_v2_plus_exam_starts.yaml` | V2 Premium starts an exam with no unlock sheet |
+| `monetization_v2_training_limit_opens_paywall.yaml` | V2 training with the free question quota used opens the paywall |
+| `monetization_v2_explanation_locks.yaml` | First answer hides the explanation and opens the paywall |
+| `explore/blogger_session.yaml` | V2 free user wanders Home, training, a short exam, signs, profile and paywall for 20 minutes. Tag `explore`, excluded from `pnpm test:e2e`. Run `pnpm test:e2e:explore` |
 | `profile_offline_missing_pack_can_download.yaml` | Offline mode → download missing pack (e2e) |
 | `profile_offline_incomplete_pack_shows_resume.yaml` | Incomplete pack shows resume + remove |
 | `profile_offline_downloading_can_be_stopped.yaml` | Downloading pack can be stopped → incomplete |
@@ -125,7 +140,7 @@ Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `stati
 3. Use `subflows/launch_onboarded_destination.yaml` for any scenario that does not need to re-test onboarding itself.
 4. Pass `DESTINATION` / `TARGET_ID` through `runFlow.env` so each new flow lands on the screen it cares about.
 5. Override `LOCALE`, `CATEGORY`, `DAYS_UNTIL_EXAM`, `EXAM_COUNTRY` (`PL` / `CZ`), `SIGN_CATEGORY_ID`, and `TOPIC_ID` only when the scenario needs them.
-6. Use `PLUS_ACCESS`, `ENABLE_ADS` (`true` only on freeze-regression flows), `FIRST_START` (`true` for an empty first-start Home; the Home spotlight call site is currently commented out), `HOME_DAILY` (`done` / `in_progress` to seed today’s 10-question set), `HOME_CONTEXTUAL` (`mistakes` / `completion` for the Home retention card), `QUESTION_SCENARIO` (`topic-progress`), `REACHABILITY`, `OFFLINE_PACK_STATUS` (`missing` / `ready` / `incomplete` / `downloading`), `OFFLINE_PACK_CATEGORY`, `EXAM_SESSION_STATUS`, `EXAM_SESSION_CATEGORY`, `EXAM_START_ORDER`, `TRAINING_COMPLETED_LIFETIME`, and `PREMIUM_TEASER_MOMENT` (`after_ad` / `app_open` to seed the Premium teaser without waiting for a native interstitial) for deterministic E2E-only state overrides. Default onboarded bootstrap skips the first-start spotlight.
+6. Use `PLUS_ACCESS`, `ENABLE_ADS` (`true` only on freeze-regression flows), `FIRST_START` (`true` for an empty first-start Home; the Home spotlight call site is currently commented out), `HOME_DAILY` (`done` / `in_progress` to seed today’s 10-question set), `HOME_CONTEXTUAL` (`mistakes` / `completion` for the Home retention card), `QUESTION_SCENARIO` (`topic-progress`), `REACHABILITY`, `OFFLINE_PACK_STATUS` (`missing` / `ready` / `incomplete` / `downloading`), `OFFLINE_PACK_CATEGORY`, `EXAM_SESSION_STATUS`, `EXAM_SESSION_CATEGORY`, `EXAM_START_ORDER`, `TRAINING_COMPLETED_LIFETIME`, `PREMIUM_TEASER_MOMENT` (`after_ad` / `app_open` to seed the Premium teaser without waiting for a native interstitial), and `MONETIZATION_V2` (`true` opts into free limits; default `false` keeps the current ads/paywall model). With V2: `FREE_EXAM_USED`, `FREE_QUESTIONS_EXHAUSTED`, `EXPLANATIONS_EXHAUSTED`. Default onboarded bootstrap skips the first-start spotlight.
 7. Reuse `subflows/start_default_question_count.yaml` anywhere a trainer or signs picker opens before practice starts.
 8. Practice answers can use generic selectors like `question-choice-index-0` and `sign-test-option-index-0`, so flows do not depend on catalog data.
 9. Keep `subflows/complete_onboarding.yaml` only for fresh-install onboarding coverage.

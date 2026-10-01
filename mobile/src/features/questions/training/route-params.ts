@@ -1,13 +1,19 @@
 import { useMemo } from "react";
 import { useLocalSearchParams } from "expo-router";
 
-import type { LearningTopicId, QuestionSessionMode } from "@prawko/config";
+import {
+  isQuestionTopicId,
+  type LearningTopicId,
+  type QuestionSessionMode,
+  type QuestionTopicId,
+} from "@prawko/config";
 
 import {
   createQuestionSessionKey,
   isQuestionSessionMode,
 } from "../question-engine";
 import { isLearningTopicId } from "../../question-topics/catalog";
+import { isRoadmapStepId } from "../../home/roadmap-progress";
 import { isUuidString } from "../question-routes";
 import { useAppShellStore } from "../../../state/app-shell";
 
@@ -36,7 +42,10 @@ export type QuestionRouteParams = {
   sessionKey: string;
   studyPlanTaskId?: string;
   timeLimitSeconds?: number;
+  title?: string;
   topic?: LearningTopicId;
+  topics?: QuestionTopicId[];
+  roadmapStepId?: string;
 };
 
 export function useQuestionRouteParams(): QuestionRouteParams {
@@ -47,7 +56,10 @@ export function useQuestionRouteParams(): QuestionRouteParams {
     session?: string | string[];
     studyPlanTaskId?: string | string[];
     timeLimitSeconds?: string | string[];
+    title?: string | string[];
     topic?: string | string[];
+    topics?: string | string[];
+    roadmapStepId?: string | string[];
   }>();
 
   const rawMode = getSingleParam(params.mode);
@@ -62,6 +74,25 @@ export function useQuestionRouteParams(): QuestionRouteParams {
   const studyPlanTaskId = isUuidString(rawStudyPlanTaskId)
     ? rawStudyPlanTaskId
     : undefined;
+  const rawTitle = getSingleParam(params.title)?.trim();
+  const title = rawTitle ? rawTitle : undefined;
+  const rawRoadmapStepId = getSingleParam(params.roadmapStepId);
+  const roadmapStepId = isRoadmapStepId(rawRoadmapStepId)
+    ? rawRoadmapStepId
+    : undefined;
+  const rawTopics = getSingleParam(params.topics);
+  const topics = useMemo(() => {
+    if (!rawTopics) {
+      return undefined;
+    }
+
+    const parsed = rawTopics
+      .split(",")
+      .map((value) => value.trim())
+      .filter(isQuestionTopicId);
+
+    return parsed.length > 0 ? parsed : undefined;
+  }, [rawTopics]);
   const topic = rawTopic && isLearningTopicId(rawTopic) ? rawTopic : undefined;
   const sessionKey = useMemo(
     () =>
@@ -82,6 +113,9 @@ export function useQuestionRouteParams(): QuestionRouteParams {
     sessionKey,
     studyPlanTaskId,
     timeLimitSeconds,
+    title,
+    roadmapStepId,
     topic,
+    topics,
   };
 }

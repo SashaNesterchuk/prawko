@@ -198,9 +198,28 @@ export const FEATURE_FLAGS = {
   enableSchoolCodes: true,
   enableAiQuestionChat: true,
   enableExamSimulator: true,
-  enableAds: true,
+  /**
+   * Kill switch for every ad placement (interstitial and rewarded).
+   * Ad code stays; nothing is requested or shown while this is false.
+   */
+  enableAds: false,
   enablePlusPurchase: true,
   devPlusAccess: false,
+  /**
+   * Kill switch for Monetization V2. Off restores Free + forced ads + Remove Ads
+   * for every install. On applies to every install, new and existing.
+   */
+  monetizationV2: true,
+} as const;
+
+/** Single source of truth for Monetization V2 free limits. */
+export const MONETIZATION_V2 = {
+  freeUniqueQuestions: 50,
+  freeExplanations: 5,
+  freeExams: 1,
+  rewardedExamDailyLimit: 1,
+  rewardedExamLifetimeLimit: 3,
+  wrongAnswersPreviewQuestions: 5,
 } as const;
 
 export const AD_POLICY = {

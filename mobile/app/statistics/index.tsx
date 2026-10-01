@@ -26,7 +26,12 @@ import {
 import { SignsSummaryCard } from "../../src/components/shell/SignsSummaryCard";
 import { StatisticsActivityCard } from "../../src/components/shell/StatisticsActivityCard";
 import { StatisticsTopicProgressRow } from "../../src/components/shell/StatisticsTopicProgressRow";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
+import { openTrackedPaywall } from "../../src/features/monetization/v2/analytics";
+import { openPaywall } from "../../src/features/monetization/v2/paywall";
+import { useMonetizationV2Active } from "../../src/features/monetization/v2/store";
+import { getTopicLearnAccess } from "../../src/features/home/roadmap";
 import { fetchRecentExamSessions } from "../../src/features/exam/supabase-exam";
 import type { RemoteExamSession } from "../../src/features/exam/types";
 import {
@@ -69,7 +74,9 @@ import {
   useResponsiveSpacing,
   useResponsiveStyles,
 } from "../../src/portable-ui";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useTheme } from "../../src/providers/ThemeProvider";
+import { useHasPlusAccess } from "../../src/state/entitlements";
 import {
   fetchRemoteHomeProgress,
   getWarsawIsoDate,
@@ -132,6 +139,9 @@ function getBestSessionAccuracy(
 
 export default function StatisticsScreen() {
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
+  const hasPlusAccess = useHasPlusAccess();
+  const monetizationV2 = useMonetizationV2Active();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -140,6 +150,7 @@ export default function StatisticsScreen() {
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const currentStudyPlanRemoteId = useAppShellStore(
     (state) => state.currentStudyPlanRemoteId
@@ -292,6 +303,7 @@ export default function StatisticsScreen() {
   const styles = useStyles({ ringColor, safeBottom });
   const smallIconSize = responsiveFont(16);
   const weekBadgeIconSize = responsiveFont(12);
+  const premiumIconSize = responsiveFont(12);
   const ringSize = spacing.exact(160);
   const ringStroke = spacing.exact(10);
 
@@ -375,21 +387,55 @@ export default function StatisticsScreen() {
     [questionCatalogVersion, questionUserState]
   );
 
-  const openTopicTraining = (topicId: LearningTopicId) =>
+  const openTopicTraining = (topicId: LearningTopicId) => {
+    const access = getTopicLearnAccess(examCountry, topicId);
+
+    if (monetizationV2 && !hasPlusAccess && access.kind === "premium") {
+      openTrackedPaywall(track, {
+        postPurchaseAction: {
+          type: "START_TRAINING",
+          mode: "learning",
+          topic: topicId,
+        },
+        properties: { topic_id: topicId },
+        source: "roadmap",
+        surface: "statistics_topic",
+      });
+      return;
+    }
+
     router.navigate({
       pathname: "/question",
       params: buildQuestionRouteParams({
         mode: "learning",
         topic: topicId,
+        questionLimit:
+          monetizationV2 && !hasPlusAccess && access.kind === "partial"
+            ? access.freeQuestionLimit
+            : undefined,
       }),
     });
+  };
 
-  const openMistakes = () => router.navigate("/mistakes");
-  const openReview = () =>
+  const openMistakes = () => {
+    if (monetizationV2 && !hasPlusAccess) {
+      openTrackedPaywall(track, { source: "wrong_answers" });
+      return;
+    }
+
+    router.navigate("/mistakes");
+  };
+  const openReview = () => {
+    if (monetizationV2 && !hasPlusAccess) {
+      openTrackedPaywall(track, { source: "smart_reviews" });
+      return;
+    }
+
     openMode({
       mode: "review_due",
       title: t("statistics.smartReviewTitle"),
     });
+  };
   const openExamDate = () => setExamDatePickerVisible(true);
 
   const handleConfirmExamDate = async (date: Date) => {
@@ -675,9 +721,46 @@ export default function StatisticsScreen() {
                   <>
                     <View style={styles.divider} />
                     <View style={styles.weakSection}>
-                      <CText style={styles.weakTitle}>
-                        {t("statistics.weakTopicsTitle")}
-                      </CText>
+                      <View style={styles.weakTitleRow}>
+                        <CText style={styles.weakTitle}>
+                          {t("statistics.weakTopicsTitle")}
+                        </CText>
+                        {monetizationV2 && !hasPlusAccess ? (
+                          <View style={styles.premiumBadge}>
+                            <Icon
+                              color={colors.onAccent}
+                              name="premiumSmall"
+                              size={premiumIconSize}
+                            />
+                          </View>
+                        ) : null}
+                      </View>
+                      {monetizationV2 && !hasPlusAccess ? (
+                        <Pressable
+                          accessibilityRole="button"
+                          onPress={() => {
+                            track(ANALYTICS_EVENTS.premiumGateViewed.key, {
+                              source: "weak_spots",
+                            });
+                            track(ANALYTICS_EVENTS.premiumGateAction.key, {
+                              action: "open_paywall",
+                              source: "weak_spots",
+                            });
+                            openPaywall({ source: "weak_spots" });
+                          }}
+                          testID="statistics-weak-spots-locked"
+                        >
+                          <CText style={styles.weakSubtitle}>
+                            {t("monetizationV2.weakSpotsBody", {
+                              count: weakTopics.length,
+                            })}
+                          </CText>
+                          <CText style={styles.weakTitle}>
+                            {t("monetizationV2.weakSpotsCta")}
+                          </CText>
+                        </Pressable>
+                      ) : (
+                        <>
                       <CText style={styles.weakSubtitle}>
                         {t("statistics.weakTopicsSubtitle")}
                       </CText>
@@ -701,6 +784,8 @@ export default function StatisticsScreen() {
                           </Pressable>
                         ))}
                       </View>
+                        </>
+                      )}
                     </View>
                   </>
                 ) : null}
@@ -1246,6 +1331,19 @@ function useStyles({
         paddingHorizontal: spacing.exact(16),
         paddingVertical: spacing.exact(16),
         gap: spacing.exact(4),
+      },
+      weakTitleRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.exact(8),
+      },
+      premiumBadge: {
+        width: spacing.exact(20),
+        height: spacing.exact(20),
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: radius.pill,
+        backgroundColor: accents.green.fill,
       },
       weakTitle: {
         fontSize: responsiveFont(16),

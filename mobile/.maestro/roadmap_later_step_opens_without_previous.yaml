@@ -1,0 +1,24 @@
+# Feature: Roadmap
+# Scenario: A later free lesson opens even when the previous one is unfinished
+appId: com.mindjar.prawko
+tags:
+  - roadmap
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-home
+
+- tapOn:
+    id: "roadmap-step-0-1"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 20000
+
+- assertNotVisible:
+    id: "screen-paywall"

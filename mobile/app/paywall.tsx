@@ -64,6 +64,11 @@ import {
   getMonetizationContextProperties,
   getMonetizationOfferSnapshot,
 } from "../src/features/monetization/monetization-analytics";
+import {
+  decodePostPurchaseAction,
+  runPostPurchaseAction,
+} from "../src/features/monetization/v2/paywall";
+import { useMonetizationV2Active } from "../src/features/monetization/v2/store";
 
 export default function PaywallPage() {
   const { t } = useTranslation();
@@ -82,8 +87,11 @@ export default function PaywallPage() {
     questionId?: string | string[];
     questionLimit?: string | string[];
     returnTo?: string | string[];
+    roadmapStepId?: string | string[];
+    surface?: string | string[];
     selectedAnswer?: string | string[];
     source?: string | string[];
+    postPurchase?: string | string[];
     studyPlanTaskId?: string | string[];
   }>();
   const appUserId = useAppUserId();
@@ -93,6 +101,7 @@ export default function PaywallPage() {
   const revenueCatOfferings = useRevenueCatOfferings();
   const revenueCatStatus = useRevenueCatStatus();
   const hasPlusAccess = useHasPlusAccess();
+  const monetizationV2 = useMonetizationV2Active();
   const hydrateRevenueCatSnapshot = useEntitlementStore(
     (state) => state.hydrateRevenueCatSnapshot
   );
@@ -123,6 +132,8 @@ export default function PaywallPage() {
   const paywallMoment = getSingleParam(params.moment) ?? "profile";
   const paywallPresentation =
     getSingleParam(params.presentation) ?? "modal";
+  const paywallSurface = getSingleParam(params.surface);
+  const paywallRoadmapStepId = getSingleParam(params.roadmapStepId);
   const paywallSource =
     requestedSource ??
     (returnTo === "exam"
@@ -130,8 +141,23 @@ export default function PaywallPage() {
       : highlightedFeature === "ai_question_chat" || returnTo === "ai-chat"
         ? "ai_chat"
         : "profile");
+  const paywallEntry = {
+    source: paywallSource,
+    ...(paywallSurface ? { surface: paywallSurface } : {}),
+    ...(paywallRoadmapStepId
+      ? { roadmap_step_id: paywallRoadmapStepId }
+      : {}),
+  };
+
+  const postPurchaseAction = decodePostPurchaseAction(
+    getSingleParam(params.postPurchase)
+  );
 
   const continueAfterUnlock = () => {
+    if (runPostPurchaseAction(postPurchaseAction)) {
+      return;
+    }
+
     if (returnTo === "ai-chat" && returnQuestionId) {
       router.replace({
         pathname: "/modals/ai-chat",
@@ -168,10 +194,19 @@ export default function PaywallPage() {
   const purchaseEndsAt = purchaseAccess?.latestExpirationDate
     ? formatPlanDate(purchaseAccess.latestExpirationDate.slice(0, 10))
     : null;
-  const recommendedPackage = useMemo(
-    () => pickRecommendedPackage(revenueCatOfferings),
-    [revenueCatOfferings]
-  );
+  const recommendedPackage = useMemo(() => {
+    if (!monetizationV2) {
+      return pickRecommendedPackage(revenueCatOfferings);
+    }
+
+    return (
+      revenueCatOfferings.find(
+        (item) => matchRevenueCatProductId(item) === "lifetime"
+      ) ??
+      revenueCatOfferings.find((item) => item.packageType === "LIFETIME") ??
+      pickRecommendedPackage(revenueCatOfferings)
+    );
+  }, [monetizationV2, revenueCatOfferings]);
   const didTrackViewRef = useRef(false);
   const paywallShownAtRef = useRef<number | null>(null);
   const dismissMethodRef = useRef("swipe");
@@ -179,8 +214,12 @@ export default function PaywallPage() {
   const purchaseSucceededRef = useRef(false);
   const paywallMomentRef = useRef(paywallMoment);
   const paywallSourceRef = useRef(paywallSource);
+  const paywallSurfaceRef = useRef(paywallSurface);
+  const paywallRoadmapStepIdRef = useRef(paywallRoadmapStepId);
   paywallMomentRef.current = paywallMoment;
   paywallSourceRef.current = paywallSource;
+  paywallSurfaceRef.current = paywallSurface;
+  paywallRoadmapStepIdRef.current = paywallRoadmapStepId;
   const trackRef = useRef(track);
   trackRef.current = track;
   const trackPaywallDismissRef = useRef<(method: string) => void>(
@@ -201,6 +240,12 @@ export default function PaywallPage() {
       dismiss_method: method,
       moment: paywallMomentRef.current,
       source: paywallSourceRef.current,
+      ...(paywallSurfaceRef.current
+        ? { surface: paywallSurfaceRef.current }
+        : {}),
+      ...(paywallRoadmapStepIdRef.current
+        ? { roadmap_step_id: paywallRoadmapStepIdRef.current }
+        : {}),
       time_visible_ms: Math.max(0, Date.now() - paywallShownAtRef.current),
     });
   };
@@ -220,14 +265,7 @@ export default function PaywallPage() {
   const comparisonRows = useMemo<PaywallComparisonRow[]>(
     () => {
       const included = { kind: "check" as const };
-      const examLimit = {
-        kind: "label" as const,
-        text: t("paywall.freeExamLimit"),
-      };
-      const dailyLimit = {
-        kind: "label" as const,
-        text: t("paywall.freeDailyLimit"),
-      };
+      const locked = { kind: "cross" as const };
 
       return [
         {
@@ -239,35 +277,35 @@ export default function PaywallPage() {
         {
           key: "exam",
           title: t("paywall.rowExam"),
-          free: examLimit,
+          free: locked,
           premium: included,
         },
         {
           key: "mistakes",
           title: t("paywall.rowMistakes"),
           subtitle: t("paywall.rowMistakesSub"),
-          free: dailyLimit,
+          free: locked,
           premium: included,
         },
         {
           key: "traps",
           title: t("paywall.rowTraps"),
           subtitle: t("paywall.rowTrapsSub"),
-          free: dailyLimit,
+          free: locked,
           premium: included,
         },
         {
           key: "srs",
           title: t("paywall.rowSrs"),
           subtitle: t("paywall.rowSrsSub"),
-          free: dailyLimit,
+          free: locked,
           premium: included,
         },
         {
           key: "offline",
           title: t("paywall.rowOffline"),
           subtitle: t("paywall.rowOfflineSub"),
-          free: { kind: "cross" },
+          free: locked,
           premium: included,
         },
       ];
@@ -297,7 +335,7 @@ export default function PaywallPage() {
       message: `${input.step}:${input.why}`,
       metadata: getRevenueCatDiagnostic({
         extra: {
-          source: paywallSource,
+          ...paywallEntry,
           ...input.extra,
         },
         kind: input.kind,
@@ -384,7 +422,10 @@ export default function PaywallPage() {
       offers_count: revenueCatOfferings.length,
       plus_purchase_enabled: FEATURE_FLAGS.enablePlusPurchase,
       revenuecat_configured: sdkConfigured,
-      source: paywallSource,
+      ...paywallEntry,
+      product_id: recommendedPackage?.productIdentifier ?? null,
+      price: recommendedPackage?.price ?? null,
+      currency: recommendedPackage?.currencyCode ?? null,
       moment: paywallMoment,
       presentation: paywallPresentation,
     });
@@ -394,7 +435,9 @@ export default function PaywallPage() {
     highlightedFeature,
     paywallMoment,
     paywallPresentation,
+    paywallRoadmapStepId,
     paywallSource,
+    paywallSurface,
     purchaseAccess,
     revenueCatHydrationError,
     revenueCatOfferings.length,
@@ -487,7 +530,7 @@ export default function PaywallPage() {
         product_id: targetPackage.productIdentifier,
         product_identifier: targetPackage.productIdentifier,
         moment: paywallMoment,
-        source: paywallSource,
+        ...paywallEntry,
         ui: "package",
       });
 
@@ -522,7 +565,7 @@ export default function PaywallPage() {
         price: targetPackage.price,
         product_id: targetPackage.productIdentifier,
         product_identifier: targetPackage.productIdentifier,
-        source: paywallSource,
+        ...paywallEntry,
         transaction_id: purchaseResult.transactionId,
         ui: "package",
       });
@@ -544,7 +587,7 @@ export default function PaywallPage() {
           price: selectedPackage?.price ?? null,
           product_id: selectedPackage?.productIdentifier ?? null,
           product_identifier: selectedPackage?.productIdentifier ?? null,
-          source: paywallSource,
+          ...paywallEntry,
         });
         setPurchaseFeedback({
           kind: "error",
@@ -586,7 +629,7 @@ export default function PaywallPage() {
         product_id: selectedPackage?.productIdentifier ?? null,
         product_identifier: selectedPackage?.productIdentifier ?? null,
         price: selectedPackage?.price ?? null,
-        source: paywallSource,
+        ...paywallEntry,
         [ANALYTICS_PROPERTIES.step]: "purchase_package",
         [ANALYTICS_PROPERTIES.why]: why,
       });
@@ -615,7 +658,7 @@ export default function PaywallPage() {
     });
     track(ANALYTICS_EVENTS.restoreStarted.key, {
       moment: paywallMoment,
-      source: paywallSource,
+      ...paywallEntry,
     });
 
     try {
@@ -628,7 +671,7 @@ export default function PaywallPage() {
       track(ANALYTICS_EVENTS.restoreSucceeded.key, {
         entitlement_active: entitlementActive,
         moment: paywallMoment,
-        source: paywallSource,
+        ...paywallEntry,
       });
 
       if (
@@ -680,7 +723,7 @@ export default function PaywallPage() {
       track(ANALYTICS_EVENTS.restoreFailed.key, {
         error_code: getAnalyticsErrorCode(error),
         moment: paywallMoment,
-        source: paywallSource,
+        ...paywallEntry,
       });
       showPurchaseError(message);
     } finally {
@@ -829,14 +872,6 @@ export default function PaywallPage() {
               premiumLabel={t("paywall.columnPremium")}
               rows={comparisonRows}
             />
-
-            {!hasPlusAccess ? (
-              <View style={styles.noAdsBadge}>
-                <CText style={styles.noAdsBadgeText}>
-                  {t("paywall.noAdsBadge")}
-                </CText>
-              </View>
-            ) : null}
           </ScrollView>
 
           <View
@@ -1027,19 +1062,6 @@ function useStyles() {
       fontSize: responsiveFont(14),
       lineHeight: responsiveFont(20),
       color: colors.onAccentMuted,
-    },
-    noAdsBadge: {
-      alignSelf: "center",
-      paddingHorizontal: spacing.exact(12),
-      paddingVertical: spacing.exact(4),
-      borderRadius: radius.pill,
-      backgroundColor: accents.green.ink,
-    },
-    noAdsBadgeText: {
-      fontSize: responsiveFont(16),
-      lineHeight: responsiveFont(24),
-      textAlign: "center",
-      color: colors.onAccent,
     },
     footer: {
       marginTop: "auto",

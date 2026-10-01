@@ -1,4 +1,6 @@
 import { FEATURE_FLAGS } from "@prawko/config";
+
+import { isMonetizationV2Active } from "../monetization/v2/store";
 import { usePathname } from "expo-router";
 import { useCallback } from "react";
 
@@ -256,6 +258,16 @@ export async function showInterstitialIfAllowed(
 
   if (!FEATURE_FLAGS.enableAds) {
     trackAdSkipped(input, "disabled", "policy", false);
+    return false;
+  }
+
+  if (
+    isMonetizationV2Active() &&
+    (input.trigger === "after_question_answer" ||
+      input.trigger === "after_practice_session_complete" ||
+      input.trigger === "after_exam_complete")
+  ) {
+    trackAdSkipped(input, "monetization_v2", "policy", false);
     return false;
   }
 

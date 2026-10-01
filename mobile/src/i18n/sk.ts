@@ -1,6 +1,9 @@
 /**
  * Slovak UI copy. Keep in sync with English keys in `resources.ts`.
  */
+import { monetizationV2Sk } from "./monetization-v2-copy";
+import { roadmapCopySk } from "./roadmap-copy";
+
 export const slovakTranslations = {
   common: {
     back: "Späť",
@@ -42,6 +45,7 @@ export const slovakTranslations = {
     tileTrapsTitle: "Chytáky",
     tileTrapsSubtitle: "Často zamieňané",
     readinessTitle: "Index pripravenosti",
+    examReadinessTitle: "Pripravenosť na skúšku",
     readinessRingLabel: "pripravenosť",
     readinessDetails: "Overiť moju úroveň",
     warmupTitle: "Rýchla lekcia",
@@ -1095,7 +1099,6 @@ export const slovakTranslations = {
     rowOffline: "Režim offline",
     rowOfflineSub: "Plný tréning bez internetu",
     freeExamLimit: "1/deň",
-    freeDailyLimit: "20/deň",
     freeReadinessGeneral: "všeobecný",
     lifetimeNote: "Bez predplatného",
     lifetimeAccess: "Doživotný prístup",
@@ -1268,4 +1271,6 @@ export const slovakTranslations = {
     notFoundTitle: "Obrazovka sa nenašla",
     notFoundSubtitle: "Táto cesta nie je súčasťou aktuálnej aplikácie.",
   },
+  monetizationV2: monetizationV2Sk,
+  roadmap: roadmapCopySk,
 } as const;

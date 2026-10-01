@@ -18,6 +18,10 @@ import {
   getTopicProgress,
 } from "../../src/features/questions/question-engine";
 import { useResponsiveStyles } from "../../src/portable-ui";
+import { getTopicLearnAccess } from "../../src/features/home/roadmap";
+import { useShowPremiumMark } from "../../src/features/monetization/v2/store";
+import { openTrackedPaywall } from "../../src/features/monetization/v2/analytics";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
@@ -28,6 +32,9 @@ export default function TopicsScreen() {
   const styles = useStyles({ safeBottom });
   const questionCatalogVersion = useQuestionCatalogVersion();
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
+  const examCountry = useAppShellStore((state) => state.examCountry);
+  const showPremiumMark = useShowPremiumMark();
+  const { track } = useAnalytics();
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
@@ -80,7 +87,12 @@ export default function TopicsScreen() {
             wrong={overallStats.wrong}
           />
 
-          {topicCards.map(({ topicId, progress }, index) => (
+          {topicCards.map(({ topicId, progress }, index) => {
+            const topicAccess = getTopicLearnAccess(examCountry, topicId);
+            const topicIsPremium =
+              showPremiumMark && topicAccess.kind === "premium";
+
+            return (
             <TopicReadinessCard
               key={topicId}
               title={getQuestionTopicTitle(topicId, preferredLocale)}
@@ -89,16 +101,27 @@ export default function TopicsScreen() {
               readiness={progress.progress}
               correct={progress.correct}
               wrong={progress.wrong}
+              premium={topicIsPremium}
               progressTestID={`topics-topic-card-${topicId}`}
               testID={`topics-topic-card-index-${index}`}
-              onPress={() =>
+              onPress={() => {
+                if (topicIsPremium) {
+                  openTrackedPaywall(track, {
+                    properties: { topic_id: topicId },
+                    source: "roadmap",
+                    surface: "topics",
+                  });
+                  return;
+                }
+
                 router.navigate({
                   pathname: "/topic/[topicId]",
                   params: { topicId },
-                })
-              }
+                });
+              }}
             />
-          ))}
+            );
+          })}
         </ScrollView>
       </SafeAreaView>
     </GreenWaveScreen>

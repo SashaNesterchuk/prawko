@@ -1,7 +1,7 @@
 import type { LearningTopicId, QuestionSessionMode } from "@prawko/config";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -30,6 +30,9 @@ import { useTheme } from "../../../providers/ThemeProvider";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import { type GreenWaveAccent } from "../../../theme/green-wave";
+import { useShowPremiumMark } from "../../monetization/v2/store";
+import { openTrackedPaywall } from "../../monetization/v2/analytics";
+import { getTopicLearnAccess } from "../../home/roadmap";
 import { useAppShellStore } from "../../../state/app-shell";
 import { useQuestionCatalogVersion } from "../../../state/question-catalog";
 import { useQuestionProgressStore } from "../../../state/question-progress";
@@ -53,6 +56,8 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
+  const showPremiumMark = useShowPremiumMark();
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const questionCatalogVersion = useQuestionCatalogVersion();
@@ -86,15 +91,25 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     [questionCatalogVersion, questionUserState]
   );
 
+  const topicAccess = topic ? getTopicLearnAccess(examCountry, topic) : null;
+  const freeSliceLimit =
+    showPremiumMark && topicAccess?.kind === "partial"
+      ? topicAccess.freeQuestionLimit
+      : null;
+
   const pendingModeCount = useMemo(() => {
     if (!pendingTile) {
       return 0;
     }
 
-    return getQuestionCountForMode(
-      { currentCategory: preferredCategory, mode: pendingTile.mode, topic },
-      questionUserState,
-      topicQuestionContextProgress
+    return capTopicFreeSlice(
+      pendingTile.mode,
+      getQuestionCountForMode(
+        { currentCategory: preferredCategory, mode: pendingTile.mode, topic },
+        questionUserState,
+        topicQuestionContextProgress
+      ),
+      freeSliceLimit
     );
   }, [
     pendingTile,
@@ -102,6 +117,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     questionUserState,
     topic,
     topicQuestionContextProgress,
+    freeSliceLimit,
   ]);
 
   const screenTitle = topic
@@ -205,22 +221,34 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
   ];
 
   const startMode = (mode: QuestionSessionMode, questionLimit: number | null) => {
+    const cappedLimit = capTopicFreeSlice(mode, questionLimit, freeSliceLimit);
     track(ANALYTICS_EVENTS.trainingModeSelected.key, {
       mode,
-      question_limit: questionLimit,
+      question_limit: cappedLimit,
       topic_id: topic ?? null,
     });
     router.navigate({
       pathname: "/question",
-      params: buildQuestionRouteParams({ mode, topic, questionLimit }),
+      params: buildQuestionRouteParams({ mode, topic, questionLimit: cappedLimit }),
     });
   };
 
   const openCountDialog = (tile: TrainerModeTile) => {
-    const availableCount = getQuestionCountForMode(
-      { currentCategory: preferredCategory, mode: tile.mode, topic },
-      questionUserState,
-      topicQuestionContextProgress
+    if (showPremiumMark && isPremiumTrainerMode(tile.mode)) {
+      openTrackedPaywall(track, {
+        source: premiumTrainerPaywallSource(tile.mode),
+      });
+      return;
+    }
+
+    const availableCount = capTopicFreeSlice(
+      tile.mode,
+      getQuestionCountForMode(
+        { currentCategory: preferredCategory, mode: tile.mode, topic },
+        questionUserState,
+        topicQuestionContextProgress
+      ),
+      freeSliceLimit
     );
     const { shouldShowDialog, defaultCount } =
       resolveQuestionCountDialog(availableCount);
@@ -251,10 +279,31 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
       title: tile.title,
       subtitle: tile.subtitle,
       accent: tile.accent,
+      premium: showPremiumMark && isPremiumTrainerMode(tile.mode),
       style: "faded",
       icon: <TrainerModeIcon accent={tile.accent} name={tile.icon} />,
       onPress: () => openCountDialog(tile),
     }));
+
+  const premiumTopicRedirectedRef = useRef(false);
+
+  useEffect(() => {
+    if (!showPremiumMark || !topic || topicAccess?.kind !== "premium") {
+      return;
+    }
+
+    if (premiumTopicRedirectedRef.current) {
+      return;
+    }
+
+    premiumTopicRedirectedRef.current = true;
+    openTrackedPaywall(track, {
+      properties: { topic_id: topic },
+      replace: true,
+      source: "roadmap",
+      surface: "trainer_modes",
+    });
+  }, [showPremiumMark, topic, topicAccess?.kind, track]);
 
   return (
     <GreenWaveScreen>
@@ -335,6 +384,40 @@ function TrainerModeIcon({
   const { responsiveFont } = useResponsiveFonts();
 
   return <Icon color={accents[accent].fill} name={name} size={responsiveFont(24)} />;
+}
+
+function capTopicFreeSlice(
+  mode: QuestionSessionMode,
+  questionLimit: number | null,
+  freeSliceLimit: number | null
+) {
+  if (freeSliceLimit == null || (mode !== "learning" && mode !== "new_questions")) {
+    return questionLimit;
+  }
+
+  if (questionLimit == null) {
+    return freeSliceLimit;
+  }
+
+  return Math.min(questionLimit, freeSliceLimit);
+}
+
+function isPremiumTrainerMode(mode: QuestionSessionMode) {
+  return mode === "weak_spots" || mode === "wrong_answers" || mode === "high_points";
+}
+
+function premiumTrainerPaywallSource(
+  mode: QuestionSessionMode
+): "trap_questions" | "weak_spots" | "wrong_answers" {
+  if (mode === "wrong_answers") {
+    return "wrong_answers";
+  }
+
+  if (mode === "high_points") {
+    return "trap_questions";
+  }
+
+  return "weak_spots";
 }
 
 function useStyles({ safeBottom }: { safeBottom: number }) {

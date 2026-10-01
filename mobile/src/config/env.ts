@@ -63,6 +63,14 @@ export const mobileEnv = {
     process.env.EXPO_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_UNIT_ID,
     "ca-app-pub-4994877133367352/1525071282",
   ),
+  admobIosRewardedUnitId: envOr(
+    process.env.EXPO_PUBLIC_ADMOB_IOS_REWARDED_UNIT_ID,
+    "",
+  ),
+  admobAndroidRewardedUnitId: envOr(
+    process.env.EXPO_PUBLIC_ADMOB_ANDROID_REWARDED_UNIT_ID,
+    "",
+  ),
   enableMockAuth: parseBooleanEnv(
     process.env.EXPO_PUBLIC_ENABLE_MOCK_AUTH,
     false

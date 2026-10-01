@@ -45,6 +45,10 @@ class CountryPack:
     topic_query_extra: dict[str, str] = field(default_factory=dict)
     min_chars: int = 130
     max_chars: int = 560
+    # Shown to the model so it copies this country's sign codes, not another's.
+    sign_code_examples: str = "A-2, B-29, C-2e"
+    schema_sign_example: str = "A-8"
+    layout_warning: str = "hlavní/vedlejší"
 
 
 CZ_PACK = CountryPack(
@@ -161,17 +165,28 @@ SK_PACK = CountryPack(
         "v situácii „",
         "oficiálneho zadania",
     ),
-    generic_prompt_re=r"(?is)ako sa zachováte|v tejto situácii|z výhľadu",
-    scene_prompt_re=r"(?is)vyobrazen|na obrázku|vo vyobrazení",
+    generic_prompt_re=(
+        r"(?is)táto dopravn\w+ značk|touto dopravnou značkou|touto značkou|"
+        r"tento symbol|táto dodatkov\w+ tabuľk|táto vodorovn\w+|"
+        r"táto kontrolka|svieti táto kontrolka|tento pokyn|"
+        r"v tomto poradí|prejde cez križovatku|prejdú cez križovatku|vojde do križovatky"
+    ),
+    scene_prompt_re=r"(?is)vyobrazen|na obrázku|vo vyobrazení|táto dopravn\w+ značk|tento symbol|v tomto poradí",
     topic_query_extra={
-        "intersections_priority": "prednosť križovatka hlavná vedľajšia kruhový objazd",
-        "signs_signals": "dopravná značka svetelná signalizácia státie voľno",
-        "driving_maneuvers": "predchádzanie odbočovanie otáčanie jazdný pruh",
-        "attention_risks": "ohroziť obmedziť pripájací pruh bezpečná vzdialenosť",
-        "documents_responsibility": "vodičské oprávnenie skupina karta vodiča",
-        "vehicle_equipment": "technická kontrola STK prevádzkové hmoty výrobca",
-        "accidents_first_aid": "prvá pomoc zranenie chrbtica miecha vedomie",
+        "road_traffic_rules": "pravidlá cestnej premávky vodič chodec predchádzanie odbočovanie otáčanie",
+        "road_signs_and_traffic_devices": "dopravná značka svetelná signalizácia dodatková tabuľka",
+        "safe_driving_principles": "bezpečná vzdialenosť ohroziť obmedziť rýchlosť alkohol",
+        "vehicle_construction_and_maintenance": "konštrukcia vozidla údržba brzdy pneumatiky",
+        "vehicle_driving_theory": "jazdné vlastnosti náprava brzdenie motocykel",
+        "intersection_traffic_situations": "križovatka prednosť poradie prejazd kruhový objazd",
+        "priority_and_speed_limits": "prednosť rýchlosť hlavná cesta vedľajšia",
+        "documents_and_transport_time": "vodičský preukaz doklady čas vedenia vozidla",
+        "vehicle_operation_requirements": "technická kontrola prevádzka vozidla osvetlenie",
+        "road_accident_duties": "dopravná nehoda prvá pomoc zranenie povinnosť vodiča",
     },
+    sign_code_examples="202, 110-10, 301",
+    schema_sign_example="202",
+    layout_warning="hlavnú/vedľajšiu",
 )
 
 

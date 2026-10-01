@@ -131,6 +131,14 @@ export type QuestionSessionRequest = {
   /** Playable budget for blitz; omitted for untimed modes. */
   timeLimitSeconds?: number | null;
   topic?: LearningTopicId;
+  /** Learn categories practiced together (a roadmap card that groups topics). */
+  topics?: QuestionTopicId[];
+  /**
+   * When set, unscoped practice may only draw these categories.
+   * Saved questions and the official exam stay outside this filter.
+   */
+  allowedTopicIds?: QuestionTopicId[];
+  roadmapStepId?: string | null;
 };
 
 export type QuestionSession = {

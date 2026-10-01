@@ -1,0 +1,618 @@
+{
+  "purpose": "Снимок роадмапа для менеджеров. Это текущий мок экрана index2, не правила оплаты в проде и не новая таксономия в базе.",
+  "generatedOn": "2026-09-25",
+  "scope": {
+    "licenseCategory": "B",
+    "questionField": "questions_v2.primary_topic_id",
+    "activeQuestionsOnly": true,
+    "questionSets": {
+      "PL": "pl-v2-current",
+      "CZ": "cz-v2-current",
+      "SK": "sk-v2-current"
+    }
+  },
+  "howToRead": {
+    "superCategory": "Карточка на экране. Объединяет одну или несколько текущих учебных категорий.",
+    "sourceTopic": "Категория, которая уже есть в приложении и в базе. Число вопросов точное.",
+    "step": "Кружок внутри карточки. Название собрано по тексту вопросов. В базе такого id нет, поэтому у шага нет своего точного счётчика. Сумма вопросов карточки равна сумме sourceTopics.",
+    "premium": "В макете бесплатна только первая карточка. Остальные карточки и все их шаги помечены короной. Замка на кружке нет. Первый кружок первой карточки нарисован пройденным, это картинка прогресса, не оплата.",
+    "studyMinuteAssumption": "1 вопрос с объяснением ≈ 1 минута. Оценка времени = число вопросов."
+  },
+  "comparison": [
+    {
+      "country": "PL",
+      "bankQuestions": 2142,
+      "freeQuestions": 452,
+      "premiumQuestions": 1690,
+      "freeSharePercent": 21.1,
+      "freeStudyHours": 7.5,
+      "premiumStudyHours": 28.2,
+      "superCategoryCount": 8,
+      "sourceTopicCount": 11,
+      "note": "Бесплатно только знаки. Это самая большая польская категория, но всего пятая часть банка."
+    },
+    {
+      "country": "CZ",
+      "bankQuestions": 1136,
+      "freeQuestions": 279,
+      "premiumQuestions": 857,
+      "freeSharePercent": 24.6,
+      "freeStudyHours": 4.7,
+      "premiumStudyHours": 14.3,
+      "superCategoryCount": 6,
+      "sourceTopicCount": 8,
+      "note": "Бесплатно знаки. Скорость и магистрали в чешском каталоге не отдельные категории, они внутри «Bezpečná jízda»."
+    },
+    {
+      "country": "SK",
+      "bankQuestions": 1066,
+      "freeQuestions": 427,
+      "premiumQuestions": 639,
+      "freeSharePercent": 40.1,
+      "freeStudyHours": 7.1,
+      "premiumStudyHours": 10.7,
+      "superCategoryCount": 7,
+      "sourceTopicCount": 10,
+      "note": "Бесплатно правила движения. Это 40% словацкого банка B, заметно щедрее, чем в PL и CZ."
+    }
+  ],
+  "countries": {
+    "PL": {
+      "superCategories": [
+        {
+          "order": 1,
+          "title": "Znaki i sygnały",
+          "titleRu": "Знаки и сигналы",
+          "premium": false,
+          "questionCount": 452,
+          "estimatedStudyMinutes": 452,
+          "stepCount": 9,
+          "sourceTopics": [
+            {
+              "id": "signs_signals",
+              "title": "Znaki i sygnały drogowe",
+              "titleEn": "Signs & Signals",
+              "questionCount": 452
+            }
+          ],
+          "steps": [
+            "Sygnalizacja świetlna",
+            "Znaki ostrzegawcze",
+            "Skręt w lewo",
+            "Skręt w prawo i zawracanie",
+            "Zatrzymanie przed znakiem",
+            "Linie i krawędź jezdni",
+            "Zakaz wjazdu i nakaz",
+            "Strefy, kolej i pierwszeństwo",
+            "Znak w sytuacji na drodze"
+          ]
+        },
+        {
+          "order": 2,
+          "title": "Skrzyżowania i pierwszeństwo",
+          "titleRu": "Перекрёстки и приоритет",
+          "premium": true,
+          "questionCount": 277,
+          "estimatedStudyMinutes": 277,
+          "stepCount": 6,
+          "sourceTopics": [
+            {
+              "id": "intersections_priority",
+              "title": "Skrzyżowania i pierwszeństwo",
+              "titleEn": "Intersections & Right of Way",
+              "questionCount": 277
+            }
+          ],
+          "steps": [
+            "Skrzyżowanie równorzędne",
+            "Skręt w lewo",
+            "Skręt w prawo i tramwaj",
+            "Jazda na wprost",
+            "Droga z pierwszeństwem",
+            "Wjazd na skrzyżowanie"
+          ]
+        },
+        {
+          "order": 3,
+          "title": "Jazda i manewry",
+          "titleRu": "Движение и манёвры",
+          "premium": true,
+          "questionCount": 417,
+          "estimatedStudyMinutes": 417,
+          "stepCount": 8,
+          "sourceTopics": [
+            {
+              "id": "driving_maneuvers",
+              "title": "Jazda i manewry",
+              "titleEn": "Driving & Maneuvers",
+              "questionCount": 417
+            }
+          ],
+          "steps": [
+            "Wyprzedzanie z prawej",
+            "Wyprzedzanie",
+            "Prawy i lewy pas",
+            "Zmiana pasa",
+            "Skręt i zawracanie",
+            "Zatrzymanie i postój",
+            "Cofanie i włączanie się",
+            "Tor jazdy"
+          ]
+        },
+        {
+          "order": 4,
+          "title": "Prędkość i inni uczestnicy",
+          "titleRu": "Скорость и другие участники",
+          "premium": true,
+          "questionCount": 357,
+          "estimatedStudyMinutes": 357,
+          "stepCount": 7,
+          "sourceTopics": [
+            {
+              "id": "speed_distance",
+              "title": "Prędkość i odstęp",
+              "titleEn": "Speed & Distance",
+              "questionCount": 153
+            },
+            {
+              "id": "other_road_users",
+              "title": "Niechronieni uczestnicy ruchu",
+              "titleEn": "Vulnerable Road Users",
+              "questionCount": 204
+            }
+          ],
+          "steps": [
+            "Limity prędkości",
+            "Prędkość w zabudowie",
+            "Odstęp i hamowanie",
+            "Przejście dla pieszych",
+            "Piesi poza przejściem",
+            "Rowerzyści",
+            "Hulajnogi, dzieci i inni"
+          ]
+        },
+        {
+          "order": 5,
+          "title": "Drogi, strefy i wypadki",
+          "titleRu": "Дороги, зоны и ДТП",
+          "premium": true,
+          "questionCount": 177,
+          "estimatedStudyMinutes": 177,
+          "stepCount": 4,
+          "sourceTopics": [
+            {
+              "id": "roads_zones_crossings",
+              "title": "Drogi, strefy i przejazdy",
+              "titleEn": "Roads, Zones & Rail Crossings",
+              "questionCount": 107
+            },
+            {
+              "id": "accidents_first_aid",
+              "title": "Wypadki i pierwsza pomoc",
+              "titleEn": "Accidents & First Aid",
+              "questionCount": 70
+            }
+          ],
+          "steps": [
+            "Przejazd kolejowy",
+            "Autostrada, strefy i tunel",
+            "Pierwsza pomoc",
+            "Obowiązki przy wypadku"
+          ]
+        },
+        {
+          "order": 6,
+          "title": "Pojazd, przewóz i dokumenty",
+          "titleRu": "Автомобиль, перевозка и документы",
+          "premium": true,
+          "questionCount": 309,
+          "estimatedStudyMinutes": 309,
+          "stepCount": 10,
+          "sourceTopics": [
+            {
+              "id": "vehicle_equipment",
+              "title": "Pojazd i wyposażenie",
+              "titleEn": "Vehicle & Equipment",
+              "questionCount": 198
+            },
+            {
+              "id": "transport",
+              "title": "Przewóz i holowanie",
+              "titleEn": "Passengers & Cargo",
+              "questionCount": 60
+            },
+            {
+              "id": "documents_responsibility",
+              "title": "Dokumenty i obowiązki",
+              "titleEn": "Documents & Responsibility",
+              "questionCount": 51
+            }
+          ],
+          "steps": [
+            "Światła mijania i drogowe",
+            "Pozostałe światła",
+            "Kierunkowskaz",
+            "Sygnał dźwiękowy",
+            "Opony i hamulce",
+            "Stan techniczny",
+            "Pasy bezpieczeństwa",
+            "Holowanie i ładunek",
+            "Prawo jazdy",
+            "Kontrola drogowa"
+          ]
+        },
+        {
+          "order": 7,
+          "title": "Uwaga i zagrożenia",
+          "titleRu": "Внимание и риски",
+          "premium": true,
+          "questionCount": 153,
+          "estimatedStudyMinutes": 153,
+          "stepCount": 4,
+          "sourceTopics": [
+            {
+              "id": "attention_risks",
+              "title": "Uwaga i zagrożenia",
+              "titleEn": "Awareness & Hazards",
+              "questionCount": 153
+            }
+          ],
+          "steps": [
+            "Alkohol, zmęczenie i leki",
+            "Pogoda i pole widzenia",
+            "Szczególna ostrożność",
+            "Ryzyko na drodze"
+          ]
+        },
+        {
+          "order": 8,
+          "title": "Przygotowanie do egzaminu",
+          "titleRu": "Подготовка к экзамену",
+          "premium": true,
+          "questionCount": 0,
+          "estimatedStudyMinutes": null,
+          "stepCount": 3,
+          "fromQuestionBank": false,
+          "sourceTopics": [],
+          "steps": ["Próba mieszana 1", "Próba mieszana 2", "Egzamin próbny"],
+          "note": "Смешанные пробы и пробный экзамен. Вопросов банка за этим блоком нет."
+        }
+      ]
+    },
+    "CZ": {
+      "superCategories": [
+        {
+          "order": 1,
+          "title": "Značky a signalizace",
+          "titleRu": "Знаки и сигналы",
+          "premium": false,
+          "questionCount": 279,
+          "estimatedStudyMinutes": 279,
+          "stepCount": 6,
+          "sourceTopics": [
+            {
+              "id": "signs_signals",
+              "title": "Značky a signalizace",
+              "titleEn": "Signs & Signals",
+              "questionCount": 279
+            }
+          ],
+          "steps": [
+            "Semafor a policista",
+            "Zákazy, přednost a rychlost",
+            "Značka upozorňuje",
+            "Význam značky",
+            "Dopravní značky",
+            "Značka v situaci"
+          ]
+        },
+        {
+          "order": 2,
+          "title": "Křižovatky a přednost",
+          "titleRu": "Перекрёстки и приоритет",
+          "premium": true,
+          "questionCount": 203,
+          "estimatedStudyMinutes": 203,
+          "stepCount": 4,
+          "sourceTopics": [
+            {
+              "id": "intersections_priority",
+              "title": "Křižovatky a přednost",
+              "titleEn": "Intersections & Right of Way",
+              "questionCount": 203
+            }
+          ],
+          "steps": [
+            "Pořadí a přednost",
+            "Přejezd, cyklisté a odbočení",
+            "Křižovatky",
+            "Průjezd křižovatkou"
+          ]
+        },
+        {
+          "order": 3,
+          "title": "Jízda a manévry",
+          "titleRu": "Движение и манёвры",
+          "premium": true,
+          "questionCount": 147,
+          "estimatedStudyMinutes": 147,
+          "stepCount": 3,
+          "sourceTopics": [
+            {
+              "id": "driving_maneuvers",
+              "title": "Jízda a manévry",
+              "titleEn": "Driving & Maneuvers",
+              "questionCount": 147
+            }
+          ],
+          "steps": [
+            "Předjíždění, pruhy a znamení",
+            "Zastavení a stání",
+            "Jízda v provozu"
+          ]
+        },
+        {
+          "order": 4,
+          "title": "Ostatní účastníci a bezpečná jízda",
+          "titleRu": "Другие участники и безопасная езда",
+          "premium": true,
+          "questionCount": 197,
+          "estimatedStudyMinutes": 197,
+          "stepCount": 5,
+          "sourceTopics": [
+            {
+              "id": "other_road_users",
+              "title": "Chodci, cyklisté a MHD",
+              "titleEn": "Vulnerable Road Users",
+              "questionCount": 65
+            },
+            {
+              "id": "attention_risks",
+              "title": "Bezpečná jízda",
+              "titleEn": "Awareness & Hazards",
+              "questionCount": 132
+            }
+          ],
+          "steps": [
+            "Chodci, cyklisté a děti",
+            "Ostatní účastníci",
+            "Rychlost a odstup",
+            "Alkohol, únava a motocykl",
+            "Defenzivní jízda"
+          ]
+        },
+        {
+          "order": 5,
+          "title": "Vozidlo, doklady a nehody",
+          "titleRu": "Автомобиль, документы и ДТП",
+          "premium": true,
+          "questionCount": 310,
+          "estimatedStudyMinutes": 310,
+          "stepCount": 8,
+          "sourceTopics": [
+            {
+              "id": "vehicle_equipment",
+              "title": "Vozidlo a výbava",
+              "titleEn": "Vehicle & Equipment",
+              "questionCount": 143
+            },
+            {
+              "id": "documents_responsibility",
+              "title": "Doklady a povinnosti",
+              "titleEn": "Documents & Responsibility",
+              "questionCount": 107
+            },
+            {
+              "id": "accidents_first_aid",
+              "title": "Nehody a první pomoc",
+              "titleEn": "Accidents & First Aid",
+              "questionCount": 60
+            }
+          ],
+          "steps": [
+            "Náklad a přívěs",
+            "Světla, pneumatiky a technický stav",
+            "Výbava vozidla",
+            "Skupiny řidičského oprávnění",
+            "Řidičský průkaz",
+            "Povinnosti řidiče",
+            "První pomoc",
+            "Dopravní nehoda"
+          ]
+        },
+        {
+          "order": 6,
+          "title": "Příprava na zkoušku",
+          "titleRu": "Подготовка к экзамену",
+          "premium": true,
+          "questionCount": 0,
+          "estimatedStudyMinutes": null,
+          "stepCount": 3,
+          "fromQuestionBank": false,
+          "sourceTopics": [],
+          "steps": ["Smíšené procvičování 1", "Smíšené procvičování 2", "Zkušební test"],
+          "note": "Смешанные пробы и пробный экзамен. Вопросов банка за этим блоком нет."
+        }
+      ]
+    },
+    "SK": {
+      "superCategories": [
+        {
+          "order": 1,
+          "title": "Pravidlá cestnej premávky",
+          "titleRu": "Правила дорожного движения",
+          "premium": false,
+          "questionCount": 427,
+          "estimatedStudyMinutes": 427,
+          "stepCount": 10,
+          "sourceTopics": [
+            {
+              "id": "road_traffic_rules",
+              "title": "Pravidlá cestnej premávky",
+              "titleEn": "Road traffic rules",
+              "questionCount": 427
+            }
+          ],
+          "steps": [
+            "Zastavenie a státie",
+            "Znamenie a policajt",
+            "Predchádzanie, chodci a cyklisti",
+            "Odbočovanie a jazdné pruhy",
+            "Železnica a diaľnica",
+            "Výbava a označenie",
+            "Svetlá a základné pojmy",
+            "Povinnosti vodiča",
+            "Zákazy v premávke",
+            "Príkazy v premávke"
+          ]
+        },
+        {
+          "order": 2,
+          "title": "Značky a dopravné zariadenia",
+          "titleRu": "Знаки и дорожные устройства",
+          "premium": true,
+          "questionCount": 188,
+          "estimatedStudyMinutes": 188,
+          "stepCount": 4,
+          "sourceTopics": [
+            {
+              "id": "road_signs_and_traffic_devices",
+              "title": "Dopravné značky a dopravné zariadenia",
+              "titleEn": "Road signs and traffic devices",
+              "questionCount": 188
+            }
+          ],
+          "steps": [
+            "Zákaz, výstraha a dodatkové tabuľky",
+            "Význam symbolu",
+            "Čo značka označuje",
+            "Zvislé značky"
+          ]
+        },
+        {
+          "order": 3,
+          "title": "Prednosť a križovatky",
+          "titleRu": "Приоритет и перекрёстки",
+          "premium": true,
+          "questionCount": 132,
+          "estimatedStudyMinutes": 132,
+          "stepCount": 4,
+          "sourceTopics": [
+            {
+              "id": "priority_and_speed_limits",
+              "title": "Uplatňovanie pravidiel prednosti v jazde a rýchlostné obmedzenia",
+              "titleEn": "Priority rules and speed limits",
+              "questionCount": 52
+            },
+            {
+              "id": "intersection_traffic_situations",
+              "title": "Dopravné situácie na križovatkách",
+              "titleEn": "Traffic situations at intersections",
+              "questionCount": 80
+            }
+          ],
+          "steps": [
+            "Rýchlostné limity",
+            "Prednosť a obmedzenia",
+            "Poradie prejazdu",
+            "Prejazd križovatkou"
+          ]
+        },
+        {
+          "order": 4,
+          "title": "Zásady bezpečnej jazdy",
+          "titleRu": "Принципы безопасной езды",
+          "premium": true,
+          "questionCount": 108,
+          "estimatedStudyMinutes": 108,
+          "stepCount": 3,
+          "sourceTopics": [
+            {
+              "id": "safe_driving_principles",
+              "title": "Zásady bezpečnej jazdy",
+              "titleEn": "Safe-driving principles",
+              "questionCount": 108
+            }
+          ],
+          "steps": [
+            "Alkohol, šmyk a počasie",
+            "Zásady bezpečnej jazdy",
+            "Bezpečná jazda"
+          ]
+        },
+        {
+          "order": 5,
+          "title": "Vozidlo",
+          "titleRu": "Автомобиль",
+          "premium": true,
+          "questionCount": 153,
+          "estimatedStudyMinutes": 153,
+          "stepCount": 4,
+          "sourceTopics": [
+            {
+              "id": "vehicle_driving_theory",
+              "title": "Teória vedenia vozidla",
+              "titleEn": "Vehicle driving theory",
+              "questionCount": 67
+            },
+            {
+              "id": "vehicle_operation_requirements",
+              "title": "Podmienky prevádzky vozidiel v premávke na pozemných komunikáciách",
+              "titleEn": "Vehicle operation requirements",
+              "questionCount": 44
+            },
+            {
+              "id": "vehicle_construction_and_maintenance",
+              "title": "Konštrukcia vozidiel a ich údržba",
+              "titleEn": "Vehicle construction and maintenance",
+              "questionCount": 42
+            }
+          ],
+          "steps": [
+            "Kontrolky a spojka",
+            "Vedenie vozidla",
+            "Technický stav a výbava",
+            "Konštrukcia a údržba"
+          ]
+        },
+        {
+          "order": 6,
+          "title": "Doklady a nehoda",
+          "titleRu": "Документы и ДТП",
+          "premium": true,
+          "questionCount": 58,
+          "estimatedStudyMinutes": 58,
+          "stepCount": 2,
+          "sourceTopics": [
+            {
+              "id": "documents_and_transport_time",
+              "title": "Predpisy o dokladoch a organizácia času v doprave",
+              "titleEn": "Vehicle documents and transport-time rules",
+              "questionCount": 30
+            },
+            {
+              "id": "road_accident_duties",
+              "title": "Povinnosti vodiča pri dopravnej nehode",
+              "titleEn": "Driver duties in a road accident",
+              "questionCount": 28
+            }
+          ],
+          "steps": ["Doklady a oprávnenie", "Povinnosti pri nehode"]
+        },
+        {
+          "order": 7,
+          "title": "Príprava na skúšku",
+          "titleRu": "Подготовка к экзамену",
+          "premium": true,
+          "questionCount": 0,
+          "estimatedStudyMinutes": null,
+          "stepCount": 3,
+          "fromQuestionBank": false,
+          "sourceTopics": [],
+          "steps": ["Zmiešané precvičovanie 1", "Zmiešané precvičovanie 2", "Skúšobný test"],
+          "note": "Смешанные пробы и пробный экзамен. Вопросов банка за этим блоком нет."
+        }
+      ]
+    }
+  }
+}

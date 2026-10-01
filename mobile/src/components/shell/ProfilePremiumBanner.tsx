@@ -31,6 +31,7 @@ export function ProfilePremiumBanner({
       accessibilityRole="button"
       disabled={!onPress}
       onPress={onPress}
+      testID="profile-premium-banner"
       style={({ pressed }) => [
         styles.banner,
         pressed ? styles.pressed : null,

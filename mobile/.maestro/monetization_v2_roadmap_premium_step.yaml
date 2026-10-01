@@ -1,0 +1,26 @@
+# Feature: Monetization V2
+# Scenario: A free learner cannot open a premium roadmap lesson
+appId: com.mindjar.prawko
+tags:
+  - monetization
+  - monetization-v2
+  - roadmap
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-home
+
+- tapOn:
+    id: "roadmap-step-1-0"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+
+- assertNotVisible:
+    id: "screen-question"

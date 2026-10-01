@@ -53,6 +53,11 @@ import {
   useMonetizationStore,
   type MonetizationMoment,
 } from "../../features/monetization/monetization-store";
+import { useMonetizationV2Store } from "../../features/monetization/v2/store";
+import {
+  createEmptyMonetizationUsage,
+  MONETIZATION_LIMITS,
+} from "../../features/monetization/v2/usage";
 import { useHomeContextualStore } from "../../features/home/home-contextual-store";
 import {
   configureE2ETestOverrides,
@@ -99,6 +104,10 @@ type PrepareE2EAppStateInput = {
   enableAds?: boolean | null;
   offlinePackCategory?: string | null;
   offlinePackStatus?: E2EOfflinePackStatus | null;
+  explanationsExhausted?: boolean | null;
+  freeExamUsed?: boolean | null;
+  freeQuestionsExhausted?: boolean | null;
+  monetizationV2?: boolean | null;
   plusAccess?: boolean | null;
   questionScenario?: E2EQuestionScenario | null;
   reachability?: boolean | null;
@@ -140,6 +149,7 @@ export async function prepareE2EAppState(
     enableAds: input.enableAds,
     offlinePackCategory: input.offlinePackCategory,
     offlinePackStatus: input.offlinePackStatus,
+    monetizationV2: input.monetizationV2,
     plusAccess: input.plusAccess,
     questionScenario: input.questionScenario,
     reachability: input.reachability,
@@ -179,6 +189,7 @@ export async function prepareE2EAppState(
   await waitForQuestionProgressHydrated();
   await waitForQuestionCatalogResolved();
   await waitForMonetizationHydrated();
+  seedE2EMonetizationV2(input);
 
   if (input.questionScenario) {
     const questionIds = getQuestionBank().map((question) => question.id);
@@ -405,6 +416,35 @@ function waitForQuestionProgressHydrated(timeoutMs = 5000) {
       resolve();
     });
   });
+}
+
+function seedE2EMonetizationV2(input: PrepareE2EAppStateInput) {
+  if (!input.monetizationV2) {
+    return;
+  }
+
+  const usage = createEmptyMonetizationUsage();
+
+  if (input.freeExamUsed) {
+    usage.freeExamUsed = true;
+  }
+
+  if (input.freeQuestionsExhausted) {
+    usage.freeQuestionIds = Array.from(
+      { length: MONETIZATION_LIMITS.freeUniqueQuestions },
+      (_, index) => `e2e-free-question-${index}`
+    );
+  }
+
+  if (input.explanationsExhausted) {
+    usage.freeExplanationQuestionIds = Array.from(
+      { length: MONETIZATION_LIMITS.freeExplanations },
+      (_, index) => `e2e-explanation-${index}`
+    );
+    usage.freeExplanationsUsed = MONETIZATION_LIMITS.freeExplanations;
+  }
+
+  useMonetizationV2Store.setState({ cohort: "v2", usage });
 }
 
 function waitForMonetizationHydrated(timeoutMs = 5000) {

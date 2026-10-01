@@ -23,6 +23,7 @@ import { getQuestionTopicTitleSafe } from "../../src/features/question-topics/ca
 import { useHasAiChatAccess } from "../../src/state/entitlements";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { trackPremiumGateOpen } from "../../src/features/monetization/v2/analytics";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function AiChatModalScreen() {
@@ -85,11 +86,16 @@ export default function AiChatModalScreen() {
       question_id: questionId,
       source: "modal",
     });
+    trackPremiumGateOpen(track, {
+      question_id: questionId,
+      source: "ai_chat",
+    });
     router.replace({
       pathname: "/paywall",
       params: {
         feature: "ai_question_chat",
         returnTo: "ai-chat",
+        source: "ai_chat",
         questionId,
         locale,
         ...(selectedAnswer ? { selectedAnswer } : {}),

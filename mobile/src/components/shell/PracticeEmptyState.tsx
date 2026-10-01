@@ -5,6 +5,9 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { StatusBar } from "expo-status-bar";
 
 import { Icon, type IconName } from "../icons";
+import { useShowPremiumMark } from "../../features/monetization/v2/store";
+import { openTrackedPaywall } from "../../features/monetization/v2/analytics";
+import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { buildQuestionRouteParams } from "../../features/questions/question-routes";
 import { useQuestionModeCountDialog } from "../../features/questions/useQuestionModeCountDialog";
 import {
@@ -44,6 +47,7 @@ export function PracticeEmptyState({
   wrongAnswers = 0,
 }: PracticeEmptyStateProps) {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const { accents } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -52,6 +56,7 @@ export function PracticeEmptyState({
   const heroIconSize = responsiveFont(40);
 
   const { openMode, dialog: countDialog } = useQuestionModeCountDialog();
+  const showPremiumMark = useShowPremiumMark();
   const trapsTitle = t("learn.tileTrapsTitle", {
     defaultValue: "Питання-пастки",
   });
@@ -97,7 +102,7 @@ export function PracticeEmptyState({
             <ActionTile
               accent="amber"
               style="faded"
-              premium
+              premium={showPremiumMark}
               testID="practice-empty-tile-traps"
               title={trapsTitle}
               subtitle={t("learn.tileTrapsSubtitle", {
@@ -110,17 +115,23 @@ export function PracticeEmptyState({
                   size={iconSize}
                 />
               }
-              onPress={() =>
+              onPress={() => {
+                if (showPremiumMark) {
+                  openTrackedPaywall(track, { source: "trap_questions" });
+                  return;
+                }
+
                 openMode({
                   mode: "high_points",
                   title: trapsTitle,
-                })
-              }
+                });
+              }}
             />
             {variant === "smartReview" ? (
               <ActionTile
                 accent="red"
                 style="faded"
+                premium={showPremiumMark}
                 testID="practice-empty-tile-mistakes"
                 title={mistakesTitle}
                 subtitle={t("learn.tileMistakesSubtitle", {
@@ -134,13 +145,20 @@ export function PracticeEmptyState({
                     size={iconSize}
                   />
                 }
-                onPress={() => router.replace("/mistakes")}
+                onPress={() => {
+                  if (showPremiumMark) {
+                    openTrackedPaywall(track, { source: "wrong_answers" });
+                    return;
+                  }
+
+                  router.replace("/mistakes");
+                }}
               />
             ) : (
               <ActionTile
                 accent="amber"
                 style="faded"
-                premium
+                premium={showPremiumMark}
                 testID="practice-empty-tile-srs"
                 title={t("learn.tileSrsTitle", {
                   defaultValue: "Розумні повторення",
@@ -152,7 +170,14 @@ export function PracticeEmptyState({
                 icon={
                   <Icon color={accents.amber.fill} name="idea" size={iconSize} />
                 }
-                onPress={() => openQuestionMode("review_due")}
+                onPress={() => {
+                  if (showPremiumMark) {
+                    openTrackedPaywall(track, { source: "smart_reviews" });
+                    return;
+                  }
+
+                  openQuestionMode("review_due");
+                }}
               />
             )}
           </View>

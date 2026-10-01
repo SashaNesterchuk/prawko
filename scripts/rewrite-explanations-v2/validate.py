@@ -50,10 +50,10 @@ def expected_headers(pack: CountryPack, question: dict) -> list[str]:
         if str(option.get("id") or "").upper() != correct.upper():
             continue
         label = _option_text(option, pack)
-        if label in {"ano", "yes", "tak", "áno"} or label.startswith("ano"):
+        if label in {"ano", "yes", "tak", "áno"} or label.startswith(("ano", "áno")):
             if pack.start_yes not in headers:
                 headers.append(pack.start_yes)
-        elif label in {"ne", "no", "nie"} or label.startswith("ne"):
+        elif label in {"ne", "no", "nie"} or label.startswith(("ne", "nie")):
             if pack.start_no not in headers:
                 headers.append(pack.start_no)
     return headers
@@ -114,7 +114,7 @@ def validate_item(
         errors.append("too_long")
     headers = expected_headers(pack, question)
     if not any(text.lower().startswith(header.lower().rstrip(".")) for header in headers):
-        errors.append("bad_header")
+        errors.append("bad_header:" + headers[0])
     lower = text.lower()
     for phrase in pack.banned_phrases:
         if phrase in lower:

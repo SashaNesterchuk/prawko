@@ -1,0 +1,382 @@
+# Feature: Exploratory session
+# Scenario: A free Monetization V2 user wanders the app for 20 minutes —
+# tabs, training, a short exam, signs, profile, paywall — the way a
+# reviewer would, recovering from whatever screen is on top.
+# Not part of the default suite (tag: explore). Run:
+#   pnpm test:e2e:explore
+appId: com.mindjar.prawko
+tags:
+  - explore
+---
+- runFlow:
+    file: ../subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: home-exam-readiness
+
+- evalScript: ${output.startedAt = Date.now()}
+- evalScript: ${output.homeBeat = 0}
+- evalScript: ${output.learnBeat = 0}
+- evalScript: ${output.profileBeat = 0}
+- evalScript: ${output.trainerBeat = 0}
+- evalScript: ${output.questionTaps = 0}
+- evalScript: ${output.examTaps = 0}
+- evalScript: ${output.signTaps = 0}
+
+- repeat:
+    while:
+      true: ${Date.now() - output.startedAt < 20 * 60 * 1000}
+    commands:
+      - evalScript: ${output.handled = false}
+
+      - runFlow:
+          when:
+            visible: "Close Advertisement"
+          commands:
+            - tapOn: "Close Advertisement"
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: training-exit-dialog
+          commands:
+            - tapOn:
+                id: training-exit-finish
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: exam-unlock-sheet
+          commands:
+            - runFlow:
+                when:
+                  true: ${output.homeBeat % 2 == 0}
+                commands:
+                  - tapOn:
+                      id: exam-unlock-dismiss
+            - runFlow:
+                when:
+                  true: ${output.homeBeat % 2 == 1}
+                commands:
+                  - tapOn:
+                      id: exam-unlock-premium
+            - evalScript: ${output.homeBeat = output.homeBeat + 1}
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: question-count-dialog
+          commands:
+            - tapOn:
+                id: question-count-start
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: blitz-duration-dialog
+          commands:
+            - tapOn:
+                id: question-count-start
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: question-feedback-next
+          commands:
+            - tapOn:
+                id: question-feedback-next
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: screen-paywall
+          commands:
+            - tapOn:
+                id: nav-close
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: exam-next-question
+          commands:
+            - tapOn:
+                id: exam-next-question
+            - evalScript: ${output.examTaps = output.examTaps + 1}
+            - runFlow:
+                when:
+                  true: ${output.examTaps >= 6}
+                commands:
+                  - tapOn:
+                      id: exam-close
+                  - evalScript: ${output.examTaps = 0}
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: screen-exam-session
+          commands:
+            - tapOn:
+                id: question-choice-index-0
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: screen-sign-test
+          commands:
+            - runFlow:
+                when:
+                  true: ${output.signTaps >= 4}
+                commands:
+                  - tapOn:
+                      id: sign-test-close
+                  - evalScript: ${output.signTaps = -1}
+            - runFlow:
+                when:
+                  true: ${output.signTaps >= 0 && output.signTaps < 4}
+                commands:
+                  - tapOn:
+                      id: sign-test-option-index-0
+                  - evalScript: ${output.signTaps = output.signTaps + 1}
+            - runFlow:
+                when:
+                  true: ${output.signTaps < 0}
+                commands:
+                  - evalScript: ${output.signTaps = 0}
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false && output.questionTaps >= 8 && output.questionTaps % 8 == 0}
+            visible:
+              id: screen-question
+          commands:
+            - tapOn:
+                id: question-close
+            - evalScript: ${output.questionTaps = output.questionTaps + 1}
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false && output.questionTaps % 11 == 0}
+            visible:
+              id: question-explanation-locked
+          commands:
+            - tapOn:
+                id: question-explanation-locked
+            - evalScript: ${output.questionTaps = output.questionTaps + 1}
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: screen-question
+          commands:
+            - tapOn:
+                id: question-choice-index-0
+            - evalScript: ${output.questionTaps = output.questionTaps + 1}
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: question-result-primary
+          commands:
+            - tapOn:
+                id: question-result-primary
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: exam-result-close
+          commands:
+            - tapOn:
+                id: exam-result-close
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: screen-trainer-modes
+          commands:
+            - runFlow:
+                when:
+                  true: ${output.trainerBeat % 2 == 0}
+                commands:
+                  - tapOn:
+                      id: trainer-mode-random
+            - runFlow:
+                when:
+                  true: ${output.trainerBeat % 2 == 1}
+                commands:
+                  - tapOn:
+                      id: trainer-mode-new
+            - evalScript: ${output.trainerBeat = output.trainerBeat + 1}
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: screen-learn
+          commands:
+            - runFlow:
+                when:
+                  true: ${output.learnBeat % 4 == 0}
+                commands:
+                  - tapOn:
+                      id: learn-tile-blitz
+            - runFlow:
+                when:
+                  true: ${output.learnBeat % 4 == 1}
+                commands:
+                  - tapOn:
+                      id: learn-topic-card-index-0
+            - runFlow:
+                when:
+                  true: ${output.learnBeat % 4 == 2}
+                commands:
+                  - tapOn:
+                      id: action-tile-traps
+            - runFlow:
+                when:
+                  true: ${output.learnBeat % 4 == 3}
+                commands:
+                  - tapOn:
+                      id: tab-signs
+            - evalScript: ${output.learnBeat = output.learnBeat + 1}
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: screen-signs
+          commands:
+            - tapOn:
+                id: signs-train-all
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: screen-profile
+          commands:
+            - runFlow:
+                when:
+                  true: ${output.profileBeat % 3 == 0}
+                commands:
+                  - tapOn:
+                      id: profile-premium-banner
+            - runFlow:
+                when:
+                  true: ${output.profileBeat % 3 == 1}
+                commands:
+                  - tapOn:
+                      id: profile-row-language
+            - runFlow:
+                when:
+                  true: ${output.profileBeat % 3 == 2}
+                commands:
+                  - tapOn:
+                      id: tab-index
+            - evalScript: ${output.profileBeat = output.profileBeat + 1}
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+            visible:
+              id: tab-index
+          commands:
+            - runFlow:
+                when:
+                  true: ${output.homeBeat % 6 == 0}
+                commands:
+                  - scrollUntilVisible:
+                      element:
+                        id: home-exam-readiness
+                      direction: UP
+                      timeout: 8000
+                      centerElement: false
+                  - tapOn:
+                      id: home-exam-readiness
+            - runFlow:
+                when:
+                  true: ${output.homeBeat % 6 == 1}
+                commands:
+                  - scrollUntilVisible:
+                      element: "1, Світлофори"
+                      direction: UP
+                      timeout: 8000
+                      centerElement: true
+                  - tapOn: "1, Світлофори"
+            - runFlow:
+                when:
+                  true: ${output.homeBeat % 6 == 2}
+                commands:
+                  - scrollUntilVisible:
+                      element: "4, Знаки пріоритету"
+                      direction: DOWN
+                      timeout: 8000
+                      centerElement: true
+                  - tapOn: "4, Знаки пріоритету"
+            - runFlow:
+                when:
+                  true: ${output.homeBeat % 6 == 3}
+                commands:
+                  - tapOn:
+                      id: tab-learn
+            - runFlow:
+                when:
+                  true: ${output.homeBeat % 6 == 4}
+                commands:
+                  - tapOn:
+                      id: tab-signs
+            - runFlow:
+                when:
+                  true: ${output.homeBeat % 6 == 5}
+                commands:
+                  - tapOn:
+                      id: tab-profile
+            - evalScript: ${output.homeBeat = output.homeBeat + 1}
+            - evalScript: ${output.handled = true}
+
+      - runFlow:
+          when:
+            true: ${output.handled == false}
+          commands:
+            - tapOn:
+                id: nav-back
+                optional: true
+            - tapOn:
+                id: nav-close
+                optional: true
+            - tapOn:
+                id: tab-index
+                optional: true

@@ -211,6 +211,31 @@ export function hasGrantedPlusAccess(
   );
 }
 
+export function readHasPlusAccess() {
+  const debugPlusOverride = useEntitlementStore.getState().debugPlusOverride;
+
+  if ((__DEV__ || mobileEnv.enableE2ETestMode) && debugPlusOverride !== null) {
+    return debugPlusOverride;
+  }
+
+  if (FEATURE_FLAGS.devPlusAccess) {
+    return true;
+  }
+
+  const currentUser = getCurrentUserFromState(useAppShellStore.getState());
+
+  if (currentUser?.provider === "mock") {
+    return true;
+  }
+
+  const store = useEntitlementStore.getState();
+
+  return hasGrantedPlusAccess(
+    store.revenueCatFeatureEntitlements,
+    store.featureEntitlements
+  );
+}
+
 export function useHasPlusAccess() {
   const currentUser = useAppShellStore((state) => getCurrentUserFromState(state));
   const debugPlusOverride = useEntitlementStore((state) => state.debugPlusOverride);

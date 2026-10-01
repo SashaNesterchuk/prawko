@@ -52,6 +52,7 @@ import {
   ANALYTICS_SCREENS,
 } from "../../src/analytics/catalog";
 import { useAppShellStore } from "../../src/state/app-shell";
+import { isMonetizationV2Active } from "../../src/features/monetization/v2/store";
 import { useHasPlusAccess } from "../../src/state/entitlements";
 import {
   useQuestionCatalogResolved,
@@ -294,7 +295,7 @@ export default function ExamResultScreen() {
       snapshot.session.id,
       snapshot.session.totalQuestionsTarget
     );
-    if (completion.isNew) {
+    if (completion.isNew && !isMonetizationV2Active()) {
       requestMonetizationSurface("paywall", "after_exam");
     }
     track(ANALYTICS_EVENTS.examSessionCompleted.key, {
@@ -473,6 +474,11 @@ export default function ExamResultScreen() {
   }
 
   function handleNewAttempt() {
+    if (isMonetizationV2Active()) {
+      startNewExam();
+      return;
+    }
+
     if (hasPlusAccess) {
       track(ANALYTICS_EVENTS.examRestartSelected.key, {
         [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.plus,

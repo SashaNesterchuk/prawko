@@ -129,6 +129,20 @@ function QuestionTrainingScreen() {
     })();
   };
 
+  const didOpenLimitPaywallRef = useRef(false);
+
+  useEffect(() => {
+    if (!session.paywallHref || didOpenLimitPaywallRef.current) {
+      return;
+    }
+
+    // The question screen blocks every leave. Allow this one without the
+    // exit-ad path: the session was never created, so it is not abandoned.
+    didOpenLimitPaywallRef.current = true;
+    allowNavigationRef.current = true;
+    router.replace(session.paywallHref);
+  }, [session.paywallHref]);
+
   const exitToTabs = () => {
     leaveQuestionScreen("/(tabs)");
   };

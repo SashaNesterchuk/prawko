@@ -19,8 +19,11 @@ import { QuestionFeedbackBottomSheet } from "./QuestionFeedbackBottomSheet";
 import { QuestionFeedbackPushStage } from "./QuestionFeedbackPushStage";
 import { QuestionStepPill } from "./QuestionStepPill";
 import type { QuestionTrainingSession } from "./useQuestionTrainingSession";
+import { useQuestionRouteParams } from "./route-params";
 import { getQuestionStepState } from "./visible-steps";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
+import { openPaywall } from "../../monetization/v2/paywall";
+import { useHasPlusAccess } from "../../../state/entitlements";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
 import { openSupportEmail } from "../../support/support-email";
 
@@ -86,7 +89,9 @@ export function QuestionTrainingView({
   visibleSteps,
 }: QuestionTrainingViewProps) {
   const { t } = useTranslation();
+  const { title: routeTitle } = useQuestionRouteParams();
   const { track } = useAnalytics();
+  const hasPlusAccess = useHasPlusAccess();
   const insets = useSafeAreaInsets();
   const stepperRef = useRef<ScrollView>(null);
   const stepperWidthRef = useRef(0);
@@ -119,6 +124,47 @@ export function QuestionTrainingView({
 
   const hasAnswered = Boolean(currentAnswer);
   const isCorrectAnswer = currentAnswerCorrect;
+  const explanationLocked = hasAnswered && !hasPlusAccess;
+  const explanationTrackedRef = useRef<string | null>(null);
+  const sessionMode = activeSession.request.mode;
+
+  useEffect(() => {
+    if (!hasAnswered) {
+      return;
+    }
+
+    const recordToken = `${currentQuestionId}:${hasPlusAccess}`;
+
+    if (explanationTrackedRef.current === recordToken) {
+      return;
+    }
+
+    explanationTrackedRef.current = recordToken;
+
+    if (!hasPlusAccess) {
+      track(ANALYTICS_EVENTS.premiumGateViewed.key, {
+        free_explanations_remaining: 0,
+        question_id: currentQuestionId,
+        source: "explanation",
+      });
+      return;
+    }
+
+    track(ANALYTICS_EVENTS.answerExplanationViewed.key, {
+      access_method: "premium",
+      free_explanations_remaining: 0,
+      is_correct: isCorrectAnswer,
+      mode: sessionMode,
+      question_id: currentQuestionId,
+    });
+  }, [
+    currentQuestionId,
+    hasAnswered,
+    hasPlusAccess,
+    isCorrectAnswer,
+    sessionMode,
+    track,
+  ]);
   const isBooleanQuestion = currentQuestion.answerType === "boolean";
   const totalQuestions = summary.total || activeSession!.questionIds.length;
   const currentStep = activeSession!.currentIndex + 1;
@@ -208,7 +254,8 @@ export function QuestionTrainingView({
               />
               <View style={trainerStyles.headerCenter}>
                 <CText
-                  style={trainerStyles.headerTitle}
+                  numberOfLines={1}
+                  style={[trainerStyles.headerTitle, trainerStyles.headerTitleLabel]}
                   testID={
                     activeSession.request.mode === "initial_diagnostic"
                       ? "question-title-quick-check"
@@ -217,7 +264,7 @@ export function QuestionTrainingView({
                 >
                   {activeSession.request.mode === "initial_diagnostic"
                     ? t("question.quickCheckTitle")
-                    : t("question.trainerTitle")}
+                    : routeTitle ?? t("question.trainerTitle")}
                 </CText>
                 <CText
                   style={[
@@ -281,7 +328,23 @@ export function QuestionTrainingView({
               <QuestionFeedbackBottomSheet
                 visible
                 isCorrectAnswer={isCorrectAnswer}
-                explanationText={explanationText || null}
+                explanationText={explanationLocked ? null : explanationText || null}
+                explanationLocked={explanationLocked}
+                showExplain={explanationLocked}
+                onUnlockExplanation={() => {
+                  track(ANALYTICS_EVENTS.premiumGateAction.key, {
+                    action: "open_paywall",
+                    source: "explanation",
+                  });
+                  openPaywall({
+                    questionId: currentQuestionId,
+                    postPurchaseAction: {
+                      type: "OPEN_EXPLANATION",
+                      questionId: currentQuestionId,
+                    },
+                    source: "explanation",
+                  });
+                }}
                 isBookmarked={currentQuestionState.isBookmarked}
                 feedbackAccentFill={feedbackAccent.fill}
                 feedbackAccentInk={feedbackAccent.ink}

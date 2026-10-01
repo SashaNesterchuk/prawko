@@ -1,0 +1,26 @@
+# Feature: Monetization V2
+# Scenario: Premium skips the exam unlock sheet and starts the exam.
+appId: com.mindjar.prawko
+tags:
+  - monetization
+  - monetization-v2
+  - exam
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      FREE_EXAM_USED: "true"
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-home
+
+- runFlow:
+    file: subflows/start_exam_from_home.yaml
+    env:
+      TARGET_ID: screen-exam-session
+
+- assertNotVisible:
+    id: "exam-unlock-sheet"
+- assertNotVisible:
+    id: "screen-paywall"

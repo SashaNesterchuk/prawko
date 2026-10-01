@@ -52,6 +52,7 @@ describe("analytics catalog", () => {
     expect(ANALYTICS_EVENTS.homeContextualSelected.key).toBe(
       "home_contextual_selected"
     );
+    expect(ANALYTICS_EVENTS.roadmapStepOpened.key).toBe("roadmap_step_opened");
     expect(ANALYTICS_PROPERTIES.appUserId).toBe("app_user_id");
     expect(ANALYTICS_PROPERTIES.adFormat).toBe("ad_format");
     expect(ANALYTICS_PROPERTIES.adNetwork).toBe("ad_network");

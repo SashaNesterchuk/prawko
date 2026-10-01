@@ -70,6 +70,10 @@ export default function TabsLayout() {
           name="index"
           options={{ title: t("nav.home"), tabBarLabel: t("nav.home") }}
         />
+        {/* <Tabs.Screen */}
+        {/* name="index2" */}
+        {/* options={{ href: null }} */}
+        {/* /> */}
         <Tabs.Screen
           name="learn"
           options={{ title: t("nav.learn"), tabBarLabel: t("nav.learn") }}

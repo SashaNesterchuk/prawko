@@ -1,0 +1,28 @@
+# Feature: Roadmap
+# Scenario: Premium Home offers a rating instead of the unlock card
+appId: com.mindjar.prawko
+tags:
+  - roadmap
+  - monetization
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-home
+
+- scrollUntilVisible:
+    element:
+      id: "home-rating-card"
+    direction: DOWN
+    timeout: 20000
+
+- assertVisible:
+    id: "home-rating-yes"
+
+- assertVisible:
+    id: "home-rating-no"
+
+- assertNotVisible:
+    id: "home-unlock-card"

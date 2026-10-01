@@ -29,7 +29,9 @@ import type { SignPractice } from "../../../src/features/road-signs/content/type
 import { SignImage } from "../../../src/features/road-signs/SignImage";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 import { ANALYTICS_EVENTS } from "../../../src/analytics/catalog";
+import { openPaywall } from "../../../src/features/monetization/v2/paywall";
 import { useAnalytics } from "../../../src/providers/AnalyticsProvider";
+import { useHasPlusAccess } from "../../../src/state/entitlements";
 import { withRoadSignsFeature } from "../../../src/app-config/with-road-signs-feature";
 
 type PracticePhase = "question" | "result";
@@ -37,6 +39,7 @@ type PracticePhase = "question" | "result";
 function SignPracticeScreen() {
   const { t, i18n } = useTranslation();
   const { track } = useAnalytics();
+  const hasPlusAccess = useHasPlusAccess();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const { accents } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -303,9 +306,27 @@ function SignPracticeScreen() {
                   ? t("signs.practiceCorrect")
                   : t("signs.practiceIncorrect")}
               </CText>
-              <CText style={styles.feedbackBody}>
-                {pickLocalized(currentQuestion.explanation, i18n.language)}
-              </CText>
+              {hasPlusAccess ? (
+                <CText style={styles.feedbackBody}>
+                  {pickLocalized(currentQuestion.explanation, i18n.language)}
+                </CText>
+              ) : (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => {
+                    track(ANALYTICS_EVENTS.premiumGateAction.key, {
+                      action: "open_paywall",
+                      source: "explanation",
+                    });
+                    openPaywall({ source: "explanation" });
+                  }}
+                  testID="question-explanation-locked"
+                >
+                  <CText style={styles.feedbackBody}>
+                    {t("monetizationV2.explanationLocked")}
+                  </CText>
+                </Pressable>
+              )}
             </View>
           ) : null}
 

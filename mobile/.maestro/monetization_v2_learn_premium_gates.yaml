@@ -1,0 +1,75 @@
+# Feature: Monetization V2
+# Scenario: Learn sells exam-style personalization and topics past the free slice
+appId: com.mindjar.prawko
+tags:
+  - monetization
+  - monetization-v2
+  - learn
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: learn
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-learn
+
+- tapOn:
+    id: "learn-tile-srs"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+
+- tapOn:
+    id: "nav-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-learn"
+    timeout: 15000
+
+- tapOn:
+    id: "learn-tile-traps"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+
+- tapOn:
+    id: "nav-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-learn"
+    timeout: 15000
+
+# First topic keeps its free slice. The next topic is Premium.
+- tapOn:
+    id: "learn-topic-card-index-1"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+
+- tapOn:
+    id: "nav-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-learn"
+    timeout: 15000
+
+- tapOn:
+    id: "learn-topic-card-index-0"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-trainer-modes"
+    timeout: 15000
+
+- assertNotVisible:
+    id: "screen-paywall"

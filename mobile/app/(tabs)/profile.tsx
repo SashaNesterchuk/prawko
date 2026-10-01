@@ -26,6 +26,8 @@ import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { CountryFlag } from "../../src/components/shell/CountryFlag";
 import { TrainingExitDialog } from "../../src/components/shell/TrainingExitDialog";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
+import { openTrackedPaywall } from "../../src/features/monetization/v2/analytics";
+import { useMonetizationV2Active } from "../../src/features/monetization/v2/store";
 import {
   disableStudyNotificationsAsync,
   enableStudyNotificationsAsync,
@@ -120,6 +122,7 @@ export default function ProfileTabScreen() {
   const resetProgress = useQuestionProgressStore((state) => state.resetProgress);
   const questionCatalogVersion = useQuestionCatalogVersion();
   const hasPlusAccess = useHasPlusAccess();
+  const monetizationV2 = useMonetizationV2Active();
   const revenueCatOfferings = useRevenueCatOfferings();
   const plusPriceLabel =
     pickRecommendedPackage(revenueCatOfferings)?.priceString ??
@@ -420,7 +423,29 @@ export default function ProfileTabScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {!hasPlusAccess ? (
+          {monetizationV2 ? (
+            <ProfilePremiumBanner
+              title={t("monetizationV2.premiumName")}
+              description={
+                hasPlusAccess
+                  ? t("monetizationV2.profileActive")
+                  : t("monetizationV2.profileSubtitle")
+              }
+              priceBadge={
+                hasPlusAccess
+                  ? undefined
+                  : t("profile.premiumPriceBadge", { price: plusPriceLabel })
+              }
+              onPress={
+                hasPlusAccess
+                  ? undefined
+                  : () =>
+                      openTrackedPaywall(track, {
+                        source: "profile",
+                      })
+              }
+            />
+          ) : !hasPlusAccess ? (
             <ProfilePremiumBanner
               title={t("profile.premiumTitle")}
               description={t("profile.premiumDescription")}
@@ -546,11 +571,19 @@ export default function ProfileTabScreen() {
               }
               trailing={hasPlusAccess ? "value" : "premium"}
               isLast
-              onPress={() =>
-                router.navigate(
-                  hasPlusAccess ? "/offline-mode" : "/paywall"
-                )
-              }
+              onPress={() => {
+                if (hasPlusAccess) {
+                  router.navigate("/offline-mode");
+                  return;
+                }
+
+                if (monetizationV2) {
+                  openTrackedPaywall(track, { source: "offline_mode" });
+                  return;
+                }
+
+                router.navigate("/paywall");
+              }}
             />
           </ProfileSettingsGroup>
 

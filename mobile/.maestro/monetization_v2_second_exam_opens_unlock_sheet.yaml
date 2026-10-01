@@ -1,0 +1,31 @@
+# Feature: Monetization V2
+# Scenario: After the free exam, the next exam opens the paywall, not the unlock sheet.
+appId: com.mindjar.prawko
+tags:
+  - monetization
+  - monetization-v2
+  - exam
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      FREE_EXAM_USED: "true"
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-home
+
+- tapOn:
+    id: "action-tile-exam"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 20000
+
+- assertVisible:
+    id: "screen-paywall"
+- assertNotVisible:
+    id: "exam-unlock-sheet"
+- assertNotVisible:
+    id: "screen-exam-session"

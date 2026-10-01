@@ -37,6 +37,10 @@ export function useTrainerStyles({
         lineHeight: responsiveFont(20),
         color: colors.textPrimary,
       },
+      headerTitleLabel: {
+        flexShrink: 1,
+        marginRight: spacing.exact(8),
+      },
       headerCounter: {
         fontSize: responsiveFont(12),
         lineHeight: responsiveFont(16),

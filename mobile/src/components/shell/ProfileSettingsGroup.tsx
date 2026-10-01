@@ -1,6 +1,7 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import { Pressable, Switch, View } from "react-native";
+
+import { Icon } from "../icons";
 
 import {
   CText,
@@ -127,10 +128,10 @@ function PremiumMiniBadge() {
 
   return (
     <View style={styles.badge}>
-      <MaterialCommunityIcons
-        color={colors.white}
-        name="crown-outline"
-        size={responsiveFont(14)}
+      <Icon
+        color={colors.onAccent}
+        name="premiumSmall"
+        size={responsiveFont(12)}
       />
     </View>
   );
@@ -199,10 +200,11 @@ function useStyles({
       color: theme.accents.blue.ink,
     },
     badge: {
+      width: spacing.exact(20),
+      height: spacing.exact(20),
       alignItems: "center",
       justifyContent: "center",
-      padding: spacing.xs,
-      borderRadius: radius.md,
+      borderRadius: radius.pill,
       backgroundColor: theme.accents.green.fill,
     },
   }));

@@ -39,7 +39,7 @@
       <rect
          width="16"
          height="16"
-         fill="white"
+         fill="currentColor"
          id="rect2" />
     </clipPath>
   </defs>

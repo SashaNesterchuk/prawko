@@ -22,6 +22,17 @@ import { QuestionCoverageCard } from "../../../components/shell/QuestionCoverage
 import { ResultTopicProgressRow } from "../../../components/shell/ResultTopicProgressRow";
 import { CText, getFontFamily, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
+import { useHasPlusAccess } from "../../../state/entitlements";
+import { openTrackedPaywall } from "../../monetization/v2/analytics";
+import { useAnalytics } from "../../../providers/AnalyticsProvider";
+import {
+  useMonetizationV2Active,
+  useMonetizationV2Store,
+} from "../../monetization/v2/store";
+import {
+  freeQuestionsRemaining,
+  isTrainingQuotaMode,
+} from "../../monetization/v2/usage";
 import { useAppShellStore } from "../../../state/app-shell";
 import { useQuestionProgressStore } from "../../../state/question-progress";
 import { ExamAnswersReviewView } from "../../exam/ExamAnswersReviewView";
@@ -69,6 +80,9 @@ export function QuestionSessionResultView({
   onWorkOnMistakes: () => void;
 }) {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
+  const monetizationV2 = useMonetizationV2Active();
+  const hasPlusAccess = useHasPlusAccess();
   const { accents, background, colors } = useTheme();
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
@@ -169,11 +183,21 @@ export function QuestionSessionResultView({
   const statusIconName =
     outcome === "good" ? "check" : outcome === "medium" ? "alert" : "close";
 
-  const primaryLabel = isPositiveResult
-    ? t("question.resultFinishCta")
-    : t("question.workOnMistakesCta");
+  const quotaExhausted =
+    monetizationV2 &&
+    !hasPlusAccess &&
+    isTrainingQuotaMode(activeSession?.request.mode ?? sessionMode) &&
+    freeQuestionsRemaining(useMonetizationV2Store.getState().usage) === 0;
 
-  const whatsNextBody = isPositiveResult
+  const primaryLabel = quotaExhausted
+    ? t("monetizationV2.unlockPremium")
+    : isPositiveResult
+      ? t("question.resultFinishCta")
+      : t("question.workOnMistakesCta");
+
+  const whatsNextBody = quotaExhausted
+    ? t("monetizationV2.trainingExhaustedBody")
+    : isPositiveResult
     ? t("question.whatsNextGoodBody")
     : weakestTopicLabel
       ? t("question.whatsNextNeedsWorkBody", { topic: weakestTopicLabel })
@@ -263,6 +287,11 @@ export function QuestionSessionResultView({
   }
 
   function handlePrimaryAction() {
+    if (quotaExhausted) {
+      openTrackedPaywall(track, { source: "training_limit" });
+      return;
+    }
+
     if (isPositiveResult) {
       onClose();
       return;

@@ -17,7 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: "Prawko",
     slug: "prawko",
     scheme: "prawko",
-    version: "1.0.25",
+    version: "1.0.28",
     orientation: "portrait",
     icon: ICON,
     userInterfaceStyle: "light",

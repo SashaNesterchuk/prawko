@@ -94,34 +94,17 @@ describe("monetization session policy", () => {
     );
   });
 
-  it("requests a teaser after odd dismissed ads, from any placement", () => {
+  it("does not open a premium sheet after a dismissed ad", () => {
     const store = useMonetizationStore.getState();
 
     expect(store.recordAdDismissed()).toBe(1);
-    expect(useMonetizationStore.getState().pendingRequest).toMatchObject({
-      moment: "after_ad",
-      surface: "teaser",
-    });
+    expect(useMonetizationStore.getState().pendingRequest).toBeNull();
 
-    store.closeSurface();
     expect(store.recordAdDismissed()).toBe(2);
     expect(useMonetizationStore.getState().pendingRequest).toBeNull();
 
     expect(store.recordAdDismissed()).toBe(3);
-    expect(useMonetizationStore.getState().pendingRequest).toMatchObject({
-      moment: "after_ad",
-      surface: "teaser",
-    });
-
-    store.closeSurface();
-    expect(store.recordAdDismissed()).toBe(4);
     expect(useMonetizationStore.getState().pendingRequest).toBeNull();
-
-    expect(store.recordAdDismissed()).toBe(5);
-    expect(useMonetizationStore.getState().pendingRequest).toMatchObject({
-      moment: "after_ad",
-      surface: "teaser",
-    });
   });
 
   it("lets after-ad teasers bypass the two-show cap after cooldown", () => {

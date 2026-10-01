@@ -1,6 +1,9 @@
 /**
  * Czech UI copy. Keep in sync with English keys in `resources.ts`.
  */
+import { monetizationV2Cs } from "./monetization-v2-copy";
+import { roadmapCopyCs } from "./roadmap-copy";
+
 export const czechTranslations = {
   common: {
     back: "Zpět",
@@ -42,6 +45,7 @@ export const czechTranslations = {
     tileTrapsTitle: "Chytáky",
     tileTrapsSubtitle: "Často zaměňované",
     readinessTitle: "Index připravenosti",
+    examReadinessTitle: "Připravenost na zkoušku",
     readinessRingLabel: "připravenost",
     readinessDetails: "Ověřit mou úroveň",
     warmupTitle: "Rychlá lekce",
@@ -1091,7 +1095,6 @@ export const czechTranslations = {
     rowOffline: "Režim offline",
     rowOfflineSub: "Plný trénink bez internetu",
     freeExamLimit: "1/den",
-    freeDailyLimit: "20/den",
     freeReadinessGeneral: "obecný",
     lifetimeNote: "Bez předplatného",
     lifetimeAccess: "Doživotní přístup",
@@ -1264,4 +1267,6 @@ export const czechTranslations = {
     notFoundTitle: "Obrazovka nenalezena",
     notFoundSubtitle: "Tato cesta není součástí aktuální aplikace.",
   },
+  monetizationV2: monetizationV2Cs,
+  roadmap: roadmapCopyCs,
 } as const;

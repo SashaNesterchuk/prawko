@@ -20,6 +20,10 @@ import { QuestionFeedbackActions } from "../questions/training/QuestionFeedbackA
 import { QuestionFeedbackBottomSheet } from "../questions/training/QuestionFeedbackBottomSheet";
 import { QuestionFeedbackPushStage } from "../questions/training/QuestionFeedbackPushStage";
 
+import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { openPaywall } from "../monetization/v2/paywall";
+import { useAnalytics } from "../../providers/AnalyticsProvider";
+import { useHasPlusAccess } from "../../state/entitlements";
 import { openSupportEmail } from "../support/support-email";
 import type { RemoteExamAnswer, RemoteExamQuestionRef } from "./types";
 
@@ -58,6 +62,8 @@ export function ExamAnswersReviewView({
   totalQuestions,
 }: ExamAnswersReviewViewProps) {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
+  const hasPlusAccess = useHasPlusAccess();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const insets = useSafeAreaInsets();
@@ -214,7 +220,24 @@ export function ExamAnswersReviewView({
               <QuestionFeedbackBottomSheet
                 visible
                 isCorrectAnswer={isCorrectAnswer}
-                explanationText={explanationText || null}
+                explanationText={hasPlusAccess ? explanationText || null : null}
+                explanationLocked={!hasPlusAccess}
+                showExplain={!hasPlusAccess}
+                onUnlockExplanation={() => {
+                  track(ANALYTICS_EVENTS.premiumGateAction.key, {
+                    action: "open_paywall",
+                    question_id: questionRef.questionSourceId,
+                    source: "explanation",
+                  });
+                  openPaywall({
+                    questionId: questionRef.questionSourceId,
+                    postPurchaseAction: {
+                      type: "OPEN_EXPLANATION",
+                      questionId: questionRef.questionSourceId,
+                    },
+                    source: "explanation",
+                  });
+                }}
                 isBookmarked={isBookmarked}
                 feedbackAccentFill={feedbackAccent.fill}
                 feedbackAccentInk={feedbackAccent.ink}

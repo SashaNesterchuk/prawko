@@ -3,6 +3,7 @@ import { Pressable, View } from "react-native";
 import {
   CText,
   getTypographyStyle,
+  useResponsiveFonts,
   useResponsiveStyles,
   withResponsiveFont,
   type PercentageString,
@@ -22,6 +23,7 @@ type TopicReadinessCardProps = {
   wrong?: number;
   status?: TopicReadinessStatus;
   onPress?: () => void;
+  premium?: boolean;
   progressTestID?: string;
   testID?: string;
 };
@@ -55,10 +57,12 @@ export function TopicReadinessCard({
   wrong,
   status,
   onPress,
+  premium = false,
   progressTestID,
   testID,
 }: TopicReadinessCardProps) {
   const theme = useTheme();
+  const { responsiveFont } = useResponsiveFonts();
   const normalizedReadiness = Math.max(0, Math.min(readiness ?? 0, 100));
   const resolvedStatus =
     status ?? resolveTopicReadinessStatus(seen, normalizedReadiness);
@@ -85,6 +89,15 @@ export function TopicReadinessCard({
         <CText style={styles.title} numberOfLines={1} s16>
           {title}
         </CText>
+        {premium ? (
+          <View style={styles.premiumBadge}>
+            <Icon
+              color={theme.colors.onAccent}
+              name="premiumSmall"
+              size={responsiveFont(12)}
+            />
+          </View>
+        ) : null}
         <CText style={styles.readinessValue} testID={readinessTestID}>
           {normalizedReadiness}%
         </CText>
@@ -160,7 +173,7 @@ function useStyles({
   readinessTextColor: string;
   readinessWidth: PercentageString;
 }) {
-  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing }) => ({
+  return useResponsiveStyles(({ colors, radius, responsiveFont, spacing, theme }) => ({
     card: {
       width: "100%",
       flexDirection: "row",
@@ -189,6 +202,14 @@ function useStyles({
       minWidth: 0,
       ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),
       color: colors.ink,
+    },
+    premiumBadge: {
+      width: spacing.exact(20),
+      height: spacing.exact(20),
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+      borderRadius: radius.pill,
+      backgroundColor: theme.accents.green.fill,
     },
     readinessValue: {
       ...withResponsiveFont(getTypographyStyle("headingS"), responsiveFont),

@@ -27,6 +27,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Verkehrszeichen und Signale",
     titleEs: "Señalización vial",
     titleCs: "Značky a signalizace",
+    titleSk: "Dopravné značky a signály",
     sourceLabelUa:
       "Дорожні знаки, таблички, дорожня розмітка, світлофори та сигнали регулювальника.",
   },
@@ -39,6 +40,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Kreuzungen und Vorfahrt",
     titleEs: "Intersecciones y prioridad",
     titleCs: "Křižovatky a přednost",
+    titleSk: "Križovatky a prednosť",
     sourceLabelUa:
       "Черговість проїзду, рівнозначні й нерівнозначні перехрестя, круговий рух і правила пріоритету.",
   },
@@ -51,6 +53,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Fahren und Manövrieren",
     titleEs: "Conducción y maniobras",
     titleCs: "Jízda a manévry",
+    titleSk: "Jazda a manévre",
     sourceLabelUa:
       "Розташування на дорозі, смуги, початок руху, повороти, розвороти, зміна смуги, обгін, об’їзд, рух заднім ходом, зупинка та стоянка.",
   },
@@ -63,6 +66,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Geschwindigkeit und Abstand",
     titleEs: "Velocidad y distancia",
     titleCs: "Rychlost a odstup",
+    titleSk: "Rýchlosť a odstup",
     sourceLabelUa:
       "Обмеження та вибір швидкості, інтервали, дистанція, шлях реакції, гальмівний і зупинний шлях.",
   },
@@ -75,6 +79,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Ungeschützte Verkehrsteilnehmer",
     titleEs: "Usuarios vulnerables",
     titleCs: "Chodci, cyklisté a MHD",
+    titleSk: "Nechránení účastníci premávky",
     sourceLabelUa:
       "Пішоходи, велосипедисти, електросамокати, діти, люди з інвалідністю та правила взаємодії з ними.",
   },
@@ -87,6 +92,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Straßen, Zonen und Bahnübergänge",
     titleEs: "Vías, zonas y pasos a nivel",
     titleCs: "Dálnice, zóny a přejezdy",
+    titleSk: "Cesty, zóny a priecestia",
     sourceLabelUa:
       "Автомагістралі, швидкісні дороги, тунелі, житлові та інші спеціальні зони, автобусні смуги, залізничні й трамвайні переїзди.",
   },
@@ -99,6 +105,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Fahrzeug und Ausstattung",
     titleEs: "Vehículo y equipamiento",
     titleCs: "Vozidlo a výbava",
+    titleSk: "Vozidlo a výbava",
     sourceLabelUa:
       "Будова, шини, гальма, рідини, системи безпеки, контрольні лампи, освітлення, сигнали та обов’язкове обладнання транспортного засобу.",
   },
@@ -111,6 +118,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Aufmerksamkeit und Gefahren",
     titleEs: "Atención y riesgos",
     titleCs: "Bezpečná jízda",
+    titleSk: "Pozornosť a riziká",
     sourceLabelUa:
       "Погода, видимість, стан покриття, алкоголь, ліки, втома, відволікання, час реакції та розпізнавання небезпек.",
   },
@@ -123,6 +131,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Unfälle und Erste Hilfe",
     titleEs: "Accidentes y primeros auxilios",
     titleCs: "Nehody a první pomoc",
+    titleSk: "Nehody a prvá pomoc",
     sourceLabelUa:
       "Дії при ДТП, поломці чи пожежі, захист місця події, виклик служб, евакуація та домедична допомога.",
   },
@@ -135,6 +144,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Personen- und Gütertransport",
     titleEs: "Pasajeros, carga y remolque",
     titleCs: "Přeprava a náklad",
+    titleSk: "Preprava a ťahanie",
     sourceLabelUa:
       "Пасажири, ремені, дитячі крісла, вантажі, причепи, буксирування, маси, габарити та правила професійних перевезень.",
   },
@@ -147,6 +157,7 @@ export const QUESTION_TOPIC_CATALOG = [
     titleDe: "Dokumente und Pflichten",
     titleEs: "Documentos y obligaciones",
     titleCs: "Doklady a povinnosti",
+    titleSk: "Doklady a povinnosti",
     sourceLabelUa:
       "Посвідчення, право керування, реєстрація, страхування, техогляд, санкції, дозволи, тахограф і час роботи водія.",
   },

@@ -32,6 +32,16 @@ import {
 import { useHasPlusAccess } from "../../src/state/entitlements";
 import { useQuestionCatalogResolved } from "../../src/state/question-catalog";
 import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { trackPremiumGateOpen } from "../../src/features/monetization/v2/analytics";
+import { openPaywall } from "../../src/features/monetization/v2/paywall";
+import {
+  isMonetizationV2Active,
+  useMonetizationV2Store,
+} from "../../src/features/monetization/v2/store";
+import {
+  resolveExamStart,
+  type ExamAccessMethod,
+} from "../../src/features/monetization/v2/usage";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 
 export default function ExamIntroScreen() {
@@ -51,6 +61,7 @@ export default function ExamIntroScreen() {
   const currentStudyPlanRemoteId = useCurrentStudyPlanRemoteId();
   const [startError, setStartError] = useState<string | null>(null);
   const didLaunchRef = useRef(false);
+  const examAccessMethodRef = useRef<ExamAccessMethod | null>(null);
   const questionCatalogResolved = useQuestionCatalogResolved();
   const offlineGate = useOfflineFeatureGate(preferredCategory);
 
@@ -109,6 +120,33 @@ export default function ExamIntroScreen() {
         totalQuestionsTarget,
       });
 
+      if (
+        isMonetizationV2Active() &&
+        launchDecision.action !== "resume"
+      ) {
+        const examDecision = resolveExamStart({
+          isPlus: hasPlusAccess,
+          isResume: false,
+          usage: useMonetizationV2Store.getState().usage,
+        });
+
+        if (examDecision.action === "sheet") {
+          const usage = useMonetizationV2Store.getState().usage;
+          trackPremiumGateOpen(track, {
+            exams_completed: usage.freeExamUsed ? 1 : 0,
+            source: "exam_limit",
+          });
+          openPaywall({
+            postPurchaseAction: { type: "START_EXAM" },
+            replace: true,
+            source: "exam_limit",
+          });
+          return;
+        }
+
+        examAccessMethodRef.current = examDecision.method;
+      }
+
       if (launchDecision.action === "resume" && activeSnapshot) {
         cacheExamSnapshot(activeSnapshot);
         track(ANALYTICS_EVENTS.examSessionResumed.key, {
@@ -149,10 +187,20 @@ export default function ExamIntroScreen() {
       );
 
       cacheExamSnapshot(snapshot);
+      const accessMethod = examAccessMethodRef.current;
+      if (isMonetizationV2Active() && accessMethod) {
+        useMonetizationV2Store.getState().commitExamStarted(accessMethod);
+      }
       track(ANALYTICS_EVENTS.examSessionStarted.key, {
         mode: snapshot.session.mode,
         question_total: snapshot.session.totalQuestionsTarget,
         source: studyPlanTaskId ? "study_plan" : "manual",
+        ...(isMonetizationV2Active() && accessMethod
+          ? {
+              access_method: accessMethod,
+              access_tier: hasPlusAccess ? "premium" : "free",
+            }
+          : {}),
       });
       openExamSession(snapshot.session.id);
     } catch (error: unknown) {

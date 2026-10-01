@@ -31,7 +31,9 @@ import { SignImage } from "./SignImage";
 import { useSignBookmarksStore } from "../../state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../state/sign-practice-progress";
 import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { openPaywall } from "../monetization/v2/paywall";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
+import { useHasPlusAccess } from "../../state/entitlements";
 import { openSupportEmail } from "../support/support-email";
 
 type SignTestAnswer = {
@@ -51,6 +53,7 @@ export function SignTestSessionScreen({
 }: SignTestSessionScreenProps) {
   const { t, i18n } = useTranslation();
   const { track } = useAnalytics();
+  const hasPlusAccess = useHasPlusAccess();
   const { accents, colors } = useTheme();
   const spacing = useResponsiveSpacing();
   const responsiveFont = useResponsiveFonts().responsiveFont;
@@ -328,7 +331,24 @@ export function SignTestSessionScreen({
             <QuestionFeedbackBottomSheet
               visible
               isCorrectAnswer={Boolean(isCorrect)}
-              explanationText={explanationText}
+              explanationText={hasPlusAccess ? explanationText : null}
+              explanationLocked={!hasPlusAccess}
+              showExplain={!hasPlusAccess}
+              onUnlockExplanation={() => {
+                track(ANALYTICS_EVENTS.premiumGateAction.key, {
+                  action: "open_paywall",
+                  question_id: currentQuestion.id,
+                  source: "explanation",
+                });
+                openPaywall({
+                  questionId: currentQuestion.id,
+                  postPurchaseAction: {
+                    type: "OPEN_EXPLANATION",
+                    questionId: currentQuestion.id,
+                  },
+                  source: "explanation",
+                });
+              }}
               isBookmarked={isBookmarked}
               feedbackAccentFill={feedbackAccent.fill}
               feedbackAccentInk={feedbackAccent.ink}

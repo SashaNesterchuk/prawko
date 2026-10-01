@@ -26,6 +26,8 @@ let overrides: E2ETestOverrides = {
   reachability: null,
 };
 let homeChromeUnlocked = false;
+/** E2E default is the current monetization. Flows opt into V2 explicitly. */
+let monetizationV2Override: boolean | null = null;
 
 export function resetE2ETestOverrides() {
   if (!mobileEnv.enableE2ETestMode) {
@@ -39,6 +41,7 @@ export function resetE2ETestOverrides() {
     reachability: null,
   };
   homeChromeUnlocked = false;
+  monetizationV2Override = null;
   useEntitlementStore.getState().setDebugPlusOverride(null);
   resetE2EAdsEnabled();
 }
@@ -47,6 +50,7 @@ export function configureE2ETestOverrides(input: {
   enableAds?: boolean | null;
   offlinePackCategory?: string | null;
   offlinePackStatus?: E2EOfflinePackStatus | null;
+  monetizationV2?: boolean | null;
   plusAccess?: boolean | null;
   questionScenario?: E2EQuestionScenario | null;
   reachability?: boolean | null;
@@ -64,10 +68,19 @@ export function configureE2ETestOverrides(input: {
       typeof input.reachability === "boolean" ? input.reachability : null,
   };
   homeChromeUnlocked = input.unlockHomeChrome !== false;
+  monetizationV2Override = input.monetizationV2 === true;
   useEntitlementStore.getState().setDebugPlusOverride(
     typeof input.plusAccess === "boolean" ? input.plusAccess : null
   );
   setE2EAdsEnabled(input.enableAds === true);
+}
+
+export function getE2EMonetizationV2Override() {
+  if (!mobileEnv.enableE2ETestMode) {
+    return null;
+  }
+
+  return monetizationV2Override;
 }
 
 export function isE2EHomeChromeUnlocked() {

@@ -2,6 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import { createMonetizationV1Storage } from "./v2/cohort";
+
 export type MonetizationMoment =
   | "after_exam"
   | "after_ad"
@@ -98,10 +100,6 @@ function getPriority(moment: MonetizationMoment) {
   return 1;
 }
 
-export function shouldShowTeaserAfterAd(adsShown: number) {
-  return adsShown > 0 && adsShown % 2 === 1;
-}
-
 export function canShowMonetizationSurface(
   surface: MonetizationSurface,
   now = Date.now(),
@@ -186,10 +184,6 @@ export const useMonetizationStore = create<MonetizationState>()(
         set((state) => ({
           adsShownLifetime: state.adsShownLifetime + 1,
         }));
-        if (shouldShowTeaserAfterAd(sessionState.adsShown)) {
-          // Any interstitial placement: training, exam, questions, resume.
-          get().requestSurface("teaser", "after_ad");
-        }
         return sessionState.adsShown;
       },
       recordExamCompleted: (sessionId, answeredCount) => {
@@ -297,7 +291,13 @@ export const useMonetizationStore = create<MonetizationState>()(
     }),
     {
       name: "prawko-monetization-v1",
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() =>
+        createMonetizationV1Storage({
+          getItem: (name) => AsyncStorage.getItem(name),
+          removeItem: (name) => AsyncStorage.removeItem(name),
+          setItem: (name, value) => AsyncStorage.setItem(name, value),
+        })
+      ),
       partialize: (state) => ({
         activeDates: state.activeDates,
         adsShownLifetime: state.adsShownLifetime,
