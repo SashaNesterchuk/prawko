@@ -23,14 +23,23 @@ export function isExamSessionId(
 }
 
 export function createLocalExamSessionId() {
-  return `${LOCAL_EXAM_PREFIX}${createShortId()}`;
+  return `${LOCAL_EXAM_PREFIX}${createExamEntityId()}`;
 }
 
-function createShortId() {
+/** Stable UUIDs make background result/attempt writes safe to retry. */
+export function createExamEntityId() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
     const random = Math.floor(Math.random() * 16);
     const value = char === "x" ? random : (random & 0x3) | 0x8;
 
     return value.toString(16);
   });
+}
+
+export function getLocalExamCloudId(sessionId: string) {
+  const value = sessionId.slice(LOCAL_EXAM_PREFIX.length);
+  if (!isLocalExamSessionId(sessionId) || !isUuidString(value)) {
+    throw new Error("Local exam session has no valid cloud ID.");
+  }
+  return value;
 }

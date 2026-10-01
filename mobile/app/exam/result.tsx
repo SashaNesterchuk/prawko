@@ -31,9 +31,8 @@ import {
   fetchExamSessionSnapshot,
   isExamSessionId,
 } from "../../src/features/exam/exam-session";
-import { fetchRecentExamSessions } from "../../src/features/exam/supabase-exam";
+import { useRecentExamSessions } from "../../src/features/exam/useRecentExamSessions";
 import type {
-  RemoteExamSession,
   RemoteExamSnapshot,
 } from "../../src/features/exam/types";
 import { useAdInterstitialActions } from "../../src/features/ads/show-interstitial";
@@ -99,7 +98,7 @@ export default function ExamResultScreen() {
   const [snapshot, setSnapshot] = useState<RemoteExamSnapshot | null>(() =>
     sessionId ? getCachedExamSnapshot(sessionId) : null
   );
-  const [recentSessions, setRecentSessions] = useState<RemoteExamSession[]>([]);
+  const { sessions: recentSessions } = useRecentExamSessions(20);
   const [isLoading, setIsLoading] = useState(() => !snapshot);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRestartGateVisible, setIsRestartGateVisible] = useState(false);
@@ -109,9 +108,6 @@ export default function ExamResultScreen() {
   const isReviewingRef = useRef(false);
   const didAttemptResultFollowUpForSessionRef = useRef<string | null>(null);
   const didTrackCompletionRef = useRef<string | null>(null);
-
-  const canFetchRecent =
-    authMode === "supabase" && isMobileSupabaseConfigured;
 
   useEffect(() => {
     isReviewingRef.current = reviewIndex !== null;
@@ -185,27 +181,6 @@ export default function ExamResultScreen() {
       cancelled = true;
     };
   }, [sessionId]);
-
-  useEffect(() => {
-    if (!canFetchRecent || !snapshot || snapshot.session.status === "active") {
-      return;
-    }
-
-    let cancelled = false;
-    void fetchRecentExamSessions(5)
-      .then((sessions) => {
-        if (!cancelled) {
-          setRecentSessions(sessions);
-        }
-      })
-      .catch((error) => {
-        console.warn("Failed to fetch recent exam sessions for delta.", error);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [canFetchRecent, snapshot]);
 
   useEffect(() => {
     if (

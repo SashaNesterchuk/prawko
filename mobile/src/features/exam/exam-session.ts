@@ -1,5 +1,11 @@
-import type { DrivingCategory, SupportedLocale } from "@prawko/config";
+import type { CountryCode, DrivingCategory, SupportedLocale } from "@prawko/config";
 
+import { getExamCountry } from "../../state/app-shell";
+import {
+  flushQuestionProgressPersist,
+  useQuestionProgressStore,
+} from "../../state/question-progress";
+import { isFreeExamSessionMetadata } from "./exam-profile";
 import { isLocalExamSessionId } from "./exam-session-id";
 import {
   fetchLatestActiveLocalExamSession,
@@ -14,12 +20,10 @@ import {
 } from "./local-exam";
 import {
   fetchExamSessionSnapshot as fetchRemoteExamSessionSnapshot,
-  fetchLatestActiveExamSession as fetchRemoteLatestActiveExamSession,
   finishRemoteExamSession,
   setRemoteExamCurrentIndex,
   setRemoteExamFlaggedOrders,
   setRemoteExamSessionStatus,
-  startRemoteExamSession,
   submitRemoteExamAnswer,
   toggleRemoteExamFlag,
 } from "./supabase-exam";
@@ -57,13 +61,10 @@ type SetExamSessionStatusInput = {
 };
 
 export function startExamSession(
-  input: StartExamSessionInput,
-  options: { useRemote: boolean }
+  input: StartExamSessionInput
 ): Promise<RemoteExamSnapshot> {
-  if (options.useRemote) {
-    return startRemoteExamSession(input);
-  }
-
+  // All new exams (PL/CZ/SK, guest/account, online/offline) use one local
+  // engine. UUID routing below is only for pre-existing server sessions.
   return Promise.resolve(startLocalExamSession(input));
 }
 
@@ -76,13 +77,8 @@ export function fetchExamSessionSnapshot(sessionId: string) {
 }
 
 export function fetchLatestActiveExamSession(
-  mode: ExamSimulatorMode | null | undefined,
-  options: { useRemote: boolean }
+  mode?: ExamSimulatorMode | null
 ) {
-  if (options.useRemote) {
-    return fetchRemoteLatestActiveExamSession(mode);
-  }
-
   return fetchLatestActiveLocalExamSession(mode);
 }
 
@@ -91,7 +87,11 @@ export function submitExamAnswer(input: SubmitExamAnswerInput) {
     return Promise.resolve(submitLocalExamAnswer(input));
   }
 
-  return submitRemoteExamAnswer(input);
+  const country = getExamCountry();
+  return submitRemoteExamAnswer(input).then((snapshot) => {
+    recordLegacyRemoteExamProgress(snapshot, country, input.questionOrder);
+    return snapshot;
+  });
 }
 
 export function setExamSessionStatus(input: SetExamSessionStatusInput) {
@@ -99,7 +99,11 @@ export function setExamSessionStatus(input: SetExamSessionStatusInput) {
     return Promise.resolve(setLocalExamSessionStatus(input));
   }
 
-  return setRemoteExamSessionStatus(input);
+  const country = getExamCountry();
+  return setRemoteExamSessionStatus(input).then((snapshot) => {
+    recordLegacyRemoteExamProgress(snapshot, country);
+    return snapshot;
+  });
 }
 
 export function setExamCurrentIndex(input: {
@@ -143,5 +147,47 @@ export function finishExamSession(input: {
     return Promise.resolve(finishLocalExamSession(input));
   }
 
-  return finishRemoteExamSession(input);
+  const country = getExamCountry();
+  return finishRemoteExamSession(input).then((snapshot) => {
+    recordLegacyRemoteExamProgress(snapshot, country);
+    return snapshot;
+  });
+}
+
+/**
+ * Preserve answer accounting for pre-existing server sessions without letting
+ * a delayed response update a different country's store. New exams never use
+ * this path. Old linear answers were already counted individually by the UI.
+ */
+function recordLegacyRemoteExamProgress(
+  snapshot: RemoteExamSnapshot,
+  country: CountryCode,
+  questionOrder?: number | null
+) {
+  if (snapshot.session.metadata.exam_country !== country) {
+    return;
+  }
+  const freeNavigation = isFreeExamSessionMetadata(snapshot.session.metadata);
+  const finalized = snapshot.session.status !== "active";
+  if (freeNavigation ? !finalized : questionOrder == null) {
+    return;
+  }
+  const answers = freeNavigation
+    ? snapshot.answers
+    : snapshot.answers.filter((answer) => answer.order === questionOrder);
+  const applied = useQuestionProgressStore.getState().applyExamAttemptBatch({
+    country,
+    sessionId: snapshot.session.id,
+    startedAt: snapshot.session.startedAt,
+    finalized: freeNavigation && finalized,
+    attempts: answers.map((answer) => ({
+      id: answer.questionAttemptId ?? `order:${answer.order}`,
+      questionId: answer.questionSourceId,
+      answeredAt: answer.answeredAt,
+      isCorrect: answer.isCorrect,
+    })),
+  });
+  if (applied && finalized) {
+    void flushQuestionProgressPersist();
+  }
 }

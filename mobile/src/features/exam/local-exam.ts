@@ -1,12 +1,26 @@
-import type { DrivingCategory, SupportedLocale } from "@prawko/config";
+import {
+  isCountryCode,
+  type CountryCode,
+  type DrivingCategory,
+  type SupportedLocale,
+} from "@prawko/config";
 
-import { useQuestionProgressStore } from "../../state/question-progress";
-import { createLocalExamSessionId } from "./exam-session-id";
+import { getExamCountry, useAppShellStore } from "../../state/app-shell";
+
+import {
+  flushQuestionProgressPersist,
+  useQuestionProgressStore,
+} from "../../state/question-progress";
+import {
+  createExamEntityId,
+  createLocalExamSessionId,
+  isLocalExamSessionId,
+} from "./exam-session-id";
 import {
   getExamDurationMinutes,
   getExamQuestionTarget,
   getRemainingExamSeconds,
-  getScaledExamPassPoints,
+  getExamPassPoints,
 } from "./exam-config";
 import {
   getExamProfile,
@@ -15,13 +29,21 @@ import {
   type ExamProfile,
 } from "./exam-profile";
 import {
+  LOCAL_EXAM_PROGRESS_VERSION,
+  prepareLocalExamProgress,
+  recordLocalExamProgress,
+} from "./exam-learning-progress";
+import {
   getExamQuestionIds,
   getQuestionById,
 } from "../questions/question-engine";
 import {
   cacheExamSnapshot,
   loadPersistedActiveExamSnapshot,
+  loadPersistedExamHistory,
   loadPersistedExamSnapshot,
+  loadPersistedUnindexedExamSnapshots,
+  mergePersistedExamHistory,
 } from "./exam-snapshot-cache";
 import type {
   ExamSimulatorMode,
@@ -57,10 +79,138 @@ type SetLocalExamSessionStatusInput = {
   status: Extract<RemoteExamSessionStatus, "abandoned" | "expired">;
 };
 
-const sessions = new Map<string, RemoteExamSnapshot>();
+const sessionsByCountry = new Map<CountryCode, Map<string, RemoteExamSnapshot>>();
+
+function getLocalSessions(country: CountryCode = getExamCountry()) {
+  let sessions = sessionsByCountry.get(country);
+  if (!sessions) {
+    sessions = new Map<string, RemoteExamSnapshot>();
+    sessionsByCountry.set(country, sessions);
+  }
+  return sessions;
+}
+
+function getSnapshotCountry(snapshot: RemoteExamSnapshot) {
+  const country = snapshot.session.metadata.exam_country;
+  if (typeof country !== "string" || !isCountryCode(country)) {
+    throw new Error("Local exam country is missing.");
+  }
+  return country;
+}
+
+function saveLocalSnapshot(snapshot: RemoteExamSnapshot) {
+  const country = getSnapshotCountry(snapshot);
+  getLocalSessions(country).set(snapshot.session.id, snapshot);
+  cacheExamSnapshot(snapshot, country);
+  recordLocalExamProgress(snapshot, country);
+}
+
+function mergeSessionMetadata(
+  snapshot: RemoteExamSnapshot,
+  metadata?: Record<string, unknown>
+) {
+  return {
+    ...snapshot.session.metadata,
+    ...metadata,
+    // Call-site telemetry must not alter the session's storage/ledger context.
+    exam_country: snapshot.session.metadata.exam_country,
+    navigation: snapshot.session.metadata.navigation,
+    learning_progress_version: snapshot.session.metadata.learning_progress_version,
+    learning_progress_baseline_orders: snapshot.session.metadata.learning_progress_baseline_orders,
+  };
+}
+
+function canResumeSnapshot(snapshot: RemoteExamSnapshot) {
+  const owner = snapshot.session.metadata.owner_user_id;
+  return (
+    isLocalExamSessionId(snapshot.session.id) &&
+    (typeof owner !== "string" || owner === useAppShellStore.getState().supabaseUser?.id)
+  );
+}
+
+export function clearLocalExamSessions() {
+  sessionsByCountry.clear();
+}
 
 export function resetLocalExamSessionsForTests() {
-  sessions.clear();
+  clearLocalExamSessions();
+}
+
+/** Recover each country's sessions, including exams that expired off-screen. */
+export async function recoverLocalExamProgress(country: CountryCode) {
+  const history = await loadPersistedExamHistory(country);
+  const unindexed = await loadPersistedUnindexedExamSnapshots(
+    country,
+    history.map((session) => session.id)
+  );
+  const unindexedById = new Map(
+    unindexed.map((snapshot) => [snapshot.session.id, snapshot])
+  );
+  if (unindexed.length > 0) {
+    await mergePersistedExamHistory(unindexed.map((snapshot) => snapshot.session), country);
+  }
+  const active = await loadPersistedActiveExamSnapshot(country);
+  const byId = new Map(history.map((session) => [session.id, session]));
+  for (const snapshot of unindexed) {
+    byId.set(snapshot.session.id, snapshot.session);
+  }
+  if (active) {
+    byId.set(active.session.id, active.session);
+  }
+  const sessions = [...byId.values()]
+    .filter((session) =>
+      isLocalExamSessionId(session.id) &&
+      (session.status === "active" ||
+        session.metadata.learning_progress_version === LOCAL_EXAM_PROGRESS_VERSION)
+    )
+    .sort((left, right) => left.startedAt.localeCompare(right.startedAt));
+  for (const session of sessions) {
+    const progress = useQuestionProgressStore.getState();
+    if (
+      getExamCountry() !== country ||
+      !progress.hasHydrated ||
+      progress.hydratedCountry !== country
+    ) {
+      return;
+    }
+    if (
+      session.status !== "active" &&
+      progress.examProgressLedger[`${country}:${session.id}`]?.finalized
+    ) {
+      continue;
+    }
+    // Prefer a live session over a disk snapshot captured before its last tap.
+    const snapshot = getLocalSessions(country).get(session.id) ??
+      unindexedById.get(session.id) ??
+      (active?.session.id === session.id
+        ? active
+        : await loadPersistedExamSnapshot(session.id, country));
+    if (!snapshot || getExamCountry() !== country || !canResumeSnapshot(snapshot)) {
+      continue;
+    }
+    const tracked = prepareLocalExamProgress(snapshot, country);
+    if (
+      tracked.session.status === "active" &&
+      getRemainingExamSeconds(tracked.session.expiresAt) <= 0
+    ) {
+      saveLocalSnapshot({
+        ...tracked,
+        session: {
+          ...tracked.session,
+          finishedAt: tracked.session.finishedAt ?? new Date().toISOString(),
+          passed: tracked.session.scorePoints >= tracked.session.passPoints,
+          remainingSeconds: 0,
+          status: "expired",
+        },
+      });
+    } else if (tracked !== snapshot) {
+      saveLocalSnapshot(tracked);
+    } else {
+      getLocalSessions(country).set(tracked.session.id, tracked);
+      recordLocalExamProgress(tracked, country);
+    }
+  }
+  await flushQuestionProgressPersist();
 }
 
 export function startLocalExamSession(
@@ -72,8 +222,6 @@ export function startLocalExamSession(
     if (activeSnapshot) {
       throw new Error("An active exam session already exists.");
     }
-  } else {
-    abandonActiveLocalExamSessions(input.mode);
   }
 
   const profile = input.profile ?? getExamProfile();
@@ -92,11 +240,23 @@ export function startLocalExamSession(
   );
   const questions = buildQuestionRefs(questionIds);
   const totalPointsTarget = questions.reduce((sum, question) => sum + question.points, 0);
-  const passPoints = getScaledExamPassPoints(totalPointsTarget, profile);
+  if (
+    input.mode !== "mini_test" &&
+    (questions.length !== profile.totalQuestions || totalPointsTarget !== profile.maxPoints)
+  ) {
+    throw new Error("Could not build an exact official exam composition.");
+  }
+  const passPoints = getExamPassPoints(input.mode, totalPointsTarget, profile);
   const durationMinutes = getExamDurationMinutes(totalQuestionsTarget, profile);
   const startedAt = new Date();
   const expiresAt = new Date(startedAt.getTime() + durationMinutes * 60 * 1000);
   const sessionId = createLocalExamSessionId();
+
+  // Compose and validate the new ticket before abandoning the old attempt.
+  // A missing statutory bucket must not discard the learner's active exam.
+  if (input.replaceExisting) {
+    abandonActiveLocalExamSessions(input.mode);
+  }
 
   const snapshot: RemoteExamSnapshot = {
     answers: [],
@@ -110,6 +270,11 @@ export function startLocalExamSession(
       id: sessionId,
       metadata: {
         source: "mobile_local_exam",
+        exam_country: getExamCountry(),
+        learning_progress_version: LOCAL_EXAM_PROGRESS_VERSION,
+        owner_user_id: useAppShellStore.getState().authMode === "supabase"
+          ? useAppShellStore.getState().supabaseUser?.id ?? null
+          : null,
         study_plan_task_id: input.studyPlanTaskId ?? null,
         navigation: profile.navigation,
         flaggedOrders: [],
@@ -131,24 +296,33 @@ export function startLocalExamSession(
     wrongQuestionSourceIds: [],
   };
 
-  sessions.set(sessionId, snapshot);
-  cacheExamSnapshot(snapshot);
+  saveLocalSnapshot(snapshot);
   return cloneSnapshot(snapshot);
 }
 
 export async function fetchLocalExamSessionSnapshot(
   sessionId: string
 ): Promise<RemoteExamSnapshot> {
-  const snapshot = sessions.get(sessionId);
+  const country = getExamCountry();
+  const snapshot = getLocalSessions(country).get(sessionId);
 
   if (snapshot) {
-    return cloneSnapshot(snapshot);
+    if (!canResumeSnapshot(snapshot)) {
+      throw new Error("Local exam belongs to another account.");
+    }
+    const tracked = prepareLocalExamProgress(snapshot, country);
+    saveLocalSnapshot(tracked);
+    return cloneSnapshot(tracked);
   }
 
-  const persisted = await loadPersistedExamSnapshot(sessionId);
+  const persisted = await loadPersistedExamSnapshot(sessionId, country);
   if (persisted) {
-    sessions.set(sessionId, persisted);
-    return cloneSnapshot(persisted);
+    if (!canResumeSnapshot(persisted)) {
+      throw new Error("Local exam belongs to another account.");
+    }
+    const tracked = prepareLocalExamProgress(persisted, country);
+    saveLocalSnapshot(tracked);
+    return cloneSnapshot(tracked);
   }
 
   throw new Error("Local exam session not found.");
@@ -157,46 +331,45 @@ export async function fetchLocalExamSessionSnapshot(
 export async function fetchLatestActiveLocalExamSession(
   mode?: ExamSimulatorMode | null
 ): Promise<RemoteExamSnapshot | null> {
+  const country = getExamCountry();
   const inMemory = findActiveLocalExamSessionInMemory(mode);
+  const persisted = inMemory ?? await loadPersistedActiveExamSnapshot(country);
 
-  if (inMemory) {
-    return inMemory;
-  }
-
-  const persisted = await loadPersistedActiveExamSnapshot();
-
-  if (!persisted || (mode && persisted.session.mode !== mode)) {
+  if (
+    country !== getExamCountry() || !persisted || !canResumeSnapshot(persisted) ||
+    (mode && persisted.session.mode !== mode)
+  ) {
     return null;
   }
 
-  const restored = cloneSnapshot(persisted);
+  const tracked = prepareLocalExamProgress(persisted, country);
+  const restored = cloneSnapshot(tracked);
 
   // A session whose clock ran out while the app was closed must not be resumed;
   // close it out so the next launch can start a fresh exam.
   if ((restored.session.remainingSeconds ?? 0) <= 0) {
     const expired: RemoteExamSnapshot = {
-      ...persisted,
+      ...tracked,
       session: {
-        ...persisted.session,
-        finishedAt: persisted.session.finishedAt ?? new Date().toISOString(),
-        passed: persisted.session.scorePoints >= persisted.session.passPoints,
+        ...tracked.session,
+        finishedAt: tracked.session.finishedAt ?? new Date().toISOString(),
+        passed: tracked.session.scorePoints >= tracked.session.passPoints,
         remainingSeconds: 0,
         status: "expired",
       },
     };
 
-    sessions.set(expired.session.id, expired);
-    cacheExamSnapshot(expired);
+    saveLocalSnapshot(expired);
     return null;
   }
 
-  sessions.set(persisted.session.id, persisted);
+  saveLocalSnapshot(tracked);
   return restored;
 }
 
 function findActiveLocalExamSessionInMemory(mode?: ExamSimulatorMode | null) {
-  for (const snapshot of sessions.values()) {
-    if (snapshot.session.status !== "active") {
+  for (const snapshot of getLocalSessions().values()) {
+    if (snapshot.session.status !== "active" || !canResumeSnapshot(snapshot)) {
       continue;
     }
 
@@ -240,12 +413,13 @@ export function submitLocalExamAnswer(
 
   const isCorrect = question.correctAnswer === input.answerGiven;
   const answer: RemoteExamAnswer = {
+    answerDurationMs: input.answerDurationMs ?? null,
     answerGiven: input.answerGiven,
     answeredAt: new Date().toISOString(),
     isCorrect,
     order: questionRef.order,
     pointsAwarded: isCorrect ? questionRef.points : 0,
-    questionAttemptId: null,
+    questionAttemptId: createExamEntityId(),
     questionId: questionRef.questionId,
     questionSourceId: questionRef.questionSourceId,
   };
@@ -255,13 +429,9 @@ export function submitLocalExamAnswer(
 
   if (isFreeNav) {
     const nextSnapshot = withRecomputedAnswers(snapshot, nextAnswers, {
-      metadata: {
-        ...snapshot.session.metadata,
-        ...input.metadata,
-      },
+      metadata: mergeSessionMetadata(snapshot, input.metadata),
     });
-    sessions.set(input.sessionId, nextSnapshot);
-    cacheExamSnapshot(nextSnapshot);
+    saveLocalSnapshot(nextSnapshot);
     return cloneSnapshot(nextSnapshot);
   }
 
@@ -285,10 +455,7 @@ export function submitLocalExamAnswer(
         ? nextQuestionIndex
         : snapshot.session.currentQuestionIndex,
       finishedAt,
-      metadata: {
-        ...snapshot.session.metadata,
-        ...input.metadata,
-      },
+      metadata: mergeSessionMetadata(snapshot, input.metadata),
       passed:
         nextStatus === "completed"
           ? stats.scorePoints >= snapshot.session.passPoints
@@ -302,8 +469,7 @@ export function submitLocalExamAnswer(
     wrongQuestionSourceIds: stats.wrongQuestionSourceIds,
   };
 
-  sessions.set(input.sessionId, nextSnapshot);
-  cacheExamSnapshot(nextSnapshot);
+  saveLocalSnapshot(nextSnapshot);
   return cloneSnapshot(nextSnapshot);
 }
 
@@ -329,8 +495,7 @@ export function setLocalExamCurrentIndex(input: {
     },
   };
 
-  sessions.set(input.sessionId, nextSnapshot);
-  cacheExamSnapshot(nextSnapshot);
+  saveLocalSnapshot(nextSnapshot);
   return cloneSnapshot(nextSnapshot);
 }
 
@@ -358,8 +523,7 @@ export function setLocalExamFlaggedOrders(input: {
     },
   };
 
-  sessions.set(input.sessionId, nextSnapshot);
-  cacheExamSnapshot(nextSnapshot);
+  saveLocalSnapshot(nextSnapshot);
   return cloneSnapshot(nextSnapshot);
 }
 
@@ -391,10 +555,7 @@ export function finishLocalExamSession(input: {
     session: {
       ...snapshot.session,
       finishedAt,
-      metadata: {
-        ...snapshot.session.metadata,
-        ...input.metadata,
-      },
+      metadata: mergeSessionMetadata(snapshot, input.metadata),
       passed: stats.scorePoints >= snapshot.session.passPoints,
       remainingSeconds: getRemainingExamSeconds(snapshot.session.expiresAt),
       scorePoints: stats.scorePoints,
@@ -406,58 +567,65 @@ export function finishLocalExamSession(input: {
     wrongQuestionSourceIds: stats.wrongQuestionSourceIds,
   };
 
-  sessions.set(input.sessionId, nextSnapshot);
-  cacheExamSnapshot(nextSnapshot);
+  saveLocalSnapshot(nextSnapshot);
   return cloneSnapshot(nextSnapshot);
 }
 
 export function setLocalExamSessionStatus(
   input: SetLocalExamSessionStatusInput
 ): RemoteExamSnapshot {
-  const snapshot = sessions.get(input.sessionId);
+  const existing = getLocalSessions().get(input.sessionId);
 
-  if (!snapshot) {
+  if (!existing) {
     throw new Error("Local exam session not found.");
+  }
+  const snapshot = prepareLocalExamProgress(existing, getExamCountry());
+
+  if (!canResumeSnapshot(snapshot)) {
+    throw new Error("Local exam belongs to another account.");
   }
 
   if (snapshot.session.status !== "active") {
+    recordLocalExamProgress(snapshot, getSnapshotCountry(snapshot));
     return cloneSnapshot(snapshot);
   }
 
   const finishedAt = new Date().toISOString();
-  const passed = snapshot.session.scorePoints >= snapshot.session.passPoints;
+  const passed = input.status === "abandoned"
+    ? null
+    : snapshot.session.scorePoints >= snapshot.session.passPoints;
   const nextSnapshot: RemoteExamSnapshot = {
     ...snapshot,
     session: {
       ...snapshot.session,
       finishedAt,
-      metadata: {
-        ...snapshot.session.metadata,
-        ...input.metadata,
-      },
+      metadata: mergeSessionMetadata(snapshot, input.metadata),
       passed,
       remainingSeconds: 0,
       status: input.status,
     },
   };
 
-  sessions.set(input.sessionId, nextSnapshot);
-  cacheExamSnapshot(nextSnapshot);
+  saveLocalSnapshot(nextSnapshot);
   return cloneSnapshot(nextSnapshot);
 }
 
 function requireActiveSnapshot(sessionId: string) {
-  const snapshot = sessions.get(sessionId);
+  const existing = getLocalSessions().get(sessionId);
 
-  if (!snapshot) {
+  if (!existing) {
     throw new Error("Local exam session not found.");
   }
 
-  if (snapshot.session.status !== "active") {
+  if (!canResumeSnapshot(existing)) {
+    throw new Error("Local exam belongs to another account.");
+  }
+
+  if (existing.session.status !== "active") {
     throw new Error("This exam session is no longer active.");
   }
 
-  return snapshot;
+  return prepareLocalExamProgress(existing, getExamCountry());
 }
 
 function upsertAnswer(
@@ -529,24 +697,25 @@ function buildQuestionRefs(questionIds: string[]): RemoteExamQuestionRef[] {
 }
 
 function abandonActiveLocalExamSessions(mode: ExamSimulatorMode) {
-  for (const [sessionId, snapshot] of sessions.entries()) {
-    if (snapshot.session.status !== "active" || snapshot.session.mode !== mode) {
+  for (const snapshot of getLocalSessions().values()) {
+    if (snapshot.session.status !== "active" || snapshot.session.mode !== mode ||
+        !canResumeSnapshot(snapshot)) {
       continue;
     }
+    const tracked = prepareLocalExamProgress(snapshot, getExamCountry());
 
     const abandoned: RemoteExamSnapshot = {
-      ...snapshot,
+      ...tracked,
       session: {
-        ...snapshot.session,
+        ...tracked.session,
         finishedAt: new Date().toISOString(),
-        passed: snapshot.session.scorePoints >= snapshot.session.passPoints,
+        passed: null,
         remainingSeconds: 0,
         status: "abandoned",
       },
     };
 
-    sessions.set(sessionId, abandoned);
-    cacheExamSnapshot(abandoned);
+    saveLocalSnapshot(abandoned);
   }
 }
 

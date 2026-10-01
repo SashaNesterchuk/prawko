@@ -109,9 +109,6 @@ export default function ExamSessionScreen() {
   );
   const questionCatalogResolved = useQuestionCatalogResolved();
   const questionCatalogVersion = useQuestionCatalogVersion();
-  const applyQuestionAttemptOutcome = useQuestionProgressStore(
-    (state) => state.applyQuestionAttemptOutcome
-  );
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
@@ -490,7 +487,6 @@ export default function ExamSessionScreen() {
     setErrorMessage(null);
 
     try {
-      const answeredAt = new Date().toISOString();
       const isCorrect = currentQuestion.correctAnswer === answerGiven;
       const answerDurationMs = Math.max(
         0,
@@ -506,12 +502,8 @@ export default function ExamSessionScreen() {
           question_source_id: currentQuestionRef.questionSourceId,
           timed_out: Boolean(options?.timedOut),
         },
+        questionOrder: currentQuestionRef.order,
         sessionId,
-      });
-
-      applyQuestionAttemptOutcome(currentQuestionRef.questionSourceId, {
-        answeredAt,
-        isCorrect,
       });
 
       track(ANALYTICS_EVENTS.examQuestionAnswered.key, {
@@ -535,15 +527,6 @@ export default function ExamSessionScreen() {
     } finally {
       submitLockRef.current = false;
       setIsSubmitting(false);
-    }
-  };
-
-  const applySnapshotAttempts = (examSnapshot: RemoteExamSnapshot) => {
-    for (const answer of examSnapshot.answers) {
-      applyQuestionAttemptOutcome(answer.questionSourceId, {
-        answeredAt: answer.answeredAt,
-        isCorrect: answer.isCorrect,
-      });
     }
   };
 
@@ -684,7 +667,6 @@ export default function ExamSessionScreen() {
         },
         sessionId,
       });
-      applySnapshotAttempts(nextSnapshot);
       track(ANALYTICS_EVENTS.examSessionEnded.key, {
         answered_count: nextSnapshot.session.totalQuestionsAnswered,
         correct_count: nextSnapshot.session.correctAnswersCount,
@@ -758,9 +740,6 @@ export default function ExamSessionScreen() {
         status,
         wrong_count: nextSnapshot.session.wrongAnswersCount,
       });
-      if (isFreeNav && status === "expired") {
-        applySnapshotAttempts(nextSnapshot);
-      }
       navigateToResult(nextSnapshot.session.id, nextSnapshot);
     } catch (error) {
       console.warn("Failed to end exam session.", error);
@@ -821,7 +800,6 @@ export default function ExamSessionScreen() {
           metadata: { source: "mobile_exam_session_dev", fill_mode: mode },
           sessionId,
         });
-        applySnapshotAttempts(current);
         setSnapshot(current);
         return;
       }
@@ -848,7 +826,6 @@ export default function ExamSessionScreen() {
             : choices[Math.floor(Math.random() * Math.max(1, choices.length))]
               ?.id ?? question.correctAnswer;
 
-        const isCorrect = question.correctAnswer === answerGiven;
         current = await submitExamAnswer({
           answerDurationMs: 50,
           answerGiven,
@@ -860,12 +837,8 @@ export default function ExamSessionScreen() {
             timed_out: false,
             fill_mode: mode,
           },
+          questionOrder: questionRef.order,
           sessionId,
-        });
-
-        applyQuestionAttemptOutcome(questionRef.questionSourceId, {
-          answeredAt: new Date().toISOString(),
-          isCorrect,
         });
       }
 

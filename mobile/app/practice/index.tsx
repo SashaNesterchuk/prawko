@@ -16,7 +16,7 @@ import {
   getExamQuestionTarget,
   isExamSimulatorMode,
 } from "../../src/features/exam/exam-config";
-import { fetchRecentExamSessions } from "../../src/features/exam/supabase-exam";
+import { useRecentExamSessions } from "../../src/features/exam/useRecentExamSessions";
 import type { RemoteExamSession } from "../../src/features/exam/types";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
 import { buildQuestionSession } from "../../src/features/questions/question-engine";
@@ -65,11 +65,8 @@ export default function PracticeScreen() {
   const [remoteTodayPlan, setRemoteTodayPlan] = useState<RemoteTodayPlan | null>(
     null
   );
-  const [recentExamSessions, setRecentExamSessions] = useState<
-    RemoteExamSession[]
-  >([]);
-  const [isLoadingRecentExamSessions, setIsLoadingRecentExamSessions] =
-    useState(false);
+  const { sessions: recentExamSessions, isLoading: isLoadingRecentExamSessions } =
+    useRecentExamSessions(1);
   const todayPlan = useMemo(
     () => remoteTodayPlan ?? buildLocalTodayPlan(currentStudyPlan, getWarsawIsoDate()),
     [currentStudyPlan, remoteTodayPlan]
@@ -131,47 +128,6 @@ export default function PracticeScreen() {
       cancelled = true;
     };
   }, [authMode, currentStudyPlanRemoteId, currentUserId, isFocused]);
-
-  useEffect(() => {
-    if (!isFocused) {
-      return;
-    }
-
-    if (
-      authMode !== "supabase" ||
-      !currentUserId ||
-      !isMobileSupabaseConfigured
-    ) {
-      setRecentExamSessions([]);
-      setIsLoadingRecentExamSessions(false);
-      return;
-    }
-
-    let cancelled = false;
-    setIsLoadingRecentExamSessions(true);
-
-    void fetchRecentExamSessions(1)
-      .then((sessions) => {
-        if (!cancelled) {
-          setRecentExamSessions(sessions);
-        }
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          console.warn("Failed to fetch recent exam sessions.", error);
-          setRecentExamSessions([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setIsLoadingRecentExamSessions(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authMode, currentUserId, isFocused]);
 
   const sessionSizes = useMemo(
     () => ({

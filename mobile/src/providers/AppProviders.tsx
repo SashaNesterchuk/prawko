@@ -8,6 +8,7 @@ import "../i18n";
 import { useResponsiveStyles } from "../portable-ui";
 import { AnalyticsProvider } from "./AnalyticsProvider";
 import { ErrorLoggingProvider } from "./ErrorLoggingProvider";
+import { ExamCloudSyncProvider } from "./ExamCloudSyncProvider";
 import { LocaleSyncProvider } from "./LocaleSyncProvider";
 import { ExamCountryBootstrap } from "../countries/ExamCountryBootstrap";
 import { CountryScopedStores } from "../countries/CountryScopedStores";
@@ -48,10 +49,12 @@ export function AppProviders({
                                 <LocaleSyncProvider>
                                   <UserProvider>
                                     <QuestionCatalogProvider>
-                                      <AdProvider>
-                                        {children}
-                                        <PremiumTeaserHost />
-                                      </AdProvider>
+                                      <ExamCloudSyncProvider>
+                                        <AdProvider>
+                                          {children}
+                                          <PremiumTeaserHost />
+                                        </AdProvider>
+                                      </ExamCloudSyncProvider>
                                     </QuestionCatalogProvider>
                                   </UserProvider>
                                 </LocaleSyncProvider>

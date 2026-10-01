@@ -54,7 +54,7 @@ type ReactNativeGlobalErrorUtils = {
 export function ErrorLoggingProvider({ children }: PropsWithChildren) {
   const { track } = useAnalytics();
   const currentUser = useCurrentUser();
-  const authMode = useAppShellStore((state) => state.authMode);
+  const authMode = currentUser?.provider ?? "guest";
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const captureRef = useRef<(input: CaptureErrorInput) => void>(() => undefined);

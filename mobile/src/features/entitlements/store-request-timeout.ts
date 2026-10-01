@@ -1,6 +1,11 @@
 export const STORE_REQUEST_TIMEOUT_MS = 20_000;
 export const STORE_OFFERS_TIMEOUT_MESSAGE =
   "Timed out loading Plus offers from the store.";
+export const STORE_CUSTOMER_INFO_TIMEOUT_MESSAGE = "Timed out checking purchase access.";
+
+class StoreRequestTimeoutError extends Error {
+  readonly code = "store_request_timeout";
+}
 
 export async function withStoreRequestTimeout<T>(
   promise: Promise<T>,
@@ -13,7 +18,7 @@ export async function withStoreRequestTimeout<T>(
     return await Promise.race([
       promise,
       new Promise<T>((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error(message)), ms);
+        timeoutId = setTimeout(() => reject(new StoreRequestTimeoutError(message)), ms);
       }),
     ]);
   } finally {

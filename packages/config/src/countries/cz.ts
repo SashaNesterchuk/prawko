@@ -32,7 +32,7 @@ export const CZ_COUNTRY_CONFIG: CountryConfig = {
     baseAnswerSeconds: 0,
     baseVideoResumeBonusSeconds: 0,
     specialistSeconds: 0,
-    strictBasketComposition: false,
+    strictBasketComposition: true,
   },
   features: { roadSigns: true },
   mediaEnvKey: "EXPO_PUBLIC_CZECH_MEDIA_BASE_URL",

@@ -25,6 +25,7 @@ export type RemoteExamQuestionRef = {
 };
 
 export type RemoteExamAnswer = {
+  answerDurationMs?: number | null;
   answerGiven: string;
   answeredAt: string;
   isCorrect: boolean;

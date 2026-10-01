@@ -1,6 +1,7 @@
 import { APP_FEATURES, FEATURE_FLAGS, type AppFeature } from "@prawko/config";
 import { create } from "zustand";
 
+import type { AnalyticsProperties } from "../analytics/catalog";
 import { mobileEnv } from "../config/env";
 import { getCurrentUserFromState, useAppShellStore } from "./app-shell";
 
@@ -42,7 +43,24 @@ export type RevenueCatPackageSummary = {
 type EntitlementStatus = "idle" | "loading" | "ready";
 type RevenueCatStatus = "idle" | "loading" | "ready";
 
+export type RevenueCatOfferingsLoad = {
+  id: string;
+  source: string;
+  status: "loading" | "ready" | "empty" | "failed";
+  startedAt: number;
+  completedAt: number | null;
+  errorCode: string | null;
+  diagnostic: AnalyticsProperties;
+};
+
 type EntitlementState = {
+  beginRevenueCatOfferingsLoad: (load: RevenueCatOfferingsLoad) => void;
+  finishRevenueCatOfferingsLoad: (input: {
+    id: string;
+    offerings?: RevenueCatPackageSummary[];
+    errorCode?: string;
+    diagnostic?: AnalyticsProperties;
+  }) => void;
   beginRevenueCatHydration: () => void;
   clearEntitlements: (status?: EntitlementStatus) => void;
   clearRevenueCatState: (status?: RevenueCatStatus) => void;
@@ -55,18 +73,23 @@ type EntitlementState = {
     schoolAccess: SchoolAccessState | null;
   }) => void;
   hydrateRevenueCatSnapshot: (payload: {
+    customerInfoRequestDate?: string;
     featureEntitlements: FeatureEntitlementMap;
     isConfigured: boolean;
     offerings: RevenueCatPackageSummary[];
     offeringsError?: string | null;
+    /** false for SDK snapshots whose offers were already published independently. */
+    offeringsUpdated?: boolean;
     purchaseAccess: PurchaseAccessState | null;
   }) => void;
   markRevenueCatHydrationFailed: (errorCode?: string | null) => void;
   purchaseAccess: PurchaseAccessState | null;
   revenueCatConfigured: boolean;
+  revenueCatCustomerInfoDate: number | null;
   revenueCatFeatureEntitlements: FeatureEntitlementMap;
   revenueCatHydrationError: string | null;
   revenueCatOfferings: RevenueCatPackageSummary[];
+  revenueCatOfferingsLoad: RevenueCatOfferingsLoad | null;
   revenueCatStatus: RevenueCatStatus;
   schoolAccess: SchoolAccessState | null;
   setDebugPlusOverride: (value: boolean | null) => void;
@@ -82,6 +105,25 @@ export function createEmptyFeatureEntitlements(): FeatureEntitlementMap {
 }
 
 export const useEntitlementStore = create<EntitlementState>()((set) => ({
+  beginRevenueCatOfferingsLoad: (load) => set({ revenueCatOfferingsLoad: load }),
+  finishRevenueCatOfferingsLoad: ({ id, offerings, errorCode, diagnostic = {} }) =>
+    set((current) => {
+      const load = current.revenueCatOfferingsLoad;
+      if (!load || load.id !== id) return current;
+      const failed = errorCode !== undefined;
+      const nextOfferings = failed ? current.revenueCatOfferings : offerings ?? [];
+      return {
+        revenueCatOfferings: nextOfferings,
+        revenueCatHydrationError: errorCode ?? null,
+        revenueCatOfferingsLoad: {
+          ...load,
+          status: failed ? "failed" : nextOfferings.length > 0 ? "ready" : "empty",
+          completedAt: Date.now(),
+          errorCode: errorCode ?? null,
+          diagnostic,
+        },
+      };
+    }),
   beginRevenueCatHydration: () =>
     set({
       revenueCatConfigured: true,
@@ -97,9 +139,11 @@ export const useEntitlementStore = create<EntitlementState>()((set) => ({
     set({
       purchaseAccess: null,
       revenueCatConfigured: false,
+      revenueCatCustomerInfoDate: null,
       revenueCatFeatureEntitlements: createEmptyFeatureEntitlements(),
       revenueCatHydrationError: null,
       revenueCatOfferings: [],
+      revenueCatOfferingsLoad: null,
       revenueCatStatus: status,
     }),
   debugPlusOverride: null,
@@ -115,22 +159,39 @@ export const useEntitlementStore = create<EntitlementState>()((set) => ({
       schoolAccess,
     }),
   hydrateRevenueCatSnapshot: ({
+    customerInfoRequestDate,
     featureEntitlements,
     isConfigured,
     offerings,
     offeringsError = null,
+    offeringsUpdated = true,
     purchaseAccess,
   }) =>
-    set({
-      purchaseAccess,
-      revenueCatConfigured: isConfigured,
-      revenueCatFeatureEntitlements: {
-        ...createEmptyFeatureEntitlements(),
-        ...featureEntitlements,
-      },
-      revenueCatHydrationError: offeringsError,
-      revenueCatOfferings: offerings,
-      revenueCatStatus: "ready",
+    set((current) => {
+      const parsedDate = customerInfoRequestDate ? Date.parse(customerInfoRequestDate) : NaN;
+      const incomingDate = Number.isFinite(parsedDate) ? parsedDate : null;
+      // A pre-purchase hydration request can finish after a CustomerInfo update.
+      // Keep its offers, but never let older access data revoke the new purchase.
+      const stale =
+        incomingDate !== null &&
+        current.revenueCatCustomerInfoDate !== null &&
+        incomingDate < current.revenueCatCustomerInfoDate;
+      return {
+        purchaseAccess: stale ? current.purchaseAccess : purchaseAccess,
+        revenueCatConfigured: isConfigured,
+        revenueCatCustomerInfoDate: stale
+          ? current.revenueCatCustomerInfoDate
+          : incomingDate ?? current.revenueCatCustomerInfoDate,
+        revenueCatFeatureEntitlements: stale
+          ? current.revenueCatFeatureEntitlements
+          : {
+              ...createEmptyFeatureEntitlements(),
+              ...featureEntitlements,
+            },
+        revenueCatHydrationError: offeringsUpdated ? offeringsError : current.revenueCatHydrationError,
+        revenueCatOfferings: offeringsUpdated ? offerings : current.revenueCatOfferings,
+        revenueCatStatus: "ready",
+      };
     }),
   markRevenueCatHydrationFailed: (errorCode = null) =>
     set({
@@ -140,9 +201,11 @@ export const useEntitlementStore = create<EntitlementState>()((set) => ({
     }),
   purchaseAccess: null,
   revenueCatConfigured: false,
+  revenueCatCustomerInfoDate: null,
   revenueCatFeatureEntitlements: createEmptyFeatureEntitlements(),
   revenueCatHydrationError: null,
   revenueCatOfferings: [],
+  revenueCatOfferingsLoad: null,
   revenueCatStatus: "idle",
   schoolAccess: null,
   setDebugPlusOverride: (debugPlusOverride) => set({ debugPlusOverride }),

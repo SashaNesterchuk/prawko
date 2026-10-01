@@ -1,9 +1,11 @@
 import { PropsWithChildren, useEffect } from "react";
 import type { CountryCode } from "@prawko/config";
+import { AppState } from "react-native";
 
 import { clearExamSnapshotMemory } from "../features/exam/exam-snapshot-cache";
+import { recoverLocalExamProgress } from "../features/exam/local-exam";
 import { useAiChatStore } from "../state/ai-chat";
-import { useAppShellStore } from "../state/app-shell";
+import { getExamCountry, useAppShellStore } from "../state/app-shell";
 import { useFreeTierQuestionUsageStore } from "../state/free-tier-usage";
 import {
   discardPendingQuestionProgressPersist,
@@ -30,7 +32,7 @@ let lastHydratedCountry: CountryCode | null = null;
 let rehydrateChain: Promise<void> = Promise.resolve();
 
 export async function rehydrateCountryScopedStores(country: CountryCode) {
-  rehydrateChain = rehydrateChain.then(() =>
+  rehydrateChain = rehydrateChain.catch(() => undefined).then(() =>
     rehydrateCountryScopedStoresNow(country),
   );
   await rehydrateChain;
@@ -39,8 +41,10 @@ export async function rehydrateCountryScopedStores(country: CountryCode) {
 async function rehydrateCountryScopedStoresNow(country: CountryCode) {
   if (
     lastHydratedCountry === country &&
-    useQuestionProgressStore.getState().hasHydrated
+    useQuestionProgressStore.getState().hasHydrated &&
+    useQuestionProgressStore.getState().hydratedCountry === country
   ) {
+    await reconcileCountryExams(country);
     return;
   }
 
@@ -51,6 +55,8 @@ async function rehydrateCountryScopedStoresNow(country: CountryCode) {
 
   if (isCountrySwitch) {
     await flushQuestionProgressPersist();
+    useQuestionProgressStore.setState({ hasHydrated: false, hydratedCountry: null });
+    discardPendingQuestionProgressPersist();
   }
 
   await Promise.all([
@@ -63,7 +69,7 @@ async function rehydrateCountryScopedStoresNow(country: CountryCode) {
   ]);
 
   if (isCountrySwitch) {
-    useQuestionProgressStore.getState().resetProgress();
+    useQuestionProgressStore.getState().resetProgress({ countrySwitch: true });
     useQuestionProgressStore.getState().setHasHydrated(false);
     useAiChatStore.setState({
       conversations: {},
@@ -110,11 +116,27 @@ async function rehydrateCountryScopedStoresNow(country: CountryCode) {
     useFreeTierQuestionUsageStore.persist.rehydrate(),
   ]);
 
-  useQuestionProgressStore.getState().setHasHydrated(true);
+  useQuestionProgressStore.setState({
+    hasHydrated: getExamCountry() === country,
+    hydratedCountry: country,
+  });
   useAiChatStore.getState().setHasHydrated(true);
   useReadinessSnapshotStore.getState().setHasHydrated(true);
   useFreeTierQuestionUsageStore.getState().setHasHydrated(true);
   lastHydratedCountry = country;
+  await reconcileCountryExams(country);
+}
+
+async function reconcileCountryExams(country: CountryCode) {
+  if (getExamCountry() === country) {
+    try {
+      // Expiry and progress reconciliation belong to the local lifecycle, not
+      // to a mounted exam screen. Each country hydrates/replays only its data.
+      await recoverLocalExamProgress(country);
+    } catch (error) {
+      console.warn("Failed to reconcile local exam progress.", error);
+    }
+  }
 }
 
 export function CountryScopedStores({ children }: PropsWithChildren) {
@@ -125,7 +147,18 @@ export function CountryScopedStores({ children }: PropsWithChildren) {
       return;
     }
 
-    void rehydrateCountryScopedStores(examCountry);
+    const rehydrate = () => {
+      void rehydrateCountryScopedStores(examCountry).catch((error) => {
+        console.warn("Failed to hydrate country-scoped stores.", error);
+      });
+    };
+    rehydrate();
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active" && getExamCountry() === examCountry) {
+        rehydrate();
+      }
+    });
+    return () => subscription.remove();
   }, [examCountry]);
 
   return children;

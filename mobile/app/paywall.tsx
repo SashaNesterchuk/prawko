@@ -1,12 +1,11 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
-  AppState,
   Pressable,
   ScrollView,
   View,
@@ -23,19 +22,31 @@ import {
 import { PaywallScreen } from "../src/components/shell/PaywallScreen";
 import { NavigationButton } from "../src/components/shell/NavigationButton";
 import { getPaywallOfferHelperKind } from "../src/features/entitlements/paywall-offer-helper";
+import { createPaywallOfferTracker } from "../src/features/entitlements/paywall-offer-analytics";
 import {
-  fetchRevenueCatSnapshot,
+  fetchRevenueCatOfferings,
   getRevenueCatDiagnostic,
-  getRevenueCatErrorCode,
-  getRevenueCatErrorMessage,
   getRevenueCatWhy,
   isRevenueCatConfiguredForCurrentPlatform,
-  isRevenueCatPurchaseCancelled,
   matchRevenueCatProductId,
   pickRecommendedPackage,
-  purchaseRevenueCatPackage,
-  restoreRevenueCatPurchases,
 } from "../src/features/entitlements/revenuecat";
+import {
+  createCheckoutId,
+  canRetryUnknownCheckout,
+  isCheckoutPending,
+  needsCheckoutRecovery,
+  refreshCheckoutAccess,
+  startCheckoutPurchase,
+  startCheckoutRestore,
+  useCheckoutStore,
+  type CheckoutAttempt,
+} from "../src/features/entitlements/checkout";
+import {
+  getCheckoutErrorTranslationKey,
+  getRevenueCatStructuredErrorProperties,
+} from "../src/features/entitlements/revenuecat-errors";
+import { useScreenOperationGuard } from "../src/hooks/useScreenOperationGuard";
 import { formatPlanDate } from "../src/features/study-plan/generate-local-study-plan";
 import {
   CText,
@@ -43,23 +54,20 @@ import {
   useResponsiveStyles,
 } from "../src/portable-ui";
 import { useAnalytics } from "../src/providers/AnalyticsProvider";
-import {
-  ANALYTICS_EVENTS,
-  ANALYTICS_PROPERTIES,
-  getAnalyticsErrorCode,
-} from "../src/analytics/catalog";
+import { ANALYTICS_EVENTS } from "../src/analytics/catalog";
 import { useErrorLogger } from "../src/providers/ErrorLoggingProvider";
 import { useTheme } from "../src/providers/ThemeProvider";
 import {
+  readHasPlusAccess,
   useEntitlementStore,
   useHasPlusAccess,
   usePurchaseAccess,
   useRevenueCatHydrationError,
   useRevenueCatOfferings,
-  useRevenueCatStatus,
+  type RevenueCatPackageSummary,
 } from "../src/state/entitlements";
 import { useAppUserId } from "../src/identity/AppIdentityProvider";
-import { useAppShellStore } from "../src/state/app-shell";
+import { useCurrentUser } from "../src/state/app-shell";
 import {
   getMonetizationContextProperties,
   getMonetizationOfferSnapshot,
@@ -95,29 +103,56 @@ export default function PaywallPage() {
     studyPlanTaskId?: string | string[];
   }>();
   const appUserId = useAppUserId();
-  const authMode = useAppShellStore((state) => state.authMode);
+  const authMode = useCurrentUser()?.provider ?? "guest";
   const purchaseAccess = usePurchaseAccess();
   const revenueCatHydrationError = useRevenueCatHydrationError();
   const revenueCatOfferings = useRevenueCatOfferings();
-  const revenueCatStatus = useRevenueCatStatus();
+  const offerLoadStatus = useEntitlementStore((state) => state.revenueCatOfferingsLoad?.status ?? "idle");
   const hasPlusAccess = useHasPlusAccess();
   const monetizationV2 = useMonetizationV2Active();
-  const hydrateRevenueCatSnapshot = useEntitlementStore(
-    (state) => state.hydrateRevenueCatSnapshot
-  );
-  const markRevenueCatHydrationFailed = useEntitlementStore(
-    (state) => state.markRevenueCatHydrationFailed
-  );
-  const beginRevenueCatHydration = useEntitlementStore(
-    (state) => state.beginRevenueCatHydration
-  );
   const sdkConfigured = isRevenueCatConfiguredForCurrentPlatform();
-  const [isPurchasing, setIsPurchasing] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
+  const checkoutAttempt = useCheckoutStore((state) => state.attempt);
+  const nativeRequestInFlight = useCheckoutStore((state) => state.nativeRequestInFlight);
+  const recoveryInFlight = useCheckoutStore((state) => state.recoveryInFlight);
+  const recoveryStatus = useCheckoutStore((state) => state.recoveryStatus);
+  const recoveryAttemptId = useCheckoutStore((state) => state.recoveryAttemptId);
+  const journalLoading = useCheckoutStore((state) =>
+    state.journalAppUserId !== appUserId || state.journalStatus === "idle" || state.journalStatus === "loading"
+  );
+  const journalFailed = useCheckoutStore((state) =>
+    state.journalAppUserId === appUserId && state.journalStatus === "failed"
+  );
+  const checkoutBusy = journalLoading || nativeRequestInFlight || recoveryInFlight || isCheckoutPending(checkoutAttempt);
+  const operationBusy = journalLoading || nativeRequestInFlight || recoveryInFlight;
+  const isPurchasing = nativeRequestInFlight && checkoutAttempt?.kind === "purchase";
+  const isRestoring = (nativeRequestInFlight && checkoutAttempt?.kind === "restore") ||
+    (recoveryInFlight && recoveryStatus === "restoring");
+  const recoveryNeeded = checkoutAttempt?.appUserId === appUserId && needsCheckoutRecovery(checkoutAttempt);
+  const retryAvailable = canRetryUnknownCheckout(checkoutAttempt);
+  const [paywallViewId] = useState(createCheckoutId);
+  const relatedCheckoutRef = useRef<CheckoutAttempt | null>(null);
+  if (
+    checkoutAttempt?.appUserId === appUserId &&
+    (checkoutAttempt.originViewId === paywallViewId ||
+      isCheckoutPending(checkoutAttempt) ||
+      relatedCheckoutRef.current?.id === checkoutAttempt.id)
+  ) {
+    relatedCheckoutRef.current = checkoutAttempt;
+  }
+  const viewClosedRef = useRef(false);
+  const screenOperation = useScreenOperationGuard(JSON.stringify(params));
   const [purchaseFeedback, setPurchaseFeedback] = useState<{
-    kind: "error" | "success";
+    kind: "error" | "success" | "info";
     message: string;
   } | null>(null);
+  const [showSlowPurchaseHint, setShowSlowPurchaseHint] = useState(false);
+  useEffect(() => {
+    setShowSlowPurchaseHint(false);
+    if (!isPurchasing || checkoutAttempt?.stage !== "purchase_package") return;
+    // Copy only: this timer never cancels checkout or permits another payment.
+    const timer = setTimeout(() => setShowSlowPurchaseHint(true), 30_000);
+    return () => clearTimeout(timer);
+  }, [isPurchasing, checkoutAttempt?.id, checkoutAttempt?.stage]);
   const targetFeature = getSingleParam(params.feature);
   const returnTo = getSingleParam(params.returnTo);
   const returnQuestionId = getSingleParam(params.questionId);
@@ -154,6 +189,17 @@ export default function PaywallPage() {
   );
 
   const continueAfterUnlock = () => {
+    if (
+      viewClosedRef.current ||
+      !screenOperation.isCurrent() ||
+      !readHasPlusAccess()
+    ) {
+      return;
+    }
+    dismissMethodRef.current = "access_unlocked";
+    trackPaywallDismissRef.current("access_unlocked");
+    viewClosedRef.current = true;
+    screenOperation.invalidate();
     if (runPostPurchaseAction(postPurchaseAction)) {
       return;
     }
@@ -194,24 +240,14 @@ export default function PaywallPage() {
   const purchaseEndsAt = purchaseAccess?.latestExpirationDate
     ? formatPlanDate(purchaseAccess.latestExpirationDate.slice(0, 10))
     : null;
-  const recommendedPackage = useMemo(() => {
-    if (!monetizationV2) {
-      return pickRecommendedPackage(revenueCatOfferings);
-    }
-
-    return (
-      revenueCatOfferings.find(
-        (item) => matchRevenueCatProductId(item) === "lifetime"
-      ) ??
-      revenueCatOfferings.find((item) => item.packageType === "LIFETIME") ??
-      pickRecommendedPackage(revenueCatOfferings)
-    );
-  }, [monetizationV2, revenueCatOfferings]);
+  const recommendedPackage = useMemo(
+    () => selectPaywallPackage(revenueCatOfferings, monetizationV2),
+    [monetizationV2, revenueCatOfferings]
+  );
   const didTrackViewRef = useRef(false);
   const paywallShownAtRef = useRef<number | null>(null);
-  const dismissMethodRef = useRef("swipe");
+  const dismissMethodRef = useRef("navigation");
   const didTrackDismissRef = useRef(false);
-  const purchaseSucceededRef = useRef(false);
   const paywallMomentRef = useRef(paywallMoment);
   const paywallSourceRef = useRef(paywallSource);
   const paywallSurfaceRef = useRef(paywallSurface);
@@ -226,18 +262,30 @@ export default function PaywallPage() {
     () => undefined
   );
   trackPaywallDismissRef.current = (method: string) => {
-    if (
-      purchaseSucceededRef.current ||
-      paywallShownAtRef.current == null ||
-      didTrackDismissRef.current
-    ) {
+    if (paywallShownAtRef.current == null || didTrackDismissRef.current) {
       return;
     }
 
     didTrackDismissRef.current = true;
+    const checkout = useCheckoutStore.getState().attempt;
+    const associatedCheckout =
+      checkout?.appUserId === appUserId &&
+      (checkout.originViewId === paywallViewId ||
+        isCheckoutPending(checkout) ||
+        relatedCheckoutRef.current?.id === checkout.id)
+        ? checkout
+        : relatedCheckoutRef.current;
+    const accessUnlocked = readHasPlusAccess();
     trackRef.current(ANALYTICS_EVENTS.paywallDismissed.key, {
       ...getMonetizationOfferSnapshot(),
+      ...offerTracker.getProperties(),
+      paywall_view_id: paywallViewId,
+      purchase_attempt_id: associatedCheckout?.id ?? null,
+      purchase_origin_view_id: associatedCheckout?.originViewId ?? null,
+      purchase_status: associatedCheckout?.status ?? "idle",
       dismiss_method: method,
+      has_plus_access: accessUnlocked,
+      is_plus: accessUnlocked,
       moment: paywallMomentRef.current,
       source: paywallSourceRef.current,
       ...(paywallSurfaceRef.current
@@ -252,15 +300,37 @@ export default function PaywallPage() {
   const didStartOfferRefreshRef = useRef(
     !sdkConfigured || revenueCatOfferings.length > 0
   );
-  const [offerRefreshState, setOfferRefreshState] = useState<
-    "idle" | "loading" | "done"
-  >(() =>
-    !sdkConfigured || revenueCatOfferings.length > 0 ? "done" : "loading"
-  );
   const selectedPackage = recommendedPackage;
   const selectedProductId = selectedPackage
     ? matchRevenueCatProductId(selectedPackage)
     : null;
+
+  const offerContextRef = useRef(() => ({
+    properties: {
+      ...paywallEntry, moment: paywallMoment, presentation: paywallPresentation,
+      feature: highlightedFeature ?? null, has_plus_access: readHasPlusAccess(),
+      plus_purchase_enabled: FEATURE_FLAGS.enablePlusPurchase,
+    },
+    track,
+    sdkConfigured,
+    isVisible: !viewClosedRef.current && screenOperation.isCurrent(),
+    selectPackage: (offers: RevenueCatPackageSummary[]) => selectPaywallPackage(offers, monetizationV2),
+  }));
+  offerContextRef.current = () => ({
+    properties: {
+      ...paywallEntry, moment: paywallMoment, presentation: paywallPresentation,
+      feature: highlightedFeature ?? null, has_plus_access: readHasPlusAccess(),
+      plus_purchase_enabled: FEATURE_FLAGS.enablePlusPurchase,
+    },
+    track,
+    sdkConfigured,
+    isVisible: !viewClosedRef.current && screenOperation.isCurrent(),
+    selectPackage: (offers) => selectPaywallPackage(offers, monetizationV2),
+  });
+  const [offerTracker] = useState(() => createPaywallOfferTracker({
+    viewId: paywallViewId,
+    getContext: () => offerContextRef.current(),
+  }));
 
   const comparisonRows = useMemo<PaywallComparisonRow[]>(
     () => {
@@ -352,58 +422,28 @@ export default function PaywallPage() {
     }
 
     didStartOfferRefreshRef.current = true;
-    setOfferRefreshState("loading");
-    beginRevenueCatHydration();
-
     let cancelled = false;
 
-    void fetchRevenueCatSnapshot(appUserId)
-      .then((snapshot) => {
-        if (!cancelled) {
-          hydrateRevenueCatSnapshot(snapshot);
-
-          if (snapshot.offeringsError) {
-            captureRevenueCat("revenuecat_offerings_failed", {
-              error: { code: snapshot.offeringsError },
-              kind: "paywall_open",
-              step: "get_offerings",
-              why: snapshot.offeringsError,
-              extra: {
-                offers_count: snapshot.offerings.length,
-              },
-            });
-          }
-        }
-      })
+    void fetchRevenueCatOfferings(appUserId, "paywall_open")
       .catch((error) => {
         if (cancelled) {
           return;
         }
 
         console.warn("Failed to refresh RevenueCat offers on paywall.", error);
-        markRevenueCatHydrationFailed(getRevenueCatErrorCode(error));
-        captureRevenueCat("revenuecat_hydration_failed", {
+        captureRevenueCat("revenuecat_offerings_failed", {
           error,
           kind: "paywall_open",
-          step: "get_customer_info",
+          step: "get_offerings",
           why: getRevenueCatWhy(error),
+          extra: { ...offerTracker.getProperties(), ...getRevenueCatStructuredErrorProperties(error) },
         });
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setOfferRefreshState("done");
-        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [
-    appUserId,
-    beginRevenueCatHydration,
-    hydrateRevenueCatSnapshot,
-    markRevenueCatHydrationFailed,
-  ]);
+  }, [appUserId, offerTracker]);
 
   useEffect(() => {
     if (didTrackViewRef.current) {
@@ -414,6 +454,10 @@ export default function PaywallPage() {
     paywallShownAtRef.current = Date.now();
     track(ANALYTICS_EVENTS.paywallViewed.key, {
       ...getMonetizationContextProperties(),
+      ...offerTracker.getProperties(),
+      paywall_view_id: paywallViewId,
+      purchase_attempt_id: relatedCheckoutRef.current?.id ?? null,
+      purchase_status: relatedCheckoutRef.current?.status ?? "idle",
       auth_mode: authMode,
       feature: highlightedFeature ?? null,
       has_plus_access: hasPlusAccess,
@@ -430,10 +474,13 @@ export default function PaywallPage() {
       presentation: paywallPresentation,
     });
   }, [
+    appUserId,
     authMode,
+    checkoutAttempt,
     hasPlusAccess,
     highlightedFeature,
     paywallMoment,
+    paywallViewId,
     paywallPresentation,
     paywallRoadmapStepId,
     paywallSource,
@@ -446,25 +493,20 @@ export default function PaywallPage() {
   ]);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextState) => {
-      if (nextState === "background") {
-        trackPaywallDismissRef.current("background");
-        return;
-      }
-
-      if (nextState === "active") {
-        didTrackDismissRef.current = false;
-      }
-    });
-
-    return () => subscription.remove();
-  }, []);
+    offerTracker.start(paywallShownAtRef.current ?? Date.now());
+    return () => offerTracker.stop();
+  }, [offerTracker]);
+  useFocusEffect(useCallback(() => {
+    offerTracker.observe();
+  }, [offerTracker]));
 
   useEffect(() => {
+    viewClosedRef.current = false;
     return () => {
+      viewClosedRef.current = true;
       trackPaywallDismissRef.current(dismissMethodRef.current);
     };
-  }, [paywallMoment, paywallSource]);
+  }, []);
 
   const showPurchaseError = (message: string) => {
     setPurchaseFeedback({
@@ -476,12 +518,14 @@ export default function PaywallPage() {
     }
   };
 
-  const handlePurchase = async () => {
+  const handlePurchase = async (confirmedRetryAttemptId?: string) => {
+    if ((checkoutBusy && !confirmedRetryAttemptId) || operationBusy || hasPlusAccess || viewClosedRef.current) {
+      return;
+    }
     if (!FEATURE_FLAGS.enablePlusPurchase) {
       showPurchaseError(t("paywall.purchaseUnavailable"));
       return;
     }
-
     if (!sdkConfigured) {
       captureRevenueCat("paywall_not_configured", {
         kind: "purchase",
@@ -493,153 +537,42 @@ export default function PaywallPage() {
       return;
     }
 
-    setIsPurchasing(true);
+    const canUpdateScreen = screenOperation.captureGuard();
     setPurchaseFeedback(null);
-
-    try {
-      let targetPackage = selectedPackage;
-
-      if (!targetPackage) {
-        const snapshot = await fetchRevenueCatSnapshot(appUserId);
-        hydrateRevenueCatSnapshot(snapshot);
-        targetPackage = pickRecommendedPackage(snapshot.offerings);
-      }
-
-      if (!targetPackage) {
-        captureRevenueCat("paywall_no_package", {
-          extra: {
-            offers_count: revenueCatOfferings.length,
-          },
-          kind: "purchase",
-          step: "select_package",
-          why: "no_package",
-        });
-        showPurchaseError(t("paywall.directNoOffers"));
-        return;
-      }
-
-      track(ANALYTICS_EVENTS.purchaseStarted.key, {
-        currency: targetPackage.currencyCode,
+    const result = await startCheckoutPurchase({
+      appUserId,
+      originViewId: paywallViewId,
+      selectedPackage,
+      confirmedRetryAttemptId,
+      selectPackage: (offers) => selectPaywallPackage(offers, monetizationV2),
+      properties: {
+        ...offerTracker.getProperties(),
         feature: highlightedFeature ?? "premium_access",
-        offering_id: targetPackage.offeringIdentifier,
-        offering_identifier: targetPackage.offeringIdentifier,
-        package_id: targetPackage.identifier,
-        package_identifier: targetPackage.identifier,
-        package_type: targetPackage.packageType,
-        price: targetPackage.price,
-        product_id: targetPackage.productIdentifier,
-        product_identifier: targetPackage.productIdentifier,
         moment: paywallMoment,
         ...paywallEntry,
-        ui: "package",
-      });
+      },
+      track,
+      captureError,
+    });
 
-      const purchaseResult = await purchaseRevenueCatPackage({
-        appUserId,
-        identifier: targetPackage.identifier,
-        offeringIdentifier: targetPackage.offeringIdentifier,
-      });
-      const { snapshot } = purchaseResult;
-      const entitlementActive =
-        snapshot.featureEntitlements.premium_access ||
-        snapshot.featureEntitlements.ai_question_chat;
-
-      if (!entitlementActive) {
-        throw new Error(
-          "RevenueCat purchase completed without an active Premium entitlement."
-        );
-      }
-
-      purchaseSucceededRef.current = true;
-      hydrateRevenueCatSnapshot(snapshot);
-      track(ANALYTICS_EVENTS.purchaseSucceeded.key, {
-        active_entitlements_count:
-          snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
-        currency: targetPackage.currencyCode,
-        moment: paywallMoment,
-        offering_id: targetPackage.offeringIdentifier,
-        offering_identifier: targetPackage.offeringIdentifier,
-        package_id: targetPackage.identifier,
-        package_identifier: targetPackage.identifier,
-        package_type: targetPackage.packageType,
-        price: targetPackage.price,
-        product_id: targetPackage.productIdentifier,
-        product_identifier: targetPackage.productIdentifier,
-        ...paywallEntry,
-        transaction_id: purchaseResult.transactionId,
-        ui: "package",
-      });
-      setPurchaseFeedback({
-        kind: "success",
-        message: t("paywall.purchaseSuccess", {
-          title: targetPackage.title,
-        }),
-      });
+    const latestAttemptId = useCheckoutStore.getState().attempt?.id;
+    if (!result || !canUpdateScreen() || viewClosedRef.current ||
+      (latestAttemptId !== result.id && latestAttemptId !== result.retryOfAttemptId)) {
+      return;
+    }
+    if (result.status === "succeeded") {
       continueAfterUnlock();
-    } catch (error) {
-      if (isRevenueCatPurchaseCancelled(error)) {
-        track(ANALYTICS_EVENTS.purchaseCancelled.key, {
-          currency: selectedPackage?.currencyCode ?? null,
-          moment: paywallMoment,
-          offering_identifier: selectedPackage?.offeringIdentifier ?? null,
-          package_identifier: selectedPackage?.identifier ?? null,
-          package_type: selectedPackage?.packageType ?? null,
-          price: selectedPackage?.price ?? null,
-          product_id: selectedPackage?.productIdentifier ?? null,
-          product_identifier: selectedPackage?.productIdentifier ?? null,
-          ...paywallEntry,
-        });
-        setPurchaseFeedback({
-          kind: "error",
-          message: t("paywall.purchaseCancelled"),
-        });
-        return;
-      }
-
-      const why = getRevenueCatWhy(error);
-      const message = getRevenueCatErrorMessage(error);
-
-      captureError({
-        area: "monetization",
-        error,
-        eventName: "purchase_failed",
-        message: "Direct purchase failed from the paywall.",
-        metadata: getRevenueCatDiagnostic({
-          extra: {
-            feature: highlightedFeature ?? "premium_access",
-            offering_identifier: selectedPackage?.offeringIdentifier ?? null,
-            package_identifier: selectedPackage?.identifier ?? null,
-            package_type: selectedPackage?.packageType ?? null,
-            product_identifier: selectedPackage?.productIdentifier ?? null,
-            source: "paywall",
-          },
-          kind: "purchase",
-          step: "purchase_package",
-          why,
-        }),
-      });
-      track(ANALYTICS_EVENTS.purchaseFailed.key, {
-        currency: selectedPackage?.currencyCode ?? null,
-        error_code: getAnalyticsErrorCode(error),
-        error_message: message,
-        moment: paywallMoment,
-        offering_identifier: selectedPackage?.offeringIdentifier ?? null,
-        package_identifier: selectedPackage?.identifier ?? null,
-        package_type: selectedPackage?.packageType ?? null,
-        product_id: selectedPackage?.productIdentifier ?? null,
-        product_identifier: selectedPackage?.productIdentifier ?? null,
-        price: selectedPackage?.price ?? null,
-        ...paywallEntry,
-        [ANALYTICS_PROPERTIES.step]: "purchase_package",
-        [ANALYTICS_PROPERTIES.why]: why,
-      });
-      showPurchaseError(message);
-    } finally {
-      setIsPurchasing(false);
+    } else if (result.status === "cancelled") {
+      setPurchaseFeedback({ kind: "info", message: t("paywall.purchaseCancelled") });
+    } else if (result.status === "failed") {
+      showPurchaseError(t(getCheckoutErrorTranslationKey(result.errorKind)));
     }
   };
 
   const handleRestore = async () => {
+    if (operationBusy || viewClosedRef.current) {
+      return;
+    }
     if (!sdkConfigured) {
       captureRevenueCat("paywall_not_configured", {
         kind: "restore",
@@ -651,90 +584,31 @@ export default function PaywallPage() {
       return;
     }
 
-    setIsRestoring(true);
+    const canUpdateScreen = screenOperation.captureGuard();
     setPurchaseFeedback(null);
-    track(ANALYTICS_EVENTS.purchaseRestoreStarted.key, {
-      source: "paywall",
+    const result = await startCheckoutRestore({
+      appUserId,
+      originViewId: paywallViewId,
+      properties: { moment: paywallMoment, ...paywallEntry },
+      track,
+      captureError,
     });
-    track(ANALYTICS_EVENTS.restoreStarted.key, {
-      moment: paywallMoment,
-      ...paywallEntry,
-    });
-
-    try {
-      const snapshot = await restoreRevenueCatPurchases(appUserId);
-
-      hydrateRevenueCatSnapshot(snapshot);
-      const entitlementActive =
-        snapshot.featureEntitlements.premium_access ||
-        snapshot.featureEntitlements.ai_question_chat;
-      track(ANALYTICS_EVENTS.restoreSucceeded.key, {
-        entitlement_active: entitlementActive,
-        moment: paywallMoment,
-        ...paywallEntry,
-      });
-
-      if (
-        !snapshot.featureEntitlements.premium_access &&
-        !snapshot.featureEntitlements.ai_question_chat
-      ) {
-        track(ANALYTICS_EVENTS.purchaseRestoreEmpty.key, {
-          source: "paywall",
-        });
-        showPurchaseError(t("paywall.restoreEmpty"));
-        return;
-      }
-
-      track(ANALYTICS_EVENTS.purchaseRestoreSucceeded.key, {
-        active_entitlements_count:
-          snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
-        source: "paywall",
-      });
-      purchaseSucceededRef.current = true;
-      setPurchaseFeedback({
-        kind: "success",
-        message: t("paywall.restoreSuccess"),
-      });
+    if (!result || !canUpdateScreen() || viewClosedRef.current ||
+      useCheckoutStore.getState().attempt?.id !== result.id) {
+      return;
+    }
+    if (result.status === "succeeded") {
       continueAfterUnlock();
-    } catch (error) {
-      const why = getRevenueCatWhy(error);
-      const message = getRevenueCatErrorMessage(error);
-
-      captureError({
-        area: "monetization",
-        error,
-        eventName: "purchase_restore_failed",
-        message: "Purchase restore failed from the paywall.",
-        metadata: getRevenueCatDiagnostic({
-          extra: {
-            source: "paywall",
-          },
-          kind: "restore",
-          step: "restore_purchases",
-          why,
-        }),
-      });
-      track(ANALYTICS_EVENTS.purchaseRestoreFailed.key, {
-        error_code: getAnalyticsErrorCode(error),
-        source: "paywall",
-        [ANALYTICS_PROPERTIES.step]: "restore_purchases",
-        [ANALYTICS_PROPERTIES.why]: why,
-      });
-      track(ANALYTICS_EVENTS.restoreFailed.key, {
-        error_code: getAnalyticsErrorCode(error),
-        moment: paywallMoment,
-        ...paywallEntry,
-      });
-      showPurchaseError(message);
-    } finally {
-      setIsRestoring(false);
+    } else if (result.status === "empty") {
+      setPurchaseFeedback({ kind: "info", message: t(recoveryNeeded ? "paywall.checkout.check_not_found" : "paywall.restoreEmpty") });
+    } else if (result.status === "failed") {
+      showPurchaseError(t(getCheckoutErrorTranslationKey(result.errorKind)));
     }
   };
 
   const purchaseDisabled =
     hasPlusAccess ||
-    isPurchasing ||
-    isRestoring ||
+    checkoutBusy ||
     !FEATURE_FLAGS.enablePlusPurchase;
   const helperKind = getPaywallOfferHelperKind({
     hasPlusAccess,
@@ -742,66 +616,86 @@ export default function PaywallPage() {
     isPurchasing,
     offeringsCount: revenueCatOfferings.length,
     plusPurchaseEnabled: FEATURE_FLAGS.enablePlusPurchase,
-    revenueCatStatus:
-      offerRefreshState === "loading" || revenueCatStatus === "loading"
-        ? "loading"
-        : revenueCatStatus,
+    revenueCatStatus: offerLoadStatus === "loading" || offerLoadStatus === "idle" ? "loading" : "ready",
     sdkConfigured,
   });
+  const recoveryMessage = recoveryNeeded
+    ? t(checkoutAttempt?.status === "outcome_unknown"
+      ? "paywall.checkout.store_problem"
+      : checkoutAttempt?.errorKind
+        ? getCheckoutErrorTranslationKey(checkoutAttempt.errorKind)
+        : "paywall.purchasePending")
+    : null;
   const helperMessage =
-    helperKind === "purchase_unavailable"
-      ? t("paywall.purchaseUnavailable")
-      : helperKind === "purchase_loading"
-        ? t("paywall.purchaseCtaLoading")
-        : helperKind === "offers_loading"
-          ? t("paywall.directLoading")
-          : helperKind === "missing_config"
-            ? t("paywall.directMissingConfig")
-            : helperKind === "hydration_failed"
-              ? t("paywall.directHydrationFailed")
-              : helperKind === "no_offers"
-                ? t("paywall.directNoOffers")
-                : null;
+    !hasPlusAccess && journalLoading
+      ? t("paywall.checkout.check_loading")
+      : !hasPlusAccess && journalFailed
+        ? t("paywall.checkout.local_storage")
+        : !hasPlusAccess && isPurchasing
+          ? t(checkoutAttempt?.stage === "get_customer_info" ? "paywall.checkout.check_loading"
+            : checkoutAttempt?.stage === "get_offerings" ? "paywall.directLoading"
+            : showSlowPurchaseHint ? "paywall.checkout.processing_long" : "paywall.purchaseCtaLoading")
+          : !hasPlusAccess && recoveryNeeded
+            ? recoveryMessage
+            : helperKind === "purchase_unavailable"
+              ? t("paywall.purchaseUnavailable")
+              : helperKind === "purchase_loading"
+                ? t("paywall.purchaseCtaLoading")
+                : helperKind === "offers_loading"
+                  ? t("paywall.directLoading")
+                  : helperKind === "missing_config"
+                    ? t("paywall.directMissingConfig")
+                    : helperKind === "hydration_failed"
+                      ? t("paywall.directHydrationFailed")
+                      : helperKind === "no_offers"
+                        ? t("paywall.directNoOffers")
+                        : null;
   const showRetryOffers =
     sdkConfigured &&
     !hasPlusAccess &&
+    !recoveryNeeded &&
     (helperKind === "hydration_failed" || helperKind === "no_offers");
 
+  async function handleCheckPurchase() {
+    if (operationBusy || !recoveryNeeded || !screenOperation.isCurrent()) return;
+    setPurchaseFeedback(null);
+    await refreshCheckoutAccess(appUserId);
+    // Shared recovery state renders the result even on a different paywall.
+  }
+
+  function handleRetryPurchase() {
+    const attemptId = checkoutAttempt?.id;
+    if (!attemptId || !retryAvailable) return;
+    const canUpdateScreen = screenOperation.captureGuard();
+    Alert.alert(t("paywall.checkout.retry_title"), t("paywall.checkout.retry_warning"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("paywall.checkout.retry_confirm"), onPress: () => {
+        if (canUpdateScreen() && useCheckoutStore.getState().attempt?.id === attemptId &&
+          canRetryUnknownCheckout(useCheckoutStore.getState().attempt)) {
+          void handlePurchase(attemptId);
+        }
+      } },
+    ]);
+  }
+
   async function handleRetryOffers() {
-    if (!sdkConfigured || isPurchasing || isRestoring) {
+    if (!sdkConfigured || operationBusy || recoveryNeeded) {
       return;
     }
 
     setPurchaseFeedback(null);
-    beginRevenueCatHydration();
-    setOfferRefreshState("loading");
 
     try {
-      const snapshot = await fetchRevenueCatSnapshot(appUserId);
-      hydrateRevenueCatSnapshot(snapshot);
-
-      if (snapshot.offeringsError) {
-        captureRevenueCat("revenuecat_offerings_failed", {
-          error: { code: snapshot.offeringsError },
-          extra: {
-            offers_count: snapshot.offerings.length,
-          },
-          kind: "paywall_retry",
-          step: "get_offerings",
-          why: snapshot.offeringsError,
-        });
-      }
+      await fetchRevenueCatOfferings(appUserId, "paywall_retry");
     } catch (error) {
       console.warn("Failed to retry RevenueCat offers on paywall.", error);
-      markRevenueCatHydrationFailed(getRevenueCatErrorCode(error));
-      captureRevenueCat("revenuecat_hydration_failed", {
+      captureRevenueCat("revenuecat_offerings_failed", {
         error,
         kind: "paywall_retry",
-        step: "get_customer_info",
+        step: "get_offerings",
         why: getRevenueCatWhy(error),
+        extra: { ...offerTracker.getProperties(), ...getRevenueCatStructuredErrorProperties(error) },
       });
-    } finally {
-      setOfferRefreshState("done");
     }
   }
 
@@ -818,7 +712,13 @@ export default function PaywallPage() {
           <NavigationButton
             accessibilityLabel={t("common.close")}
             onPress={() => {
+              if (viewClosedRef.current) {
+                return;
+              }
               dismissMethodRef.current = "close_button";
+              trackPaywallDismissRef.current("close_button");
+              viewClosedRef.current = true;
+              screenOperation.invalidate();
               router.back();
             }}
             tone="onAccent"
@@ -880,13 +780,12 @@ export default function PaywallPage() {
               insets.bottom > 0 ? { paddingBottom: insets.bottom } : null,
             ]}
           >
-            {purchaseFeedback ? (
+            {purchaseFeedback && !hasPlusAccess ? (
               <CText
                 style={[
                   styles.feedbackText,
-                  purchaseFeedback.kind === "error"
-                    ? styles.feedbackError
-                    : styles.feedbackSuccess,
+                  purchaseFeedback.kind === "error" ? styles.feedbackError
+                    : purchaseFeedback.kind === "success" ? styles.feedbackSuccess : null,
                 ]}
                 testID="paywall-purchase-feedback"
               >
@@ -898,10 +797,37 @@ export default function PaywallPage() {
               <CText style={styles.helperText}>{helperMessage}</CText>
             ) : null}
 
+            {!hasPlusAccess && recoveryNeeded ? (
+              <>
+                {recoveryAttemptId === checkoutAttempt?.id &&
+                  (recoveryStatus === "not_found" || recoveryStatus === "failed") ? (
+                  <CText style={styles.helperText} testID="paywall-check-result">
+                    {t(recoveryStatus === "failed" ? "paywall.checkout.check_failed" : "paywall.checkout.check_not_found")}
+                  </CText>
+                ) : null}
+                <Pressable accessibilityRole="button" disabled={operationBusy}
+                  onPress={() => void handleCheckPurchase()}
+                  style={({ pressed }) => [styles.restoreButton, pressed ? styles.pressed : null]}
+                  testID="paywall-check-purchase">
+                  <CText style={styles.restoreLabel}>
+                    {t(recoveryInFlight && recoveryStatus === "checking" ? "paywall.checkout.check_loading" : "paywall.checkout.check_cta")}
+                  </CText>
+                </Pressable>
+                {checkoutAttempt?.status === "outcome_unknown" ? (
+                  <Pressable accessibilityRole="button" disabled={!retryAvailable}
+                    onPress={handleRetryPurchase}
+                    style={({ pressed }) => [styles.restoreButton, !retryAvailable ? styles.ctaDisabled : null, pressed ? styles.pressed : null]}
+                    testID="paywall-retry-purchase">
+                    <CText style={styles.restoreLabel}>{t("paywall.checkout.retry_cta")}</CText>
+                  </Pressable>
+                ) : null}
+              </>
+            ) : null}
+
             {showRetryOffers ? (
               <Pressable
                 accessibilityRole="button"
-                disabled={isPurchasing || isRestoring}
+                disabled={operationBusy}
                 onPress={() => void handleRetryOffers()}
                 style={({ pressed }) => [
                   styles.restoreButton,
@@ -927,7 +853,7 @@ export default function PaywallPage() {
                   </View>
                 ) : null}
 
-                <Pressable
+                {!recoveryNeeded ? <Pressable
                   accessibilityRole="button"
                   disabled={purchaseDisabled}
                   onPress={() => void handlePurchase()}
@@ -945,11 +871,11 @@ export default function PaywallPage() {
                       {t("paywall.activateCta")}
                     </CText>
                   )}
-                </Pressable>
+                </Pressable> : null}
 
                 <Pressable
                   accessibilityRole="button"
-                  disabled={isPurchasing || isRestoring}
+                  disabled={operationBusy}
                   onPress={() => void handleRestore()}
                   style={({ pressed }) => [
                     styles.restoreButton,
@@ -985,6 +911,13 @@ export default function PaywallPage() {
       </SafeAreaView>
     </PaywallScreen>
   );
+}
+
+function selectPaywallPackage(offers: RevenueCatPackageSummary[], monetizationV2: boolean) {
+  return (monetizationV2
+    ? offers.find((item) => matchRevenueCatProductId(item) === "lifetime") ??
+      offers.find((item) => item.packageType === "LIFETIME")
+    : null) ?? pickRecommendedPackage(offers);
 }
 
 function getSingleParam(value: string | string[] | undefined) {

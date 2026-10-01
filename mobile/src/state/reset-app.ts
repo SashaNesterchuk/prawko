@@ -5,11 +5,14 @@ import { disableStudyNotificationsAsync } from "../features/notifications/runtim
 import { getMobileSupabaseClient } from "../lib/supabase";
 import { clearOfflinePack } from "../features/offline/offline-pack";
 import { clearQuestionCatalogCache } from "../features/questions/question-catalog-cache";
+import { isCheckoutJournalStorageKey } from "../features/entitlements/checkout-journal";
+import { clearLocalExamSessions } from "../features/exam/local-exam";
+import { clearExamSnapshotMemory, flushExamSnapshotPersistence } from "../features/exam/exam-snapshot-cache";
 import { useAiChatStore } from "./ai-chat";
 import { useAppShellStore } from "./app-shell";
 import { useEntitlementStore } from "./entitlements";
 import { useFreeTierQuestionUsageStore } from "./free-tier-usage";
-import { useQuestionProgressStore } from "./question-progress";
+import { flushQuestionProgressPersist, useQuestionProgressStore } from "./question-progress";
 import { useReadinessSnapshotStore } from "./readiness-snapshot";
 import { useReviewPromptStore } from "./review-prompt";
 import { useSignBookmarksStore } from "./sign-bookmarks";
@@ -18,8 +21,8 @@ import { useMonetizationStore } from "../features/monetization/monetization-stor
 import { useHomeContextualStore } from "../features/home/home-contextual-store";
 
 /**
- * Wipes every persisted store and resets in-memory state so the app behaves like
- * a fresh install: the user is sent back through onboarding from scratch.
+ * Resets learning/onboarding and free quota. Financial recovery markers are
+ * independent: resetting progress must not forget a possibly charged checkout.
  */
 export async function resetAppToFreshStart() {
   const { authMode } = useAppShellStore.getState();
@@ -28,7 +31,7 @@ export async function resetAppToFreshStart() {
     try {
       await getMobileSupabaseClient().auth.signOut();
     } catch {
-      // Best effort — local reset below still clears everything.
+      // Best effort — the local learning reset below still proceeds.
     }
   }
 
@@ -51,9 +54,20 @@ export async function resetAppToFreshStart() {
   });
   useAppShellStore.getState().resetShell();
 
-  // Wipe persisted storage so the next launch is also fully fresh.
+  // Reset learning, not an unresolved payment. Native install identity lives
+  // separately in secure storage; checkout markers retain that same identity.
+  await Promise.all([
+    flushExamSnapshotPersistence(),
+    flushQuestionProgressPersist(),
+  ]);
+  clearLocalExamSessions();
+  clearExamSnapshotMemory();
   try {
-    await AsyncStorage.clear();
+    const learningKeys = (await AsyncStorage.getAllKeys())
+      .filter((key) => !isCheckoutJournalStorageKey(key));
+    if (learningKeys.length > 0) {
+      await AsyncStorage.multiRemove(learningKeys);
+    }
   } catch {
     // Ignore storage errors — in-memory state is already reset.
   }

@@ -2,6 +2,7 @@ import {
   isQuestionTopicId,
   isTopicBlockId,
   normalizeQuestionTopicId,
+  type CountryCode,
 } from "@prawko/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppState } from "react-native";
@@ -41,11 +42,32 @@ import type {
   QuestionUserStateMap,
   TopicQuestionProgressMap,
 } from "../features/questions/types";
+import { getExamCountry, useAppShellStore } from "./app-shell";
+
+type ExamProgressLedger = Record<
+  string,
+  { attemptIds: string[]; finalized: boolean }
+>;
+
+type ExamProgressBatch = {
+  country: CountryCode;
+  sessionId: string;
+  startedAt: string;
+  finalized: boolean;
+  attempts: {
+    id: string;
+    questionId: string;
+    answeredAt: string;
+    isCorrect: boolean;
+  }[];
+};
 
 type PersistedQuestionProgress = Pick<
   QuestionProgressState,
   | "activeSession"
   | "attempts"
+  | "examProgressLedger"
+  | "examProgressResetAt"
   | "homeDailySession"
   | "lastTrainingSessionPercents"
   | "questionUserState"
@@ -78,7 +100,7 @@ export function discardPendingQuestionProgressPersist() {
 function createDeferredProgressStorage(): PersistStorage<PersistedQuestionProgress> {
   const pendingWrites = new Map<string, StorageValue<PersistedQuestionProgress>>();
   let flushTimeout: ReturnType<typeof setTimeout> | null = null;
-  let isFlushQueued = false;
+  let persistChain: Promise<void> = Promise.resolve();
 
   const flush = () => {
     if (flushTimeout) {
@@ -86,35 +108,34 @@ function createDeferredProgressStorage(): PersistStorage<PersistedQuestionProgre
       flushTimeout = null;
     }
 
-    if (pendingWrites.size === 0 || isFlushQueued) {
-      return Promise.resolve();
+    if (pendingWrites.size === 0) {
+      return persistChain;
     }
 
     // Snapshot now, stringify on a later turn so tab presses / navigation are
     // not blocked by JSON.stringify of a multi‑MB progress blob.
     const pendingEntries = [...pendingWrites.entries()];
     pendingWrites.clear();
-    isFlushQueued = true;
-
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        isFlushQueued = false;
-
-        try {
-          const entries = pendingEntries.map(
-            ([name, value]) => [name, JSON.stringify(value)] as [string, string]
-          );
-          void AsyncStorage.multiSet(entries)
-            .catch((error) => {
-              console.warn("Failed to persist question progress.", error);
-            })
-            .finally(resolve);
-        } catch (error) {
-          console.warn("Failed to serialize question progress.", error);
-          resolve();
-        }
-      }, 0);
-    });
+    persistChain = persistChain.then(() =>
+      new Promise<void>((resolve) => {
+        setTimeout(() => {
+          try {
+            const entries = pendingEntries.map(
+              ([name, value]) => [name, JSON.stringify(value)] as [string, string]
+            );
+            void AsyncStorage.multiSet(entries)
+              .catch((error) => {
+                console.warn("Failed to persist question progress.", error);
+              })
+              .finally(resolve);
+          } catch (error) {
+            console.warn("Failed to serialize question progress.", error);
+            resolve();
+          }
+        }, 0);
+      })
+    );
+    return persistChain;
   };
 
   flushDeferredProgressPersist = () => flush();
@@ -167,7 +188,12 @@ function createDeferredProgressStorage(): PersistStorage<PersistedQuestionProgre
 type QuestionProgressState = {
   activeSession: QuestionSession | null;
   attempts: QuestionAttempt[];
+  /** Stored atomically with counters, inside the country's progress blob. */
+  examProgressLedger: ExamProgressLedger;
+  examProgressResetAt: string | null;
   hasHydrated: boolean;
+  /** Runtime context, never restored from another country's persisted state. */
+  hydratedCountry: CountryCode | null;
   /** Pinned Home “today: 10” session so trainer/exam cannot replace the day’s set. */
   homeDailySession: QuestionSession | null;
   /** Last finished training percent by mode:topic — used for session delta badges. */
@@ -184,13 +210,7 @@ type QuestionProgressState = {
   topicQuestionProgress: TopicQuestionProgressMap;
   /** False only for legacy saves until the catalog can attribute their progress. */
   topicQuestionProgressSeeded: boolean;
-  applyQuestionAttemptOutcome: (
-    questionId: string,
-    input: {
-      answeredAt: string;
-      isCorrect: boolean;
-    }
-  ) => void;
+  applyExamAttemptBatch: (input: ExamProgressBatch) => boolean;
   advanceSession: () => void;
   finishActiveSession: () => void;
   retreatSession: () => void;
@@ -207,7 +227,7 @@ type QuestionProgressState = {
     questionUserState: QuestionUserStateMap
   ) => void;
   reconcileCatalog: (validQuestionIds: string[]) => void;
-  resetProgress: () => void;
+  resetProgress: (options?: { countrySwitch?: boolean }) => void;
   setHasHydrated: (value: boolean) => void;
   startOrResumeSession: (request: QuestionSessionRequest) => QuestionSession;
   pauseActiveSessionTimer: () => void;
@@ -221,7 +241,10 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
     (set, get) => ({
       activeSession: null,
       attempts: [],
+      examProgressLedger: {},
+      examProgressResetAt: null,
       hasHydrated: false,
+      hydratedCountry: null,
       homeDailySession: null,
       lastTrainingSessionPercents: {},
       questionUserState: {},
@@ -229,24 +252,61 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
       topicQuestionContextProgress: {},
       topicQuestionProgress: {},
       topicQuestionProgressSeeded: true,
-      applyQuestionAttemptOutcome: (questionId, input) =>
-        set((state) => {
-          const previousState = getQuestionUserState(
-            state.questionUserState,
-            questionId
-          );
-          const nextState = getNextQuestionUserStateAfterAttempt(previousState, {
-            answeredAt: input.answeredAt,
-            isCorrect: input.isCorrect,
-          });
+      applyExamAttemptBatch: (input) => {
+        const state = get();
+        if (
+          !state.hasHydrated ||
+          state.hydratedCountry !== input.country ||
+          getExamCountry() !== input.country
+        ) {
+          // The snapshot remains on disk; replay it after its country's hydration.
+          return false;
+        }
+        if (
+          state.examProgressResetAt &&
+          Date.parse(input.startedAt) < Date.parse(state.examProgressResetAt)
+        ) {
+          // Resetting learning must not resurrect old exam answers on next launch.
+          return true;
+        }
 
-          return {
-            questionUserState: {
-              ...state.questionUserState,
-              [questionId]: nextState,
+        const key = `${input.country}:${input.sessionId}`;
+        const entry = state.examProgressLedger[key];
+        if (entry?.finalized) {
+          return true;
+        }
+        const applied = new Set(entry?.attemptIds ?? []);
+        let questionUserState = state.questionUserState;
+        let changed = false;
+        const attempts = [...input.attempts].sort(
+          (left, right) => Date.parse(left.answeredAt) - Date.parse(right.answeredAt)
+        );
+        for (const attempt of attempts) {
+          if (applied.has(attempt.id) || !Number.isFinite(Date.parse(attempt.answeredAt))) {
+            continue;
+          }
+          if (!changed) {
+            questionUserState = { ...state.questionUserState };
+          }
+          const previous = getQuestionUserState(questionUserState, attempt.questionId);
+          questionUserState[attempt.questionId] = getNextQuestionUserStateAfterAttempt(
+            previous,
+            attempt
+          );
+          applied.add(attempt.id);
+          changed = true;
+        }
+        if (changed || (input.finalized && !entry?.finalized)) {
+          set({
+            questionUserState,
+            examProgressLedger: {
+              ...state.examProgressLedger,
+              [key]: { attemptIds: [...applied], finalized: input.finalized },
             },
-          };
-        }),
+          });
+        }
+        return true;
+      },
       advanceSession: () => {
         const wasFinished = Boolean(get().activeSession?.finishedAt);
         set((state) => {
@@ -512,10 +572,12 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
             [key]: percent,
           },
         })),
-      resetProgress: () =>
+      resetProgress: (options) =>
         set({
           activeSession: null,
           attempts: [],
+          examProgressLedger: {},
+          examProgressResetAt: options?.countrySwitch ? null : new Date().toISOString(),
           homeDailySession: null,
           lastTrainingSessionPercents: {},
           questionUserState: {},
@@ -675,6 +737,8 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
       partialize: (state) => ({
         activeSession: state.activeSession,
         attempts: state.attempts,
+        examProgressLedger: state.examProgressLedger,
+        examProgressResetAt: state.examProgressResetAt,
         homeDailySession: state.homeDailySession,
         lastTrainingSessionPercents: state.lastTrainingSessionPercents,
         questionUserState: state.questionUserState,
@@ -715,6 +779,9 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
         return {
           ...currentState,
           ...persisted,
+          hydratedCountry: currentState.hydratedCountry,
+          examProgressLedger: persisted.examProgressLedger ?? {},
+          examProgressResetAt: persisted.examProgressResetAt ?? null,
           activeSession: normalizePersistedSessionTopic(
             persisted.activeSession ?? currentState.activeSession
           ),
@@ -764,7 +831,10 @@ export function useActiveQuestionSession() {
 }
 
 export function useQuestionProgressHydrated() {
-  return useQuestionProgressStore((state) => state.hasHydrated);
+  const country = useAppShellStore((state) => state.examCountry);
+  return useQuestionProgressStore(
+    (state) => country !== null && state.hasHydrated && state.hydratedCountry === country
+  );
 }
 
 function reconcileSessionWithCatalog(

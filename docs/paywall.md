@@ -363,6 +363,13 @@ outside_tap
 paywall_viewed
 ```
 
+Готовность продукта измеряется отдельно: `paywall_offer_load_started` →
+`paywall_offer_ready` / `paywall_offer_failed`, с `paywall_view_id`,
+`offer_load_id` и duration. `offers_count=0` при открытии не равен ошибке:
+предложение могло ещё загружаться. Готовый кеш приложения даёт ready с
+`is_cached=true`, `load_duration_ms=0`. Точный текущий контракт —
+[analytics/keys.md](./analytics/keys.md).
+
 Properties:
 
 ```text
@@ -572,6 +579,13 @@ entitlement_active = true/false
 от:
 
 > restore прошёл нормально, но покупок у аккаунта нет.
+
+Канонический успех восстановления — **только `purchase_restore_succeeded`**
+(`entitlement_active=true`, `restore_outcome=restored`). Без подтверждённого
+Plus — `purchase_restore_empty` и `restore_outcome=empty`, при ошибке —
+`purchase_restore_failed` и `restore_outcome=failed`. Все ветки имеют
+`restore_attempt_id`; legacy `restore_*` описывают тот же запрос и не
+суммируются с `purchase_restore_*`. Restore не является новой выручкой.
 
 ---
 

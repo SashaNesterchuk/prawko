@@ -41,6 +41,10 @@ import {
   type ExamProfile,
 } from "../exam/exam-profile";
 import type { ExamSimulatorMode } from "../exam/types";
+import {
+  getExamBaseVideoTargetsByPoints,
+  getExamPointTargets,
+} from "../exam/exam-config";
 
 const EXAM_PREVIEW_TOTAL = 12;
 const SAVED_SPRINT_TOTAL = 10;
@@ -392,27 +396,39 @@ export function getNextQuestionUserStateAfterAttempt(
     currentState.questionId,
     currentState
   );
+  const answeredAt = Date.parse(input.answeredAt);
+  const isOlderAttempt = answeredAt < Date.parse(normalizedState.lastSeenAt ?? "");
   const nextState = normalizeQuestionUserState(normalizedState.questionId, {
     ...normalizedState,
     timesSeen: normalizedState.timesSeen + 1,
     timesCorrect:
       normalizedState.timesCorrect + (input.isCorrect ? 1 : 0),
     timesWrong: normalizedState.timesWrong + (input.isCorrect ? 0 : 1),
-    consecutiveCorrect: input.isCorrect
+    // Recovery may insert an exam answer before newer training answers. Count
+    // it, but do not overwrite the learner's latest result, streak or schedule.
+    consecutiveCorrect: isOlderAttempt
+      ? normalizedState.consecutiveCorrect
+      : input.isCorrect
       ? normalizedState.consecutiveCorrect + 1
       : 0,
-    lastSeenAt: input.answeredAt,
+    lastSeenAt: isOlderAttempt ? normalizedState.lastSeenAt : input.answeredAt,
     lastCorrectAt: input.isCorrect
-      ? input.answeredAt
+      ? Date.parse(normalizedState.lastCorrectAt ?? "") > answeredAt
+        ? normalizedState.lastCorrectAt
+        : input.answeredAt
       : normalizedState.lastCorrectAt,
     lastWrongAt: input.isCorrect
       ? normalizedState.lastWrongAt
-      : input.answeredAt,
+      : Date.parse(normalizedState.lastWrongAt ?? "") > answeredAt
+        ? normalizedState.lastWrongAt
+        : input.answeredAt,
   });
 
   return {
     ...nextState,
-    reviewDueAt: getReviewDueAtForState(nextState),
+    reviewDueAt: isOlderAttempt
+      ? normalizedState.reviewDueAt
+      : getReviewDueAtForState(nextState),
   };
 }
 
@@ -1225,7 +1241,7 @@ export function getExamQuestionIds(
   if (profile.id === "etesty") {
     const questionBank = getQuestionBank();
     if (
-      mode === "exam" &&
+      mode !== "mini_test" &&
       desiredTotal >= profile.totalQuestions &&
       profile.baskets.length > 0
     ) {
@@ -1243,7 +1259,96 @@ export function getExamQuestionIds(
     );
   }
 
+  if (mode !== "mini_test") {
+    return getOfficialWordQuestionIds();
+  }
+
   return getExamPreviewQuestionIds(userStates, now, desiredTotal);
+}
+
+/** WORD tickets have fixed point buckets, not just a 20/12 scope split. */
+function getOfficialWordQuestionIds() {
+  // Use the same unique-ID catalogue as buildQuestionRefs. A duplicated row
+  // must not count as two available questions in a statutory bucket.
+  const questionBankById = getQuestionBankById();
+  const questionBank = Object.values(questionBankById);
+  const selected: LocalQuestion[] = [];
+
+  for (const scope of ["base", "specialist"] as const) {
+    const scopeSelected: LocalQuestion[] = [];
+    const target =
+      scope === "base"
+        ? EXAM_RULES.baseQuestions
+        : EXAM_RULES.specialistQuestions;
+    const pointTargets = getExamPointTargets(scope, target);
+    const videoTargets = getExamBaseVideoTargetsByPoints(
+      pointTargets,
+      scope === "base" ? getExamBaseVideoMinTarget(target) : 0
+    );
+    const buckets = videoTargets.map((bucket) => {
+      // Official tickets are random, not adapted to the learner's mistakes or
+      // mastery. Shuffle within each mandatory point bucket before sampling.
+      const pool = shuffleIds(
+        questionBank
+          .filter(
+            (question) =>
+              question.scope === scope && question.points === bucket.points
+          )
+          .map((question) => question.id)
+      ).map((id) => questionBankById[id]!);
+      if (pool.length < bucket.count) {
+        throw new Error(
+          `Official WORD ${scope} requires ${bucket.count} questions worth ${bucket.points} points; only ${pool.length} are available.`
+        );
+      }
+      const videoCapacity = Math.min(
+        bucket.count,
+        pool.filter(isVideoQuestion).length
+      );
+      return {
+        ...bucket,
+        pool,
+        videoCapacity,
+        videoMin: Math.min(bucket.videoMin, videoCapacity),
+      };
+    });
+
+    // If a point bucket lacks videos, move its soft media quota into another
+    // bucket with spare video capacity. Never move statutory question slots.
+    let missingVideos =
+      scope === "base"
+        ? Math.max(
+            0,
+            getExamBaseVideoMinTarget(target) -
+              buckets.reduce((sum, bucket) => sum + bucket.videoMin, 0)
+          )
+        : 0;
+    for (const bucket of buckets) {
+      const extra = Math.min(
+        missingVideos,
+        bucket.videoCapacity - bucket.videoMin
+      );
+      bucket.videoMin += extra;
+      missingVideos -= extra;
+      scopeSelected.push(
+        ...(scope === "base"
+          ? pickBaseQuestionsWithSoftVideoQuota(
+              bucket.pool,
+              bucket.count,
+              bucket.videoMin
+            )
+          : bucket.pool.slice(0, bucket.count))
+      );
+    }
+    // Keep basic questions before specialist questions, without exposing the
+    // point-bucket or media-selection order within either part.
+    selected.push(
+      ...shuffleIds(scopeSelected.map((question) => question.id))
+        .map((id) => questionBankById[id]!)
+    );
+  }
+
+  return selected.map((question) => question.id);
 }
 
 function pickBasketQuestionIds(
@@ -1805,7 +1910,8 @@ function isVideoQuestion(question: LocalQuestion) {
  */
 function pickBaseQuestionsWithSoftVideoQuota(
   sortedBaseQuestions: LocalQuestion[],
-  targetCount: number
+  targetCount: number,
+  videoMinTarget: number = getExamBaseVideoMinTarget(targetCount)
 ) {
   if (targetCount <= 0) {
     return [];
@@ -1813,7 +1919,7 @@ function pickBaseQuestionsWithSoftVideoQuota(
 
   const videoMin = Math.min(
     targetCount,
-    getExamBaseVideoMinTarget(targetCount),
+    videoMinTarget,
     sortedBaseQuestions.filter(isVideoQuestion).length
   );
   const videos = sortedBaseQuestions.filter(isVideoQuestion);

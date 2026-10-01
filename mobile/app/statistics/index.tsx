@@ -32,7 +32,7 @@ import { openTrackedPaywall } from "../../src/features/monetization/v2/analytics
 import { openPaywall } from "../../src/features/monetization/v2/paywall";
 import { useMonetizationV2Active } from "../../src/features/monetization/v2/store";
 import { getTopicLearnAccess } from "../../src/features/home/roadmap";
-import { fetchRecentExamSessions } from "../../src/features/exam/supabase-exam";
+import { useRecentExamSessions } from "../../src/features/exam/useRecentExamSessions";
 import type { RemoteExamSession } from "../../src/features/exam/types";
 import {
   buildWeekActivity,
@@ -183,7 +183,7 @@ export default function StatisticsScreen() {
   const [isSavingExamDate, setIsSavingExamDate] = useState(false);
   const [readinessSummary, setReadinessSummary] =
     useState<RemoteReadinessSummary | null>(null);
-  const [examSessions, setExamSessions] = useState<RemoteExamSession[]>([]);
+  const { sessions: examSessions } = useRecentExamSessions(100);
   const { openMode, dialog: questionModeCountDialog } =
     useQuestionModeCountDialog();
 
@@ -199,7 +199,6 @@ export default function StatisticsScreen() {
 
     if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
       setReadinessSummary(null);
-      setExamSessions([]);
       return;
     }
 
@@ -217,22 +216,10 @@ export default function StatisticsScreen() {
         }
       });
 
-    void fetchRecentExamSessions(100)
-      .then((sessions) => {
-        if (!cancelled) {
-          setExamSessions(sessions);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setExamSessions([]);
-        }
-      });
-
     return () => {
       cancelled = true;
     };
-  }, [authMode, isFocused]);
+  }, [authMode, examCountry, isFocused]);
 
   const stats = useMemo(
     () => getQuestionDisplayStats(questionUserState),

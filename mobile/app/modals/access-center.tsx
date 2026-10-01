@@ -10,19 +10,23 @@ import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import {
   getRevenueCatDiagnostic,
-  getRevenueCatErrorMessage,
   getRevenueCatWhy,
   isRevenueCatConfiguredForCurrentPlatform,
   presentRevenueCatCustomerCenter,
-  restoreRevenueCatPurchases,
 } from "../../src/features/entitlements/revenuecat";
+import {
+  createCheckoutId,
+  isCheckoutPending,
+  needsCheckoutRecovery,
+  refreshCheckoutAccess,
+  startCheckoutRestore,
+  useCheckoutStore,
+} from "../../src/features/entitlements/checkout";
+import { getCheckoutErrorTranslationKey } from "../../src/features/entitlements/revenuecat-errors";
+import { useScreenOperationGuard } from "../../src/hooks/useScreenOperationGuard";
 import { formatPlanDate } from "../../src/features/study-plan/generate-local-study-plan";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
-import {
-  ANALYTICS_EVENTS,
-  ANALYTICS_PROPERTIES,
-  getAnalyticsErrorCode,
-} from "../../src/analytics/catalog";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
 import { useErrorLogger } from "../../src/providers/ErrorLoggingProvider";
 import {
   useEntitlementStore,
@@ -35,7 +39,7 @@ import { useAppShellStore, useCurrentUser } from "../../src/state/app-shell";
 
 type FeedbackState =
   | {
-      kind: "error" | "success";
+      kind: "error" | "success" | "info";
       message: string;
     }
   | null;
@@ -55,7 +59,21 @@ export default function AccessCenterModalScreen() {
   const hydrateRevenueCatSnapshot = useEntitlementStore(
     (state) => state.hydrateRevenueCatSnapshot
   );
-  const [isRestoring, setIsRestoring] = useState(false);
+  const checkoutAttempt = useCheckoutStore((state) => state.attempt);
+  const nativeRequestInFlight = useCheckoutStore((state) => state.nativeRequestInFlight);
+  const recoveryInFlight = useCheckoutStore((state) => state.recoveryInFlight);
+  const recoveryStatus = useCheckoutStore((state) => state.recoveryStatus);
+  const recoveryAttemptId = useCheckoutStore((state) => state.recoveryAttemptId);
+  const journalLoading = useCheckoutStore((state) =>
+    state.journalAppUserId !== appUserId || state.journalStatus === "idle" || state.journalStatus === "loading"
+  );
+  const checkoutBusy = journalLoading || nativeRequestInFlight || recoveryInFlight || isCheckoutPending(checkoutAttempt);
+  const operationBusy = journalLoading || nativeRequestInFlight || recoveryInFlight;
+  const recoveryNeeded = checkoutAttempt?.appUserId === appUserId && needsCheckoutRecovery(checkoutAttempt);
+  const isRestoring = (nativeRequestInFlight && checkoutAttempt?.kind === "restore") ||
+    (recoveryInFlight && recoveryStatus === "restoring");
+  const [checkoutViewId] = useState(createCheckoutId);
+  const screenOperation = useScreenOperationGuard();
   const [isOpeningCustomerCenter, setIsOpeningCustomerCenter] = useState(false);
   const [restoreFeedback, setRestoreFeedback] = useState<FeedbackState>(null);
 
@@ -88,74 +106,38 @@ export default function AccessCenterModalScreen() {
       return;
     }
 
-    setIsRestoring(true);
+    if (operationBusy || isOpeningCustomerCenter) {
+      return;
+    }
+    const canUpdateScreen = screenOperation.captureGuard();
     setRestoreFeedback(null);
-    track(ANALYTICS_EVENTS.purchaseRestoreStarted.key, {
-      source: "access_center",
+    const result = await startCheckoutRestore({
+      appUserId,
+      originViewId: checkoutViewId,
+      properties: { source: "access_center" },
+      track,
+      captureError,
     });
-
-    try {
-      const snapshot = await restoreRevenueCatPurchases(appUserId);
-
-      hydrateRevenueCatSnapshot(snapshot);
-
-      if (
-        !snapshot.featureEntitlements.premium_access &&
-        !snapshot.featureEntitlements.ai_question_chat
-      ) {
-        track(ANALYTICS_EVENTS.purchaseRestoreEmpty.key, {
-          source: "access_center",
-        });
-        setRestoreFeedback({
-          kind: "error",
-          message: t("paywall.restoreEmpty"),
-        });
-        return;
-      }
-
-      track(ANALYTICS_EVENTS.purchaseRestoreSucceeded.key, {
-        active_entitlements_count:
-          snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0,
-        source: "access_center",
-      });
-      setRestoreFeedback({
-        kind: "success",
-        message: t("paywall.restoreSuccess"),
-      });
-    } catch (error) {
-      const why = getRevenueCatWhy(error);
-      const message = getRevenueCatErrorMessage(error);
-
-      captureError({
-        area: "payments",
-        error,
-        eventName: "access_center_purchase_restore_failed",
-        message: "Purchase restore failed from the access center.",
-        metadata: getRevenueCatDiagnostic({
-          extra: {
-            source: "access_center",
-          },
-          kind: "restore",
-          step: "restore_purchases",
-          why,
-        }),
-      });
-      track(ANALYTICS_EVENTS.purchaseRestoreFailed.key, {
-        error_code: getAnalyticsErrorCode(error),
-        source: "access_center",
-        [ANALYTICS_PROPERTIES.step]: "restore_purchases",
-        [ANALYTICS_PROPERTIES.why]: why,
-      });
+    if (!result || !canUpdateScreen() || useCheckoutStore.getState().attempt?.id !== result.id) {
+      return;
+    }
+    if (result.status === "succeeded") {
+      setRestoreFeedback({ kind: "success", message: t("paywall.restoreSuccess") });
+    } else if (result.status === "empty") {
+      setRestoreFeedback({ kind: "info", message: t(recoveryNeeded ? "paywall.checkout.check_not_found" : "paywall.restoreEmpty") });
+    } else if (result.status === "failed") {
       setRestoreFeedback({
         kind: "error",
-        message,
+        message: t(getCheckoutErrorTranslationKey(result.errorKind)),
       });
-    } finally {
-      setIsRestoring(false);
     }
   }
 
   async function handleOpenCustomerCenter() {
+    if (checkoutBusy || isOpeningCustomerCenter) {
+      return;
+    }
+    const canUpdateScreen = screenOperation.captureGuard();
     if (!currentUser || authMode !== "supabase") {
       setRestoreFeedback({
         kind: "error",
@@ -216,13 +198,31 @@ export default function AccessCenterModalScreen() {
           why,
         }),
       });
-      setRestoreFeedback({
-        kind: "error",
-        message: t("accessCenter.manageSubscriptionFailedBody"),
-      });
+      if (canUpdateScreen()) {
+        setRestoreFeedback({
+          kind: "error",
+          message: t("accessCenter.manageSubscriptionFailedBody"),
+        });
+      }
     } finally {
-      setIsOpeningCustomerCenter(false);
+      if (screenOperation.isMounted()) {
+        setIsOpeningCustomerCenter(false);
+      }
     }
+  }
+
+  async function handleCheckPurchase() {
+    if (operationBusy || isOpeningCustomerCenter || !recoveryNeeded) return;
+    const canUpdateScreen = screenOperation.captureGuard();
+    const attemptId = checkoutAttempt?.id;
+    setRestoreFeedback(null);
+    const result = await refreshCheckoutAccess(appUserId);
+    if (!result || !canUpdateScreen() || useCheckoutStore.getState().attempt?.id !== attemptId) return;
+    setRestoreFeedback({
+      kind: result.outcome === "active" ? "success" : result.outcome === "failed" ? "error" : "info",
+      message: t(result.outcome === "active" ? "paywall.purchaseAccessActive"
+        : result.outcome === "failed" ? "paywall.checkout.check_failed" : "paywall.checkout.check_not_found"),
+    });
   }
 
   return (
@@ -239,7 +239,10 @@ export default function AccessCenterModalScreen() {
           <AppButton
             variant="ghost"
             label={t("common.close")}
-            onPress={() => router.back()}
+            onPress={() => {
+              screenOperation.invalidate();
+              router.back();
+            }}
           />
         </View>
       }
@@ -284,7 +287,7 @@ export default function AccessCenterModalScreen() {
             <View style={styles.inlineAction}>
               <AppButton
                 variant="secondary"
-                disabled={isOpeningCustomerCenter}
+                disabled={isOpeningCustomerCenter || checkoutBusy}
                 label={t(
                   isOpeningCustomerCenter
                     ? "accessCenter.customerCenterLoading"
@@ -310,10 +313,27 @@ export default function AccessCenterModalScreen() {
               message={restoreFeedback.message}
             />
           ) : null}
+          {recoveryNeeded && !hasPlusAccess ? (
+            <>
+              <CText style={styles.helperText}>
+                {t(checkoutAttempt?.status === "outcome_unknown"
+                  ? "paywall.checkout.store_problem"
+                  : checkoutAttempt?.errorKind
+                    ? getCheckoutErrorTranslationKey(checkoutAttempt.errorKind)
+                    : "paywall.purchasePending")}
+              </CText>
+              {!restoreFeedback && recoveryAttemptId === checkoutAttempt?.id &&
+                (recoveryStatus === "not_found" || recoveryStatus === "failed") ? (
+                <CText style={styles.helperText}>
+                  {t(recoveryStatus === "failed" ? "paywall.checkout.check_failed" : "paywall.checkout.check_not_found")}
+                </CText>
+              ) : null}
+            </>
+          ) : null}
           <View style={styles.restoreActions}>
             <AppButton
               variant="secondary"
-              disabled={isRestoring || !sdkConfigured}
+              disabled={operationBusy || isOpeningCustomerCenter || !sdkConfigured}
               label={t(
                 isRestoring
                   ? "paywall.restoreCtaLoading"
@@ -321,6 +341,11 @@ export default function AccessCenterModalScreen() {
               )}
               onPress={() => void handleRestorePurchase()}
             />
+            {recoveryNeeded && !hasPlusAccess ? (
+              <AppButton variant="secondary" disabled={operationBusy || isOpeningCustomerCenter}
+                label={t(recoveryInFlight ? "paywall.checkout.check_loading" : "paywall.checkout.check_cta")}
+                onPress={() => void handleCheckPurchase()} />
+            ) : null}
             <AppButton
               variant="ghost"
               label={t("accessCenter.openOffers")}
@@ -337,7 +362,7 @@ function StatusCard({
   kind,
   message,
 }: {
-  kind: "error" | "success";
+  kind: "error" | "success" | "info";
   message: string;
 }) {
   const styles = useStyles();
@@ -346,13 +371,13 @@ function StatusCard({
     <View
       style={[
         styles.statusCard,
-        kind === "error" ? styles.statusError : styles.statusSuccess,
+        kind === "error" ? styles.statusError : kind === "success" ? styles.statusSuccess : styles.statusInfo,
       ]}
     >
       <CText
         style={[
           styles.statusText,
-          kind === "error" ? styles.statusErrorText : styles.statusSuccessText,
+          kind === "error" ? styles.statusErrorText : kind === "success" ? styles.statusSuccessText : styles.bodyText,
         ]}
       >
         {message}
@@ -413,6 +438,9 @@ function useStyles() {
     },
     statusSuccessText: {
       color: colors.statusSuccessBorder,
+    },
+    statusInfo: {
+      borderColor: colors.textMuted,
     },
     statusLine: {
       color: colors.textPrimary,

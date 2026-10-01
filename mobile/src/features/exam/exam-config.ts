@@ -224,6 +224,19 @@ export function getScaledExamPassPoints(
   );
 }
 
+/** Each country's full simulator has a fixed pass mark; only minis scale. */
+export function getExamPassPoints(
+  mode: ExamSimulatorMode,
+  totalPointsTarget: number,
+  profile: ExamProfile = getExamProfile()
+) {
+  if (mode !== "mini_test") {
+    return profile.passingPoints;
+  }
+
+  return getScaledExamPassPoints(totalPointsTarget, profile);
+}
+
 export function formatExamCountdown(totalSeconds: number | null | undefined) {
   const normalized = Math.max(0, Math.floor(totalSeconds ?? 0));
   const minutes = Math.floor(normalized / 60)

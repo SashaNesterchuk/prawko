@@ -1,9 +1,11 @@
 import type { PropsWithChildren } from "react";
 import { useEffect, useRef } from "react";
 import { AppState } from "react-native";
+import type { AnalyticsProperties } from "../analytics/catalog";
 
 import {
   fetchRevenueCatSnapshot,
+  fetchRevenueCatAccessSnapshot,
   getRevenueCatDiagnostic,
   getRevenueCatErrorCode,
   getRevenueCatWhy,
@@ -11,6 +13,13 @@ import {
   subscribeToRevenueCatCustomerInfo,
   syncRevenueCatSubscriberAttributes,
 } from "../features/entitlements/revenuecat";
+import {
+  hydrateCheckoutJournal,
+  observeCheckoutAppState,
+  reconcileCheckoutAccess,
+  refreshCheckoutAccess,
+} from "../features/entitlements/checkout";
+import { useAnalytics } from "../hooks/useAnalytics";
 import { useAppUserId } from "../identity/AppIdentityProvider";
 import { useHasHydrated, useAppShellStore } from "../state/app-shell";
 import { useEntitlementStore } from "../state/entitlements";
@@ -22,8 +31,11 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
   const appUserId = useAppUserId();
   const appShellHydrated = useHasHydrated();
   const { captureError } = useErrorLogger();
+  const { track } = useAnalytics();
   const captureErrorRef = useRef(captureError);
+  const trackRef = useRef(track);
   captureErrorRef.current = captureError;
+  trackRef.current = track;
   const sessionResolved = useAppShellStore((state) => state.sessionResolved);
   const supabaseUserId = useAppShellStore((state) => state.supabaseUser?.id ?? null);
   const beginRevenueCatHydration = useEntitlementStore(
@@ -44,13 +56,14 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    if (!isRevenueCatConfiguredForCurrentPlatform()) {
+    const sdkConfigured = isRevenueCatConfiguredForCurrentPlatform();
+    if (!sdkConfigured) {
       clearRevenueCatState("ready");
-      return;
     }
 
     let cancelled = false;
     let hydrateInFlight = false;
+    let foregroundRefreshQueued = false;
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
     let unsubscribeCustomerInfo: (() => void) | undefined;
 
@@ -61,6 +74,7 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
       severity?: "warning" | "error";
       step: string;
       why: string;
+      extra?: AnalyticsProperties;
     }) {
       captureErrorRef.current({
         area: "revenuecat",
@@ -70,6 +84,7 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
         metadata: getRevenueCatDiagnostic({
           extra: {
             user_id: appUserId,
+            ...input.extra,
           },
           kind: input.kind,
           step: input.step,
@@ -79,8 +94,12 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
       });
     }
 
-    async function hydrate(kind: "initial" | "retry") {
-      if (cancelled || hydrateInFlight) {
+    async function hydrate(kind: "initial" | "retry" | "foreground") {
+      if (cancelled) {
+        return;
+      }
+      if (hydrateInFlight) {
+        foregroundRefreshQueued ||= kind === "foreground";
         return;
       }
 
@@ -97,21 +116,28 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
       }
 
       try {
-        const snapshot = await fetchRevenueCatSnapshot(appUserId);
+        const accessOnly = kind === "foreground" && current.revenueCatOfferings.length > 0;
+        const snapshot = accessOnly
+          ? await fetchRevenueCatAccessSnapshot(appUserId, { forceRefresh: true })
+          : await fetchRevenueCatSnapshot(appUserId, { forceRefresh: kind === "foreground" });
 
         if (cancelled) {
           return;
         }
 
         hydrateRevenueCatSnapshot(snapshot);
+        reconcileCheckoutAccess(appUserId, snapshot);
 
-        if (snapshot.offeringsError) {
+        // Access-only snapshots preserve the cached offer state. Do not report
+        // that cached error as a new getOfferings request failure.
+        if (snapshot.offeringsError && !accessOnly) {
           logRevenueCatFailure({
             error: { code: snapshot.offeringsError },
             eventName: "revenuecat_offerings_failed",
             kind,
             step: "get_offerings",
             why: snapshot.offeringsError,
+            extra: snapshot.offeringsDiagnostic,
           });
 
           if (kind === "initial") {
@@ -142,25 +168,26 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
         }
       } finally {
         hydrateInFlight = false;
+        if (foregroundRefreshQueued && !cancelled) {
+          foregroundRefreshQueued = false;
+          void hydrate("foreground");
+        }
       }
+    }
 
-      if (cancelled || unsubscribeCustomerInfo) {
-        return;
-      }
-
-      try {
-        unsubscribeCustomerInfo = await subscribeToRevenueCatCustomerInfo(
-          appUserId,
-          (nextSnapshot) => {
-            if (!cancelled) {
-              hydrateRevenueCatSnapshot(nextSnapshot);
-            }
-          },
-          (error) => {
-            if (cancelled) {
-              return;
-            }
-
+    function subscribeCustomerInfo() {
+      // Subscribe independently of offer hydration; a slow/failed offers fetch
+      // must not prevent a purchase from updating access anywhere in the app.
+      void subscribeToRevenueCatCustomerInfo(
+        appUserId,
+        (snapshot) => {
+          if (!cancelled) {
+            hydrateRevenueCatSnapshot(snapshot);
+            reconcileCheckoutAccess(appUserId, snapshot);
+          }
+        },
+        (error) => {
+          if (!cancelled) {
             logRevenueCatFailure({
               error,
               eventName: "revenuecat_listener_failed",
@@ -170,32 +197,76 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
               why: getRevenueCatWhy(error),
             });
           }
-        );
-      } catch (error) {
-        console.warn("Failed to subscribe to RevenueCat customer info.", error);
-        logRevenueCatFailure({
-          error,
-          eventName: "revenuecat_subscribe_failed",
-          kind: "subscribe",
-          severity: "warning",
-          step: "subscribe_customer_info",
-          why: getRevenueCatWhy(error),
-        });
-      }
+        }
+      ).then((unsubscribe) => {
+        if (cancelled) {
+          unsubscribe();
+        } else {
+          unsubscribeCustomerInfo = unsubscribe;
+        }
+      }).catch((error) => {
+        if (!cancelled) {
+          logRevenueCatFailure({
+            error,
+            eventName: "revenuecat_subscribe_failed",
+            kind: "subscribe",
+            severity: "warning",
+            step: "subscribe_customer_info",
+            why: getRevenueCatWhy(error),
+          });
+        }
+      });
     }
 
-    void hydrate("initial");
+    async function bootstrap() {
+      try {
+        await hydrateCheckoutJournal({
+          appUserId,
+          track: (event, payload) => trackRef.current(event, payload),
+          captureError: (input) => captureErrorRef.current(input),
+        });
+      } catch (error) {
+        // Broken storage blocks new payment, not RevenueCat access recovery.
+        captureErrorRef.current({
+          area: "monetization", error, eventName: "checkout_journal_read_failed",
+          severity: "warning", metadata: { recovery_source: "startup" },
+        });
+      }
+      if (cancelled || !sdkConfigured) return;
+      subscribeCustomerInfo();
+      // Check the saved attempt with fresh CustomerInfo before offer loading.
+      // Never invoke restorePurchases or purchasePackage automatically here.
+      await refreshCheckoutAccess(appUserId, "startup");
+      if (!cancelled) void hydrate("initial");
+    }
+    void bootstrap().catch((error) => {
+      if (!cancelled) {
+        logRevenueCatFailure({
+          error, eventName: "revenuecat_bootstrap_failed", kind: "initial",
+          severity: "warning", step: "get_customer_info", why: getRevenueCatWhy(error),
+        });
+      }
+    });
 
     const appStateSubscription = AppState.addEventListener(
       "change",
       (nextState) => {
-        if (nextState !== "active") {
+        observeCheckoutAppState(nextState);
+        if (nextState !== "active" || !sdkConfigured) {
           return;
         }
 
-        if (useEntitlementStore.getState().revenueCatOfferings.length === 0) {
-          void hydrate("retry");
-        }
+        void refreshCheckoutAccess(appUserId, "foreground").then(() => {
+          if (!cancelled) void hydrate("foreground");
+        }).catch((error) => {
+          if (!cancelled) {
+            logRevenueCatFailure({
+              error, eventName: "purchase_status_check_failed", kind: "foreground",
+              severity: "warning", step: "get_customer_info", why: getRevenueCatWhy(error),
+            });
+            void hydrate("foreground");
+          }
+        });
       }
     );
 

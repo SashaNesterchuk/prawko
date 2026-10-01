@@ -10,9 +10,6 @@ import {
   LoadingStateView,
 } from "../../src/components/shell/StateViews";
 import { CText, useResponsiveStyles } from "../../src/portable-ui";
-import {
-  isMobileSupabaseConfigured,
-} from "../../src/config/env";
 import { getOfflineGateDescription } from "../../src/features/offline/offline-gate-copy";
 import { useOfflineFeatureGate } from "../../src/features/offline/useOfflineFeatureGate";
 import { getExamQuestionTarget, isExamSimulatorMode } from "../../src/features/exam/exam-config";
@@ -26,7 +23,6 @@ import {
 import { isUuidString } from "../../src/features/questions/question-routes";
 import {
   useCurrentStudyPlanRemoteId,
-  useCurrentUser,
   useAppShellStore,
 } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
@@ -54,8 +50,6 @@ export default function ExamIntroScreen() {
     questionLimit?: string | string[];
     studyPlanTaskId?: string | string[];
   }>();
-  const authMode = useAppShellStore((state) => state.authMode);
-  const currentUser = useCurrentUser();
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const currentStudyPlanRemoteId = useCurrentStudyPlanRemoteId();
@@ -74,11 +68,6 @@ export default function ExamIntroScreen() {
     ? rawStudyPlanTaskId
     : undefined;
   const totalQuestionsTarget = getExamQuestionTarget(mode, requestedQuestionLimit);
-  const canUseRemoteExam =
-    authMode === "supabase" &&
-    Boolean(currentUser) &&
-    isMobileSupabaseConfigured &&
-    offlineGate.isOnline === true;
 
   useEffect(() => {
     if (
@@ -110,9 +99,7 @@ export default function ExamIntroScreen() {
     });
 
     try {
-      const activeSnapshot = await fetchLatestActiveExamSession(mode, {
-        useRemote: canUseRemoteExam,
-      });
+      const activeSnapshot = await fetchLatestActiveExamSession(mode);
 
       const launchDecision = resolveExamLaunchDecision({
         activeSnapshot,
@@ -182,8 +169,7 @@ export default function ExamIntroScreen() {
           requestedTotalQuestions: totalQuestionsTarget,
           studyPlanId: currentStudyPlanRemoteId,
           studyPlanTaskId,
-        },
-        { useRemote: canUseRemoteExam }
+        }
       );
 
       cacheExamSnapshot(snapshot);

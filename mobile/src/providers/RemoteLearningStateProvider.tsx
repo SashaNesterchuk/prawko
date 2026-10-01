@@ -12,12 +12,14 @@ import type { PropsWithChildren } from "react";
 import { useEffect } from "react";
 
 import { isMobileSupabaseConfigured } from "../config/env";
+import { getPendingExamQuestionIds } from "../features/exam/exam-cloud-sync";
 import type { CaptureErrorInput } from "../features/errors/error-logging";
 import { fetchRemoteQuestionUserStateMap } from "../features/questions/supabase-question-state";
 import type { QuestionUserStateMap } from "../features/questions/types";
 import { getMobileSupabaseClient } from "../lib/supabase";
 import {
   useAppShellStore,
+  getExamCountry,
   useHasHydrated,
 } from "../state/app-shell";
 import {
@@ -50,6 +52,7 @@ type RemoteStudyPlanRecord = {
 export function RemoteLearningStateProvider({ children }: PropsWithChildren) {
   const appShellHydrated = useHasHydrated();
   const authMode = useAppShellStore((state) => state.authMode);
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const { captureError } = useErrorLogger();
   const hydrateRemoteProfile = useAppShellStore(
     (state) => state.hydrateRemoteProfile
@@ -162,6 +165,7 @@ export function RemoteLearningStateProvider({ children }: PropsWithChildren) {
   }, [
     appShellHydrated,
     authMode,
+    examCountry,
     captureError,
     hydrateRemoteProfile,
     hydrateRemoteStudyPlan,
@@ -267,13 +271,31 @@ async function hydrateQuestionState(
   userId: string
 ) {
   try {
+    const country = getExamCountry();
+    const pendingBefore = await getPendingExamQuestionIds(country, userId);
+    if (isCancelled()) { return; }
     const questionUserState = await fetchRemoteQuestionUserStateMap();
 
     if (isCancelled()) {
       return;
     }
 
-    replaceQuestionUserState(questionUserState);
+    const pendingAfter = await getPendingExamQuestionIds(country, userId);
+    if (isCancelled()) { return; }
+    const pending = new Set([...pendingBefore, ...pendingAfter]);
+    // Preserve only this account's pending exam questions. A blanket merge
+    // would accidentally carry another account's local progress into login.
+    const local = useQuestionProgressStore.getState().questionUserState;
+    const merged = { ...questionUserState };
+    for (const [id, state] of Object.entries(local)) {
+      if (!pending.has(id)) { continue; }
+      const remote = merged[id];
+      if (!remote || state.timesSeen > remote.timesSeen ||
+          (Date.parse(state.lastSeenAt ?? "") || 0) > (Date.parse(remote.lastSeenAt ?? "") || 0)) {
+        merged[id] = state;
+      }
+    }
+    replaceQuestionUserState(merged);
   } catch (error) {
     if (!isCancelled()) {
       console.warn("Failed to fetch remote question state.", error);

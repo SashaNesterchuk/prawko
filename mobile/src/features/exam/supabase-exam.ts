@@ -1,24 +1,13 @@
-import type { DrivingCategory, SupportedLocale } from "@prawko/config";
+import { getCountryConfig, type CountryCode, type SupportedLocale } from "@prawko/config";
 
 import { isMobileSupabaseConfigured } from "../../config/env";
-import { getQuestionSetKey } from "../../countries/runtime";
 import { getMobileSupabaseClient } from "../../lib/supabase";
+import { getExamCountry } from "../../state/app-shell";
 import type {
-  ExamSimulatorMode,
   RemoteExamSession,
   RemoteExamSessionStatus,
   RemoteExamSnapshot,
 } from "./types";
-
-type StartRemoteExamInput = {
-  category: DrivingCategory;
-  locale: SupportedLocale;
-  mode: ExamSimulatorMode;
-  replaceExisting?: boolean;
-  requestedTotalQuestions?: number | null;
-  studyPlanId?: string | null;
-  studyPlanTaskId?: string | null;
-};
 
 type SubmitRemoteExamAnswerInput = {
   answerDurationMs?: number | null;
@@ -35,35 +24,10 @@ type SetRemoteExamSessionStatusInput = {
   status: Extract<RemoteExamSessionStatus, "abandoned" | "expired">;
 };
 
-export async function startRemoteExamSession(
-  input: StartRemoteExamInput
-): Promise<RemoteExamSnapshot> {
-  assertMobileSupabaseConfigured();
-
-  const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("start_exam_session_v2", {
-    p_question_set_key: getQuestionSetKey(),
-    p_mode: input.mode,
-    p_session_locale: input.locale,
-    p_current_category: input.category,
-    p_requested_total_questions: input.requestedTotalQuestions ?? null,
-    p_metadata: toRpcJsonObject({
-      source: "mobile_exam_flow",
-      study_plan_task_id: input.studyPlanTaskId ?? null,
-    }),
-    p_replace_existing: input.replaceExisting ?? false,
-  });
-
-  if (error) {
-    throw error;
-  }
-
-  return parseRemoteExamSnapshot(data);
-}
-
 export async function fetchExamSessionSnapshot(sessionId: string) {
   assertMobileSupabaseConfigured();
 
+  const country = getExamCountry();
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("get_exam_session_snapshot_v2", {
     p_exam_session_id: sessionId,
@@ -73,37 +37,18 @@ export async function fetchExamSessionSnapshot(sessionId: string) {
     throw error;
   }
 
-  return parseRemoteExamSnapshot(data);
-}
-
-export async function fetchLatestActiveExamSession(mode?: ExamSimulatorMode | null) {
-  assertMobileSupabaseConfigured();
-
-  const client = getMobileSupabaseClient();
-  const { data, error } = await client.rpc("get_latest_active_exam_session_v2", {
-    p_question_set_key: getQuestionSetKey(),
-    p_mode: mode ?? null,
-  });
-
-  if (error) {
-    throw error;
-  }
-
-  if (data === null) {
-    return null;
-  }
-
-  return parseRemoteExamSnapshot(data);
+  return parseRemoteExamSnapshot(data, country);
 }
 
 export async function fetchRecentExamSessions(
-  limit = 5
+  limit = 5,
+  country: CountryCode = getExamCountry()
 ): Promise<RemoteExamSession[]> {
   assertMobileSupabaseConfigured();
 
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("list_recent_exam_sessions_v2", {
-    p_question_set_key: getQuestionSetKey(),
+    p_question_set_key: getCountryConfig(country).questionSetKey,
     p_limit: limit,
   });
 
@@ -119,6 +64,7 @@ export async function submitRemoteExamAnswer(
 ): Promise<RemoteExamSnapshot> {
   assertMobileSupabaseConfigured();
 
+  const country = getExamCountry();
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("submit_exam_session_answer_v2", {
     p_exam_session_id: input.sessionId,
@@ -133,7 +79,7 @@ export async function submitRemoteExamAnswer(
     throw error;
   }
 
-  return parseRemoteExamSnapshot(data);
+  return parseRemoteExamSnapshot(data, country);
 }
 
 export async function setRemoteExamSessionStatus(
@@ -141,6 +87,7 @@ export async function setRemoteExamSessionStatus(
 ): Promise<RemoteExamSnapshot> {
   assertMobileSupabaseConfigured();
 
+  const country = getExamCountry();
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("set_exam_session_status_v2", {
     p_exam_session_id: input.sessionId,
@@ -152,7 +99,7 @@ export async function setRemoteExamSessionStatus(
     throw error;
   }
 
-  return parseRemoteExamSnapshot(data);
+  return parseRemoteExamSnapshot(data, country);
 }
 
 export async function setRemoteExamCurrentIndex(input: {
@@ -161,6 +108,7 @@ export async function setRemoteExamCurrentIndex(input: {
 }): Promise<RemoteExamSnapshot> {
   assertMobileSupabaseConfigured();
 
+  const country = getExamCountry();
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("set_exam_session_current_index_v2", {
     p_exam_session_id: input.sessionId,
@@ -171,7 +119,7 @@ export async function setRemoteExamCurrentIndex(input: {
     throw error;
   }
 
-  return parseRemoteExamSnapshot(data);
+  return parseRemoteExamSnapshot(data, country);
 }
 
 export async function setRemoteExamFlaggedOrders(input: {
@@ -180,6 +128,7 @@ export async function setRemoteExamFlaggedOrders(input: {
 }): Promise<RemoteExamSnapshot> {
   assertMobileSupabaseConfigured();
 
+  const country = getExamCountry();
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("set_exam_session_flags_v2", {
     p_exam_session_id: input.sessionId,
@@ -190,7 +139,7 @@ export async function setRemoteExamFlaggedOrders(input: {
     throw error;
   }
 
-  return parseRemoteExamSnapshot(data);
+  return parseRemoteExamSnapshot(data, country);
 }
 
 export async function toggleRemoteExamFlag(input: {
@@ -220,6 +169,7 @@ export async function finishRemoteExamSession(input: {
 }): Promise<RemoteExamSnapshot> {
   assertMobileSupabaseConfigured();
 
+  const country = getExamCountry();
   const client = getMobileSupabaseClient();
   const { data, error } = await client.rpc("finish_exam_session_v2", {
     p_exam_session_id: input.sessionId,
@@ -230,7 +180,7 @@ export async function finishRemoteExamSession(input: {
     throw error;
   }
 
-  return parseRemoteExamSnapshot(data);
+  return parseRemoteExamSnapshot(data, country);
 }
 
 function assertMobileSupabaseConfigured() {
@@ -241,12 +191,16 @@ function assertMobileSupabaseConfigured() {
   }
 }
 
-function parseRemoteExamSnapshot(value: unknown): RemoteExamSnapshot {
+function parseRemoteExamSnapshot(value: unknown, country: CountryCode): RemoteExamSnapshot {
   if (!value || typeof value !== "object") {
     throw new Error("Exam snapshot RPC returned an invalid payload.");
   }
 
-  return value as RemoteExamSnapshot;
+  const snapshot = value as RemoteExamSnapshot;
+  return { ...snapshot, session: {
+    ...snapshot.session,
+    metadata: { ...snapshot.session.metadata, exam_country: country },
+  } };
 }
 
 function parseRemoteExamSessionList(value: unknown): RemoteExamSession[] {

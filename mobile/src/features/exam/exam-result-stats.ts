@@ -209,7 +209,12 @@ export function getExamScoreDelta(
   const previous = recentSessions.find(
     (session) =>
       session.id !== currentSession.id &&
-      session.status !== "active" &&
+      session.status === "completed" &&
+      session.mode === currentSession.mode &&
+      session.currentCategory === currentSession.currentCategory &&
+      session.totalQuestionsTarget === currentSession.totalQuestionsTarget &&
+      session.totalPointsTarget === currentSession.totalPointsTarget &&
+      session.startedAt < currentSession.startedAt &&
       session.totalPointsTarget > 0
   );
 

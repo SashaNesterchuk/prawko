@@ -9,8 +9,10 @@ import type {
 import { PAYWALL_RESULT } from "react-native-purchases-ui";
 
 import { mobileEnv } from "../../config/env";
+import { createAppUserId } from "../../identity/app-user-id";
 import {
   createEmptyFeatureEntitlements,
+  useEntitlementStore,
   type PurchaseAccessState,
   type RevenueCatPackageSummary,
 } from "../../state/entitlements";
@@ -25,6 +27,7 @@ import {
 } from "./revenuecat-config";
 import {
   STORE_OFFERS_TIMEOUT_MESSAGE,
+  STORE_CUSTOMER_INFO_TIMEOUT_MESSAGE,
   STORE_REQUEST_TIMEOUT_MS,
   withStoreRequestTimeout,
 } from "./store-request-timeout";
@@ -34,6 +37,7 @@ import {
   getRevenueCatErrorCode,
   getRevenueCatErrorMessage,
   getRevenueCatWhy,
+  getRevenueCatStructuredErrorProperties,
   isRevenueCatOfflineConnectionError,
   isRevenueCatPurchaseCancelled,
 } from "./revenuecat-errors";
@@ -51,10 +55,14 @@ type RevenueCatModule = typeof import("react-native-purchases");
 type RevenueCatUIModule = typeof import("react-native-purchases-ui");
 
 export type RevenueCatSnapshot = {
+  activeProductIdentifiers?: string[];
+  customerInfoRequestDate?: string;
   featureEntitlements: ReturnType<typeof createEmptyFeatureEntitlements>;
   isConfigured: boolean;
   offerings: RevenueCatPackageSummary[];
   offeringsError: string | null;
+  offeringsDiagnostic?: ReturnType<typeof getRevenueCatStructuredErrorProperties>;
+  offeringsUpdated?: boolean;
   purchaseAccess: PurchaseAccessState | null;
 };
 
@@ -88,6 +96,7 @@ let didConfigurePurchases = false;
 let revenueCatModulePromise: Promise<RevenueCatModule> | null = null;
 let revenueCatUIModulePromise: Promise<RevenueCatUIModule> | null = null;
 let customerInfoListener: CustomerInfoUpdateListener | null = null;
+let offeringsRequest: { id: string; appUserId: string; promise: Promise<PurchasesOfferings> } | null = null;
 
 export function isRevenueCatConfiguredForCurrentPlatform() {
   return Boolean(getRevenueCatPublicApiKey());
@@ -104,7 +113,8 @@ export function hasProEntitlement(customerInfo: CustomerInfo) {
 }
 
 export async function fetchRevenueCatSnapshot(
-  appUserId: string
+  appUserId: string,
+  options: { forceRefresh?: boolean } = {}
 ): Promise<RevenueCatSnapshot> {
   const isConfigured = await ensureRevenueCatReady(appUserId);
 
@@ -113,19 +123,49 @@ export async function fetchRevenueCatSnapshot(
   }
 
   const Purchases = (await getRevenueCatModule()).default;
+  if (options.forceRefresh) {
+    await Purchases.invalidateCustomerInfoCache();
+  }
   const customerInfo = await withStoreRequestTimeout(
     Purchases.getCustomerInfo(),
     STORE_REQUEST_TIMEOUT_MS,
-    STORE_OFFERS_TIMEOUT_MESSAGE
+    STORE_CUSTOMER_INFO_TIMEOUT_MESSAGE
   );
-  const { offerings, offeringsError } = await loadOfferingsSafely(Purchases);
+  const { offerings, offeringsError, offeringsDiagnostic } = await loadOfferingsSafely(appUserId);
 
-  return mapRevenueCatSnapshot({
-    customerInfo,
-    isConfigured: true,
-    offerings,
-    offeringsError,
-  });
+  return {
+    ...mapRevenueCatSnapshot({
+      customerInfo,
+      isConfigured: true,
+      offerings,
+      offeringsError,
+    }),
+    offeringsDiagnostic,
+  };
+}
+
+/** Offer readiness must not wait for a CustomerInfo request. */
+export async function fetchRevenueCatOfferings(
+  appUserId: string,
+  source: "paywall_open" | "paywall_retry"
+) {
+  return mapOfferings(await requestRevenueCatOfferings(appUserId, source));
+}
+
+/** Access reconciliation must not depend on another offerings request. */
+export async function fetchRevenueCatAccessSnapshot(
+  appUserId: string,
+  options: { forceRefresh?: boolean } = {}
+): Promise<RevenueCatSnapshot> {
+  if (!(await ensureRevenueCatReady(appUserId))) {
+    throw new Error("RevenueCat is not configured for this build.");
+  }
+  const Purchases = (await getRevenueCatModule()).default;
+  if (options.forceRefresh) await Purchases.invalidateCustomerInfoCache();
+  const customerInfo = await withStoreRequestTimeout(
+    Purchases.getCustomerInfo(), STORE_REQUEST_TIMEOUT_MS, STORE_CUSTOMER_INFO_TIMEOUT_MESSAGE
+  );
+  return buildSnapshotFromCustomerInfo(customerInfo);
 }
 
 export async function syncRevenueCatSubscriberAttributes(input: {
@@ -149,6 +189,12 @@ export async function purchaseRevenueCatPackage(input: {
   appUserId: string;
   identifier: string;
   offeringIdentifier: string;
+  onStage?: (
+    stage: "get_offerings" | "purchase_package",
+    selectedPackage?: RevenueCatPackageSummary
+  ) => void | Promise<void>;
+  // Final synchronous guard/start accounting, after durable preparation.
+  onNativePurchaseStart?: () => void;
 }) {
   const isConfigured = await ensureRevenueCatReady(input.appUserId);
 
@@ -157,17 +203,16 @@ export async function purchaseRevenueCatPackage(input: {
   }
 
   const Purchases = (await getRevenueCatModule()).default;
-  const offerings = await withStoreRequestTimeout(
-    Purchases.getOfferings(),
-    STORE_REQUEST_TIMEOUT_MS,
-    STORE_OFFERS_TIMEOUT_MESSAGE
-  );
+  await input.onStage?.("get_offerings");
+  const offerings = await requestRevenueCatOfferings(input.appUserId, "checkout");
   const targetPackage = findOfferingPackage(offerings, input);
 
   if (!targetPackage) {
-    throw new Error("The selected purchase package is no longer available.");
+    throw Object.assign(new Error("The selected purchase package is no longer available."), { code: "offer_unavailable" });
   }
 
+  await input.onStage?.("purchase_package", mapRevenueCatPackage(targetPackage));
+  input.onNativePurchaseStart?.();
   const result = await Purchases.purchasePackage(targetPackage);
 
   return {
@@ -190,14 +235,7 @@ export async function restoreRevenueCatPurchases(appUserId: string) {
 
   const Purchases = (await getRevenueCatModule()).default;
   const customerInfo = await Purchases.restorePurchases();
-  const { offerings, offeringsError } = await loadOfferingsSafely(Purchases);
-
-  return mapRevenueCatSnapshot({
-    customerInfo,
-    isConfigured: true,
-    offerings,
-    offeringsError,
-  });
+  return buildSnapshotFromCustomerInfo(customerInfo);
 }
 
 /**
@@ -483,33 +521,64 @@ function getRevenueCatPublicApiKey() {
 }
 
 async function buildSnapshotFromCustomerInfo(customerInfo: CustomerInfo) {
-  const Purchases = (await getRevenueCatModule()).default;
-  const { offerings, offeringsError } = await loadOfferingsSafely(Purchases);
-
-  return mapRevenueCatSnapshot({
+  // Access updates must not wait for an unrelated offerings network request.
+  const cached = useEntitlementStore.getState();
+  const snapshot = mapRevenueCatSnapshot({
     customerInfo,
     isConfigured: true,
-    offerings,
-    offeringsError,
+    offerings: createEmptyPurchasesOfferings(),
   });
+  return {
+    ...snapshot,
+    offerings: cached.revenueCatOfferings,
+    offeringsError: cached.revenueCatHydrationError,
+  };
 }
 
-async function loadOfferingsSafely(Purchases: {
-  getOfferings: () => Promise<PurchasesOfferings>;
-}) {
-  try {
-    const offerings = await withStoreRequestTimeout(
-      Purchases.getOfferings(),
-      STORE_REQUEST_TIMEOUT_MS,
-      STORE_OFFERS_TIMEOUT_MESSAGE
-    );
+function requestRevenueCatOfferings(appUserId: string, source: string): Promise<PurchasesOfferings> {
+  if (offeringsRequest?.appUserId === appUserId &&
+    useEntitlementStore.getState().revenueCatOfferingsLoad?.id === offeringsRequest.id) return offeringsRequest.promise;
+  const id = createAppUserId().replace(/^usr_/, "");
+  useEntitlementStore.getState().beginRevenueCatOfferingsLoad({
+    id, source, status: "loading", startedAt: Date.now(), completedAt: null,
+    errorCode: null, diagnostic: {},
+  });
+  const promise: Promise<PurchasesOfferings> = (async () => {
+    try {
+      if (!(await ensureRevenueCatReady(appUserId))) {
+        throw Object.assign(new Error("RevenueCat is not configured for this build."), { code: "not_configured" });
+      }
+      const Purchases = (await getRevenueCatModule()).default;
+      const offerings = await withStoreRequestTimeout(
+        Purchases.getOfferings(), STORE_REQUEST_TIMEOUT_MS, STORE_OFFERS_TIMEOUT_MESSAGE
+      );
+      useEntitlementStore.getState().finishRevenueCatOfferingsLoad({ id, offerings: mapOfferings(offerings) });
+      return offerings;
+    } catch (error) {
+      useEntitlementStore.getState().finishRevenueCatOfferingsLoad({
+        id, errorCode: getRevenueCatErrorCode(error) ?? "unknown",
+        diagnostic: getRevenueCatStructuredErrorProperties(error),
+      });
+      throw error;
+    } finally {
+      if (offeringsRequest?.id === id) offeringsRequest = null;
+    }
+  })();
+  offeringsRequest = { id, appUserId, promise };
+  return promise;
+}
 
-    return { offerings, offeringsError: null };
+async function loadOfferingsSafely(appUserId: string) {
+  try {
+    const offerings = await requestRevenueCatOfferings(appUserId, "hydration");
+
+    return { offerings, offeringsError: null, offeringsDiagnostic: undefined };
   } catch (error) {
     console.warn("Failed to load RevenueCat offerings.", error);
     return {
       offerings: createEmptyPurchasesOfferings(),
       offeringsError: getRevenueCatErrorCode(error) ?? "unknown",
+      offeringsDiagnostic: getRevenueCatStructuredErrorProperties(error),
     };
   }
 }
@@ -555,8 +624,25 @@ function mapRevenueCatSnapshot(input: {
 
   return {
     featureEntitlements,
+    customerInfoRequestDate: input.customerInfo.requestDate,
+    activeProductIdentifiers: Object.entries(activeEntitlements)
+      .filter(([identifier]) =>
+        [...ENTITLEMENT_ALIASES.premium_access, ...ENTITLEMENT_ALIASES.ai_question_chat]
+          .includes(identifier.toLowerCase())
+      )
+      .flatMap(([, entitlement]) => {
+        // Android subscription packages may use product:basePlan identifiers.
+        const plan = (entitlement as { productPlanIdentifier?: string | null })
+          .productPlanIdentifier;
+        return plan
+          ? [entitlement.productIdentifier, `${entitlement.productIdentifier}:${plan}`]
+          : [entitlement.productIdentifier];
+      }),
     isConfigured: input.isConfigured,
     offerings: mapOfferings(input.offerings),
+    // The request publishes offers immediately. Later access-only / purchase
+    // responses must not overwrite a newer offer result with an old snapshot.
+    offeringsUpdated: false,
     offeringsError: input.offeringsError ?? null,
     purchaseAccess:
       Object.keys(activeEntitlements).length > 0
@@ -713,4 +799,3 @@ function dedupeByKey<T>(items: T[], getKey: (item: T) => string) {
     return true;
   });
 }
-

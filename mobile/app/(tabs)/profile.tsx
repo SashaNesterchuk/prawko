@@ -63,7 +63,6 @@ import {
   SUPPORT_EMAIL,
   openSupportEmail,
 } from "../../src/features/support/support-email";
-import { getMobileSupabaseClient } from "../../src/lib/supabase";
 import {
   CText,
   getFontFamily,
@@ -113,13 +112,11 @@ export default function ProfileTabScreen() {
     (state) => state.hydrateRemoteStudyPlan
   );
   const patchExamDate = useAppShellStore((state) => state.patchExamDate);
-  const signOutLocal = useAppShellStore((state) => state.signOutLocal);
   const currentStudyPlan = useCurrentStudyPlan();
   const attempts = useQuestionProgressStore((state) => state.attempts);
   const questionUserState = useQuestionProgressStore(
     (state) => state.questionUserState
   );
-  const resetProgress = useQuestionProgressStore((state) => state.resetProgress);
   const questionCatalogVersion = useQuestionCatalogVersion();
   const hasPlusAccess = useHasPlusAccess();
   const monetizationV2 = useMonetizationV2Active();
@@ -342,23 +339,6 @@ export default function ProfileTabScreen() {
       });
       router.replace("/(onboarding)/category");
     })();
-  };
-
-  const handleSignOut = async () => {
-    if (authMode === "supabase" && isMobileSupabaseConfigured) {
-      try {
-        await getMobileSupabaseClient().auth.signOut();
-      } catch {
-        // ignore here; the shell still needs a local fallback reset
-      }
-    }
-
-    track(ANALYTICS_EVENTS.signedOut.key, {
-      auth_mode: authMode,
-    });
-    signOutLocal();
-    resetProgress();
-    router.replace("/(onboarding)/access");
   };
 
   const handleShare = async () => {
@@ -632,7 +612,6 @@ export default function ProfileTabScreen() {
 
           <Pressable
             accessibilityRole="button"
-            onLongPress={() => void handleSignOut()}
             onPress={handleResetAll}
             style={({ pressed }) => [
               styles.resetCard,

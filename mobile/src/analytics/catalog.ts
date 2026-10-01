@@ -272,9 +272,21 @@ export const ANALYTICS_EVENTS = {
     key: "paywall_viewed",
     description: "The Plus paywall became visible.",
   },
+  paywallOfferLoadStarted: {
+    key: "paywall_offer_load_started",
+    description: "A paywall offer availability cycle started. Cached offers do not imply a new store request.",
+  },
+  paywallOfferReady: {
+    key: "paywall_offer_ready",
+    description: "A purchasable offer is available on the current paywall; linked view/load IDs and load duration.",
+  },
+  paywallOfferFailed: {
+    key: "paywall_offer_failed",
+    description: "Offer loading failed, returned no packages or is not configured. Not an empty snapshot while loading.",
+  },
   paywallDismissed: {
     key: "paywall_dismissed",
-    description: "The Plus paywall closed without a successful purchase.",
+    description: "The Plus paywall closed. Not a purchase outcome; access_unlocked identifies closure after access activation.",
   },
   paywallPackageSelected: {
     key: "paywall_package_selected",
@@ -284,9 +296,45 @@ export const ANALYTICS_EVENTS = {
     key: "purchase_started",
     description: "A native purchase was initiated.",
   },
+  purchaseStageChanged: {
+    key: "purchase_stage_changed",
+    description: "Checkout entered an access, offerings, durable journal or native purchase stage; timing is not a UI freeze measurement.",
+  },
+  purchaseAttemptRecovered: {
+    key: "purchase_attempt_recovered",
+    description: "An unresolved purchase was loaded from the local journal after process restart. Not a new checkout, successful payment or grant of access.",
+  },
+  purchasePreparationFailed: {
+    key: "purchase_preparation_failed",
+    description: "Checkout preparation failed before the native purchase call; no store purchase was launched by this attempt.",
+  },
+  purchaseOutcomeUnknown: {
+    key: "purchase_outcome_unknown",
+    description: "Native checkout returned StoreProblem, a network or unclassified error: no reliable charge outcome. Requires reconciliation, not automatic purchase retry.",
+  },
+  purchaseStatusCheckStarted: {
+    key: "purchase_status_check_started",
+    description: "Access reconciliation for an unresolved purchase started without launching payment.",
+  },
+  purchaseStatusCheckCompleted: {
+    key: "purchase_status_check_completed",
+    description: "Access reconciliation completed. Missing access is not proof that no charge occurred.",
+  },
+  purchaseStatusCheckFailed: {
+    key: "purchase_status_check_failed",
+    description: "Access reconciliation failed; the original purchase outcome remains unresolved.",
+  },
   purchaseSucceeded: {
     key: "purchase_succeeded",
     description: "A native purchase granted access.",
+  },
+  purchasePending: {
+    key: "purchase_pending",
+    description: "The store payment or entitlement activation awaits confirmation. Not a failed purchase.",
+  },
+  purchaseAccessConfirmed: {
+    key: "purchase_access_confirmed",
+    description: "CustomerInfo confirmed access to the pending product; not proof of a new successful store transaction.",
   },
   purchaseCancelled: {
     key: "purchase_cancelled",
@@ -302,7 +350,7 @@ export const ANALYTICS_EVENTS = {
   },
   purchaseRestoreSucceeded: {
     key: "purchase_restore_succeeded",
-    description: "Purchase restoration granted access.",
+    description: "Restore completed with confirmed access: entitlement_active=true, restore_outcome=restored. Canonical restore conversion event.",
   },
   purchaseRestoreEmpty: {
     key: "purchase_restore_empty",
@@ -318,7 +366,7 @@ export const ANALYTICS_EVENTS = {
   },
   restoreSucceeded: {
     key: "restore_succeeded",
-    description: "Purchase restoration completed, with or without access.",
+    description: "Legacy SDK request completion, with or without access; restore_outcome and entitlement_active distinguish restored from empty. Not a restore conversion by itself.",
   },
   restoreFailed: {
     key: "restore_failed",
