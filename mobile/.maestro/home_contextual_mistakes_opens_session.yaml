@@ -1,6 +1,5 @@
 # Feature: Home contextual card
-# Scenario: A returning user with unresolved mistakes sees the next-action
-# card and can start a mistakes session from it
+# Scenario: Today is the roadmap. The old next-action card is not on this screen.
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -18,16 +17,8 @@ tags:
 - assertVisible:
     id: "screen-home"
 - assertVisible:
+    id: "home-exam-readiness"
+- assertNotVisible:
     id: "home-contextual-card"
-- assertVisible:
-    id: "home-contextual-mistakes"
-- assertVisible:
+- assertNotVisible:
     id: "home-exam-date"
-
-- tapOn:
-    id: "home-contextual-card"
-
-- extendedWaitUntil:
-    visible:
-      id: "screen-question"
-    timeout: 20000

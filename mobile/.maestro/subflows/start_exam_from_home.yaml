@@ -1,10 +1,12 @@
-# Reusable steps: Home → Exam tile → official simulator session.
+# Today no longer has an exam tile. The official simulator starts from Learn.
 appId: com.mindjar.prawko
 env:
   TARGET_ID: ${TARGET_ID || "screen-exam-session"}
 ---
-- tapOn:
-    id: "action-tile-exam"
+- runFlow:
+    file: tap_learn_tile.yaml
+    env:
+      TILE_ID: action-tile-exam
 
 - extendedWaitUntil:
     visible:

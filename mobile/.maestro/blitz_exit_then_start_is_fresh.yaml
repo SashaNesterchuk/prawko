@@ -12,8 +12,10 @@ tags:
       PLUS_ACCESS: "true"
       TARGET_ID: screen-home
 
-- tapOn:
-    id: "home-tile-blitz"
+- runFlow:
+    file: subflows/tap_learn_tile.yaml
+    env:
+      TILE_ID: learn-tile-blitz
 
 - extendedWaitUntil:
     visible:
@@ -42,8 +44,10 @@ tags:
 - runFlow:
     file: subflows/confirm_training_exit_to_home.yaml
 
-- tapOn:
-    id: "home-tile-blitz"
+- runFlow:
+    file: subflows/tap_learn_tile.yaml
+    env:
+      TILE_ID: learn-tile-blitz
 
 - extendedWaitUntil:
     visible:

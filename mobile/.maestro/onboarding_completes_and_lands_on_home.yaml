@@ -1,5 +1,5 @@
 # Feature: Onboarding
-# Scenario: New user completes onboarding and lands on Home (first-start spotlight is currently off)
+# Scenario: New user completes onboarding and lands on the Today roadmap
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -14,11 +14,10 @@ tags:
 - assertNotVisible:
     id: "home-start-spotlight"
 - assertVisible:
+    id: "home-exam-readiness"
+- assertNotVisible:
     id: "action-tile-trainer"
-- assertVisible:
+- assertNotVisible:
     id: "home-tile-blitz"
-- scrollUntilVisible:
-    element:
-      id: "home-exam-date"
-    direction: DOWN
-    timeout: 10000
+- assertNotVisible:
+    id: "home-exam-date"

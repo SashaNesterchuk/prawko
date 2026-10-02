@@ -1,6 +1,5 @@
 # Feature: Home contextual card
-# Scenario: After a just-completed session, Home shows the completion card
-# once; the next Home visit does not keep it as completion
+# Scenario: The old completion card is not on the Today roadmap
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -17,8 +16,10 @@ tags:
 - assertVisible:
     id: "screen-home"
 - assertVisible:
+    id: "home-exam-readiness"
+- assertNotVisible:
     id: "home-contextual-card"
-- assertVisible:
+- assertNotVisible:
     id: "home-contextual-completion"
 
 - tapOn:

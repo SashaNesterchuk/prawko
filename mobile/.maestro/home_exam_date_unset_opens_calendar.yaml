@@ -1,5 +1,5 @@
 # Feature: Home exam date
-# Scenario: Skipping the exam date shows the Home card; setting a date keeps it
+# Scenario: Skipping the exam date leaves Profile unset; setting a date keeps it there
 appId: com.mindjar.prawko
 tags:
   - home
@@ -32,14 +32,22 @@ tags:
       id: "screen-home"
     timeout: 20000
 
+- tapOn:
+    id: "tab-profile"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
 - scrollUntilVisible:
     element:
-      id: "home-exam-date"
+      id: "profile-exam-date-missing"
     direction: DOWN
-    timeout: 10000
+    timeout: 15000
 
 - tapOn:
-    id: "home-exam-date"
+    id: "profile-exam-date-missing"
 
 - extendedWaitUntil:
     visible:
@@ -54,12 +62,6 @@ tags:
 - extendedWaitUntil:
     notVisible:
       id: "exam-date-calendar"
-    timeout: 10000
-
-- scrollUntilVisible:
-    element:
-      id: "home-exam-date"
-    direction: DOWN
     timeout: 10000
 
 - tapOn:

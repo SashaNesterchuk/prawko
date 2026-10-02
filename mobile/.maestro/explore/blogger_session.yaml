@@ -261,7 +261,7 @@ tags:
                   true: ${output.learnBeat % 4 == 2}
                 commands:
                   - tapOn:
-                      id: action-tile-traps
+                      id: learn-tile-traps
             - runFlow:
                 when:
                   true: ${output.learnBeat % 4 == 3}

@@ -30,25 +30,25 @@ pnpm test:e2e:studio
 
 | Flow | What it covers |
 | --- | --- |
-| `onboarding_completes_and_lands_on_home.yaml` | Category → exam date continue without a date → Home tiles + exam-date card (no first-start spotlight) |
+| `onboarding_completes_and_lands_on_home.yaml` | Category → exam date continue without a date → Today roadmap and readiness card (no first-start spotlight, no old tiles) |
 | `onboarding_skip_exam_date_leaves_date_unset.yaml` | Skip exam date → Home exam-date card → Profile shows unset date |
 | `home_first_start_spotlight_starts_training.yaml` | First-start Home (`FIRST_START`) does not show the spotlight; empty readiness card starts 10-question untimed Quick check (`initial_diagnostic`) |
-| `home_first_start_skip_shows_home_tiles.yaml` | First-start Home without spotlight → tiles stay; empty card still starts the assessment |
+| `home_first_start_skip_shows_home_tiles.yaml` | First-start Today without spotlight → readiness card starts the assessment |
 | `home_today_done_hides_card.yaml` | Finished daily 10 → Home has no today-start card; result hides New attempt |
-| `home_first_start_dim_dismisses_spotlight.yaml` | First-start Home has no dimmed spotlight overlay; Home tiles stay tappable |
+| `home_first_start_dim_dismisses_spotlight.yaml` | First-start Today has no dimmed spotlight overlay; readiness card is visible, old tiles are not |
 | `diagnostic_result_continue_shows_reminder.yaml` | Finished first diagnostic → Continue → reminder prompt → Not now → Home |
 | `diagnostic_result_work_on_mistakes.yaml` | Finished first diagnostic → Work on mistakes opens the mistakes monitor |
-| `home_opens_trainer_modes.yaml` | Home → Trainer tile, unique learned coverage card |
-| `home_blitz_opens_duration_dialog.yaml` | Home → Quick session → duration picker → timed blitz training |
+| `home_opens_trainer_modes.yaml` | Learn → Trainer tile, unique learned coverage card |
+| `home_blitz_opens_duration_dialog.yaml` | Learn → Quick session → duration picker → timed blitz training |
 | `home_readiness_assessment_starts_training.yaml` | Learn empty readiness CTA (not on Today; no period-change badge, never stuck on the loading skeleton) → untimed Quick check (not exam / Training) |
-| `home_traps_opens_count_dialog.yaml` | Home → Traps tile → count picker → training |
-| `home_exam_starts_session.yaml` | Home → Exam tile → official 32-question simulator (no count picker) |
-| `home_exam_date_unset_opens_calendar.yaml` | Skip exam date → Home exam-date card → calendar today → confirm keeps the card and Profile shows the date |
-| `home_exam_date_set_stays_visible.yaml` | Onboarded Home with a set exam date still shows the exam-date card and reopens the calendar |
+| `home_traps_opens_count_dialog.yaml` | Learn → Traps tile → count picker → training |
+| `home_exam_starts_session.yaml` | Learn → Exam tile → official 32-question simulator (no count picker) |
+| `home_exam_date_unset_opens_calendar.yaml` | Skip exam date → Profile missing row → calendar today → confirm shows the set row |
+| `home_exam_date_set_stays_visible.yaml` | Onboarded Profile shows the set exam date and reopens the calendar |
 | `home_contextual_hidden_for_new_user.yaml` | First-start Home does not show the retention/completion card |
-| `home_contextual_mistakes_opens_session.yaml` | Returning user with mistakes sees the next-action card; tap starts a mistakes session |
-| `home_contextual_completion_shows_once.yaml` | Just-completed session shows the completion card once; the next Home visit does not keep it as completion |
-| `home_contextual_resume_opens_session.yaml` | In-progress daily 10 shows the resume card and continues the unfinished set |
+| `home_contextual_mistakes_opens_session.yaml` | Today is the roadmap; the old next-action card is not shown |
+| `home_contextual_completion_shows_once.yaml` | The old completion card is not on the Today roadmap |
+| `home_contextual_resume_opens_session.yaml` | An in-progress daily session does not put the old resume card on Today |
 | `profile_exam_country_screen_opens.yaml` | Profile → Exam country screen with PL and CZ tiles |
 | `profile_exam_country_switch_cz_exam.yaml` | Profile → CZ → language tiles only cs/en → official 25-question eTesty exam |
 | `profile_exam_country_switch_back_keeps_pl.yaml` | PL exam progress stays namespaced: CZ exam starts at 25 questions, switching back restores the 32-question WORD exam |

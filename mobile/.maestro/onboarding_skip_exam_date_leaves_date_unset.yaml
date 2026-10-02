@@ -34,15 +34,6 @@ tags:
 - assertNotVisible:
     id: "home-start-spotlight"
 
-- waitForAnimationToEnd:
-    timeout: 5000
-
-- scrollUntilVisible:
-    element:
-      id: "home-exam-date"
-    direction: DOWN
-    timeout: 10000
-
 - tapOn:
     id: "tab-profile"
 - runFlow:

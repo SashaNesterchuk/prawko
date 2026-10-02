@@ -1,5 +1,5 @@
 # Feature: Home
-# Scenario: Traps tile opens the question count picker before training
+# Scenario: Learn traps tile opens the question count picker before training
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -12,8 +12,10 @@ tags:
       DESTINATION: home
       TARGET_ID: screen-home
 
-- tapOn:
-    id: "action-tile-traps"
+- runFlow:
+    file: subflows/tap_learn_tile.yaml
+    env:
+      TILE_ID: learn-tile-traps
 
 - runFlow:
     file: subflows/start_default_question_count.yaml

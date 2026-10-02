@@ -12,6 +12,13 @@ tags:
       DESTINATION: learn
       TARGET_ID: screen-learn
 
+- scrollUntilVisible:
+    element:
+      id: "learn-topic-card-index-0"
+    direction: DOWN
+    centerElement: true
+    timeout: 20000
+
 - tapOn:
     id: "learn-topic-card-index-0"
 

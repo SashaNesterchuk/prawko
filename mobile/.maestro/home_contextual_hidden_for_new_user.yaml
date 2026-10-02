@@ -17,6 +17,6 @@ tags:
 - assertVisible:
     id: "screen-home"
 - assertVisible:
-    id: "home-readiness-index"
+    id: "home-exam-readiness"
 - assertNotVisible:
     id: "home-contextual-card"

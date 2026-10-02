@@ -12,8 +12,10 @@ tags:
       PLUS_ACCESS: "true"
       TARGET_ID: screen-home
 
-- tapOn:
-    id: "action-tile-traps"
+- runFlow:
+    file: subflows/tap_learn_tile.yaml
+    env:
+      TILE_ID: learn-tile-traps
 
 - runFlow:
     file: subflows/start_default_question_count.yaml
@@ -37,8 +39,10 @@ tags:
 - runFlow:
     file: subflows/confirm_training_exit_to_home.yaml
 
-- tapOn:
-    id: "action-tile-traps"
+- runFlow:
+    file: subflows/tap_learn_tile.yaml
+    env:
+      TILE_ID: learn-tile-traps
 
 - runFlow:
     file: subflows/start_default_question_count.yaml

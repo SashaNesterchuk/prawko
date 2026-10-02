@@ -1,5 +1,5 @@
 # Feature: Home exam date
-# Scenario: A set exam date stays on Home and reopens the calendar
+# Scenario: A set exam date stays on Profile and reopens the calendar
 appId: com.mindjar.prawko
 tags:
   - home
@@ -13,14 +13,22 @@ tags:
 - assertVisible:
     id: "screen-home"
 
+- tapOn:
+    id: "tab-profile"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+
 - scrollUntilVisible:
     element:
-      id: "home-exam-date"
+      id: "profile-exam-date-set"
     direction: DOWN
-    timeout: 10000
+    timeout: 15000
 
 - tapOn:
-    id: "home-exam-date"
+    id: "profile-exam-date-set"
 
 - extendedWaitUntil:
     visible:
@@ -36,4 +44,4 @@ tags:
     timeout: 10000
 
 - assertVisible:
-    id: "home-exam-date"
+    id: "profile-exam-date-set"

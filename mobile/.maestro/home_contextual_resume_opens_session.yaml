@@ -1,6 +1,5 @@
 # Feature: Home contextual card
-# Scenario: An in-progress daily session shows the resume card and continues
-# the unfinished set
+# Scenario: An in-progress daily session does not put the old resume card on Today
 appId: com.mindjar.prawko
 tags:
   - home
@@ -18,14 +17,8 @@ tags:
 - assertVisible:
     id: "screen-home"
 - assertVisible:
+    id: "home-exam-readiness"
+- assertNotVisible:
     id: "home-contextual-card"
-- assertVisible:
+- assertNotVisible:
     id: "home-contextual-resume"
-
-- tapOn:
-    id: "home-contextual-card"
-
-- extendedWaitUntil:
-    visible:
-      id: "screen-question"
-    timeout: 20000

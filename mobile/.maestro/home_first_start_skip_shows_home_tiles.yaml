@@ -1,5 +1,5 @@
 # Feature: Home first start
-# Scenario: Without the spotlight, Home tiles stay visible; empty card still starts the assessment
+# Scenario: Without the spotlight, the Today readiness card still starts the assessment
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -21,16 +21,16 @@ tags:
 - assertVisible:
     id: "tab-index"
 - assertVisible:
-    id: "home-readiness-index"
-- assertVisible:
+    id: "home-exam-readiness"
+- assertNotVisible:
     id: "action-tile-trainer"
-- assertVisible:
+- assertNotVisible:
     id: "home-tile-blitz"
 - assertNotVisible:
     id: "home-today-start"
 
 - tapOn:
-    id: "home-readiness-index"
+    id: "home-exam-readiness"
 
 - extendedWaitUntil:
     visible:

@@ -45,8 +45,10 @@ tags:
       id: "screen-home"
     timeout: 20000
 
-- tapOn:
-    id: "action-tile-trainer"
+- runFlow:
+    file: subflows/tap_learn_tile.yaml
+    env:
+      TILE_ID: action-tile-trainer
 
 - extendedWaitUntil:
     visible:

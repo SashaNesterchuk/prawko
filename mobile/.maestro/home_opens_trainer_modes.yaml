@@ -1,5 +1,5 @@
 # Feature: Home
-# Scenario: User opens Trainer modes from the Home tile
+# Scenario: User opens Trainer modes from the Learn tile
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -11,8 +11,10 @@ tags:
       DESTINATION: home
       TARGET_ID: screen-home
 
-- tapOn:
-    id: "action-tile-trainer"
+- runFlow:
+    file: subflows/tap_learn_tile.yaml
+    env:
+      TILE_ID: action-tile-trainer
 
 - extendedWaitUntil:
     visible:
