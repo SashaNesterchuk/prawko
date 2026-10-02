@@ -20,7 +20,9 @@ import {
 import { useAppShellStore } from "../../state/app-shell";
 import { useQuestionProgressStore } from "../../state/question-progress";
 import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { trainingPracticeEntry } from "../../analytics/practice-entry";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
+import type { ExamEntry } from "../exam/exam-entry";
 import { buildExamRouteParams } from "../exam/exam-routes";
 import { getQuestionCountForMode } from "./question-engine";
 import { buildQuestionRouteParams } from "./question-routes";
@@ -93,6 +95,7 @@ export function useQuestionModeCountDialog() {
       mode,
       question_limit: questionLimit,
       topic_id: topic ?? null,
+      ...trainingPracticeEntry({ mode, topicId: topic ?? null }),
     });
     router.navigate({
       pathname: "/question",
@@ -100,10 +103,10 @@ export function useQuestionModeCountDialog() {
     });
   }
 
-  function startExam() {
+  function startExam(entry: ExamEntry) {
     router.navigate({
       pathname: "/exam",
-      params: buildExamRouteParams({ mode: "exam" }),
+      params: buildExamRouteParams({ entry, mode: "exam" }),
     });
   }
 
@@ -150,8 +153,8 @@ export function useQuestionModeCountDialog() {
     setPending({ kind: "question", ...input });
   }
 
-  function openExam() {
-    startExam();
+  function openExam(entry: ExamEntry) {
+    startExam(entry);
   }
 
   function openBlitz(input: { title: string }) {

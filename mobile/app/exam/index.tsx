@@ -13,6 +13,7 @@ import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { getOfflineGateDescription } from "../../src/features/offline/offline-gate-copy";
 import { useOfflineFeatureGate } from "../../src/features/offline/useOfflineFeatureGate";
 import { getExamQuestionTarget, isExamSimulatorMode } from "../../src/features/exam/exam-config";
+import { examAnalyticsFromRoute } from "../../src/features/exam/exam-entry";
 import { resolveExamLaunchDecision } from "../../src/features/exam/exam-launch";
 import { cacheExamSnapshot } from "../../src/features/exam/exam-snapshot-cache";
 import {
@@ -46,8 +47,10 @@ export default function ExamIntroScreen() {
   const styles = useStyles();
   const hasPlusAccess = useHasPlusAccess();
   const params = useLocalSearchParams<{
+    entry?: string | string[];
     mode?: string | string[];
     questionLimit?: string | string[];
+    roadmapStepId?: string | string[];
     studyPlanTaskId?: string | string[];
   }>();
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
@@ -62,6 +65,10 @@ export default function ExamIntroScreen() {
   const rawMode = getSingleParam(params.mode);
   const rawQuestionLimit = getSingleParam(params.questionLimit);
   const rawStudyPlanTaskId = getSingleParam(params.studyPlanTaskId);
+  const examLaunch = examAnalyticsFromRoute({
+    entry: getSingleParam(params.entry),
+    roadmapStepId: getSingleParam(params.roadmapStepId),
+  });
   const mode = isExamSimulatorMode(rawMode) ? rawMode : "exam";
   const requestedQuestionLimit = parsePositiveInteger(rawQuestionLimit);
   const studyPlanTaskId = isUuidString(rawStudyPlanTaskId)
@@ -93,6 +100,7 @@ export default function ExamIntroScreen() {
 
   const launchExam = async () => {
     track(ANALYTICS_EVENTS.examStartRequested.key, {
+      ...examLaunch,
       mode,
       question_total: totalQuestionsTarget,
       source: studyPlanTaskId ? "study_plan" : "manual",
@@ -124,7 +132,11 @@ export default function ExamIntroScreen() {
             source: "exam_limit",
           });
           openPaywall({
-            postPurchaseAction: { type: "START_EXAM" },
+            postPurchaseAction: {
+              type: "START_EXAM",
+              entry: examLaunch.exam_entry,
+              roadmapStepId: examLaunch.roadmap_step_id,
+            },
             replace: true,
             source: "exam_limit",
           });
@@ -137,6 +149,7 @@ export default function ExamIntroScreen() {
       if (launchDecision.action === "resume" && activeSnapshot) {
         cacheExamSnapshot(activeSnapshot);
         track(ANALYTICS_EVENTS.examSessionResumed.key, {
+          ...examLaunch,
           mode: activeSnapshot.session.mode,
           question_total: activeSnapshot.session.totalQuestionsTarget,
           resumed_at_question: launchDecision.currentQuestionIndex,
@@ -163,10 +176,12 @@ export default function ExamIntroScreen() {
       const snapshot = await startExamSession(
         {
           category: preferredCategory,
+          examEntry: examLaunch.exam_entry,
           locale: preferredLocale,
           mode,
           replaceExisting: false,
           requestedTotalQuestions: totalQuestionsTarget,
+          roadmapStepId: examLaunch.roadmap_step_id,
           studyPlanId: currentStudyPlanRemoteId,
           studyPlanTaskId,
         }
@@ -178,6 +193,7 @@ export default function ExamIntroScreen() {
         useMonetizationV2Store.getState().commitExamStarted(accessMethod);
       }
       track(ANALYTICS_EVENTS.examSessionStarted.key, {
+        ...examLaunch,
         mode: snapshot.session.mode,
         question_total: snapshot.session.totalQuestionsTarget,
         source: studyPlanTaskId ? "study_plan" : "manual",

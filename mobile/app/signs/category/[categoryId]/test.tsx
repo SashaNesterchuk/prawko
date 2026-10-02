@@ -48,6 +48,8 @@ function CategorySignTestScreen() {
 
   return (
     <SignTestSessionScreen
+      categoryId={resolvedCategoryId}
+      entry="category"
       questions={questions}
       title={t("signs.signTestTitle")}
       subtitle={

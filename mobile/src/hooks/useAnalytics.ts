@@ -10,6 +10,7 @@ import {
   type AnalyticsEventPayloads,
   type AnalyticsProperties,
 } from "../analytics/catalog";
+import { recordLocalAnalytics } from "../analytics/local-analytics-log";
 import { isPostHogCaptureEnabled } from "../analytics/posthog-build-gate";
 import { useAppUserId } from "../identity/AppIdentityProvider";
 import { useAppShellStore, useCurrentUser } from "../state/app-shell";
@@ -60,39 +61,46 @@ export function useAnalytics() {
       event: EventName,
       payload?: AnalyticsEventPayloads[EventName]
     ) => {
+      const properties = sanitizeAnalyticsProperties({ ...baseProperties, ...payload });
+      recordLocalAnalytics({ kind: "capture", event, properties });
+
       if (!posthog || !isConfigured) {
         return;
       }
 
-      posthog.capture(
-        event,
-        sanitizeAnalyticsProperties({ ...baseProperties, ...payload })
-      );
+      posthog.capture(event, properties);
     },
     [baseProperties, isConfigured, posthog]
   );
 
   const screen = useCallback(
     (name: string, payload?: AnalyticsTrackPayload) => {
+      const properties = sanitizeAnalyticsProperties({ ...baseProperties, ...payload });
+      recordLocalAnalytics({ kind: "screen", event: name, properties });
+
       if (!posthog || !isConfigured) {
         return;
       }
 
-      void posthog.screen(
-        name,
-        sanitizeAnalyticsProperties({ ...baseProperties, ...payload })
-      );
+      void posthog.screen(name, properties);
     },
     [baseProperties, isConfigured, posthog]
   );
 
   const identify = useCallback(
     (distinctId: string, payload?: AnalyticsTrackPayload) => {
+      const properties = sanitizeAnalyticsProperties(payload);
+      recordLocalAnalytics({
+        kind: "identify",
+        event: distinctId,
+        properties,
+      });
+
       if (!posthog || !isConfigured) {
         return;
       }
 
-      posthog.identify(distinctId, sanitizeAnalyticsProperties(payload));
+      posthog.identify(distinctId, properties);
     },
     [isConfigured, posthog]
   );

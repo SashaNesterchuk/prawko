@@ -309,7 +309,11 @@ function StepRows({
                   if (step.startsExam) {
                     router.navigate({
                       pathname: "/exam",
-                      params: buildExamRouteParams({ mode: "exam" }),
+                      params: buildExamRouteParams({
+                        entry: "roadmap_step",
+                        mode: "exam",
+                        roadmapStepId: stepId,
+                      }),
                     });
                     return;
                   }
@@ -455,7 +459,11 @@ function ExamSimulatorCard({
 
           router.navigate({
             pathname: "/exam",
-            params: buildExamRouteParams({ mode: "exam" }),
+            params: buildExamRouteParams({
+              entry: "roadmap_simulator",
+              mode: "exam",
+              roadmapStepId: stepId,
+            }),
           });
         }}
         style={styles.finalButton}

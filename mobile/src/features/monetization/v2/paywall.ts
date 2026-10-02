@@ -1,5 +1,8 @@
 import { router } from "expo-router";
 
+import { buildExamRouteParams } from "../../exam/exam-routes";
+import { isExamEntry } from "../../exam/exam-entry";
+
 export const PAYWALL_SOURCES = [
   "training_limit",
   "wrong_answers",
@@ -34,7 +37,7 @@ export type PostPurchaseAction =
   | { type: "NONE" }
   | { type: "START_TRAINING"; mode: string; topic?: string; topics?: string; questionLimit?: number }
   | { type: "START_WRONG_ANSWERS" }
-  | { type: "START_EXAM" }
+  | { type: "START_EXAM"; entry?: string; roadmapStepId?: string }
   | { type: "OPEN_EXPLANATION"; questionId: string }
   | { type: "OPEN_STATISTICS_SECTION"; section: string };
 
@@ -103,7 +106,14 @@ export function openPaywall(input: {
 export function runPostPurchaseAction(action: PostPurchaseAction) {
   switch (action.type) {
     case "START_EXAM":
-      router.replace({ pathname: "/exam", params: { mode: "exam" } });
+      router.replace({
+        pathname: "/exam",
+        params: buildExamRouteParams({
+          entry: isExamEntry(action.entry) ? action.entry : "paywall",
+          mode: "exam",
+          roadmapStepId: action.roadmapStepId,
+        }),
+      });
       return true;
     case "START_WRONG_ANSWERS":
       router.replace({

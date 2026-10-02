@@ -109,6 +109,24 @@ export function isCheckoutPending(attempt: CheckoutAttempt | null) {
     attempt.status === "purchasing" || attempt.status === "restoring" || needsCheckoutRecovery(attempt)
   ));
 }
+/** Drops in-memory checkout state. Journal files are left for the test to clear. */
+export function resetCheckoutForTests() {
+  runtime = null;
+  unresolvedPurchases.clear();
+  lastObservedSnapshot = null;
+  journalHydration = null;
+  useCheckoutStore.setState({
+    attempt: null,
+    nativeRequestInFlight: false,
+    recoveryInFlight: false,
+    recoveryStatus: "idle",
+    recoveryAttemptId: null,
+    recoveryErrorKind: null,
+    journalAppUserId: null,
+    journalStatus: "idle",
+  });
+}
+
 export function canRetryUnknownCheckout(attempt: CheckoutAttempt | null) {
   const state = useCheckoutStore.getState();
   return Boolean(attempt?.status === "outcome_unknown" && state.attempt?.id === attempt.id &&
@@ -695,9 +713,20 @@ export async function startCheckoutRestore(input: CheckoutInput): Promise<Checko
   const original = runtime;
   if (original?.attempt.appUserId === input.appUserId && needsCheckoutRecovery(original.attempt)) {
     const result = await recover(original, "restore", input);
-    // Empty/error restore does not overwrite the unresolved purchase.
-    return { ...original.attempt, status: result.outcome === "active" ? "succeeded" : result.outcome === "not_found" ? "empty" : "failed",
-      errorKind: result.errorKind };
+    // Access from another product must not report this attempt as a new sale.
+    // Only a product-matched confirmation flips the stored attempt to succeeded.
+    const confirmed = original.attempt.status === "succeeded";
+    return {
+      ...original.attempt,
+      status: confirmed
+        ? "succeeded"
+        : result.outcome === "not_found"
+          ? "empty"
+          : result.outcome === "failed"
+            ? "failed"
+            : original.attempt.status,
+      errorKind: result.errorKind,
+    };
   }
   const current = acquire(input, "restore");
   if (!current) return null;

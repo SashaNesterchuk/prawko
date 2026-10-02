@@ -8,6 +8,7 @@ import { AD_POLICY } from "@prawko/config";
 import { hideModalAndWait } from "../../../components/shell/hide-modal-and-wait";
 import { isMobileSupabaseConfigured } from "../../../config/env";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
+import { trainingPracticeEntry } from "../../../analytics/practice-entry";
 import { recordQuestionAnsweredForAds } from "../../ads/ad-session-policy";
 import { useAdInterstitialActions } from "../../ads/show-interstitial";
 import { maybeRequestInAppReview } from "../../profile/request-in-app-review";
@@ -459,6 +460,11 @@ export function useQuestionTrainingSession() {
         time_limit_seconds: activeSession.request.timeLimitSeconds ?? null,
         topic_id: activeSession.request.topic ?? null,
         ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
+        ...trainingPracticeEntry({
+          mode: activeSession.request.mode,
+          roadmapStepId: activeSession.request.roadmapStepId,
+          topicId: activeSession.request.topic ?? null,
+        }),
         ...(isMonetizationV2Active()
           ? {
               access_method: accessMethod,
@@ -495,6 +501,11 @@ export function useQuestionTrainingSession() {
       passed: sessionPassed,
       question_total: summary.total,
       ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
+      ...trainingPracticeEntry({
+        mode: activeSession.request.mode,
+        roadmapStepId: activeSession.request.roadmapStepId,
+        topicId: activeSession.request.topic ?? null,
+      }),
       score_percent: sessionResultPercent,
       topic_id: activeSession.request.topic ?? null,
     });
@@ -525,6 +536,11 @@ export function useQuestionTrainingSession() {
       empty_reason: activeSession.emptyReason ?? "general_empty",
       mode: activeSession.request.mode,
       ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
+      ...trainingPracticeEntry({
+        mode: activeSession.request.mode,
+        roadmapStepId: activeSession.request.roadmapStepId,
+        topicId: activeSession.request.topic ?? null,
+      }),
       topic_id: activeSession.request.topic ?? null,
     });
   }, [activeSession, isEmptyState, track]);
@@ -577,6 +593,11 @@ export function useQuestionTrainingSession() {
       scope: currentQuestion.scope,
       topic_block: currentQuestion.topicBlock,
       topic_id: sessionTopic ?? null,
+      ...trainingPracticeEntry({
+        mode: sessionMode,
+        roadmapStepId: activeSession?.request.roadmapStepId,
+        topicId: sessionTopic ?? null,
+      }),
     });
 
     if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
@@ -707,6 +728,11 @@ export function useQuestionTrainingSession() {
       mode: sessionMode,
       question_total: summary.total,
       ...roadmapStepAnalytics(activeSession?.request.roadmapStepId),
+      ...trainingPracticeEntry({
+        mode: sessionMode,
+        roadmapStepId: activeSession?.request.roadmapStepId,
+        topicId: sessionTopic ?? null,
+      }),
       topic_id: sessionTopic ?? null,
     });
 

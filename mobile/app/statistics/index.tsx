@@ -455,6 +455,7 @@ export default function StatisticsScreen() {
     router.navigate({
       pathname: "/signs/test",
       params: {
+        entry: "statistics",
         limit: limit === "all" ? "all" : String(limit),
       },
     });

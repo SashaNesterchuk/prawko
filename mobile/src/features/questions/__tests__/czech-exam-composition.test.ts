@@ -91,6 +91,22 @@ describe("czech exam composition", () => {
     }
   });
 
+  it("rejects a Czech official exam when a statutory basket is short", () => {
+    const questions = CZECH_EXAM_BASKETS.flatMap((basket) =>
+      Array.from({ length: basket.count }, (_, index) =>
+        makeQuestion(`cz-incomplete-${basket.scopeId}-${index}`, {
+          examBasketId: basket.scopeId,
+          points: basket.scopeId === 12 ? 1 : basket.points,
+        })
+      )
+    );
+    hydrateQuestionBankFromLocalQuestions(questions);
+
+    expect(() =>
+      getExamQuestionIds({}, 25, new Date(), CZECH_EXAM_PROFILE, "exam")
+    ).toThrow("Official basket 12 requires 3 questions worth 4 points");
+  });
+
   it("uses a random subset for Czech mini tests instead of the official mix", () => {
     const questions = CZECH_EXAM_BASKETS.flatMap((basket) =>
       Array.from({ length: 5 }, (_, index) =>
@@ -165,22 +181,40 @@ describe("czech exam composition", () => {
     ).toThrow("Official basket 4 requires 4 questions worth 4 points");
   });
 
-  it("keeps the WORD base/specialist split", () => {
-    const questions = [
-      ...Array.from({ length: 24 }, (_, index) =>
-        makeQuestion(`base-${index}`, { scope: "base", points: 2 })
-      ),
-      ...Array.from({ length: 16 }, (_, index) =>
-        makeQuestion(`spec-${index}`, { scope: "specialist", points: 3 })
-      ),
+  it("keeps the WORD base/specialist split and the official point buckets", () => {
+    const mix = [
+      { scope: "base" as const, points: 3, count: 12 },
+      { scope: "base" as const, points: 2, count: 8 },
+      { scope: "base" as const, points: 1, count: 6 },
+      { scope: "specialist" as const, points: 3, count: 8 },
+      { scope: "specialist" as const, points: 2, count: 6 },
+      { scope: "specialist" as const, points: 1, count: 4 },
     ];
+    const questions = mix.flatMap((bucket) =>
+      Array.from({ length: bucket.count }, (_, index) =>
+        makeQuestion(`${bucket.scope}-${bucket.points}-${index}`, {
+          scope: bucket.scope,
+          points: bucket.points,
+        })
+      )
+    );
     hydrateQuestionBankFromLocalQuestions(questions);
 
     const ids = getExamQuestionIds({}, 32, new Date(), WORD_EXAM_PROFILE, "exam");
     const selected = ids.map((id) => questions.find((question) => question.id === id)!);
+    const base = selected.filter((question) => question.scope === "base");
+    const specialist = selected.filter((question) => question.scope === "specialist");
 
     expect(ids).toHaveLength(32);
-    expect(selected.filter((question) => question.scope === "base")).toHaveLength(20);
-    expect(selected.filter((question) => question.scope === "specialist")).toHaveLength(12);
+    expect(new Set(ids).size).toBe(32);
+    expect(base).toHaveLength(20);
+    expect(specialist).toHaveLength(12);
+    expect(base.filter((question) => question.points === 3)).toHaveLength(10);
+    expect(base.filter((question) => question.points === 2)).toHaveLength(6);
+    expect(base.filter((question) => question.points === 1)).toHaveLength(4);
+    expect(specialist.filter((question) => question.points === 3)).toHaveLength(6);
+    expect(specialist.filter((question) => question.points === 2)).toHaveLength(4);
+    expect(specialist.filter((question) => question.points === 1)).toHaveLength(2);
+    expect(selected.findIndex((question) => question.scope === "specialist")).toBe(20);
   });
 });

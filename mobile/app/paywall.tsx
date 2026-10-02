@@ -54,7 +54,7 @@ import {
   useResponsiveStyles,
 } from "../src/portable-ui";
 import { useAnalytics } from "../src/providers/AnalyticsProvider";
-import { ANALYTICS_EVENTS } from "../src/analytics/catalog";
+import { ANALYTICS_EVENTS, type AnalyticsProperties } from "../src/analytics/catalog";
 import { useErrorLogger } from "../src/providers/ErrorLoggingProvider";
 import { useTheme } from "../src/providers/ThemeProvider";
 import {
@@ -72,6 +72,9 @@ import {
   getMonetizationContextProperties,
   getMonetizationOfferSnapshot,
 } from "../src/features/monetization/monetization-analytics";
+import { isExamSimulatorMode } from "../src/features/exam/exam-config";
+import { isExamEntry } from "../src/features/exam/exam-entry";
+import { buildExamRouteParams } from "../src/features/exam/exam-routes";
 import {
   decodePostPurchaseAction,
   runPostPurchaseAction,
@@ -92,6 +95,7 @@ export default function PaywallPage() {
     mode?: string | string[];
     moment?: string | string[];
     presentation?: string | string[];
+    entry?: string | string[];
     questionId?: string | string[];
     questionLimit?: string | string[];
     returnTo?: string | string[];
@@ -164,7 +168,10 @@ export default function PaywallPage() {
   const returnExamQuestionLimit = getSingleParam(params.questionLimit);
   const returnExamStudyPlanTaskId = getSingleParam(params.studyPlanTaskId);
   const requestedSource = getSingleParam(params.source);
-  const paywallMoment = getSingleParam(params.moment) ?? "profile";
+  const paywallMoment = getSingleParam(params.moment);
+  const paywallMomentProperties: AnalyticsProperties = paywallMoment
+    ? { moment: paywallMoment }
+    : {};
   const paywallPresentation =
     getSingleParam(params.presentation) ?? "modal";
   const paywallSurface = getSingleParam(params.surface);
@@ -219,17 +226,16 @@ export default function PaywallPage() {
     }
 
     if (returnTo === "exam") {
+      const returnExamEntry = getSingleParam(params.entry);
       router.replace({
         pathname: "/exam",
-        params: {
-          ...(returnExamMode ? { mode: returnExamMode } : {}),
-          ...(returnExamQuestionLimit
-            ? { questionLimit: returnExamQuestionLimit }
-            : {}),
-          ...(returnExamStudyPlanTaskId
-            ? { studyPlanTaskId: returnExamStudyPlanTaskId }
-            : {}),
-        },
+        params: buildExamRouteParams({
+          entry: isExamEntry(returnExamEntry) ? returnExamEntry : "result_restart",
+          mode: isExamSimulatorMode(returnExamMode) ? returnExamMode : "exam",
+          questionLimit: parsePositiveInteger(returnExamQuestionLimit),
+          roadmapStepId: getSingleParam(params.roadmapStepId),
+          studyPlanTaskId: returnExamStudyPlanTaskId,
+        }),
       });
       return;
     }
@@ -286,7 +292,7 @@ export default function PaywallPage() {
       dismiss_method: method,
       has_plus_access: accessUnlocked,
       is_plus: accessUnlocked,
-      moment: paywallMomentRef.current,
+      ...(paywallMomentRef.current ? { moment: paywallMomentRef.current } : {}),
       source: paywallSourceRef.current,
       ...(paywallSurfaceRef.current
         ? { surface: paywallSurfaceRef.current }
@@ -307,7 +313,7 @@ export default function PaywallPage() {
 
   const offerContextRef = useRef(() => ({
     properties: {
-      ...paywallEntry, moment: paywallMoment, presentation: paywallPresentation,
+      ...paywallEntry, ...paywallMomentProperties, presentation: paywallPresentation,
       feature: highlightedFeature ?? null, has_plus_access: readHasPlusAccess(),
       plus_purchase_enabled: FEATURE_FLAGS.enablePlusPurchase,
     },
@@ -318,7 +324,7 @@ export default function PaywallPage() {
   }));
   offerContextRef.current = () => ({
     properties: {
-      ...paywallEntry, moment: paywallMoment, presentation: paywallPresentation,
+      ...paywallEntry, ...paywallMomentProperties, presentation: paywallPresentation,
       feature: highlightedFeature ?? null, has_plus_access: readHasPlusAccess(),
       plus_purchase_enabled: FEATURE_FLAGS.enablePlusPurchase,
     },
@@ -470,7 +476,7 @@ export default function PaywallPage() {
       product_id: recommendedPackage?.productIdentifier ?? null,
       price: recommendedPackage?.price ?? null,
       currency: recommendedPackage?.currencyCode ?? null,
-      moment: paywallMoment,
+      ...paywallMomentProperties,
       presentation: paywallPresentation,
     });
   }, [
@@ -548,7 +554,7 @@ export default function PaywallPage() {
       properties: {
         ...offerTracker.getProperties(),
         feature: highlightedFeature ?? "premium_access",
-        moment: paywallMoment,
+        ...paywallMomentProperties,
         ...paywallEntry,
       },
       track,
@@ -589,7 +595,7 @@ export default function PaywallPage() {
     const result = await startCheckoutRestore({
       appUserId,
       originViewId: paywallViewId,
-      properties: { moment: paywallMoment, ...paywallEntry },
+      properties: { ...paywallMomentProperties, ...paywallEntry },
       track,
       captureError,
     });
@@ -918,6 +924,15 @@ function selectPaywallPackage(offers: RevenueCatPackageSummary[], monetizationV2
     ? offers.find((item) => matchRevenueCatProductId(item) === "lifetime") ??
       offers.find((item) => item.packageType === "LIFETIME")
     : null) ?? pickRecommendedPackage(offers);
+}
+
+function parsePositiveInteger(value: string | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
 }
 
 function getSingleParam(value: string | string[] | undefined) {

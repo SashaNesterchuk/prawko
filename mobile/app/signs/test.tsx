@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { buildAllSignTestQuestions } from "../../src/features/road-signs/category-test";
 import { SignTestSessionScreen } from "../../src/features/road-signs/SignTestSessionScreen";
+import type { SignTestEntry } from "../../src/features/road-signs/sign-test-entry";
 import { withRoadSignsFeature } from "../../src/app-config/with-road-signs-feature";
 
 function parseLimit(value?: string): number | "all" | null {
@@ -21,7 +22,13 @@ function parseLimit(value?: string): number | "all" | null {
 
 function AllSignsTestScreen() {
   const { t } = useTranslation();
-  const { limit } = useLocalSearchParams<{ limit?: string }>();
+  const { entry, limit } = useLocalSearchParams<{
+    entry?: string | string[];
+    limit?: string | string[];
+  }>();
+  const rawEntry = typeof entry === "string" ? entry : Array.isArray(entry) ? entry[0] : undefined;
+  const signTestEntry: Exclude<SignTestEntry, "sign_detail" | "category"> =
+    rawEntry === "statistics" ? "statistics" : "signs_home";
   const resolvedLimit = parseLimit(
     typeof limit === "string" ? limit : Array.isArray(limit) ? limit[0] : undefined
   );
@@ -32,6 +39,7 @@ function AllSignsTestScreen() {
 
   return (
     <SignTestSessionScreen
+      entry={signTestEntry}
       questions={questions}
       title={t("signs.signTestTitle")}
       subtitle={t("signs.title")}

@@ -148,7 +148,7 @@ export default function LearnTabScreen() {
         defaultValue: "Симуляція з таймером",
       }),
       icon: <LearnActionIcon accent="green" name="exam" />,
-      onPress: () => openExam(),
+      onPress: () => openExam("learn"),
     },
   ];
 

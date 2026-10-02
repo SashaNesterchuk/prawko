@@ -1,5 +1,5 @@
 # Feature: Exploratory session
-# Scenario: A free Monetization V2 user wanders the app for 20 minutes —
+# Scenario: A free Monetization V2 user wanders the app for 30 minutes —
 # tabs, training, a short exam, signs, profile, paywall — the way a
 # reviewer would, recovering from whatever screen is on top.
 # Not part of the default suite (tag: explore). Run:
@@ -27,7 +27,7 @@ tags:
 
 - repeat:
     while:
-      true: ${Date.now() - output.startedAt < 20 * 60 * 1000}
+      true: ${Date.now() - output.startedAt < 30 * 60 * 1000}
     commands:
       - evalScript: ${output.handled = false}
 

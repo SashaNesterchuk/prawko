@@ -19,6 +19,7 @@
     "road-signs:generate": "node scripts/generate-road-signs-content.mjs",
     "test:e2e": "PATH=\"$HOME/.maestro/bin:$PATH\" sh -c 'maestro test --exclude-tags explore \"${@:-.maestro}\"' _",
     "test:e2e:explore": "PATH=\"$HOME/.maestro/bin:$PATH\" maestro test .maestro/explore/blogger_session.yaml",
+    "analytics:local": "node scripts/local-analytics-log.mjs",
     "test:e2e:smoke": "PATH=\"$HOME/.maestro/bin:$PATH\" maestro test .maestro --include-tags smoke",
     "test:e2e:studio": "PATH=\"$HOME/.maestro/bin:$PATH\" maestro studio"
   },

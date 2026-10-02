@@ -29,6 +29,7 @@ import type { SignPractice } from "../../../src/features/road-signs/content/type
 import { SignImage } from "../../../src/features/road-signs/SignImage";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 import { ANALYTICS_EVENTS } from "../../../src/analytics/catalog";
+import { signTestAnalytics } from "../../../src/features/road-signs/sign-test-entry";
 import { openPaywall } from "../../../src/features/monetization/v2/paywall";
 import { useAnalytics } from "../../../src/providers/AnalyticsProvider";
 import { useHasPlusAccess } from "../../../src/state/entitlements";
@@ -94,6 +95,10 @@ function SignPracticeScreen() {
 
     didTrackStartRef.current = true;
     track(ANALYTICS_EVENTS.signTestStarted.key, {
+      ...signTestAnalytics({
+        categoryId: sign.categoryId,
+        entry: "sign_detail",
+      }),
       question_total: practices.length,
       sign_id: sign.id,
       test_type: "sign_practice",
@@ -116,6 +121,10 @@ function SignPracticeScreen() {
     }
 
     track(ANALYTICS_EVENTS.signTestQuestionAnswered.key, {
+      ...signTestAnalytics({
+        categoryId: sign?.categoryId,
+        entry: "sign_detail",
+      }),
       answer_duration_ms: Math.max(0, Date.now() - questionStartedAtRef.current),
       is_correct: optionId === currentQuestion.correctOptionId,
       question_id: `${signId}:${questionIndex + 1}`,
@@ -140,6 +149,10 @@ function SignPracticeScreen() {
         });
         hasRecordedCompletionRef.current = true;
         track(ANALYTICS_EVENTS.signTestEnded.key, {
+          ...signTestAnalytics({
+            categoryId: sign.categoryId,
+            entry: "sign_detail",
+          }),
           answered_count: practices.length,
           correct_count:
             correctCount + (isCorrect ? 1 : 0),

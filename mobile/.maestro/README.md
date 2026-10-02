@@ -20,7 +20,7 @@ From `mobile/`:
 pnpm test:e2e
 # or one flow:
 pnpm test:e2e -- .maestro/onboarding_completes_and_lands_on_home.yaml
-# 20-minute free-user wander (excluded from the default suite):
+# 30-minute free-user wander (excluded from the default suite):
 pnpm test:e2e:explore
 # interactive recorder / inspector:
 pnpm test:e2e:studio
@@ -88,7 +88,7 @@ pnpm test:e2e:studio
 | `monetization_v2_plus_exam_starts.yaml` | V2 Premium starts an exam with no unlock sheet |
 | `monetization_v2_training_limit_opens_paywall.yaml` | V2 training with the free question quota used opens the paywall |
 | `monetization_v2_explanation_locks.yaml` | First answer hides the explanation and opens the paywall |
-| `explore/blogger_session.yaml` | V2 free user wanders Home, training, a short exam, signs, profile and paywall for 20 minutes. Tag `explore`, excluded from `pnpm test:e2e`. Run `pnpm test:e2e:explore` |
+| `explore/blogger_session.yaml` | V2 free user wanders Home, training, a short exam, signs, profile and paywall for 30 minutes. Tag `explore`, excluded from `pnpm test:e2e`. Run `pnpm test:e2e:explore` |
 | `profile_offline_missing_pack_can_download.yaml` | Offline mode → download missing pack (e2e) |
 | `profile_offline_incomplete_pack_shows_resume.yaml` | Incomplete pack shows resume + remove |
 | `profile_offline_downloading_can_be_stopped.yaml` | Downloading pack can be stopped → incomplete |

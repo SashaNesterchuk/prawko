@@ -31,6 +31,7 @@ import { SignImage } from "./SignImage";
 import { useSignBookmarksStore } from "../../state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../state/sign-practice-progress";
 import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { signTestAnalytics, type SignTestEntry } from "./sign-test-entry";
 import { openPaywall } from "../monetization/v2/paywall";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { useHasPlusAccess } from "../../state/entitlements";
@@ -41,12 +42,16 @@ type SignTestAnswer = {
 };
 
 type SignTestSessionScreenProps = {
+  categoryId?: string | null;
+  entry: Exclude<SignTestEntry, "sign_detail">;
   questions: SignTestQuestion[];
   title: string;
   subtitle?: string;
 };
 
 export function SignTestSessionScreen({
+  categoryId = null,
+  entry,
   questions,
   title,
   subtitle,
@@ -109,9 +114,10 @@ export function SignTestSessionScreen({
 
     didTrackStartRef.current = true;
     track(ANALYTICS_EVENTS.signTestStarted.key, {
+      ...signTestAnalytics({ categoryId, entry }),
       question_total: questions.length,
     });
-  }, [questions.length, track]);
+  }, [categoryId, entry, questions.length, track]);
 
   useEffect(() => {
     questionStartedAtRef.current = Date.now();
@@ -142,6 +148,7 @@ export function SignTestSessionScreen({
     recordQuestionAnsweredForAds();
     shouldAttemptPracticeAdRef.current = true;
     track(ANALYTICS_EVENTS.signTestQuestionAnswered.key, {
+      ...signTestAnalytics({ categoryId, entry }),
       answer_duration_ms: Math.max(0, Date.now() - questionStartedAtRef.current),
       is_correct: isCorrectAnswer,
       question_id: currentQuestion.id,
@@ -163,6 +170,7 @@ export function SignTestSessionScreen({
     if (!didTrackEndRef.current) {
       didTrackEndRef.current = true;
       track(ANALYTICS_EVENTS.signTestEnded.key, {
+        ...signTestAnalytics({ categoryId, entry }),
         answered_count: answeredCount,
         correct_count: Object.values(answers).filter((answer) => answer.isCorrect)
           .length,

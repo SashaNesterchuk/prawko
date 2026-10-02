@@ -19,6 +19,7 @@ import {
   formatQuestionCountdown,
   getRemainingExamSeconds,
 } from "../../src/features/exam/exam-config";
+import { examAnalyticsFromMetadata } from "../../src/features/exam/exam-entry";
 import { ExamFreeNavigationChrome, ExamQuestionIndexStrip } from "../../src/features/exam/ExamFreeNavigationChrome";
 import { ExamQuestionProgressBar } from "../../src/features/exam/ExamQuestionProgressBar";
 import {
@@ -135,6 +136,7 @@ export default function ExamSessionScreen() {
   const questionTimeoutHandledRef = useRef(false);
   const questionStartedAtRef = useRef(Date.now());
   const resultNavigationHandledRef = useRef(false);
+  const sawActiveExamRef = useRef(false);
   const modalHideResolverRef = useRef<(() => void) | null>(null);
   const confirmLockRef = useRef(false);
   const submitLockRef = useRef(false);
@@ -227,7 +229,8 @@ export default function ExamSessionScreen() {
 
   function navigateToResult(
     nextSessionId: string,
-    nextSnapshot?: RemoteExamSnapshot | null
+    nextSnapshot?: RemoteExamSnapshot | null,
+    options?: { justFinished?: boolean }
   ) {
     if (resultNavigationHandledRef.current) {
       return;
@@ -245,6 +248,7 @@ export default function ExamSessionScreen() {
       pathname: "/exam/result",
       params: {
         sessionId: nextSessionId,
+        ...(options?.justFinished ? { justFinished: "1" } : {}),
       },
     });
   }
@@ -419,11 +423,20 @@ export default function ExamSessionScreen() {
   }, [snapshot]);
 
   useEffect(() => {
+    if (snapshot?.session.status === "active") {
+      sawActiveExamRef.current = true;
+    }
+  }, [snapshot?.session.id, snapshot?.session.status]);
+
+  useEffect(() => {
     if (!snapshot || snapshot.session.status === "active") {
       return;
     }
 
-    navigateToResult(snapshot.session.id, snapshot);
+    navigateToResult(snapshot.session.id, snapshot, {
+      justFinished:
+        sawActiveExamRef.current && snapshot.session.status === "completed",
+    });
   }, [snapshot?.session.id, snapshot?.session.status]);
 
   useEffect(() => {
@@ -507,6 +520,7 @@ export default function ExamSessionScreen() {
       });
 
       track(ANALYTICS_EVENTS.examQuestionAnswered.key, {
+        ...examAnalyticsFromMetadata(snapshot.session.metadata),
         answer_duration_ms: answerDurationMs,
         answer_type: currentQuestion.answerType,
         is_correct: isCorrect,
@@ -568,6 +582,7 @@ export default function ExamSessionScreen() {
         sessionId,
       });
       track(ANALYTICS_EVENTS.examQuestionAnswered.key, {
+        ...examAnalyticsFromMetadata(snapshot.session.metadata),
         answer_duration_ms: answerDurationMs,
         answer_type: currentQuestion.answerType,
         is_correct: currentQuestion.correctAnswer === answerGiven,
@@ -668,6 +683,7 @@ export default function ExamSessionScreen() {
         sessionId,
       });
       track(ANALYTICS_EVENTS.examSessionEnded.key, {
+        ...examAnalyticsFromMetadata(nextSnapshot.session.metadata),
         answered_count: nextSnapshot.session.totalQuestionsAnswered,
         correct_count: nextSnapshot.session.correctAnswersCount,
         end_reason: "learner_finish",
@@ -676,7 +692,9 @@ export default function ExamSessionScreen() {
         status: "completed",
         wrong_count: nextSnapshot.session.wrongAnswersCount,
       });
-      navigateToResult(nextSnapshot.session.id, nextSnapshot);
+      navigateToResult(nextSnapshot.session.id, nextSnapshot, {
+        justFinished: true,
+      });
     } catch (error) {
       console.warn("Failed to finish exam session.", error);
       setErrorMessage(getErrorMessage(error));
@@ -731,6 +749,7 @@ export default function ExamSessionScreen() {
       });
 
       track(ANALYTICS_EVENTS.examSessionEnded.key, {
+        ...examAnalyticsFromMetadata(nextSnapshot.session.metadata),
         answered_count: nextSnapshot.session.totalQuestionsAnswered,
         correct_count: nextSnapshot.session.correctAnswersCount,
         end_reason:
@@ -924,6 +943,7 @@ export default function ExamSessionScreen() {
         status: "abandoned",
       });
       track(ANALYTICS_EVENTS.examEmptyExit.key, {
+        ...examAnalyticsFromMetadata(discardedSnapshot.session.metadata),
         answered_count: 0,
         mode: discardedSnapshot.session.mode,
         question_total: discardedSnapshot.session.totalQuestionsTarget,

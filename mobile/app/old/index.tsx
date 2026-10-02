@@ -480,7 +480,7 @@ export default function HomeTabScreen() {
         defaultValue: "Симуляція з таймером",
       }),
       icon: <HomeActionIcon accent="green" name="exam" />,
-      onPress: () => openExam(),
+      onPress: () => openExam("home"),
     },
     {
       key: "mistakes",

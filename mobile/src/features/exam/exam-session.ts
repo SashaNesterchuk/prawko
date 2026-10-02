@@ -40,7 +40,9 @@ type StartExamSessionInput = {
   locale: SupportedLocale;
   mode: ExamSimulatorMode;
   replaceExisting?: boolean;
+  examEntry?: string | null;
   requestedTotalQuestions?: number | null;
+  roadmapStepId?: string | null;
   studyPlanId?: string | null;
   studyPlanTaskId?: string | null;
 };

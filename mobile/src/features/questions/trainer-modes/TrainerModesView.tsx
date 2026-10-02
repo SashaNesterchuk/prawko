@@ -29,6 +29,7 @@ import { useResponsiveFonts, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
+import { trainingPracticeEntry } from "../../../analytics/practice-entry";
 import { type GreenWaveAccent } from "../../../theme/green-wave";
 import { useShowPremiumMark } from "../../monetization/v2/store";
 import { openTrackedPaywall } from "../../monetization/v2/analytics";
@@ -226,6 +227,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
       mode,
       question_limit: cappedLimit,
       topic_id: topic ?? null,
+      ...trainingPracticeEntry({ mode, topicId: topic ?? null }),
     });
     router.navigate({
       pathname: "/question",

@@ -20,6 +20,8 @@
 
 PostHog EU, проект `249243`. JSON-дампы в этой папке в `.gitignore`.
 
+Локальный Metro и e2e в PostHog не пишут. Пока запущен `pnpm analytics:local` из `mobile/`, те же `capture` / `screen` / `identify` дописываются в `mobile/.analytics/session.jsonl`. Это сверка известного пути Maestro с потоком событий, не продакшен-дамп. Файл в git не коммитится.
+
 ---
 
 ## Как читать

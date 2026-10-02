@@ -183,6 +183,7 @@ export default function PracticeScreen() {
       count: sessionSizes.exam,
       description: "practice.examSubtitle",
       params: buildExamRouteParams({
+        entry: "practice",
         mode: examMode,
         questionLimit: examQuestionTarget,
         studyPlanTaskId: examBinding.studyPlanTaskId,

@@ -26,6 +26,7 @@ data/questions/normalized/generated/**
 data/questions/exports/generated/**
 data/questions/delivery/generated/**
 docs/analytics/*.json
+mobile/.analytics/
 data/legal/**/raw/
 data/legal/**/articles.json
 data/legal/**/meta.json

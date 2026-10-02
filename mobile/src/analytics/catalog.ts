@@ -115,12 +115,13 @@ export const ANALYTICS_EVENTS = {
   },
   trainingModeSelected: {
     key: "training_mode_selected",
-    description: "A training mode and question count were selected.",
+    description:
+      "A training mode and question count were selected. practice_entry splits mode=learning into random, topic, or roadmap.",
   },
   trainingSessionStarted: {
     key: "training_session_started",
     description:
-      "A question-training session was created. roadmap_step_id is set when the session came from a roadmap lesson.",
+      "A question-training session was created. roadmap_step_id is set when the session came from a roadmap lesson. practice_entry splits mode=learning into random, topic, or roadmap.",
   },
   trainingSessionResumed: {
     key: "training_session_resumed",
@@ -144,11 +145,13 @@ export const ANALYTICS_EVENTS = {
   },
   examStartRequested: {
     key: "exam_start_requested",
-    description: "The app started loading or creating an exam.",
+    description:
+      "The app started loading or creating an exam. exam_entry is the opener: home, learn, practice, roadmap_step, roadmap_simulator, result_restart, home_contextual, paywall. source stays manual or study_plan.",
   },
   examSessionStarted: {
     key: "exam_session_started",
-    description: "An exam session was created.",
+    description:
+      "An exam session was created. exam_entry matches exam_start_requested. roadmap_step_id is set for a roadmap step or the exam simulator.",
   },
   examSessionResumed: {
     key: "exam_session_resumed",
@@ -160,7 +163,8 @@ export const ANALYTICS_EVENTS = {
   },
   examSessionCompleted: {
     key: "exam_session_completed",
-    description: "An exam session completed with its score.",
+    description:
+      "The learner just finished an exam in this visit. Opening a stored result does not emit this. exam_entry is the opener of that attempt.",
   },
   examSessionEnded: {
     key: "exam_session_ended",
@@ -223,7 +227,8 @@ export const ANALYTICS_EVENTS = {
   },
   signTestStarted: {
     key: "sign_test_started",
-    description: "A road-sign test session started.",
+    description:
+      "A road-sign test session started. sign_test_entry is signs_home, category, statistics, or sign_detail. category_id is the sign category, or null for the whole catalog.",
   },
   signTestQuestionAnswered: {
     key: "sign_test_question_answered",
@@ -251,7 +256,7 @@ export const ANALYTICS_EVENTS = {
   premiumGateViewed: {
     key: "premium_gate_viewed",
     description:
-      "The learner hit a Monetization V2 limit or a premium entry that opens the paywall. source matches paywall_viewed. surface splits a shared source: home_step, home_unlock, learn_topic, topics, statistics_topic, trainer_modes, question_start.",
+      "The learner hit a Monetization V2 limit or a premium entry that opens the paywall. source matches paywall_viewed. surface splits a shared source: home_step, home_unlock, learn_topic, topics, statistics_topic, trainer_modes, question_start. moment is only the legacy prompt timing and is absent on V2 entries.",
   },
   premiumGateAction: {
     key: "premium_gate_action",
@@ -270,7 +275,8 @@ export const ANALYTICS_EVENTS = {
   },
   paywallViewed: {
     key: "paywall_viewed",
-    description: "The Plus paywall became visible.",
+    description:
+      "The Plus paywall became visible. Entry is source and surface. moment is only present for a legacy prompt (after_exam, after_ad, app_open, manual_test).",
   },
   paywallOfferLoadStarted: {
     key: "paywall_offer_load_started",

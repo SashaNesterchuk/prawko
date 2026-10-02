@@ -6,6 +6,7 @@ import { InteractionManager } from "react-native";
 import { isMobileSupabaseConfigured } from "../../src/config/env";
 import { ExamRestartGateDialog } from "../../src/components/shell/ExamRestartGateDialog";
 import { ExamAnswersReviewView } from "../../src/features/exam/ExamAnswersReviewView";
+import { examCompletionAnalytics } from "../../src/features/exam/exam-entry";
 import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
 import { getExamProfile } from "../../src/features/exam/exam-profile";
 import {
@@ -70,6 +71,7 @@ export default function ExamResultScreen() {
     (state) => state.setPreferredCategory
   );
   const params = useLocalSearchParams<{
+    justFinished?: string | string[];
     sessionId?: string | string[];
   }>();
   const {
@@ -273,16 +275,23 @@ export default function ExamResultScreen() {
     if (completion.isNew && !isMonetizationV2Active()) {
       requestMonetizationSurface("paywall", "after_exam");
     }
-    track(ANALYTICS_EVENTS.examSessionCompleted.key, {
-      correct_count: snapshot.session.correctAnswersCount,
-      duration_seconds: getExamDurationSeconds(snapshot.session),
-      mode: snapshot.session.mode,
-      passed: Boolean(snapshot.session.passed),
-      question_total: snapshot.session.totalQuestionsTarget,
-      score_points: snapshot.session.scorePoints,
-      total_points_target: snapshot.session.totalPointsTarget,
-      wrong_count: snapshot.session.wrongAnswersCount,
+    const completionAnalytics = examCompletionAnalytics({
+      justFinished: getSingleParam(params.justFinished) === "1",
+      metadata: snapshot.session.metadata,
     });
+    if (completionAnalytics) {
+      track(ANALYTICS_EVENTS.examSessionCompleted.key, {
+        ...completionAnalytics,
+        correct_count: snapshot.session.correctAnswersCount,
+        duration_seconds: getExamDurationSeconds(snapshot.session),
+        mode: snapshot.session.mode,
+        passed: Boolean(snapshot.session.passed),
+        question_total: snapshot.session.totalQuestionsTarget,
+        score_points: snapshot.session.scorePoints,
+        total_points_target: snapshot.session.totalPointsTarget,
+        wrong_count: snapshot.session.wrongAnswersCount,
+      });
+    }
   }, [
     recordExamCompleted,
     requestMonetizationSurface,
@@ -411,6 +420,7 @@ export default function ExamResultScreen() {
   const loadedSnapshot = snapshot;
 
   const restartParams = buildExamRouteParams({
+    entry: "result_restart",
     mode: loadedSnapshot.session.mode,
     questionLimit: loadedSnapshot.session.totalQuestionsTarget,
     studyPlanTaskId: getStudyPlanTaskId(loadedSnapshot.session.metadata),

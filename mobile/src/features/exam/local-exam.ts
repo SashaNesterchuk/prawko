@@ -58,8 +58,10 @@ type StartLocalExamInput = {
   locale: SupportedLocale;
   mode: ExamSimulatorMode;
   profile?: ExamProfile;
+  examEntry?: string | null;
   replaceExisting?: boolean;
   requestedTotalQuestions?: number | null;
+  roadmapStepId?: string | null;
   studyPlanId?: string | null;
   studyPlanTaskId?: string | null;
 };
@@ -276,6 +278,8 @@ export function startLocalExamSession(
           ? useAppShellStore.getState().supabaseUser?.id ?? null
           : null,
         study_plan_task_id: input.studyPlanTaskId ?? null,
+        ...(input.examEntry ? { exam_entry: input.examEntry } : {}),
+        ...(input.roadmapStepId ? { roadmap_step_id: input.roadmapStepId } : {}),
         navigation: profile.navigation,
         flaggedOrders: [],
       },

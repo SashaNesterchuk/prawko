@@ -30,7 +30,7 @@
 
 | Ключ | Экран |
 |---|---|
-| `app_entry` | Старт приложения / сплэш-роутер |
+| `app_entry` | Корень-шлюз. `screen_viewed` для него не пишется: экран сразу редиректит или показывает загрузку, и в дампе это выглядело как отдельный визит |
 | `onboarding_language` | Выбор языка |
 | `onboarding_category` | Категория прав |
 | `onboarding_exam_schedule` | Дата экзамена |
@@ -149,6 +149,8 @@ Skip и start у одного человека в разные визиты — 
 
 `roadmap_step_id` (`PL:0:1`) есть на старте, ответе, завершении, abandon и empty. Без круга роадмапа значение `null`.
 
+`practice_entry` только у `mode=learning`: `random` (нет темы и нет урока), `topic` (есть `topic_id`), `roadmap` (есть `roadmap_step_id`). На тех же событиях, что и `roadmap_step_id`. Остальные `mode` поле не несут.
+
 ---
 
 ## Roadmap
@@ -167,18 +169,20 @@ Skip и start у одного человека в разные визиты — 
 
 | Событие | Значение |
 |---|---|
-| `exam_start_requested` | Начали грузить / создавать |
-| `exam_session_started` | Сессия есть |
-| `exam_session_resumed` | Вернулись в активный экзамен |
-| `exam_question_answered` | Ответ в экзамене |
-| `exam_session_completed` | Есть счёт. Смотреть `passed` |
+| `exam_start_requested` | Начали грузить / создавать. `exam_entry` — откуда открыли |
+| `exam_session_started` | Сессия есть. Тот же `exam_entry` |
+| `exam_session_resumed` | Вернулись в активный экзамен. `exam_entry` — этот заход |
+| `exam_question_answered` | Ответ в экзамене. `exam_entry` сессии |
+| `exam_session_completed` | Человек только что закончил экзамен в этом заходе. Открытие готового результата событие не пишет. `passed`, `exam_entry` |
 | `exam_session_ended` | Вышли после ответа или истекло. `end_reason`, `status` |
 | `exam_empty_exit` | Закрыли экзамен до первого ответа. Не брошенный экзамен. `answered_count` 0, `question_total`, `mode` |
 | `exam_answers_review_opened` | Открыли разбор |
 | `exam_restart_gate_shown` | Модалка «ещё раз» на экране **результата**, только кнопка New attempt |
 | `exam_restart_selected` | Ответ на эту модалку. `choice`: `watch_ad`, `upgrade`, `dismiss`, `plus` |
 
-Это **не** лимит экзаменов и **не** гейт на плитке Home/Learn. `openExam()` → `/exam` не смотрит Plus и не показывает модалку. `exam_start_requested source=manual` после Home — обход, не «гейт пропустили». `dismiss` только закрывает модалку, на результате остаются; Close ведёт на Home, оттуда новый экзамен сразу. Текст paywall `1/день` — копирайт, в коде дневного капа нет. После сдачи primary CTA — Home, гейт даже не показывается.
+`exam_entry`: `home`, `learn`, `practice`, `roadmap_step`, `roadmap_simulator` (ещё `roadmap_step_id`), `result_restart` (новая попытка с экрана результата), `home_contextual`, `paywall`. `source` по-прежнему `manual` или `study_plan` и вход не заменяет. Нет параметра — `unspecified`.
+
+Это **не** лимит экзаменов и **не** гейт на плитке Home/Learn. `openExam()` → `/exam` не смотрит Plus и не показывает модалку. `exam_start_requested source=manual` после Home — обход, не «гейт пропустили»; вход плитки смотреть по `exam_entry`. `dismiss` только закрывает модалку, на результате остаются; Close ведёт на Home, оттуда новый экзамен сразу. Текст paywall `1/день` — копирайт, в коде дневного капа нет. После сдачи primary CTA — Home, гейт даже не показывается.
 
 `exam_session_ended.status`: `abandoned` — ответил и вышел; `completed` + `end_reason: learner_finish` — нормальное завершение (иногда дублирует complete). Настоящий mid-exam дроп: `end_reason: user_ended_early`. Пустой выход без ответов — отдельное событие `exam_empty_exit`, не `exam_session_ended`. В дампах до этого билда тот же выход лежит на `exam_session_ended` с `end_reason: miss_click_empty_exit`.
 
@@ -192,11 +196,11 @@ Skip и start у одного человека в разные визиты — 
 |---|---|
 | `sign_opened` | Карточка знака |
 | `sign_search_submitted` | Поиск |
-| `sign_test_started` | Старт теста |
-| `sign_test_question_answered` | Ответ в тесте |
-| `sign_test_ended` | Конец. `outcome`: `completed` / `abandoned` |
+| `sign_test_started` | Старт теста. `sign_test_entry`, `category_id` |
+| `sign_test_question_answered` | Ответ в тесте. Те же поля |
+| `sign_test_ended` | Конец. `outcome`: `completed` / `abandoned`. Те же поля |
 
-Тест можно начать с `signs_home` / категории, минуя `sign_opened`.
+`sign_test_entry`: `signs_home` (весь каталог с вкладки), `category` (`category_id`, например `E` — направленные), `statistics`, `sign_detail` (практика одного знака, рядом `test_type=sign_practice`). У каталога без категории `category_id` = `null`. Страна знаков — супер-свойство `exam_country`. Тест можно начать, минуя `sign_opened`.
 
 ---
 
@@ -204,7 +208,7 @@ Skip и start у одного человека в разные визиты — 
 
 | Событие | Значение |
 |---|---|
-| `paywall_viewed` | Показали Plus. `source`, `offers_count`, `revenuecat_configured` (API key / SDK для платформы, не «последний fetch успешен»), опционально `hydration_error_code`. `moment`: `after_exam` / `premium_prompt` / `profile` / `manual_test`. Monetization V2 добавляет `product_id`, `price`, `currency` и `source`: `training_limit`, `wrong_answers`, `explanation`, `exam_limit`, `weak_spots`, `smart_reviews`, `trap_questions`, `statistics`, `profile`, `roadmap`, `ai_chat`, `offline_mode`. Если несколько экранов делят `source`, есть `surface`. С круга роадмапа ещё `roadmap_step_id` |
+| `paywall_viewed` | Показали Plus. Вход — `source` и, если источник общий, `surface`. `offers_count`, `revenuecat_configured` (API key / SDK для платформы, не «последний fetch успешен»), опционально `hydration_error_code`. `moment` пишется только у старого промпта: `after_exam`, `after_ad`, `app_open`, `manual_test`. У V2 (`training_limit`, `explanation`, `roadmap`, `profile`, …) поля `moment` нет. Не подставлять `profile` вместо отсутствующего `moment`. V2 `source`: `training_limit`, `wrong_answers`, `explanation`, `exam_limit`, `weak_spots`, `smart_reviews`, `trap_questions`, `statistics`, `profile`, `roadmap`, `ai_chat`, `offline_mode`. С круга роадмапа ещё `roadmap_step_id` |
 | `paywall_offer_load_started` | Начался цикл доступности оффера на этом paywall. `paywall_view_id`, `offer_load_id`, при наличии `offer_request_id`; `load_reason=initial/refresh`, `offer_load_source`, `is_cached`. Не каждый цикл является новым запросом SDK |
 | `paywall_offer_ready` | Выбранный пакет реально доступен: product/package/offering, price/currency, число предложений и duration. Есть связанный `offer_load_id`; кеш приложения отмечается `is_cached=true`, `load_duration_ms=0`. Это готовность предложения, не покупка и не утверждение о доступности CTA для уже активного Premium |
 | `paywall_offer_failed` | Завершившийся запрос не дал готового оффера или SDK не настроен. `failure_reason`: `request_error`, `empty_offerings`, `not_configured`; `error_code`, структурированная диагностика. Ноль предложений **во время** загрузки не создаёт failed |
@@ -351,17 +355,17 @@ Restore неопределённой покупки сохраняет исхо�
 
 **Roadmap.** `roadmap_step_opened` → `training_session_started` или `premium_gate_viewed` → `paywall_viewed`. Сплиты: `roadmap_step_id`, `surface`, `locked`.
 
-**Training.** `training_mode_selected` → `training_session_started` → `training_session_completed`. Рядом: abandoned, empty. Сплит: `mode`, `roadmap_step_id`.
+**Training.** `training_mode_selected` → `training_session_started` → `training_session_completed`. Рядом: abandoned, empty. Сплит: `mode`, `roadmap_step_id`. У `mode=learning` дополнительно `practice_entry`: `random` (без темы и без урока), `topic` (открыта тема), `roadmap` (урок; `topic_id` при этом может быть заполнен). На answered / completed / abandoned / empty то же поле.
 
 **Paywall.** `premium_gate_viewed` → `paywall_viewed` → `paywall_offer_ready` → `purchase_started` → `purchase_succeeded`. Для сквозной цепочки связывать ready/start с одним `paywall_view_id`, результат покупки — с `purchase_attempt_id`. Loading и failed анализировать по `offer_load_id`; несколько refresh не увеличивают число показов. Рядом: preparation_failed, pending/outcome_unknown, cancelled, failed, dismissed. Сплиты: фактический `auth_mode`, `source`, `surface`, `roadmap_step_id`; кеш и SDK-запросы раздельно. `paywall_package_selected` больше не шлётся. Старые версии не пишут ready — не включать их в обязательную пятиступенчатую воронку.
 
 **Restore.** Попытки — только `purchase_restore_started`, доступ восстановлен/подтверждён — только `purchase_restore_succeeded`; в новой версии дополнительно `entitlement_active=true`, `restore_outcome=restored`. Empty и failed отдельно. Не прибавлять legacy `restore_*`: это дубли того же запроса, а не дополнительные попытки/покупки. В attempt-метрике дедуп по `restore_attempt_id`, в user-метрике по `app_user_id ?? distinct_id`. Для старых событий без новых полей использовать канонический event name, не отбрасывать их лишь из-за отсутствия `restore_outcome`. Сам по себе restore не доказывает новую выручку или новое платёжное приобретение.
 
-**Exam.** `exam_start_requested` → `exam_session_started` → `exam_session_completed`. Рядом: ended (ответил и вышел), `exam_empty_exit` (закрыл до ответа, не abandon), restart **modal on result** (не кап Home). Сплит: `passed`.
+**Exam.** `exam_start_requested` → `exam_session_started` → `exam_session_completed`. `exam_session_completed` только если экзамен закончился в этом заходе, не если открыли сохранённый результат. Сплит: `exam_entry`, `roadmap_step_id`, `passed`. Рядом: ended (ответил и вышел), `exam_empty_exit` (закрыл до ответа, не abandon), restart **modal on result** (не кап Home).
 
 **Ads.** `ad_requested` → `ad_shown` → `ad_dismissed`. Рядом: skipped, failed, `ad_impression_revenue`. Сплиты: `after`, `should_show`, `why`, `step`, revenue `placement` / `ad_network`. Ad LTV: `sum(revenue)` / unique `app_user_id` на `ad_impression_revenue`.
 
-**Signs.** `sign_opened` → `sign_test_started` → `sign_test_ended`. Рядом: search. Тест без `sign_opened` — нормально, воронка тогда занижает старт.
+**Signs.** `sign_opened` → `sign_test_started` → `sign_test_ended`. Сплит: `sign_test_entry`, `category_id`. Рядом: search. Тест без `sign_opened` — нормально, воронка тогда занижает старт.
 
 ---
 

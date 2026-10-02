@@ -267,7 +267,7 @@ export function useHomeContextualBlock(input: {
           if (event.kind === "training") {
             router.navigate({
               pathname: "/exam",
-              params: buildExamRouteParams({ mode: "exam" }),
+              params: buildExamRouteParams({ entry: "home_contextual", mode: "exam" }),
             });
             return;
           }
