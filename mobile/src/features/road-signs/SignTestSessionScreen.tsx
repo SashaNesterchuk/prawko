@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -31,11 +31,16 @@ import { SignImage } from "./SignImage";
 import { useSignBookmarksStore } from "../../state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../state/sign-practice-progress";
 import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { createAnalyticsId } from "../../analytics/runtime-context";
 import { signTestAnalytics, type SignTestEntry } from "./sign-test-entry";
 import { openPaywall } from "../monetization/v2/paywall";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { useHasPlusAccess } from "../../state/entitlements";
 import { openSupportEmail } from "../support/support-email";
+import { useIsFocused } from "expo-router/react-navigation";
+import { useAnalyticsDuration } from "../../analytics/useAnalyticsDuration";
+import { useAnalyticsViewState } from "../../analytics/useAnalyticsViewState";
+import { useLearningReadyAnalytics } from "../../analytics/useLearningReadyAnalytics";
 
 type SignTestAnswer = {
   isCorrect: boolean;
@@ -58,6 +63,7 @@ export function SignTestSessionScreen({
 }: SignTestSessionScreenProps) {
   const { t, i18n } = useTranslation();
   const { track } = useAnalytics();
+  const isFocused = useIsFocused();
   const hasPlusAccess = useHasPlusAccess();
   const { accents, colors } = useTheme();
   const spacing = useResponsiveSpacing();
@@ -79,6 +85,7 @@ export function SignTestSessionScreen({
   const questionStartedAtRef = useRef(Date.now());
   const didTrackStartRef = useRef(false);
   const didTrackEndRef = useRef(false);
+  const [signTestSessionId] = useState(() => createAnalyticsId("sign_test"));
   const shouldAttemptPracticeAdRef = useRef(false);
 
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -107,17 +114,38 @@ export function SignTestSessionScreen({
   const explanationText = currentQuestion?.explanation
     ? pickLocalized(currentQuestion.explanation, i18n.language)
     : null;
+  const signContext = {
+    sign_test_session_id: signTestSessionId,
+    ...signTestAnalytics({ categoryId, entry }),
+    question_id: currentQuestion?.id ?? null,
+    sign_id: currentSignId ?? null,
+    question_index: questionIndex + 1,
+    question_total: questions.length,
+  };
+  const questionReady = Boolean(currentQuestion && currentSign && questions.length);
+  const questionDuration = useAnalyticsDuration(currentQuestion?.id ?? null, isFocused && questionReady && !hasAnswered);
+  const attemptDuration = useAnalyticsDuration(signTestSessionId, isFocused && questionReady);
+  useAnalyticsViewState(questionReady ? hasAnswered ? "feedback" : "question" : "empty", signContext);
+  useLearningReadyAnalytics(signTestSessionId, questionReady, { ...signContext, feature: "sign_test" });
+  const viewedQuestionRef = useRef<string | null>(null);
   useEffect(() => {
+    if (!isFocused || !questionReady || !currentQuestion) { viewedQuestionRef.current = null; return; }
+    if (viewedQuestionRef.current === currentQuestion?.id) return;
+    viewedQuestionRef.current = currentQuestion?.id ?? null;
+    track(ANALYTICS_EVENTS.signTestQuestionViewed.key, { ...signContext, already_answered: Boolean(answers[currentQuestion.id]) });
+  }, [answers, currentQuestion, isFocused, questionReady, signContext, track]);
+  useLayoutEffect(() => {
     if (didTrackStartRef.current) {
       return;
     }
 
     didTrackStartRef.current = true;
     track(ANALYTICS_EVENTS.signTestStarted.key, {
+      sign_test_session_id: signTestSessionId,
       ...signTestAnalytics({ categoryId, entry }),
       question_total: questions.length,
     });
-  }, [categoryId, entry, questions.length, track]);
+  }, [categoryId, entry, questions.length, signTestSessionId, track]);
 
   useEffect(() => {
     questionStartedAtRef.current = Date.now();
@@ -148,8 +176,11 @@ export function SignTestSessionScreen({
     recordQuestionAnsweredForAds();
     shouldAttemptPracticeAdRef.current = true;
     track(ANALYTICS_EVENTS.signTestQuestionAnswered.key, {
+      sign_test_session_id: signTestSessionId,
       ...signTestAnalytics({ categoryId, entry }),
       answer_duration_ms: Math.max(0, Date.now() - questionStartedAtRef.current),
+      answer_id: `${signTestSessionId}:${currentQuestion.id}`,
+      question_visible_foreground_ms: questionDuration.measure().visible_foreground_ms,
       is_correct: isCorrectAnswer,
       question_id: currentQuestion.id,
       question_index: questionIndex + 1,
@@ -170,8 +201,11 @@ export function SignTestSessionScreen({
     if (!didTrackEndRef.current) {
       didTrackEndRef.current = true;
       track(ANALYTICS_EVENTS.signTestEnded.key, {
+        sign_test_session_id: signTestSessionId,
         ...signTestAnalytics({ categoryId, entry }),
         answered_count: answeredCount,
+        visit_foreground_ms: attemptDuration.measure().visible_foreground_ms,
+        duration_scope: "current_component_visit",
         correct_count: Object.values(answers).filter((answer) => answer.isCorrect)
           .length,
         outcome: input?.outcome ?? "abandoned",
@@ -232,6 +266,8 @@ export function SignTestSessionScreen({
     }
 
     track(ANALYTICS_EVENTS.questionProblemReportRequested.key, {
+      sign_test_session_id: signTestSessionId,
+      sign_id: currentQuestion.signId,
       question_id: currentQuestion.id,
       source: "sign_test",
     });
@@ -250,6 +286,8 @@ export function SignTestSessionScreen({
 
     const isBookmarkedNext = toggleSignBookmark(currentQuestion.signId);
     track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+      sign_test_session_id: signTestSessionId,
+      sign_id: currentQuestion.signId,
       is_bookmarked: isBookmarkedNext,
       question_id: currentQuestion.id,
       source: "sign_test",

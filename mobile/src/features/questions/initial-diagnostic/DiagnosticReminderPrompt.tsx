@@ -17,6 +17,7 @@ type DiagnosticReminderPromptProps = {
   onEnable: () => void;
   onLater: () => void;
   visible: boolean;
+  trainingSessionId: string | null;
 };
 
 type ReminderResolveAction = "enable" | "later" | "dismiss";
@@ -26,6 +27,7 @@ export function DiagnosticReminderPrompt({
   onEnable,
   onLater,
   visible,
+  trainingSessionId,
 }: DiagnosticReminderPromptProps) {
   const { t } = useTranslation();
   const { track } = useAnalytics();
@@ -47,9 +49,10 @@ export function DiagnosticReminderPrompt({
 
     didShowRef.current = true;
     track(ANALYTICS_EVENTS.diagnosticReminderShown.key, {
+      training_session_id: trainingSessionId,
       has_exam_date: Boolean(examDateLabel),
     });
-  }, [examDateLabel, track, visible]);
+  }, [examDateLabel, track, trainingSessionId, visible]);
 
   function trackResolved(action: ReminderResolveAction) {
     if (didResolveRef.current) {
@@ -58,6 +61,7 @@ export function DiagnosticReminderPrompt({
 
     didResolveRef.current = true;
     track(ANALYTICS_EVENTS.diagnosticReminderResolved.key, {
+      training_session_id: trainingSessionId,
       action,
     });
   }

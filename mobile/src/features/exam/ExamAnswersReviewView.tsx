@@ -3,6 +3,8 @@ import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { useEffect, useRef } from "react";
+import { useIsFocused } from "expo-router/react-navigation";
 
 import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
@@ -21,6 +23,8 @@ import { QuestionFeedbackBottomSheet } from "../questions/training/QuestionFeedb
 import { QuestionFeedbackPushStage } from "../questions/training/QuestionFeedbackPushStage";
 
 import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { useAnalyticsDuration } from "../../analytics/useAnalyticsDuration";
+import { useAnalyticsViewState } from "../../analytics/useAnalyticsViewState";
 import { openPaywall } from "../monetization/v2/paywall";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { useHasPlusAccess } from "../../state/entitlements";
@@ -28,6 +32,8 @@ import { openSupportEmail } from "../support/support-email";
 import type { RemoteExamAnswer, RemoteExamQuestionRef } from "./types";
 
 type ExamAnswersReviewViewProps = {
+  examSessionId?: string;
+  reviewId?: string;
   answer: RemoteExamAnswer | null;
   canGoNext: boolean;
   canGoPrevious: boolean;
@@ -46,6 +52,8 @@ type ExamAnswersReviewViewProps = {
 };
 
 export function ExamAnswersReviewView({
+  examSessionId,
+  reviewId,
   answer,
   canGoNext,
   canGoPrevious,
@@ -63,6 +71,7 @@ export function ExamAnswersReviewView({
 }: ExamAnswersReviewViewProps) {
   const { t } = useTranslation();
   const { track } = useAnalytics();
+  const isFocused = useIsFocused();
   const hasPlusAccess = useHasPlusAccess();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -89,6 +98,53 @@ export function ExamAnswersReviewView({
     ? t(`question.scopes.${question.scope}`)
     : t(`question.scopes.${questionRef.scope}`);
   const points = question?.points ?? questionRef.points;
+  const reviewDuration = useAnalyticsDuration(reviewId ?? null, isFocused && Boolean(examSessionId));
+  const reviewObservationRef = useRef({ closed: false, viewed: new Set<string>(), lastView: "" });
+  const context = {
+    exam_session_id: examSessionId ?? null,
+    review_id: reviewId ?? null,
+    question_id: questionRef.questionSourceId,
+    question_index: currentIndex + 1,
+    question_total: totalQuestions,
+  };
+  useAnalyticsViewState(examSessionId ? question ? "review" : "missing_review_question" : null, context);
+  useEffect(() => {
+    if (!examSessionId || !isFocused) {
+      reviewObservationRef.current.lastView = "";
+      return;
+    }
+    const observation = reviewObservationRef.current;
+    const viewState = question ? "question" : "missing_question";
+    const key = `${reviewId}:${currentIndex}:${viewState}`;
+    if (observation.lastView === key) return;
+    observation.lastView = key;
+    if (question) observation.viewed.add(questionRef.questionSourceId);
+    track(ANALYTICS_EVENTS.examAnswersReviewQuestionViewed.key, {
+      ...context, view_state: viewState, was_answered: Boolean(answer),
+      is_correct: answer?.isCorrect ?? null,
+    });
+  }, [answer, context, currentIndex, examSessionId, isFocused, question, questionRef.questionSourceId, reviewId, track]);
+  const latestReviewRef = useRef({ context, track });
+  latestReviewRef.current = { context, track };
+  function closeReview(reason: string) {
+    const observation = reviewObservationRef.current;
+    if (!examSessionId || observation.closed) return;
+    observation.closed = true;
+    latestReviewRef.current.track(ANALYTICS_EVENTS.examAnswersReviewClosed.key, {
+      ...latestReviewRef.current.context, close_reason: reason,
+      viewed_count: observation.viewed.size,
+      review_foreground_ms: reviewDuration.measure().visible_foreground_ms,
+    });
+  }
+  useEffect(() => () => {
+    // Unmount is an observed view boundary, not a learner-finish claim.
+    closeReview("view_unmounted");
+  }, [examSessionId, reviewId]);
+  function handleBack() { closeReview("back"); onBack(); }
+  function handleNext() {
+    if (isLastQuestion) closeReview("finished");
+    onNext();
+  }
   function handleReportProblem() {
     void openSupportEmail({
       subject: t("question.reportProblemSubject", {
@@ -112,7 +168,7 @@ export function ExamAnswersReviewView({
                 inset
                 type="back"
                 accessibilityLabel={t("common.back")}
-                onPress={onBack}
+                onPress={handleBack}
               />
               <View style={styles.headerCenter}>
                 <CText style={styles.headerTitle}>
@@ -187,7 +243,7 @@ export function ExamAnswersReviewView({
                 inset
                 type="back"
                 accessibilityLabel={t("common.back")}
-                onPress={onBack}
+                onPress={handleBack}
               />
               <View style={styles.headerCenter}>
                 <View style={styles.headerTitles}>
@@ -266,7 +322,7 @@ export function ExamAnswersReviewView({
                 previousLabel={t("question.previousShort")}
                 previousTestID="question-answers-review-previous"
                 showNextIcon={!isLastQuestion}
-                onNext={onNext}
+                onNext={handleNext}
                 onPrevious={onPrevious}
               />
             }

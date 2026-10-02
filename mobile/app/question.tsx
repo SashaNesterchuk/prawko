@@ -14,6 +14,9 @@ import {
 } from "../src/components/shell/StateViews";
 import { getOfflineGateDescription } from "../src/features/offline/offline-gate-copy";
 import { useOfflineFeatureGate } from "../src/features/offline/useOfflineFeatureGate";
+import { useOfflineGateAnalytics } from "../src/features/offline/useOfflineGateAnalytics";
+import { buildPaywallHref } from "../src/features/monetization/v2/paywall";
+import { useQuestionRouteParams } from "../src/features/questions/training/route-params";
 import { getQuestionDisplayStats } from "../src/features/questions/question-engine";
 import { QuestionSessionResultView } from "../src/features/questions/training/QuestionSessionResultView";
 import { InitialDiagnosticResultView } from "../src/features/questions/initial-diagnostic/InitialDiagnosticResultView";
@@ -28,6 +31,7 @@ import { useHasPlusAccess } from "../src/state/entitlements";
 import { useQuestionCatalogResolved } from "../src/state/question-catalog";
 import { useQuestionProgressStore } from "../src/state/question-progress";
 import { useResponsiveStyles } from "../src/portable-ui";
+import { useAnalyticsViewState } from "../src/analytics/useAnalyticsViewState";
 
 export default function QuestionScreen() {
   const { t } = useTranslation();
@@ -36,6 +40,24 @@ export default function QuestionScreen() {
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const questionCatalogResolved = useQuestionCatalogResolved();
   const offlineGate = useOfflineFeatureGate(preferredCategory);
+  const route = useQuestionRouteParams();
+  useAnalyticsViewState(
+    !questionCatalogResolved || (offlineGate.status === "checking" && !offlineGate.offlineReady)
+      ? "loading" : offlineGate.status === "blocked" ? "blocked" : null,
+    { screen_name: "question_training", mode: route.mode, topic_id: route.topic ?? null }
+  );
+  const block = useOfflineGateAnalytics({
+    gate: offlineGate,
+    visible: questionCatalogResolved && offlineGate.status === "blocked",
+    properties: {
+      feature: "training",
+      screen_name: "question_training",
+      requested_category: preferredCategory,
+      mode: route.mode,
+      topic_id: route.topic ?? null,
+      roadmap_step_id: route.roadmapStepId ?? null,
+    },
+  });
 
   if (
     !questionCatalogResolved ||
@@ -63,6 +85,7 @@ export default function QuestionScreen() {
               label={t("common.retry")}
               testID="question-offline-retry"
               onPress={() => {
+                block.trackAction("retry");
                 void offlineGate.refresh();
               }}
             />
@@ -70,14 +93,23 @@ export default function QuestionScreen() {
               variant="secondary"
               label={t("offlineGate.openOfflineMode")}
               testID="question-offline-open-offline-mode"
-              onPress={() =>
-                router.push(hasPlusAccess ? "/offline-mode" : "/paywall")
-              }
+              onPress={() => {
+                block.trackAction("open_offline_mode", hasPlusAccess ? "offline_mode" : "paywall");
+                router.push(hasPlusAccess ? "/offline-mode" : buildPaywallHref({
+                  source: "offline_mode",
+                  surface: "offline_gate",
+                  sourceScreen: "question_training",
+                  accessBlockId: block.getBlockId(),
+                }));
+              }}
             />
             <AppButton
               variant="ghost"
               label={t("common.close")}
-              onPress={() => router.replace("/(tabs)")}
+              onPress={() => {
+                block.trackAction("close", "home");
+                router.replace("/(tabs)");
+              }}
             />
           </View>
         }
@@ -283,6 +315,7 @@ function QuestionTrainingScreen() {
       return (
         <InitialDiagnosticResultView
           activeSession={session.activeSession}
+          resultOrigin={session.resultOrigin}
           onClose={exitToTabs}
           onWorkOnMistakes={exitToMistakes}
           summary={session.summary}
@@ -293,6 +326,7 @@ function QuestionTrainingScreen() {
     return (
       <QuestionSessionResultView
         activeSession={session.activeSession}
+        resultOrigin={session.resultOrigin}
         onClose={exitToTabs}
         onWorkOnMistakes={exitToMistakes}
         sessionMode={session.sessionMode}

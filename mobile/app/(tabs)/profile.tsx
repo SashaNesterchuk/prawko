@@ -88,6 +88,8 @@ import {
   getAnalyticsErrorCode,
 } from "../../src/analytics/catalog";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
+import { createAnalyticsId } from "../../src/analytics/runtime-context";
+import { markAnalyticsProgressReset } from "../../src/analytics/onboarding-context";
 
 export default function ProfileTabScreen() {
   const { t, i18n } = useTranslation();
@@ -331,11 +333,26 @@ export default function ProfileTabScreen() {
   };
 
   const handleConfirmReset = () => {
+    const resetOperationId = createAnalyticsId("reset");
+    track(ANALYTICS_EVENTS.progressResetStarted.key, {
+      source: "profile", reset_operation_id: resetOperationId,
+    });
     setShowResetDialog(false);
     void (async () => {
-      await resetAppToFreshStart();
+      try {
+        await resetAppToFreshStart();
+      } catch (error) {
+        track(ANALYTICS_EVENTS.progressResetFailed.key, {
+          source: "profile", reset_operation_id: resetOperationId,
+          error_code: getAnalyticsErrorCode(error),
+        });
+        // Preserve the existing rejection and navigation behavior.
+        throw error;
+      }
+      markAnalyticsProgressReset(resetOperationId);
       track(ANALYTICS_EVENTS.progressResetConfirmed.key, {
-        source: "profile",
+        source: "profile", reset_operation_id: resetOperationId,
+        completion_scope: "helper_resolved_best_effort_cleanup",
       });
       router.replace("/(onboarding)/category");
     })();
@@ -552,17 +569,33 @@ export default function ProfileTabScreen() {
               trailing={hasPlusAccess ? "value" : "premium"}
               isLast
               onPress={() => {
+                track(ANALYTICS_EVENTS.profileActionSelected.key, {
+                  action: "offline_mode",
+                  source: "profile",
+                  surface: "profile_offline_row",
+                });
                 if (hasPlusAccess) {
                   router.navigate("/offline-mode");
                   return;
                 }
 
                 if (monetizationV2) {
-                  openTrackedPaywall(track, { source: "offline_mode" });
+                  openTrackedPaywall(track, {
+                    source: "offline_mode",
+                    surface: "profile_offline_row",
+                    sourceScreen: "profile",
+                  });
                   return;
                 }
 
-                router.navigate("/paywall");
+                router.navigate({
+                  pathname: "/paywall",
+                  params: {
+                    source: "offline_mode",
+                    surface: "profile_offline_row",
+                    sourceScreen: "profile",
+                  },
+                });
               }}
             />
           </ProfileSettingsGroup>

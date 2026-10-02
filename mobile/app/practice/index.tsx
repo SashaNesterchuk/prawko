@@ -19,6 +19,7 @@ import {
 import { useRecentExamSessions } from "../../src/features/exam/useRecentExamSessions";
 import type { RemoteExamSession } from "../../src/features/exam/types";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import { withLearningIntent } from "../../src/analytics/operations";
 import { buildQuestionSession } from "../../src/features/questions/question-engine";
 import { formatPlanDate } from "../../src/features/study-plan/generate-local-study-plan";
 import {
@@ -224,17 +225,20 @@ export default function PracticeScreen() {
     params: Record<string, string>;
     routeType: "exam" | "question";
   }) {
+    const analyticsParams = withLearningIntent(input.params, {
+      source: "practice", target_screen: input.routeType === "exam" ? "exam_loading" : "question_training",
+    });
     if (input.routeType === "exam") {
       router.navigate({
         pathname: "/exam",
-        params: input.params,
+        params: analyticsParams,
       });
       return;
     }
 
     router.navigate({
       pathname: "/question",
-      params: input.params,
+      params: analyticsParams,
     });
   }
 

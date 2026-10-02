@@ -1,10 +1,7 @@
 import { useCallback, useMemo } from "react";
-import { Platform } from "react-native";
-import Constants from "expo-constants";
 import { usePostHog } from "posthog-react-native";
 
 import {
-  ANALYTICS_PROPERTIES,
   sanitizeAnalyticsProperties,
   type AnalyticsEventName,
   type AnalyticsEventPayloads,
@@ -12,6 +9,10 @@ import {
 } from "../analytics/catalog";
 import { recordLocalAnalytics } from "../analytics/local-analytics-log";
 import { isPostHogCaptureEnabled } from "../analytics/posthog-build-gate";
+import { nextAnalyticsEventContext } from "../analytics/runtime-context";
+import { analyticsActivity } from "../analytics/activity";
+import { getAnalyticsBaseProperties } from "../analytics/base-properties";
+import { isAnalyticsInteraction } from "../analytics/interactions";
 import { useAppUserId } from "../identity/AppIdentityProvider";
 import { useAppShellStore, useCurrentUser } from "../state/app-shell";
 import { useHasPlusAccess } from "../state/entitlements";
@@ -31,76 +32,68 @@ export function useAnalytics() {
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const isPlus = useHasPlusAccess();
   const isConfigured = isPostHogCaptureEnabled();
-
-  const baseProperties = useMemo(
-    () => ({
-      app_version: Constants.expoConfig?.version ?? "unknown",
-      [ANALYTICS_PROPERTIES.appUserId]: appUserId,
-      auth_mode: currentUser?.provider ?? "guest",
-      category: preferredCategory,
-      [ANALYTICS_PROPERTIES.examCountry]: examCountry,
-      is_plus: isPlus,
-      locale: preferredLocale,
-      platform: Platform.OS,
-      [ANALYTICS_PROPERTIES.supabaseUserId]:
-        currentUser?.provider === "supabase" ? currentUser.id : null,
-    }),
-    [
-      appUserId,
-      currentUser?.id,
-      currentUser?.provider,
-      examCountry,
-      isPlus,
-      preferredCategory,
-      preferredLocale,
-    ]
-  );
+  // Keep the existing subscription/callback lifecycle while capture reads fresh state.
+  const baseProperties = useMemo(() => ({
+    app_user_id: appUserId,
+    auth_mode: currentUser?.provider ?? "guest",
+    supabase_user_id: currentUser?.provider === "supabase" ? currentUser.id : null,
+    exam_country: examCountry,
+    category: preferredCategory,
+    locale: preferredLocale,
+    is_plus: isPlus,
+  }), [appUserId, currentUser?.id, currentUser?.provider, examCountry, preferredCategory, preferredLocale, isPlus]);
 
   const capture: AnalyticsTrack = useCallback(
     <EventName extends AnalyticsEventName>(
       event: EventName,
       payload?: AnalyticsEventPayloads[EventName]
     ) => {
-      const properties = sanitizeAnalyticsProperties({ ...baseProperties, ...payload });
-      recordLocalAnalytics({ kind: "capture", event, properties });
-
-      if (!posthog || !isConfigured) {
-        return;
+      try {
+        if (isAnalyticsInteraction(event, payload)) analyticsActivity.recordInteraction();
+        const properties = sanitizeAnalyticsProperties({
+          ...baseProperties,
+          ...getAnalyticsBaseProperties(appUserId),
+          ...analyticsActivity.getContext(),
+          ...payload,
+          ...nextAnalyticsEventContext(),
+        });
+        recordLocalAnalytics({ kind: "capture", event, properties });
+        if (posthog && isConfigured) posthog.capture(event, properties);
+      } catch {
+        // Observation must never interrupt the product operation.
       }
-
-      posthog.capture(event, properties);
     },
-    [baseProperties, isConfigured, posthog]
+    [appUserId, baseProperties, isConfigured, posthog]
   );
 
   const screen = useCallback(
     (name: string, payload?: AnalyticsTrackPayload) => {
-      const properties = sanitizeAnalyticsProperties({ ...baseProperties, ...payload });
-      recordLocalAnalytics({ kind: "screen", event: name, properties });
-
-      if (!posthog || !isConfigured) {
-        return;
+      try {
+        const properties = sanitizeAnalyticsProperties({
+          ...baseProperties,
+          ...getAnalyticsBaseProperties(appUserId),
+          ...analyticsActivity.getContext(),
+          ...payload,
+          ...nextAnalyticsEventContext(),
+        });
+        recordLocalAnalytics({ kind: "screen", event: name, properties });
+        if (posthog && isConfigured) void posthog.screen(name, properties).catch(() => undefined);
+      } catch {
+        // SDK/storage failures are not screen failures.
       }
-
-      void posthog.screen(name, properties);
     },
-    [baseProperties, isConfigured, posthog]
+    [appUserId, baseProperties, isConfigured, posthog]
   );
 
   const identify = useCallback(
     (distinctId: string, payload?: AnalyticsTrackPayload) => {
-      const properties = sanitizeAnalyticsProperties(payload);
-      recordLocalAnalytics({
-        kind: "identify",
-        event: distinctId,
-        properties,
-      });
-
-      if (!posthog || !isConfigured) {
-        return;
+      try {
+        const properties = sanitizeAnalyticsProperties(payload);
+        recordLocalAnalytics({ kind: "identify", event: distinctId, properties });
+        if (posthog && isConfigured) posthog.identify(distinctId, properties);
+      } catch {
+        // Identity telemetry cannot affect authentication.
       }
-
-      posthog.identify(distinctId, properties);
     },
     [isConfigured, posthog]
   );

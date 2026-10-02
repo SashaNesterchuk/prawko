@@ -11,6 +11,8 @@ import {
   type QuestionCountSelection,
 } from "../../components/shell/QuestionCountDialog";
 import { SignsSummaryCard } from "../../components/shell/SignsSummaryCard";
+import type { AnalyticsProperties } from "../../analytics/catalog";
+import { withLearningIntent } from "../../analytics/operations";
 import {
   useResponsiveSpacing,
   useResponsiveStyles,
@@ -66,12 +68,15 @@ export function SignsHomeContent({
     [signPracticeRecords]
   );
 
-  const startSignsTrainingWithLimit = (limit: QuestionCountSelection) => {
+  const startSignsTrainingWithLimit = (limit: QuestionCountSelection, setup?: AnalyticsProperties) => {
     router.navigate({
       pathname: "/signs/test",
-      params: {
+      params: withLearningIntent({
         limit: limit === "all" ? "all" : String(limit),
-      },
+      }, {
+        feature: "sign_test", sign_test_entry: "signs_home", target_screen: "sign_test",
+        setup_id: setup?.setup_id ?? null, question_limit: limit === "all" ? null : limit,
+      }),
     });
   };
 
@@ -89,9 +94,9 @@ export function SignsHomeContent({
     setCountDialogVisible(true);
   };
 
-  const startSignsTraining = () => {
+  const startSignsTraining = (setup?: AnalyticsProperties) => {
     setCountDialogVisible(false);
-    startSignsTrainingWithLimit(selectedCount);
+    startSignsTrainingWithLimit(selectedCount, setup);
   };
 
   const resolvedBottomPadding = bottomPadding ?? spacing.exact(96) + safeBottom;
@@ -137,6 +142,7 @@ export function SignsHomeContent({
       </ScrollView>
 
       <QuestionCountDialog
+        analyticsContext={{ feature: "sign_test", sign_test_entry: "signs_home" }}
         title={t("signs.title")}
         subtitle={t("signs.chooseQuestionCount")}
         startLabel={t("signs.startTrainingCta")}

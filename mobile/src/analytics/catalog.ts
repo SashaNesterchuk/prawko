@@ -13,6 +13,122 @@ type AnalyticsEventDefinition = {
 };
 
 export const ANALYTICS_EVENTS = {
+  appVisitStarted: {
+    key: "app_visit_started",
+    description: "An observed foreground visit started. Not a SDK session, runtime, or learning attempt.",
+  },
+  appVisitCheckpoint: {
+    key: "app_visit_checkpoint",
+    description: "Cumulative observed visit time. Use the latest/max counters per visit, never sum checkpoints. A missing terminal leaves an unknown tail.",
+  },
+  appVisitEnded: {
+    key: "app_visit_ended",
+    description: "An observed visit entered background; cumulative foreground and inactive time. Not guaranteed on process kill.",
+  },
+  screenVisitStarted: {
+    key: "screen_visit_started",
+    description: "A route/entity foreground screen visit started, including foreground returns.",
+  },
+  screenVisitCheckpoint: {
+    key: "screen_visit_checkpoint",
+    description: "Cumulative observed screen time for screen_visit_id. Not evidence of reading or UI responsiveness.",
+  },
+  screenVisitEnded: {
+    key: "screen_visit_ended",
+    description: "Observed route/entity screen visit ended on navigation or background, with cumulative foreground time. State changes stay within the same screen_visit_id.",
+  },
+  screenStateViewed: {
+    key: "screen_state_viewed",
+    description: "A focused route displayed a state such as loading, question, feedback, result, review, blocked, or error.",
+  },
+  appEntryResolved: {
+    key: "app_entry_resolved",
+    description: "Observed launch/foreground entry attribution resolved to direct, notification, or a normalized deep link. No raw URL.",
+  },
+  notificationOpened: {
+    key: "notification_opened",
+    description: "The OS supplied a notification response. Not proof of reminder delivery or a new installation.",
+  },
+  notificationScheduleResolved: {
+    key: "notification_schedule_resolved",
+    description: "A reminder schedule operation returned enabled/disabled/failed/permission_denied. Not proof the OS delivered it.",
+  },
+  accessStateChanged: {
+    key: "access_state_changed",
+    description: "Observed access state changed, with previous/current source and Plus. Not a new purchase or financial transaction.",
+  },
+  onboardingFlowViewed: {
+    key: "onboarding_flow_viewed",
+    description: "A real first-run/reset onboarding flow was observed. Settings visits are a separate flow_context.",
+  },
+  learningIntentRequested: {
+    key: "learning_intent_requested",
+    description: "A learning route was requested; learning_intent_id joins setup/roadmap/launch, without changing route behavior.",
+  },
+  learningScreenReady: {
+    key: "learning_screen_ready",
+    description: "A focused learning screen showed its first usable question for the focus/foreground entry. ready_duration_scope defines the latency clock; media_readiness is not_measured.",
+  },
+  learningOperationFailed: {
+    key: "learning_operation_failed",
+    description: "A learning operation failed with normalized code, attempt/question/operation IDs, and whether feedback is user-visible.",
+  },
+  examQuestionViewed: {
+    key: "exam_question_viewed",
+    description: "A ready focused exam question became visible. answer_presence is distinct from a new answer submission.",
+  },
+  examQuestionNavigationRequested: {
+    key: "exam_question_navigation_requested",
+    description: "The learner requested a different exam question; the later view confirms success.",
+  },
+  examQuestionFlagChanged: {
+    key: "exam_question_flag_changed",
+    description: "An exam flag change completed successfully.",
+  },
+  examResultViewed: {
+    key: "exam_result_viewed",
+    description: "A finished exam result became visible. Existing results do not create a new completion.",
+  },
+  examResultAction: {
+    key: "exam_result_action",
+    description: "A result CTA was selected: home, answers, work_on_mistakes, or new_attempt. Not the eventual operation outcome.",
+  },
+  examAnswersReviewQuestionViewed: {
+    key: "exam_answers_review_question_viewed",
+    description: "An exam review item became visible with review_id, question context, answer presence and view_state.",
+  },
+  examAnswersReviewClosed: {
+    key: "exam_answers_review_closed",
+    description: "An exam review view ended: back, finished, or view_unmounted. Unmount is not a learner-finish claim; not guaranteed on kill.",
+  },
+  signTestQuestionViewed: {
+    key: "sign_test_question_viewed",
+    description: "A focused sign-test question became visible; media readiness is not implied.",
+  },
+  signTestResultViewed: {
+    key: "sign_test_result_viewed",
+    description: "A sign-practice result became visible, distinct from finalizing its attempt.",
+  },
+  signSearchResultSelected: {
+    key: "sign_search_result_selected",
+    description: "The learner selected a search result. search_id and query_revision join the debounced query without sending its text.",
+  },
+  offlinePackStateViewed: {
+    key: "offline_pack_state_viewed",
+    description: "The focused offline screen displayed an observed pack state, not a download action.",
+  },
+  offlinePackCancelRequested: {
+    key: "offline_pack_cancel_requested",
+    description: "The learner requested download cancellation; canonical cancelled is its later terminal outcome.",
+  },
+  progressResetStarted: {
+    key: "progress_reset_started",
+    description: "Progress reset was confirmed and the existing helper was invoked; not completion.",
+  },
+  progressResetFailed: {
+    key: "progress_reset_failed",
+    description: "The progress-reset helper rejected. No changes to cleanup policy or navigation.",
+  },
   screenViewed: {
     key: "screen_viewed",
     description: "A production app screen became visible.",
@@ -72,16 +188,16 @@ export const ANALYTICS_EVENTS = {
   firstStartShown: {
     key: "first_start_shown",
     description:
-      "The post-onboarding Home spotlight was shown on an empty readiness card.",
+      "Historical post-onboarding Home spotlight exposure. The current roadmap UI disables the spotlight; not a required activation step.",
   },
   firstStartSkipped: {
     key: "first_start_skipped",
-    description: "The learner dismissed the post-onboarding Home spotlight.",
+    description: "Historical dismissal of the post-onboarding Home spotlight, which is disabled in the current roadmap UI.",
   },
   firstStartStarted: {
     key: "first_start_started",
     description:
-      "The learner started the capped first-start session from Home.",
+      "The learner started the capped first-start session. source_screen distinguishes the Home and Learn readiness entries.",
   },
   diagnosticResultAction: {
     key: "diagnostic_result_action",
@@ -101,12 +217,12 @@ export const ANALYTICS_EVENTS = {
   homeContextualShown: {
     key: "home_contextual_shown",
     description:
-      "The Home retention card was shown. kind: completion, resume, mistakes, review, or weak_topic. Returning users only; completion is one-shot.",
+      "Legacy Home retention card exposure, not mounted on the current roadmap Home. kind: completion, resume, mistakes, review, or weak_topic. Returning users only; completion is one-shot.",
   },
   homeContextualSelected: {
     key: "home_contextual_selected",
     description:
-      "The learner tapped the Home retention card. kind matches home_contextual_shown.",
+      "The learner tapped the legacy Home retention card. kind matches home_contextual_shown; not a current roadmap Home funnel step.",
   },
   roadmapStepOpened: {
     key: "roadmap_step_opened",
@@ -118,6 +234,14 @@ export const ANALYTICS_EVENTS = {
     description:
       "A training mode and question count were selected. practice_entry splits mode=learning into random, topic, or roadmap.",
   },
+  practiceSetupViewed: {
+    key: "practice_setup_viewed",
+    description: "A question-count or blitz-duration dialog became visible. setup_id links its resolution.",
+  },
+  practiceSetupResolved: {
+    key: "practice_setup_resolved",
+    description: "The learner started, cancelled or dismissed practice setup. Not a session start.",
+  },
   trainingSessionStarted: {
     key: "training_session_started",
     description:
@@ -127,13 +251,41 @@ export const ANALYTICS_EVENTS = {
     key: "training_session_resumed",
     description: "An unfinished question-training session was resumed.",
   },
+  trainingQuestionViewed: {
+    key: "training_question_viewed",
+    description: "A ready training question became visible. Includes attempt ID, index and already_answered; not proof that media finished loading.",
+  },
+  trainingFeedbackContinued: {
+    key: "training_feedback_continued",
+    description: "The learner tapped Next/Finish after training feedback.",
+  },
   trainingQuestionAnswered: {
     key: "training_question_answered",
     description: "The learner answered one training question.",
   },
   trainingSessionCompleted: {
     key: "training_session_completed",
-    description: "A question-training session reached its result.",
+    description: "An attempt entered unfinished in this visit transitioned to finished. Opening a stored result never emits this.",
+  },
+  trainingResultViewed: {
+    key: "training_result_viewed",
+    description: "A training or diagnostic result became visible. result_origin is new_completion or existing_result; view_reason is initial or review_return.",
+  },
+  trainingResultAction: {
+    key: "training_result_action",
+    description: "A regular training result CTA was selected: close, finish, work_on_mistakes, new_attempt, answers, or upgrade.",
+  },
+  trainingAnswersReviewOpened: {
+    key: "training_answers_review_opened",
+    description: "The learner opened training or diagnostic answer review. review_id identifies this review visit.",
+  },
+  trainingAnswersReviewQuestionViewed: {
+    key: "training_answers_review_question_viewed",
+    description: "A training review item became visible, with answer presence, correctness and view_state=question/missing_question.",
+  },
+  trainingAnswersReviewClosed: {
+    key: "training_answers_review_closed",
+    description: "The learner returned from training review. close_reason is finished or back; viewed_count counts distinct questions in this review visit.",
   },
   trainingSessionAbandoned: {
     key: "training_session_abandoned",
@@ -148,6 +300,30 @@ export const ANALYTICS_EVENTS = {
     description:
       "The app started loading or creating an exam. exam_entry is the opener: home, learn, practice, roadmap_step, roadmap_simulator, result_restart, home_contextual, paywall. source stays manual or study_plan.",
   },
+  examStartFailed: {
+    key: "exam_start_failed",
+    description: "Exam launch failed before navigating to the session. launch_attempt_id joins the request; no free-form error text.",
+  },
+  learningAccessBlocked: {
+    key: "learning_access_blocked",
+    description: "Visible offline training/exam gate, not an exception or an exam restart cap. block_id links its actions.",
+  },
+  learningAccessBlockAction: {
+    key: "learning_access_block_action",
+    description: "Action on the visible offline gate: retry, open_offline_mode, or close. destination distinguishes offline-mode from paywall.",
+  },
+  examCategoryMismatchViewed: {
+    key: "exam_category_mismatch_viewed",
+    description: "An exam screen actually displayed a category conflict, with exam_session_id and both categories.",
+  },
+  examCategoryMismatchResolved: {
+    key: "exam_category_mismatch_resolved",
+    description: "A previously displayed exam category conflict no longer blocks the loaded screen.",
+  },
+  examCategoryMismatchAction: {
+    key: "exam_category_mismatch_action",
+    description: "The learner selected switch_category or close on an exam category conflict. A switch intent is not proof that the conflict resolved.",
+  },
   examSessionStarted: {
     key: "exam_session_started",
     description:
@@ -159,7 +335,7 @@ export const ANALYTICS_EVENTS = {
   },
   examQuestionAnswered: {
     key: "exam_question_answered",
-    description: "The learner submitted an exam answer.",
+    description: "An exam submission succeeded. answer_id is a stable session/order slot; answer_revision_id identifies this submission; answer_action is create/update. Wall and focused foreground durations are separate.",
   },
   examSessionCompleted: {
     key: "exam_session_completed",
@@ -168,7 +344,7 @@ export const ANALYTICS_EVENTS = {
   },
   examSessionEnded: {
     key: "exam_session_ended",
-    description: "An exam was abandoned or expired after the learner had started it.",
+    description: "An exam was explicitly finished, abandoned or expired. Inspect status/end_reason: learner_finish with status=completed is not abandonment.",
   },
   examEmptyExit: {
     key: "exam_empty_exit",
@@ -187,7 +363,7 @@ export const ANALYTICS_EVENTS = {
   examRestartSelected: {
     key: "exam_restart_selected",
     description:
-      "Choice on that result-screen modal only: watch_ad, upgrade, dismiss, plus. Dismiss closes the modal and stays on result. Home/Learn exam tile does not check this gate — it is exam_start_requested source=manual, unlimited for free.",
+      "Choice on the result-screen modal only: watch_ad, upgrade, dismiss, plus. Dismiss stays on result. Home/Learn do not show this modal; a separate V2 exam_limit gate can block a new launch.",
   },
   questionBookmarkChanged: {
     key: "question_bookmark_changed",
@@ -223,7 +399,7 @@ export const ANALYTICS_EVENTS = {
   },
   signSearchSubmitted: {
     key: "sign_search_submitted",
-    description: "A road-sign search query was submitted.",
+    description: "A nonempty search query was observed after 400ms debounce, not a submit-button action. search_id and query_revision join result selection; no query text.",
   },
   signTestStarted: {
     key: "sign_test_started",
@@ -278,6 +454,14 @@ export const ANALYTICS_EVENTS = {
     description:
       "The Plus paywall became visible. Entry is source and surface. moment is only present for a legacy prompt (after_exam, after_ad, app_open, manual_test).",
   },
+  paywallCtaSelected: {
+    key: "paywall_cta_selected",
+    description: "Purchase/retry/restore intent on a paywall, before checkout guards. Not a native purchase start.",
+  },
+  paywallCheckoutBlocked: {
+    key: "paywall_checkout_blocked",
+    description: "A paywall purchase/restore handler stopped before checkout: checkout_busy, already_entitled, purchase_disabled, or not_configured.",
+  },
   paywallOfferLoadStarted: {
     key: "paywall_offer_load_started",
     description: "A paywall offer availability cycle started. Cached offers do not imply a new store request.",
@@ -296,7 +480,7 @@ export const ANALYTICS_EVENTS = {
   },
   paywallPackageSelected: {
     key: "paywall_package_selected",
-    description: "The learner selected a purchase package.",
+    description: "Historical package selector event. The current paywall selects its package in code and does not emit this.",
   },
   purchaseStarted: {
     key: "purchase_started",
@@ -422,7 +606,7 @@ export const ANALYTICS_EVENTS = {
   },
   offlinePackDownloadCancelled: {
     key: "offline_pack_download_cancelled",
-    description: "Offline pack download was cancelled.",
+    description: "The download promise rejected as cancelled. One terminal per operation_id; Stop intent is offline_pack_cancel_requested.",
   },
   offlinePackDownloadFailed: {
     key: "offline_pack_download_failed",
@@ -467,7 +651,7 @@ export const ANALYTICS_EVENTS = {
   },
   progressResetConfirmed: {
     key: "progress_reset_confirmed",
-    description: "The learner reset all local progress.",
+    description: "The existing reset helper resolved. reset_operation_id joins intent and later onboarding; cleanup is best effort, not proof every storage/remote operation succeeded.",
   },
   signedOut: {
     key: "signed_out",
@@ -489,7 +673,7 @@ export type AnalyticsEventName =
 
 /**
  * Event-name safety is enforced at every call site. Payload values remain
- * primitive by design so no structured or sensitive user content is emitted.
+ * primitive by design. Key sanitization is not a semantic free-text allowlist.
  */
 export type AnalyticsEventPayloads = {
   [EventName in AnalyticsEventName]: AnalyticsProperties;
@@ -505,12 +689,30 @@ const FORBIDDEN_ANALYTICS_PROPERTY_KEYS = new Set([
   "prompt",
   "school_code",
   "selected_answer",
+  "url",
+  "preview_url",
+  "asset_url",
+  "access_token",
+  "refresh_token",
+  "push_token",
+  "receipt",
+  "authorization",
+  "history",
+  "content",
+  "initial_url",
+  "$initial_url",
+  "token",
+  "receipt_data",
+  "push_notification_token",
+  "query",
 ]);
 
 /**
  * Product analytics must never receive free-form or authentication content.
- * The allowlist is intentionally key-based because payloads are assembled by
+ * This denylist is key-based because payloads are assembled by
  * multiple feature modules before reaching PostHog.
+ * SDK lifecycle/person payloads also pass sanitizeSdkAnalyticsValue.
+ * This is not a semantic allowlist for arbitrary strings.
  */
 export function sanitizeAnalyticsProperties(payload?: AnalyticsProperties) {
   if (!payload) {
@@ -520,9 +722,24 @@ export function sanitizeAnalyticsProperties(payload?: AnalyticsProperties) {
   return Object.fromEntries(
     Object.entries(payload).filter(
       ([key, value]) =>
-        value !== undefined && !FORBIDDEN_ANALYTICS_PROPERTY_KEYS.has(key)
+        !FORBIDDEN_ANALYTICS_PROPERTY_KEYS.has(key.toLowerCase()) &&
+        (value === null || typeof value === "boolean" || typeof value === "string" ||
+          (typeof value === "number" && Number.isFinite(value)))
     )
   ) as AnalyticsProperties;
+}
+
+/** Also protects SDK lifecycle and nested person updates, outside our wrapper. */
+export function sanitizeSdkAnalyticsValue(value: unknown): unknown {
+  if (value === null || typeof value === "boolean" || typeof value === "string") return value;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (Array.isArray(value)) return value.map(sanitizeSdkAnalyticsValue);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value)
+      .filter(([key]) => !FORBIDDEN_ANALYTICS_PROPERTY_KEYS.has(key.toLowerCase()))
+      .map(([key, entry]) => [key, sanitizeSdkAnalyticsValue(entry)]));
+  }
+  return undefined;
 }
 
 /** Convert unknown failures to a low-cardinality analytics value. */
@@ -530,7 +747,7 @@ export function getAnalyticsErrorCode(error: unknown) {
   if (error && typeof error === "object") {
     const record = error as Record<string, unknown>;
 
-    if (typeof record.code === "string" && record.code.trim()) {
+    if (typeof record.code === "string" && /^[a-z0-9_.-]{1,64}$/i.test(record.code.trim())) {
       return record.code.trim();
     }
 
@@ -542,7 +759,7 @@ export function getAnalyticsErrorCode(error: unknown) {
       return String(record.status);
     }
 
-    if (typeof record.name === "string" && record.name.trim()) {
+    if (typeof record.name === "string" && /^[a-z0-9_.-]{1,64}$/i.test(record.name.trim())) {
       return record.name.trim();
     }
   }
@@ -599,15 +816,40 @@ export type AnalyticsScreenName =
  * strings, not ad-hoc aliases.
  */
 export const ANALYTICS_PROPERTIES = {
+  analyticsSchemaVersion: "analytics_schema_version",
   after: "after",
   adFormat: "ad_format",
   adNetwork: "ad_network",
   adUnitId: "ad_unit_id",
   appUserId: "app_user_id",
+  appRunId: "app_run_id",
+  appVisitId: "app_visit_id",
+  screenVisitId: "screen_visit_id",
+  viewState: "view_state",
+  learningIntentId: "learning_intent_id",
+  operationId: "operation_id",
+  answerId: "answer_id",
+  answerRevisionId: "answer_revision_id",
+  onboardingAttemptId: "onboarding_attempt_id",
+  foregroundMs: "foreground_ms",
+  interactionEngagedMs: "interaction_engaged_ms",
+  searchId: "search_id",
+  requestId: "request_id",
+  blockId: "block_id",
+  clientOccurredAt: "client_occurred_at",
   choice: "choice",
   currency: "currency",
   detail: "detail",
   examCountry: "exam_country",
+  eventId: "event_id",
+  eventSequence: "event_sequence",
+  launchAttemptId: "launch_attempt_id",
+  premiumGateId: "premium_gate_id",
+  reviewId: "review_id",
+  setupId: "setup_id",
+  trainingSessionId: "training_session_id",
+  examSessionId: "exam_session_id",
+  signTestSessionId: "sign_test_session_id",
   placement: "placement",
   previous: "previous",
   revenue: "revenue",

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "expo-router/react-navigation";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { InteractionManager, View } from "react-native";
 
@@ -51,6 +51,10 @@ import { trackPremiumGateOpen } from "../src/features/monetization/v2/analytics"
 import { openPaywall } from "../src/features/monetization/v2/paywall";
 import { useMonetizationV2Active } from "../src/features/monetization/v2/store";
 import { useAnalytics } from "../src/providers/AnalyticsProvider";
+import { createAnalyticsId } from "../src/analytics/runtime-context";
+import { analyticsMonotonicNow } from "../src/analytics/activity";
+import { useAnalyticsViewState } from "../src/analytics/useAnalyticsViewState";
+import { reportLearningOperationFailure } from "../src/analytics/operations";
 
 type FeedbackState =
   | {
@@ -77,6 +81,36 @@ export default function OfflineModeScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isWorking, setIsWorking] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const operationRef = useRef<{
+    id: string;
+    startedAt: number;
+    terminal: boolean;
+    transfer: OfflinePackTransfer | null;
+  } | null>(null);
+  const observedPackState = !hasPlusAccess ? "access_blocked" : isLoading && !snapshot ? "loading"
+    : getOfflinePackUiState({
+      readyPackCategory: snapshot?.readyPack?.category ?? null,
+      readyPackMatchesCurrentCategory: snapshot?.readyPackMatchesCurrentCategory ?? false,
+      transfer: snapshot?.transfer ?? null,
+    });
+  useAnalyticsViewState(observedPackState, {
+    screen_name: "offline_mode", operation_id: operationRef.current?.id ?? null,
+    has_feedback_error: feedback?.kind === "error",
+  });
+  const stateViewedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isFocused) { stateViewedRef.current = null; return; }
+    const signature = `${preferredCategory}:${observedPackState}:${snapshot?.readyPackMatchesCurrentCatalog}`;
+    if (stateViewedRef.current === signature) return;
+    stateViewedRef.current = signature;
+    track(ANALYTICS_EVENTS.offlinePackStateViewed.key, {
+      pack_state: observedPackState, category: preferredCategory,
+      downloaded_category: snapshot?.readyPack?.category ?? null,
+      catalog_matches: snapshot?.readyPackMatchesCurrentCatalog ?? null,
+      question_count: snapshot?.readyPack?.questionCount ?? null,
+      operation_id: operationRef.current?.id ?? null,
+    });
+  }, [isFocused, observedPackState, preferredCategory, snapshot, track]);
 
   const canUseCurrentCatalog =
     questionCatalogResolved &&
@@ -90,12 +124,20 @@ export default function OfflineModeScreen() {
         source: "offline_mode",
       });
       if (monetizationV2) {
-        trackPremiumGateOpen(track, { source: "offline_mode" });
-        openPaywall({ replace: true, source: "offline_mode" });
+        const gateId = trackPremiumGateOpen(track, { source: "offline_mode" });
+        openPaywall({
+          premiumGateId: gateId,
+          sourceScreen: "offline_mode",
+          replace: true,
+          source: "offline_mode",
+        });
         return;
       }
 
-      router.replace("/paywall");
+      router.replace({
+        pathname: "/paywall",
+        params: { source: "offline_mode", sourceScreen: "offline_mode" },
+      });
     }
   }, [hasPlusAccess, monetizationV2, track]);
 
@@ -155,6 +197,9 @@ export default function OfflineModeScreen() {
     void refreshSnapshot()
       .catch((error) => {
         if (!cancelled) {
+          reportLearningOperationFailure(track, "offline_snapshot", error, {
+            screen_name: "offline_mode", user_visible: true,
+          });
           setFeedback({
             kind: "error",
             message: getOfflinePackErrorMessage(error),
@@ -196,9 +241,32 @@ export default function OfflineModeScreen() {
 
     setIsWorking(true);
     setFeedback(null);
+    const operation = {
+      id: createAnalyticsId("offline"), startedAt: analyticsMonotonicNow(),
+      terminal: false, transfer: snapshot?.transfer ?? null,
+    };
+    operationRef.current = operation;
+    let operationStage = "download";
+    function terminal(event: typeof ANALYTICS_EVENTS.offlinePackDownloadCompleted.key |
+      typeof ANALYTICS_EVENTS.offlinePackDownloadCancelled.key | typeof ANALYTICS_EVENTS.offlinePackDownloadFailed.key,
+      error?: unknown) {
+      if (operation.terminal) return;
+      operation.terminal = true;
+      track(event, {
+        operation_id: operation.id, category: preferredCategory,
+        question_count: questionBank.length,
+        operation_duration_ms: Math.round(analyticsMonotonicNow() - operation.startedAt),
+        downloaded_asset_count: operation.transfer?.downloadedAssetCount ?? null,
+        downloaded_bytes: operation.transfer?.downloadedBytes ?? null,
+        operation_stage: operationStage,
+        ...(error ? { error_code: getAnalyticsErrorCode(error) } : {}),
+      });
+    }
     track(ANALYTICS_EVENTS.offlinePackDownloadStarted.key, {
+      operation_id: operation.id,
       category: preferredCategory,
       question_count: questionBank.length,
+      action: snapshot?.transfer ? "resume" : snapshot?.hasStoredData ? "update" : "download",
     });
 
     try {
@@ -206,6 +274,7 @@ export default function OfflineModeScreen() {
         category: preferredCategory,
         questionBank,
         onProgress: (transfer) => {
+          operation.transfer = transfer;
           setSnapshot((current) =>
             current
               ? {
@@ -216,22 +285,19 @@ export default function OfflineModeScreen() {
           );
         },
       });
+      terminal(ANALYTICS_EVENTS.offlinePackDownloadCompleted.key);
+      operationStage = "refresh_metadata";
       await refreshSnapshot();
-      track(ANALYTICS_EVENTS.offlinePackDownloadCompleted.key, {
-        category: preferredCategory,
-        question_count: questionBank.length,
-      });
     } catch (error) {
       const offlineError = error as OfflinePackError;
       if (offlineError?.code === "cancelled") {
-        track(ANALYTICS_EVENTS.offlinePackDownloadCancelled.key, {
-          category: preferredCategory,
-        });
+        terminal(ANALYTICS_EVENTS.offlinePackDownloadCancelled.key);
       } else {
-        track(ANALYTICS_EVENTS.offlinePackDownloadFailed.key, {
-          category: preferredCategory,
-          error_code: getAnalyticsErrorCode(error),
-        });
+        if (operation.terminal) {
+          reportLearningOperationFailure(track, "offline_snapshot", error, {
+            operation_id: operation.id, screen_name: "offline_mode", user_visible: true,
+          });
+        } else terminal(ANALYTICS_EVENTS.offlinePackDownloadFailed.key, error);
         setFeedback({
           kind: "error",
           message: mapOfflineActionError(error, t),
@@ -245,7 +311,8 @@ export default function OfflineModeScreen() {
 
   const handleStopDownload = () => {
     cancelOfflinePackDownload();
-    track(ANALYTICS_EVENTS.offlinePackDownloadCancelled.key, {
+    track(ANALYTICS_EVENTS.offlinePackCancelRequested.key, {
+      operation_id: operationRef.current?.id ?? null,
       category: preferredCategory,
       source: "stop_button",
     });
@@ -257,16 +324,19 @@ export default function OfflineModeScreen() {
   };
 
   const handleClearPack = async () => {
+    const operationId = createAnalyticsId("offline_remove");
     setIsWorking(true);
     setFeedback(null);
 
     try {
       await clearOfflinePack();
       track(ANALYTICS_EVENTS.offlinePackRemoved.key, {
+        operation_id: operationId,
         category: preferredCategory,
       });
     } catch (error) {
       track(ANALYTICS_EVENTS.offlinePackDownloadFailed.key, {
+        operation_id: operationId,
         category: preferredCategory,
         error_code: getAnalyticsErrorCode(error),
         operation: "remove",

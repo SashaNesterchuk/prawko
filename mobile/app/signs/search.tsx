@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +22,8 @@ import {
 import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { withRoadSignsFeature } from "../../src/app-config/with-road-signs-feature";
+import { createAnalyticsId } from "../../src/analytics/runtime-context";
+import { useAnalyticsViewState } from "../../src/analytics/useAnalyticsViewState";
 
 function SignsSearchScreen() {
   const { t } = useTranslation();
@@ -29,6 +31,8 @@ function SignsSearchScreen() {
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
   const [query, setQuery] = useState("");
+  const [searchId] = useState(() => createAnalyticsId("search"));
+  const queryRevisionRef = useRef(0);
 
   const results = useMemo(() => searchRoadSigns(query), [query]);
   const categoryLabels = useMemo(
@@ -44,6 +48,14 @@ function SignsSearchScreen() {
 
   const hasQuery = query.trim().length > 0;
   const showEmptyState = hasQuery && results.length === 0;
+  useAnalyticsViewState(!hasQuery ? "search_empty" : showEmptyState ? "search_no_results" : "search_results", {
+    screen_name: "sign_search", search_id: searchId,
+    query_revision: queryRevisionRef.current, result_count: results.length,
+  });
+  function changeQuery(value: string) {
+    queryRevisionRef.current += 1;
+    setQuery(value);
+  }
 
   useEffect(() => {
     const normalizedQuery = query.trim();
@@ -56,6 +68,9 @@ function SignsSearchScreen() {
       track(ANALYTICS_EVENTS.signSearchSubmitted.key, {
         query_length: normalizedQuery.length,
         result_count: results.length,
+        search_id: searchId,
+        query_revision: queryRevisionRef.current,
+        observation_reason: "debounced_query",
       });
     }, 400);
 
@@ -77,8 +92,8 @@ function SignsSearchScreen() {
             autoFocus
             value={query}
             placeholder={t("signs.searchPlaceholder")}
-            onChangeText={setQuery}
-            onClear={() => setQuery("")}
+            onChangeText={changeQuery}
+            onClear={() => changeQuery("")}
           />
         </View>
 
@@ -107,17 +122,22 @@ function SignsSearchScreen() {
                 })}
               </CText>
               <View style={styles.resultList}>
-                {results.map((sign) => (
+                {results.map((sign, resultIndex) => (
                   <SignListItem
                     key={sign.id}
                     sign={sign}
                     categoryLabel={categoryLabels[sign.categoryId]}
-                    onPress={() =>
+                    onPress={() => {
+                      track(ANALYTICS_EVENTS.signSearchResultSelected.key, {
+                        search_id: searchId, query_revision: queryRevisionRef.current,
+                        query_length: query.trim().length, result_count: results.length,
+                        result_position: resultIndex + 1, sign_id: sign.id, category_id: sign.categoryId,
+                      });
                       router.navigate({
                         pathname: "/signs/[signId]",
                         params: { signId: sign.id },
-                      })
-                    }
+                      });
+                    }}
                   />
                 ))}
               </View>

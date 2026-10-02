@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { isMobileSupabaseConfigured } from "../../src/config/env";
@@ -31,6 +31,13 @@ import {
   useQuestionCatalogStore,
 } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
+import { useExamCategoryMismatchAnalytics } from "../../src/features/exam/useExamCategoryMismatchAnalytics";
+import { useAnalytics } from "../../src/providers/AnalyticsProvider";
+import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { createAnalyticsId } from "../../src/analytics/runtime-context";
+import { useAnalyticsViewState } from "../../src/analytics/useAnalyticsViewState";
+import { reportLearningOperationFailure } from "../../src/analytics/operations";
+import { useIsFocused } from "expo-router/react-navigation";
 
 /**
  * Deep-link / history entry for exam answer review.
@@ -39,6 +46,10 @@ import { useQuestionProgressStore } from "../../src/state/question-progress";
  */
 export default function ExamAnswersReviewScreen() {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
+  const isFocused = useIsFocused();
+  const [reviewId] = useState(() => createAnalyticsId("review"));
+  const openedRef = useRef(false);
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
@@ -67,6 +78,14 @@ export default function ExamAnswersReviewScreen() {
   const [isLoading, setIsLoading] = useState(!snapshot);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const categoryMismatch = useExamCategoryMismatchAnalytics({
+    examSessionId: snapshot?.session.id ?? null,
+    currentCategory: preferredCategory,
+    sessionCategory: snapshot?.session.currentCategory,
+    screenName: "exam_answers",
+    eligible: !isLoading,
+    resolvedReady: questionCatalogResolved,
+  });
 
   useEffect(() => {
     if (!sessionId) {
@@ -121,6 +140,9 @@ export default function ExamAnswersReviewScreen() {
 
         console.warn("Failed to fetch exam answers snapshot.", error);
         if (!cached && !getCachedExamSnapshot(sessionId)) {
+          reportLearningOperationFailure(track, "load_review", error, {
+            exam_session_id: sessionId, review_id: reviewId, screen_name: "exam_answers", user_visible: true,
+          });
           setErrorMessage(getErrorMessage(error));
           setSnapshot(null);
         }
@@ -158,6 +180,21 @@ export default function ExamAnswersReviewScreen() {
         currentQuestionRef.questionSourceId
       )
     : null;
+  const reviewState = isLoading ? "loading" : !snapshot ? "error"
+    : snapshot.session.currentCategory !== preferredCategory ? "category_mismatch"
+    : !questionCatalogResolved ? "loading" : !currentQuestionRef ? "missing_question" : "review";
+  useAnalyticsViewState(reviewState === "review" ? null : reviewState, {
+    screen_name: "exam_answers", exam_session_id: sessionId,
+    review_id: reviewId, question_id: currentQuestionRef?.questionSourceId ?? null,
+  });
+  useLayoutEffect(() => {
+    if (!isFocused || reviewState !== "review" || openedRef.current || !snapshot) return;
+    openedRef.current = true;
+    track(ANALYTICS_EVENTS.examAnswersReviewOpened.key, {
+      exam_session_id: snapshot.session.id, review_id: reviewId,
+      mode: snapshot.session.mode, question_total: sortedQuestions.length, source: "route",
+    });
+  }, [isFocused, reviewId, reviewState, snapshot, sortedQuestions.length, track]);
 
   function switchToSessionCategory() {
     const sessionCategory = snapshot?.session.currentCategory;
@@ -166,6 +203,7 @@ export default function ExamAnswersReviewScreen() {
       return;
     }
 
+    categoryMismatch.selectAction("switch_category");
     useQuestionCatalogStore.getState().setLoading();
     setPreferredCategory(sessionCategory);
   }
@@ -204,6 +242,10 @@ export default function ExamAnswersReviewScreen() {
 
     const questionSourceId = currentQuestionRef.questionSourceId;
     const isBookmarked = toggleBookmark(questionSourceId);
+    track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+      exam_session_id: sessionId, review_id: reviewId, question_id: questionSourceId,
+      is_bookmarked: isBookmarked, source: "exam_review",
+    });
 
     if (authMode === "supabase" && isMobileSupabaseConfigured) {
       void syncQuestionBookmarkState({
@@ -287,6 +329,8 @@ export default function ExamAnswersReviewScreen() {
 
   return (
     <ExamAnswersReviewView
+      examSessionId={snapshot.session.id}
+      reviewId={reviewId}
       answer={currentAnswer}
       canGoNext
       canGoPrevious={currentIndex > 0}

@@ -25,6 +25,7 @@ import {
 } from "../../src/features/question-topics/catalog";
 import { getQuestionDisplayStats, getTopicProgress } from "../../src/features/questions/question-engine";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import { withLearningIntent } from "../../src/analytics/operations";
 import { useQuestionModeCountDialog } from "../../src/features/questions/useQuestionModeCountDialog";
 import { useResponsiveFonts, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
@@ -120,7 +121,7 @@ export default function LearnTabScreen() {
   ) =>
     router.navigate({
       pathname: "/question",
-      params: buildQuestionRouteParams({ mode }),
+      params: withLearningIntent(buildQuestionRouteParams({ mode }), { source: "learn", target_screen: "question_training" }),
     });
 
   const examTitle = t("learn.tileExamTitle", { defaultValue: "Іспит" });

@@ -1,5 +1,11 @@
 import { Modal, Pressable, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { useSegments } from "expo-router";
 
+import { ANALYTICS_EVENTS, type AnalyticsProperties } from "../../analytics/catalog";
+import { createAnalyticsId } from "../../analytics/runtime-context";
+import { analyticsPathFromSegments, resolveScreenRoute } from "../../analytics/screenRoutes";
+import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { Icon } from "../icons";
 import { CText, getFontFamily, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
@@ -27,6 +33,7 @@ type QuestionCountDialogProps = {
   totalCount: number;
   selectedCount: QuestionCountSelection;
   visible: boolean;
+  analyticsContext?: AnalyticsProperties;
   options?: QuestionCountSelection[];
   getOptionLabel?: (
     option: QuestionCountSelection,
@@ -35,7 +42,7 @@ type QuestionCountDialogProps = {
   testID?: string;
   onClose: () => void;
   onSelectCount: (count: QuestionCountSelection) => void;
-  onStart: () => void;
+  onStart: (analyticsContext?: AnalyticsProperties) => void;
 };
 
 export function QuestionCountDialog({
@@ -46,6 +53,7 @@ export function QuestionCountDialog({
   totalCount,
   selectedCount,
   visible,
+  analyticsContext,
   options: customOptions,
   getOptionLabel,
   testID = "question-count-dialog",
@@ -54,14 +62,59 @@ export function QuestionCountDialog({
   onStart,
 }: QuestionCountDialogProps) {
   const theme = useTheme();
+  const { track } = useAnalytics();
+  const segments = useSegments();
+  const setupRef = useRef<AnalyticsProperties | null>(null);
+  const didResolveRef = useRef(false);
   const styles = useStyles();
   const options = customOptions ?? getQuestionCountOptions(totalCount);
   const isSingleRow = options.length > 0 && options.length <= 3;
 
+  useEffect(() => {
+    if (!visible) {
+      setupRef.current = null;
+      didResolveRef.current = false;
+    }
+  }, [visible]);
+
+  function trackShown() {
+    if (!visible || setupRef.current) {
+      return;
+    }
+    setupRef.current = {
+      ...analyticsContext,
+      setup_id: createAnalyticsId("setup"),
+      screen_name: resolveScreenRoute(analyticsPathFromSegments(segments)).screenName,
+      dialog_kind: testID === "blitz-duration-dialog" ? "blitz_duration" : "question_count",
+      available_count: totalCount,
+      default_selection: selectedCount,
+    };
+    track(ANALYTICS_EVENTS.practiceSetupViewed.key, setupRef.current);
+  }
+
+  function resolveSetup(action: "start" | "cancel" | "dismiss") {
+    if (!setupRef.current || didResolveRef.current) {
+      return;
+    }
+    didResolveRef.current = true;
+    track(ANALYTICS_EVENTS.practiceSetupResolved.key, {
+      ...setupRef.current,
+      action,
+      selected_count: selectedCount,
+      ...(testID === "blitz-duration-dialog"
+        ? { time_limit_seconds: typeof selectedCount === "number" ? selectedCount * 60 : null }
+        : { question_limit: selectedCount === "all" ? null : selectedCount }),
+    });
+  }
+
   return (
     <Modal
       animationType="fade"
-      onRequestClose={onClose}
+      onShow={trackShown}
+      onRequestClose={() => {
+        resolveSetup("dismiss");
+        onClose();
+      }}
       transparent
       visible={visible}
     >
@@ -69,7 +122,10 @@ export function QuestionCountDialog({
         <View style={styles.card}>
           <Pressable
             accessibilityRole="button"
-            onPress={onClose}
+            onPress={() => {
+              resolveSetup("cancel");
+              onClose();
+            }}
             style={({ pressed }) => [
               styles.closeButton,
               pressed ? styles.pressed : null,
@@ -123,7 +179,10 @@ export function QuestionCountDialog({
 
           <Pressable
             accessibilityRole="button"
-            onPress={onStart}
+            onPress={() => {
+              resolveSetup("start");
+              onStart(setupRef.current ?? undefined);
+            }}
             style={({ pressed }) => [
               styles.startButton,
               pressed ? styles.pressed : null,

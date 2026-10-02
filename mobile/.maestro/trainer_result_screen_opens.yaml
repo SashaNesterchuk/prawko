@@ -2,6 +2,8 @@
 # Scenario: Finished training result → answers review → last question Finish
 # returns to the result screen (never a disabled Next on the last answer).
 # Native in-app review is suppressed in e2e builds so this screen stays tappable.
+# Analytics contract: bootstrap emits result_viewed(existing_result), never
+# training_session_completed. Review has one review_id across all five questions.
 appId: com.mindjar.prawko
 tags:
   - training
@@ -73,3 +75,31 @@ tags:
 
 - assertVisible:
     id: "screen-question-result"
+
+# Reopen review and leave with Back: a separate review visit, not completion.
+- tapOn:
+    id: "question-result-answers"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-answers-review"
+    timeout: 10000
+
+- tapOn:
+    id: "nav-back"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-result"
+    timeout: 10000
+
+- tapOn:
+    id: "question-result-new-attempt"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 20000
+
+- assertVisible:
+    id: "question-choice-index-0"

@@ -27,6 +27,8 @@ import { getSignLearningStatus } from "../../../src/features/road-signs/sign-pro
 import { useSignBookmarksStore } from "../../../src/state/sign-bookmarks";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 import { withRoadSignsFeature } from "../../../src/app-config/with-road-signs-feature";
+import type { AnalyticsProperties } from "../../../src/analytics/catalog";
+import { withLearningIntent } from "../../../src/analytics/operations";
 
 function SignsCategoryScreen() {
   const { t } = useTranslation();
@@ -60,13 +62,16 @@ function SignsCategoryScreen() {
   const [selectedCount, setSelectedCount] =
     useState<QuestionCountSelection>("all");
 
-  const startCategoryTestWithLimit = (limit: QuestionCountSelection) => {
+  const startCategoryTestWithLimit = (limit: QuestionCountSelection, setup?: AnalyticsProperties) => {
     router.navigate({
       pathname: "/signs/category/[categoryId]/test",
-      params: {
+      params: withLearningIntent({
         categoryId: resolvedCategoryId,
         limit: limit === "all" ? "all" : String(limit),
-      },
+      }, {
+        feature: "sign_test", sign_test_entry: "category", category_id: resolvedCategoryId,
+        target_screen: "sign_test", setup_id: setup?.setup_id ?? null, question_limit: limit === "all" ? null : limit,
+      }),
     });
   };
 
@@ -84,9 +89,9 @@ function SignsCategoryScreen() {
     setCountDialogVisible(true);
   };
 
-  const startCategoryTest = () => {
+  const startCategoryTest = (setup?: AnalyticsProperties) => {
     setCountDialogVisible(false);
-    startCategoryTestWithLimit(selectedCount);
+    startCategoryTestWithLimit(selectedCount, setup);
   };
 
   return (
@@ -150,6 +155,11 @@ function SignsCategoryScreen() {
         </View>
 
         <QuestionCountDialog
+          analyticsContext={{
+            feature: "sign_test",
+            sign_test_entry: "category",
+            category_id: resolvedCategoryId,
+          }}
           title={
             category
               ? t(`signs.categories.${category.id}.title`)

@@ -19,7 +19,8 @@ import {
 } from "../../components/shell/QuestionCountDialog";
 import { useAppShellStore } from "../../state/app-shell";
 import { useQuestionProgressStore } from "../../state/question-progress";
-import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { ANALYTICS_EVENTS, type AnalyticsProperties } from "../../analytics/catalog";
+import { withLearningIntent } from "../../analytics/operations";
 import { trainingPracticeEntry } from "../../analytics/practice-entry";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
 import type { ExamEntry } from "../exam/exam-entry";
@@ -89,7 +90,8 @@ export function useQuestionModeCountDialog() {
   function startMode(
     mode: QuestionSessionMode,
     questionLimit: number | null,
-    topic?: LearningTopicId
+    topic?: LearningTopicId,
+    setup?: AnalyticsProperties
   ) {
     track(ANALYTICS_EVENTS.trainingModeSelected.key, {
       mode,
@@ -99,18 +101,22 @@ export function useQuestionModeCountDialog() {
     });
     router.navigate({
       pathname: "/question",
-      params: buildQuestionRouteParams({ mode, topic, questionLimit }),
+      params: withLearningIntent(buildQuestionRouteParams({ mode, topic, questionLimit }), {
+        setup_id: setup?.setup_id ?? null, source: "mode_selection", target_screen: "question_training",
+      }),
     });
   }
 
   function startExam(entry: ExamEntry) {
     router.navigate({
       pathname: "/exam",
-      params: buildExamRouteParams({ entry, mode: "exam" }),
+      params: withLearningIntent(buildExamRouteParams({ entry, mode: "exam" }), {
+        source: entry, target_screen: "exam_loading",
+      }),
     });
   }
 
-  function startBlitz(minutes: BlitzDurationMinutes) {
+  function startBlitz(minutes: BlitzDurationMinutes, setup?: AnalyticsProperties) {
     const timeLimitSeconds = minutes * 60;
     track(ANALYTICS_EVENTS.trainingModeSelected.key, {
       mode: "blitz",
@@ -120,10 +126,10 @@ export function useQuestionModeCountDialog() {
     });
     router.navigate({
       pathname: "/question",
-      params: buildQuestionRouteParams({
+      params: withLearningIntent(buildQuestionRouteParams({
         mode: "blitz",
         timeLimitSeconds,
-      }),
+      }), { setup_id: setup?.setup_id ?? null, source: "mode_selection", time_limit_seconds: timeLimitSeconds }),
     });
   }
 
@@ -162,7 +168,7 @@ export function useQuestionModeCountDialog() {
     setPending({ kind: "blitz", title: input.title });
   }
 
-  function startPendingMode() {
+  function startPendingMode(setup?: AnalyticsProperties) {
     if (!pending) {
       return;
     }
@@ -172,18 +178,23 @@ export function useQuestionModeCountDialog() {
         ? selectedCount
         : DEFAULT_BLITZ_DURATION_MINUTES;
       setPending(null);
-      startBlitz(minutes);
+      startBlitz(minutes, setup);
       return;
     }
 
     const { mode, topic } = pending;
     setPending(null);
-    startMode(mode, toQuestionLimit(selectedCount), topic);
+    startMode(mode, toQuestionLimit(selectedCount), topic, setup);
   }
 
   const isBlitzPending = pending?.kind === "blitz";
   const dialog = (
     <QuestionCountDialog
+      analyticsContext={{
+        feature: "training",
+        mode: pending?.kind === "question" ? pending.mode : "blitz",
+        topic_id: pending?.kind === "question" ? pending.topic ?? null : null,
+      }}
       title={pending?.title ?? ""}
       subtitle={
         isBlitzPending

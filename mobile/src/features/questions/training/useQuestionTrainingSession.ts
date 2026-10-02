@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { InteractionManager } from "react-native";
+import { useIsFocused } from "expo-router/react-navigation";
 
 import type { SupportedLocale } from "@prawko/config";
 import { AD_POLICY } from "@prawko/config";
@@ -9,6 +10,11 @@ import { hideModalAndWait } from "../../../components/shell/hide-modal-and-wait"
 import { isMobileSupabaseConfigured } from "../../../config/env";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import { trainingPracticeEntry } from "../../../analytics/practice-entry";
+import { createTrainingLifecycle } from "../../../analytics/training-lifecycle";
+import { useAnalyticsDuration } from "../../../analytics/useAnalyticsDuration";
+import { useAnalyticsViewState } from "../../../analytics/useAnalyticsViewState";
+import { useLearningReadyAnalytics } from "../../../analytics/useLearningReadyAnalytics";
+import { reportLearningOperationFailure } from "../../../analytics/operations";
 import { recordQuestionAnsweredForAds } from "../../ads/ad-session-policy";
 import { useAdInterstitialActions } from "../../ads/show-interstitial";
 import { maybeRequestInAppReview } from "../../profile/request-in-app-review";
@@ -79,6 +85,7 @@ function roadmapStepAnalytics(roadmapStepId: string | null | undefined) {
 export function useQuestionTrainingSession() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
+  const isFocused = useIsFocused();
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const routeParams = useQuestionRouteParams();
@@ -129,11 +136,15 @@ export function useQuestionTrainingSession() {
   const [nowMs, setNowMs] = useState(() => Date.now());
   const questionStartedAtRef = useRef(Date.now());
   const didShowSessionCompleteAdRef = useRef(false);
-  const trackedSessionIdRef = useRef<string | null>(null);
+  const [lifecycle] = useState(createTrainingLifecycle);
+  const [entrySessionId, setEntrySessionId] = useState<string | null>(null);
+  const viewedQuestionRef = useRef<string | null>(null);
+  const trackedAccessSessionIdRef = useRef<string | null>(null);
   const trainingAccessMethodRef = useRef<TrainingAccessMethod>("free_quota");
   const paywallRequestedRef = useRef(false);
   const [paywallHref, setPaywallHref] = useState<Href | null>(null);
   const trackedCompletedSessionIdRef = useRef<string | null>(null);
+  const completionReasonRef = useRef("unknown_transition");
   const trackedEmptySessionIdRef = useRef<string | null>(null);
   const shouldAttemptPracticeAdRef = useRef(false);
   const showExitDialogRef = useRef(false);
@@ -158,12 +169,15 @@ export function useQuestionTrainingSession() {
     // Answering, finishing, or abandoning must not rebuild this entry; a
     // stale screen that is still mounted after exit must not overwrite a
     // newer session either.
-    const currentSession = useQuestionProgressStore.getState().activeSession;
+    const previousState = useQuestionProgressStore.getState();
+    const currentSession = previousState.activeSession;
 
     if (
       currentSession?.request.sessionKey === sessionKey &&
       currentSession.request.currentCategory === preferredCategory
     ) {
+      lifecycle.enter(currentSession, currentSession);
+      setEntrySessionId(currentSession.id);
       return;
     }
 
@@ -183,6 +197,8 @@ export function useQuestionTrainingSession() {
       !isHomeDailySessionKey(currentSession.request.sessionKey) &&
       !isHomeDailySessionKey(sessionKey)
     ) {
+      lifecycle.enter(currentSession, currentSession);
+      setEntrySessionId(currentSession.id);
       return;
     }
 
@@ -199,16 +215,19 @@ export function useQuestionTrainingSession() {
 
     if (v2 && !isPlus && topicAccess.locked && !savedMode) {
       const usage = useMonetizationV2Store.getState().usage;
-      trackPremiumGateOpen(track, {
-        free_questions_remaining: freeQuestionsRemaining(usage),
-        source: "roadmap",
-        surface: "question_start",
-        ...roadmapStepAnalytics(roadmapStepId),
-      });
       if (!paywallRequestedRef.current) {
+        const gateId = trackPremiumGateOpen(track, {
+          free_questions_remaining: freeQuestionsRemaining(usage),
+          source: "roadmap",
+          surface: "question_start",
+          topic_id: topic ?? null,
+          ...roadmapStepAnalytics(roadmapStepId),
+        });
         paywallRequestedRef.current = true;
         setPaywallHref(
           buildPaywallHref({
+            premiumGateId: gateId,
+            topicId: topic,
             roadmapStepId: roadmapStepId ?? undefined,
             source: "roadmap",
             surface: "question_start",
@@ -242,15 +261,18 @@ export function useQuestionTrainingSession() {
 
     if (decision.action === "paywall") {
       const usage = useMonetizationV2Store.getState().usage;
-      trackPremiumGateOpen(track, {
-        free_questions_remaining: freeQuestionsRemaining(usage),
-        source: decision.source,
-        ...roadmapStepAnalytics(roadmapStepId),
-      });
       if (!paywallRequestedRef.current) {
+        const gateId = trackPremiumGateOpen(track, {
+          free_questions_remaining: freeQuestionsRemaining(usage),
+          source: decision.source,
+          topic_id: topic ?? null,
+          ...roadmapStepAnalytics(roadmapStepId),
+        });
         paywallRequestedRef.current = true;
         setPaywallHref(
           buildPaywallHref({
+            premiumGateId: gateId,
+            topicId: topic,
             roadmapStepId: roadmapStepId ?? undefined,
             source: decision.source,
             postPurchaseAction:
@@ -274,7 +296,7 @@ export function useQuestionTrainingSession() {
     }
 
     trainingAccessMethodRef.current = decision.accessMethod;
-    startOrResumeSession({
+    const nextSession = startOrResumeSession({
       allowedTopicIds:
         v2 && !isPlus && scopedTopicIds.length === 0 && usesFreeTopicPool(mode)
           ? freeTopicIds
@@ -289,8 +311,17 @@ export function useQuestionTrainingSession() {
       sessionKey,
       studyPlanTaskId,
     });
+    const previousSession =
+      currentSession?.id === nextSession.id
+        ? currentSession
+        : previousState.homeDailySession?.id === nextSession.id
+          ? previousState.homeDailySession
+          : null;
+    lifecycle.enter(nextSession, previousSession);
+    setEntrySessionId(nextSession.id);
   }, [
     examCountry,
+    lifecycle,
     mode,
     preferredCategory,
     questionLimit,
@@ -328,11 +359,60 @@ export function useQuestionTrainingSession() {
   const currentQuestionState = currentQuestionId
     ? getQuestionUserState(questionUserState, currentQuestionId)
     : null;
+  const questionDuration = useAnalyticsDuration(
+    `${activeSession?.id ?? ""}:${currentQuestionId ?? ""}`,
+    isFocused && Boolean(currentQuestion) && !currentAnswer && !activeSession?.finishedAt && !showExitDialog
+  );
+  const attemptDuration = useAnalyticsDuration(
+    activeSession?.id ?? null,
+    isFocused && Boolean(activeSession) && !activeSession?.finishedAt
+  );
+  const feedbackDuration = useAnalyticsDuration(
+    currentAnswer?.answeredAt ?? null,
+    isFocused && Boolean(currentAnswer) && !activeSession?.finishedAt && !showExitDialog
+  );
+  useAnalyticsViewState(
+    !activeSession ? "loading" : activeSession.emptyReason ? "empty"
+      : activeSession.finishedAt ? null : showExitDialog ? "exit_confirmation"
+      : currentQuestion ? currentAnswer ? "feedback" : "question" : "missing_question",
+    {
+      screen_name: "question_training",
+      training_session_id: activeSession?.id ?? null,
+      question_id: currentQuestionId,
+      mode: sessionMode,
+      topic_id: sessionTopic ?? null,
+    }
+  );
+  useLearningReadyAnalytics(sessionKey,
+    Boolean(activeSession?.id === entrySessionId && currentQuestion && !activeSession?.finishedAt && !activeSession?.emptyReason && !showExitDialog),
+    {
+      feature: "training", training_session_id: activeSession?.id ?? null,
+      question_id: currentQuestionId, learning_intent_id: routeParams.learningIntentId,
+    }
+  );
   const questionChoices = currentQuestion
     ? getQuestionChoices(currentQuestion, displayLocale)
     : [];
   const isCompleted = Boolean(activeSession?.finishedAt && !activeSession.emptyReason);
   const completeRoadmapStep = useRoadmapProgressStore((state) => state.completeStep);
+
+  useEffect(() => {
+    if (
+      !activeSession ||
+      activeSession.request.sessionKey !== sessionKey ||
+      activeSession.request.currentCategory !== preferredCategory ||
+      trackedAccessSessionIdRef.current === activeSession.id
+    ) {
+      return;
+    }
+    trackedAccessSessionIdRef.current = activeSession.id;
+    if (
+      trainingAccessMethodRef.current === "wrong_answers_preview" &&
+      isMonetizationV2Active()
+    ) {
+      useMonetizationV2Store.getState().markWrongAnswersPreviewUsed();
+    }
+  }, [activeSession, preferredCategory, sessionKey]);
 
   useEffect(() => {
     if (!isCompleted || !roadmapStepId) {
@@ -380,6 +460,7 @@ export function useQuestionTrainingSession() {
       return;
     }
 
+    completionReasonRef.current = "timer_elapsed";
     finishActiveSession();
   }, [activeSession, finishActiveSession, remainingSeconds]);
   const sessionResultTotal = summary.total || 1;
@@ -426,55 +507,68 @@ export function useQuestionTrainingSession() {
             : t("question.generalPool"),
           });
 
-  useEffect(() => {
-    if (
-      !activeSession ||
-      activeSession.request.sessionKey !== sessionKey ||
-      activeSession.request.currentCategory !== preferredCategory ||
-      trackedSessionIdRef.current === activeSession.id
-    ) {
+  // Record the transition before result components emit passive view events.
+  useLayoutEffect(() => {
+    if (!activeSession || !lifecycle.matches(activeSession.id)) {
       return;
     }
-
-    trackedSessionIdRef.current = activeSession.id;
-
-    if (
-      trainingAccessMethodRef.current === "wrong_answers_preview" &&
-      isMonetizationV2Active()
-    ) {
-      useMonetizationV2Store.getState().markWrongAnswersPreviewUsed();
-    }
-
+    const transition = lifecycle.observe(activeSession);
     const usage = useMonetizationV2Store.getState().usage;
     const accessMethod = readHasPlusAccess()
       ? "premium"
       : trainingAccessMethodRef.current;
-    track(
-      activeSession.answers && Object.keys(activeSession.answers).length > 0
-        ? ANALYTICS_EVENTS.trainingSessionResumed.key
-        : ANALYTICS_EVENTS.trainingSessionStarted.key,
-      {
+    const context = {
+      learning_intent_id: routeParams.learningIntentId,
+      training_session_id: activeSession.id,
+      mode: activeSession.request.mode,
+      topic_id: activeSession.request.topic ?? null,
+      ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
+      ...trainingPracticeEntry({
         mode: activeSession.request.mode,
-        question_limit: activeSession.request.questionLimit ?? null,
-        question_total: activeSession.questionIds.length,
-        time_limit_seconds: activeSession.request.timeLimitSeconds ?? null,
-        topic_id: activeSession.request.topic ?? null,
-        ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
-        ...trainingPracticeEntry({
-          mode: activeSession.request.mode,
-          roadmapStepId: activeSession.request.roadmapStepId,
-          topicId: activeSession.request.topic ?? null,
-        }),
-        ...(isMonetizationV2Active()
-          ? {
-              access_method: accessMethod,
-              access_tier: readHasPlusAccess() ? "premium" : "free",
-              free_questions_remaining: freeQuestionsRemaining(usage),
-            }
-          : {}),
-      }
-    );
-  }, [activeSession, preferredCategory, sessionKey, track]);
+        roadmapStepId: activeSession.request.roadmapStepId,
+        topicId: activeSession.request.topic ?? null,
+      }),
+    };
+    if (transition.entryEvent) {
+      track(
+        transition.entryEvent === "resumed"
+          ? ANALYTICS_EVENTS.trainingSessionResumed.key
+          : ANALYTICS_EVENTS.trainingSessionStarted.key,
+        {
+          ...context,
+          question_limit: activeSession.request.questionLimit ?? null,
+          question_total: activeSession.questionIds.length,
+          time_limit_seconds: activeSession.request.timeLimitSeconds ?? null,
+          answered_count: summary.answered,
+          ...(transition.entryEvent === "resumed"
+            ? { resumed_at_question: activeSession.currentIndex + 1 } : {}),
+          ...(isMonetizationV2Active()
+            ? {
+                access_method: transition.entryEvent === "resumed" && !readHasPlusAccess()
+                  ? "unknown"
+                  : accessMethod,
+                access_tier: readHasPlusAccess() ? "premium" : "free",
+                free_questions_remaining: freeQuestionsRemaining(usage),
+              }
+            : {}),
+        }
+      );
+    }
+    if (transition.completed) {
+      track(ANALYTICS_EVENTS.trainingSessionCompleted.key, {
+        ...context,
+        answered_count: summary.answered,
+        correct_count: summary.correct,
+        incorrect_count: summary.wrong,
+        passed: sessionPassed,
+        question_total: summary.total,
+        score_percent: sessionResultPercent,
+        completion_reason: completionReasonRef.current,
+        visit_foreground_ms: attemptDuration.measure().visible_foreground_ms,
+        duration_scope: "current_component_visit",
+      });
+    }
+  }, [activeSession, attemptDuration, lifecycle, routeParams.learningIntentId, sessionPassed, sessionResultPercent, summary, track]);
 
   useEffect(() => {
     if (!activeSession || !isCompleted) {
@@ -494,21 +588,6 @@ export function useQuestionTrainingSession() {
       totalCount: summary.total,
     });
     recordTrainingCompleted(activeSession.id);
-    track(ANALYTICS_EVENTS.trainingSessionCompleted.key, {
-      correct_count: summary.correct,
-      incorrect_count: summary.wrong,
-      mode: activeSession.request.mode,
-      passed: sessionPassed,
-      question_total: summary.total,
-      ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
-      ...trainingPracticeEntry({
-        mode: activeSession.request.mode,
-        roadmapStepId: activeSession.request.roadmapStepId,
-        topicId: activeSession.request.topic ?? null,
-      }),
-      score_percent: sessionResultPercent,
-      topic_id: activeSession.request.topic ?? null,
-    });
   }, [
     activeSession,
     isCompleted,
@@ -519,11 +598,50 @@ export function useQuestionTrainingSession() {
     summary.total,
     summary.wrong,
     recordTrainingCompleted,
-    track,
   ]);
 
   useEffect(() => {
-    if (!activeSession || !isEmptyState) {
+    if (!isFocused) {
+      viewedQuestionRef.current = null;
+      return;
+    }
+    if (
+      !activeSession ||
+      activeSession.id !== entrySessionId ||
+      !lifecycle.matches(activeSession.id) ||
+      activeSession.finishedAt ||
+      isEmptyState ||
+      !currentQuestion
+    ) {
+      return;
+    }
+    const key = `${activeSession.id}:${activeSession.currentIndex}`;
+    if (viewedQuestionRef.current === key) {
+      return;
+    }
+    viewedQuestionRef.current = key;
+    track(ANALYTICS_EVENTS.trainingQuestionViewed.key, {
+      training_session_id: activeSession.id,
+      mode: activeSession.request.mode,
+      question_id: currentQuestion.id,
+      question_index: activeSession.currentIndex + 1,
+      question_total: activeSession.questionIds.length,
+      already_answered: Boolean(currentAnswer),
+      media_type: currentQuestion.media?.type ?? "none",
+      previous_times_seen: currentQuestionState?.timesSeen ?? 0,
+      topic_id: activeSession.request.topic ?? null,
+      ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
+    });
+  }, [activeSession, currentAnswer, currentQuestion, entrySessionId, isEmptyState, isFocused, lifecycle, track]);
+
+  useEffect(() => {
+    if (
+      !isFocused ||
+      !activeSession ||
+      activeSession.id !== entrySessionId ||
+      !lifecycle.matches(activeSession.id) ||
+      !isEmptyState
+    ) {
       return;
     }
 
@@ -533,6 +651,7 @@ export function useQuestionTrainingSession() {
 
     trackedEmptySessionIdRef.current = activeSession.id;
     track(ANALYTICS_EVENTS.trainingSessionEmpty.key, {
+      training_session_id: activeSession.id,
       empty_reason: activeSession.emptyReason ?? "general_empty",
       mode: activeSession.request.mode,
       ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
@@ -543,7 +662,7 @@ export function useQuestionTrainingSession() {
       }),
       topic_id: activeSession.request.topic ?? null,
     });
-  }, [activeSession, isEmptyState, track]);
+  }, [activeSession, entrySessionId, isEmptyState, isFocused, lifecycle, track]);
 
   const handleAnswer = (choiceId: QuestionOptionValue) => {
     if (!currentQuestion) {
@@ -579,7 +698,12 @@ export function useQuestionTrainingSession() {
     );
 
     track(ANALYTICS_EVENTS.trainingQuestionAnswered.key, {
+      training_session_id: answeredAttempt.sessionId,
+      answer_id: answeredAttempt.id,
       answer_duration_ms: answerDurationMs,
+      answer_foreground_ms: questionDuration.measure().visible_foreground_ms,
+      previous_times_seen: currentQuestionState?.timesSeen ?? 0,
+      first_encounter: (currentQuestionState?.timesSeen ?? 0) === 0,
       answer_type: currentQuestion.answerType,
       is_correct: answeredAttempt.isCorrect,
       media_type: currentQuestion.media?.type ?? "none",
@@ -627,6 +751,10 @@ export function useQuestionTrainingSession() {
         topic_ids: currentQuestion.topicIds ?? [],
       },
     }).catch((error) => {
+      reportLearningOperationFailure(track, "sync_answer", error, {
+        training_session_id: answeredAttempt.sessionId, answer_id: answeredAttempt.id,
+        question_id: currentQuestion.id, user_visible: false,
+      });
       console.warn(
         `Failed to sync question attempt for ${currentQuestion.id}.`,
         error
@@ -637,6 +765,7 @@ export function useQuestionTrainingSession() {
   const handleToggleBookmark = (questionId: string) => {
     const isBookmarked = toggleBookmark(questionId);
     track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+      training_session_id: activeSession?.id ?? null,
       is_bookmarked: isBookmarked,
       mode: sessionMode,
       question_id: questionId,
@@ -674,8 +803,25 @@ export function useQuestionTrainingSession() {
   };
 
   const handleContinueAfterFeedback = useCallback(() => {
+    if (activeSession && currentQuestionId && currentAnswer) {
+      track(ANALYTICS_EVENTS.trainingFeedbackContinued.key, {
+        training_session_id: activeSession.id,
+        feedback_foreground_ms: feedbackDuration.measure().visible_foreground_ms,
+        question_id: currentQuestionId,
+        question_index: activeSession.currentIndex + 1,
+        question_total: summary.total,
+        mode: sessionMode,
+        is_correct: currentAnswer.isCorrect,
+        action: activeSession.currentIndex >= activeSession.questionIds.length - 1
+          ? "finish"
+          : "next",
+      });
+    }
     const shouldAttemptInterstitial = shouldAttemptPracticeAdRef.current;
     shouldAttemptPracticeAdRef.current = false;
+    if (activeSession && activeSession.currentIndex >= activeSession.questionIds.length - 1) {
+      completionReasonRef.current = "queue_finished";
+    }
     advanceSession();
 
     if (shouldAttemptInterstitial) {
@@ -683,7 +829,7 @@ export function useQuestionTrainingSession() {
       // Controller still waits for UI idle before native show().
       maybeShowInterstitial("after_question_answer");
     }
-  }, [advanceSession, maybeShowInterstitial]);
+  }, [activeSession, advanceSession, currentAnswer, currentQuestionId, maybeShowInterstitial, sessionMode, summary.total, track]);
 
   const hideExitDialogAndWait = useCallback(() => {
     return hideModalAndWait(
@@ -716,12 +862,16 @@ export function useQuestionTrainingSession() {
     // question screen from rebuilding the abandoned session.
     clearActiveSession();
 
-    if (wasCompleted) {
+    if (wasCompleted || !activeSession || !lifecycle.matches(activeSession.id)) {
       pendingExitAdRef.current = null;
       return;
     }
 
     track(ANALYTICS_EVENTS.trainingSessionAbandoned.key, {
+      training_session_id: activeSession?.id ?? null,
+      exit_reason: activeSession.emptyReason
+        ? "empty_pool"
+        : answeredCount === 0 ? "zero_answer_exit" : "explicit_exit",
       answered_count: answeredCount,
       correct_count: summary.correct,
       incorrect_count: summary.wrong,
@@ -734,6 +884,8 @@ export function useQuestionTrainingSession() {
         topicId: sessionTopic ?? null,
       }),
       topic_id: sessionTopic ?? null,
+      visit_foreground_ms: attemptDuration.measure().visible_foreground_ms,
+      duration_scope: "current_component_visit",
     });
 
     // Caller navigates after this returns. Show the ad only after replace()
@@ -759,6 +911,7 @@ export function useQuestionTrainingSession() {
     activeSession,
     clearActiveSession,
     isCompleted,
+    lifecycle,
     showInterstitialForTrigger,
     summary.answered,
     summary.correct,
@@ -846,6 +999,9 @@ export function useQuestionTrainingSession() {
 
   return {
     activeSession,
+    resultOrigin: activeSession
+      ? lifecycle.resultOrigin(activeSession.id)
+      : "existing_result" as const,
     paywallHref,
     advanceSession,
     canGoPrevious,
@@ -868,7 +1024,7 @@ export function useQuestionTrainingSession() {
     hideExitDialogAndWait,
     isCompleted,
     isEmptyState,
-    isReady: questionProgressHydrated && Boolean(activeSession),
+    isReady: questionProgressHydrated && Boolean(activeSession && activeSession.id === entrySessionId),
     premiumIconSize,
     questionChoices,
     remainingSeconds,

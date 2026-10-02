@@ -100,7 +100,7 @@ pnpm test:e2e:studio
 | `exam_offline_ready_pack_starts_session.yaml` | Practice exam → offline start with ready pack |
 | `exam_session_category_mismatch_switches_category.yaml` | Direct active exam session → category mismatch → switch and continue |
 | `exam_result_category_mismatch_switches_category.yaml` | Direct exam result → category mismatch → switch and load result |
-| `trainer_result_screen_opens.yaml` | Direct finished training → result with unique learned coverage → answers review → last question Finish returns to result |
+| `trainer_result_screen_opens.yaml` | Stored training result → full review → Finish → reopen review → Back → new attempt starts fresh |
 | `trainer_result_work_on_mistakes.yaml` | Failed training result → Work on mistakes opens the mistakes monitor (does not freeze on the question spinner) |
 | `exam_answers_category_mismatch_switches_category.yaml` | Direct exam answer review → category mismatch → switch and load review |
 | `trainer_random_mode_starts_questions.yaml` | Trainer modes → count picker → first question |
@@ -146,3 +146,23 @@ Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `stati
 9. Keep `subflows/complete_onboarding.yaml` only for fresh-install onboarding coverage.
 10. The native App Store / Play review sheet is skipped in e2e builds (`EXPO_PUBLIC_E2E_TEST_MODE`). Do not assert that system dialog. Result flows (`trainer_result_screen_opens`, `exam_result_*`) are the regression that a prompt cannot cover the result UI.
 11. AdMob is off in e2e unless the flow sets `ENABLE_ADS: "true"`. Those flows (`exam_exit_result_stays_tappable`, `trainer_exit_stays_tappable`, `signs_exit_stays_tappable`) then run `subflows/dismiss_interstitial_if_present.yaml` and assert the destination stays tappable. Google test ads may no-fill; the freeze still fails the following tap.
+
+## Analytics Regression Expectations (Schema 2)
+
+UI assertions alone do not validate analytics. When a local collector is enabled,
+compare the same run's capture dump against these expectations, sorting within
+`app_run_id` by `event_sequence`, not JSONL arrival order:
+
+| Flow | Expected telemetry |
+|---|---|
+| `trainer_result_screen_opens.yaml` | Stored attempt: no started/resumed/completed; result_viewed has existing_result. Two review IDs, five then one question views; closes finished then back. New attempt has a different training_session_id and one started |
+| `trainer_random_answer_covers_all_question_topics.yaml` | One started → question_viewed → answered → feedback_continued → completed; one training_session_id throughout; result_origin=new_completion |
+| `trainer_offline_missing_pack_is_blocked.yaml`, `exam_offline_missing_pack_is_blocked.yaml` | learning_access_blocked(missing_ready_pack) → block_action(open_offline_mode); same block_id; no session start before access is allowed |
+| `exam_*_category_mismatch_switches_category.yaml` | mismatch_viewed → action(switch_category) → settings_changed(category) → mismatch_resolved; same mismatch_id and exam_session_id |
+| `profile_offline_without_plus_opens_paywall.yaml` | profile_action_selected(offline_mode) → paywall_viewed(source=offline_mode, surface=profile_offline_row) |
+| `paywall_activate_stays_on_paywall.yaml` | With an unconfigured SDK: paywall_cta_selected(purchase) → paywall_checkout_blocked(not_configured); no purchase_started |
+| `learn_blitz_opens_duration_dialog.yaml`, `signs_training_starts_from_tab.yaml` | setup_viewed → setup_resolved(start); same setup_id and correct feature/dialog_kind |
+
+Training lifecycle and gate-to-paywall context also have Jest regression fixtures.
+The 2026-10-02 analytics changes were not executed in Jest, Maestro or a build, at
+the user's request. These are expected contracts, not recorded passing results.

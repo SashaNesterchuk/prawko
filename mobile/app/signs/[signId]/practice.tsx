@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -29,17 +29,23 @@ import type { SignPractice } from "../../../src/features/road-signs/content/type
 import { SignImage } from "../../../src/features/road-signs/SignImage";
 import { useSignPracticeProgressStore } from "../../../src/state/sign-practice-progress";
 import { ANALYTICS_EVENTS } from "../../../src/analytics/catalog";
+import { createAnalyticsId } from "../../../src/analytics/runtime-context";
 import { signTestAnalytics } from "../../../src/features/road-signs/sign-test-entry";
 import { openPaywall } from "../../../src/features/monetization/v2/paywall";
 import { useAnalytics } from "../../../src/providers/AnalyticsProvider";
 import { useHasPlusAccess } from "../../../src/state/entitlements";
 import { withRoadSignsFeature } from "../../../src/app-config/with-road-signs-feature";
+import { useIsFocused } from "expo-router/react-navigation";
+import { useAnalyticsDuration } from "../../../src/analytics/useAnalyticsDuration";
+import { useAnalyticsViewState } from "../../../src/analytics/useAnalyticsViewState";
+import { useLearningReadyAnalytics } from "../../../src/analytics/useLearningReadyAnalytics";
 
 type PracticePhase = "question" | "result";
 
 function SignPracticeScreen() {
   const { t, i18n } = useTranslation();
   const { track } = useAnalytics();
+  const isFocused = useIsFocused();
   const hasPlusAccess = useHasPlusAccess();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const { accents } = useTheme();
@@ -76,6 +82,8 @@ function SignPracticeScreen() {
   );
   const hasRecordedCompletionRef = useRef(false);
   const didTrackStartRef = useRef(false);
+  const didTrackEndRef = useRef(false);
+  const [signTestSessionId] = useState(() => createAnalyticsId("sign_test"));
   const questionStartedAtRef = useRef(Date.now());
 
   const currentQuestion: SignPractice | undefined = practices[questionIndex];
@@ -87,14 +95,38 @@ function SignPracticeScreen() {
   const displayName = sign
     ? getSignDisplayName(sign.id, i18n.language, sign.code)
     : t("signs.title");
-
+  const questionId = `${signId}:${questionIndex + 1}`;
+  const signContext = {
+    sign_test_session_id: signTestSessionId, sign_id: signId ?? null,
+    ...signTestAnalytics({ categoryId: sign?.categoryId, entry: "sign_detail" }),
+    test_type: "sign_practice", question_id: questionId,
+    question_index: questionIndex + 1, question_total: practices.length,
+  };
+  const questionReady = Boolean(sign && currentQuestion && practices.length && phase === "question");
+  const questionDuration = useAnalyticsDuration(questionId, isFocused && questionReady && !hasAnswered);
+  const attemptDuration = useAnalyticsDuration(signTestSessionId, isFocused && questionReady);
+  useAnalyticsViewState(!sign || !currentQuestion || !practices.length ? "empty"
+    : phase === "result" ? "result" : hasAnswered ? "feedback" : "question", signContext);
+  useLearningReadyAnalytics(signTestSessionId, questionReady, { ...signContext, feature: "sign_practice" });
+  const viewedStateRef = useRef<string | null>(null);
   useEffect(() => {
+    if (!isFocused || !sign || !currentQuestion || !practices.length) { viewedStateRef.current = null; return; }
+    const key = phase === "result" ? "result" : questionId;
+    if (viewedStateRef.current === key) return;
+    viewedStateRef.current = key;
+    track(phase === "result" ? ANALYTICS_EVENTS.signTestResultViewed.key : ANALYTICS_EVENTS.signTestQuestionViewed.key, {
+      ...signContext, already_answered: hasAnswered, correct_count: correctCount,
+    });
+  }, [correctCount, currentQuestion, hasAnswered, isFocused, phase, practices.length, questionId, sign, signContext, track]);
+
+  useLayoutEffect(() => {
     if (!sign || didTrackStartRef.current) {
       return;
     }
 
     didTrackStartRef.current = true;
     track(ANALYTICS_EVENTS.signTestStarted.key, {
+      sign_test_session_id: signTestSessionId,
       ...signTestAnalytics({
         categoryId: sign.categoryId,
         entry: "sign_detail",
@@ -103,7 +135,7 @@ function SignPracticeScreen() {
       sign_id: sign.id,
       test_type: "sign_practice",
     });
-  }, [practices.length, sign, track]);
+  }, [practices.length, sign, signTestSessionId, track]);
 
   useEffect(() => {
     questionStartedAtRef.current = Date.now();
@@ -121,11 +153,14 @@ function SignPracticeScreen() {
     }
 
     track(ANALYTICS_EVENTS.signTestQuestionAnswered.key, {
+      sign_test_session_id: signTestSessionId,
       ...signTestAnalytics({
         categoryId: sign?.categoryId,
         entry: "sign_detail",
       }),
       answer_duration_ms: Math.max(0, Date.now() - questionStartedAtRef.current),
+      answer_id: `${signTestSessionId}:${questionId}`,
+      question_visible_foreground_ms: questionDuration.measure().visible_foreground_ms,
       is_correct: optionId === currentQuestion.correctOptionId,
       question_id: `${signId}:${questionIndex + 1}`,
       question_index: questionIndex + 1,
@@ -149,18 +184,21 @@ function SignPracticeScreen() {
         });
         hasRecordedCompletionRef.current = true;
         track(ANALYTICS_EVENTS.signTestEnded.key, {
+          sign_test_session_id: signTestSessionId,
           ...signTestAnalytics({
             categoryId: sign.categoryId,
             entry: "sign_detail",
           }),
           answered_count: practices.length,
-          correct_count:
-            correctCount + (isCorrect ? 1 : 0),
+          visit_foreground_ms: attemptDuration.measure().visible_foreground_ms,
+          duration_scope: "current_component_visit",
+          correct_count: correctCount,
           outcome: "completed",
           question_total: practices.length,
           sign_id: sign.id,
           test_type: "sign_practice",
         });
+        didTrackEndRef.current = true;
       }
 
       setPhase("result");
@@ -171,6 +209,25 @@ function SignPracticeScreen() {
     setSelectedOptionId(null);
   };
 
+  const handleClose = () => {
+    if (didTrackStartRef.current && !didTrackEndRef.current) {
+      didTrackEndRef.current = true;
+      track(ANALYTICS_EVENTS.signTestEnded.key, {
+        ...signTestAnalytics({ categoryId: sign?.categoryId, entry: "sign_detail" }),
+        sign_test_session_id: signTestSessionId,
+        answered_count: Math.min(practices.length, questionIndex + (hasAnswered ? 1 : 0)),
+        visit_foreground_ms: attemptDuration.measure().visible_foreground_ms,
+        duration_scope: "current_component_visit",
+        correct_count: correctCount,
+        outcome: "abandoned",
+        question_total: practices.length,
+        sign_id: signId ?? null,
+        test_type: "sign_practice",
+      });
+    }
+    router.back();
+  };
+
   if (!sign || practices.length === 0 || !currentQuestion) {
     return (
       <GreenWaveScreen>
@@ -179,7 +236,7 @@ function SignPracticeScreen() {
           <ScreenHeader
             title={t("signs.practiceTitle")}
             backLabel={t("common.back")}
-            onBack={() => router.back()}
+            onBack={handleClose}
           />
           <View style={styles.missingState}>
             <CText style={styles.missingTitle}>{t("signs.notFoundTitle")}</CText>
@@ -197,7 +254,7 @@ function SignPracticeScreen() {
           <ScreenHeader
             title={t("signs.practiceTitle")}
             backLabel={t("common.back")}
-            onBack={() => router.back()}
+            onBack={handleClose}
           />
 
           <View style={styles.resultWrap}>
@@ -221,7 +278,7 @@ function SignPracticeScreen() {
 
             <Pressable
               accessibilityRole="button"
-              onPress={() => router.back()}
+              onPress={handleClose}
               style={({ pressed }) => [
                 styles.primaryButton,
                 pressed ? styles.pressed : null,
@@ -242,7 +299,7 @@ function SignPracticeScreen() {
         <ScreenHeader
           title={t("signs.practiceTitle")}
           backLabel={t("common.back")}
-          onBack={() => router.back()}
+          onBack={handleClose}
         />
 
         <ScrollView

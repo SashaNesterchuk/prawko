@@ -1,9 +1,10 @@
-import { router } from "expo-router";
+import { router, useSegments } from "expo-router";
 import { useIsFocused } from "expo-router/react-navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { analyticsPathFromSegments, resolveScreenRoute } from "../../analytics/screenRoutes";
 import {
   ReadinessIndexCard,
   resolveReadinessLevel,
@@ -41,6 +42,7 @@ import {
 } from "../profile/profile-stats";
 import { getQuestionDisplayStats } from "../questions/question-engine";
 import { buildQuestionRouteParams } from "../questions/question-routes";
+import { withLearningIntent } from "../../analytics/operations";
 import { resolveReadinessScore } from "../questions/readiness-score";
 import {
   fetchRemoteHomeProgress,
@@ -51,6 +53,8 @@ import {
 export function useReadinessCard() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
+  const segments = useSegments();
+  const sourceScreen = resolveScreenRoute(analyticsPathFromSegments(segments)).screenName;
   const isFocused = useIsFocused();
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
@@ -235,27 +239,30 @@ export function useReadinessCard() {
       dismissHomeStartSpotlight();
       track(ANALYTICS_EVENTS.firstStartStarted.key, {
         question_limit: FIRST_START_QUESTION_COUNT,
+        source_screen: sourceScreen,
         source,
       });
       track(ANALYTICS_EVENTS.trainingModeSelected.key, {
         mode: "initial_diagnostic",
         question_limit: FIRST_START_QUESTION_COUNT,
         source,
+        source_screen: sourceScreen,
         topic_id: null,
       });
       router.navigate({
         pathname: "/question",
-        params: buildQuestionRouteParams({
+        params: withLearningIntent(buildQuestionRouteParams({
           mode: "initial_diagnostic",
           questionLimit: HOME_DAILY_QUESTION_COUNT,
           sessionKey: createHomeDailySessionKey(todayIso, preferredCategory),
-        }),
+        }), { source, source_screen: sourceScreen, target_screen: "question_training" }),
       });
     },
     [
       dismissHomeStartSpotlight,
       homeDailyStatus,
       preferredCategory,
+      sourceScreen,
       todayIso,
       track,
     ]

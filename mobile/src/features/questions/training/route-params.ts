@@ -16,6 +16,7 @@ import { isLearningTopicId } from "../../question-topics/catalog";
 import { isRoadmapStepId } from "../../home/roadmap-progress";
 import { isUuidString } from "../question-routes";
 import { useAppShellStore } from "../../../state/app-shell";
+import { readLearningIntentId } from "../../../analytics/operations";
 
 export function getSingleParam(value: string | string[] | undefined) {
   if (Array.isArray(value)) {
@@ -36,6 +37,7 @@ export function parsePositiveInteger(value: string | undefined) {
 }
 
 export type QuestionRouteParams = {
+  learningIntentId: string | null;
   mode: QuestionSessionMode;
   questionLimit?: number;
   routeSessionKey?: string;
@@ -51,6 +53,7 @@ export type QuestionRouteParams = {
 export function useQuestionRouteParams(): QuestionRouteParams {
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const params = useLocalSearchParams<{
+    analyticsIntentId?: string | string[];
     mode?: string | string[];
     questionLimit?: string | string[];
     session?: string | string[];
@@ -107,6 +110,7 @@ export function useQuestionRouteParams(): QuestionRouteParams {
   );
 
   return {
+    learningIntentId: readLearningIntentId(getSingleParam(params.analyticsIntentId)),
     mode,
     questionLimit,
     routeSessionKey,

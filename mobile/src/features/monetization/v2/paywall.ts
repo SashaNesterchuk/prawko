@@ -29,9 +29,21 @@ export const PREMIUM_GATE_SURFACES = [
   "statistics_topic",
   "trainer_modes",
   "question_start",
+  "profile_offline_row",
+  "offline_gate",
 ] as const;
 
 export type PremiumGateSurface = (typeof PREMIUM_GATE_SURFACES)[number];
+
+export type PaywallRouteContext = {
+  accessBlockId?: string;
+  examSessionId?: string;
+  premiumGateId?: string;
+  questionId?: string;
+  sourceScreen?: string;
+  topicId?: string;
+  trainingSessionId?: string;
+};
 
 export type PostPurchaseAction =
   | { type: "NONE" }
@@ -70,12 +82,11 @@ export function decodePostPurchaseAction(
 }
 
 export function buildPaywallHref(input: {
-  questionId?: string;
   roadmapStepId?: string;
   source: PaywallSource;
   surface?: PremiumGateSurface;
   postPurchaseAction?: PostPurchaseAction;
-}) {
+} & PaywallRouteContext) {
   return {
     pathname: "/paywall" as const,
     params: {
@@ -84,6 +95,12 @@ export function buildPaywallHref(input: {
       ...(input.surface ? { surface: input.surface } : {}),
       ...(input.roadmapStepId ? { roadmapStepId: input.roadmapStepId } : {}),
       ...(input.questionId ? { questionId: input.questionId } : {}),
+      ...(input.topicId ? { topicId: input.topicId } : {}),
+      ...(input.trainingSessionId ? { trainingSessionId: input.trainingSessionId } : {}),
+      ...(input.examSessionId ? { examSessionId: input.examSessionId } : {}),
+      ...(input.premiumGateId ? { premiumGateId: input.premiumGateId } : {}),
+      ...(input.accessBlockId ? { accessBlockId: input.accessBlockId } : {}),
+      ...(input.sourceScreen ? { sourceScreen: input.sourceScreen } : {}),
       ...(encodePostPurchaseAction(input.postPurchaseAction)
         ? { postPurchase: encodePostPurchaseAction(input.postPurchaseAction) }
         : {}),
@@ -92,13 +109,12 @@ export function buildPaywallHref(input: {
 }
 
 export function openPaywall(input: {
-  questionId?: string;
   replace?: boolean;
   roadmapStepId?: string;
   source: PaywallSource;
   surface?: PremiumGateSurface;
   postPurchaseAction?: PostPurchaseAction;
-}) {
+} & PaywallRouteContext) {
   const navigate = input.replace ? router.replace : router.push;
   navigate(buildPaywallHref(input));
 }

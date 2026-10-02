@@ -23,6 +23,7 @@ import {
 } from "../../src/features/home/roadmap-progress";
 import { getExamProfileForCountry } from "../../src/features/exam/exam-profile";
 import { buildQuestionRouteParams } from "../../src/features/questions/question-routes";
+import { createLearningIntent } from "../../src/analytics/operations";
 import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
 import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
 import { openTrackedPaywall } from "../../src/features/monetization/v2/analytics";
@@ -289,7 +290,13 @@ function StepRows({
                     sectionIndex,
                     stepIndex
                   );
+                  const learningIntentId = createLearningIntent({
+                    source: "roadmap", roadmap_step_id: stepId,
+                    mode: step.startsExam ? "exam" : "learning",
+                    target_screen: step.startsExam ? "exam_loading" : "question_training",
+                  });
                   track(ANALYTICS_EVENTS.roadmapStepOpened.key, {
+                    learning_intent_id: learningIntentId,
                     locked: premiumLocked,
                     premium: step.premium,
                     roadmap_step_id: stepId,
@@ -299,6 +306,7 @@ function StepRows({
 
                   if (!canStart || premiumLocked) {
                     openTrackedPaywall(track, {
+                      properties: { learning_intent_id: learningIntentId },
                       roadmapStepId: stepId,
                       source: "roadmap",
                       surface: "home_step",
@@ -309,18 +317,18 @@ function StepRows({
                   if (step.startsExam) {
                     router.navigate({
                       pathname: "/exam",
-                      params: buildExamRouteParams({
+                      params: { ...buildExamRouteParams({
                         entry: "roadmap_step",
                         mode: "exam",
                         roadmapStepId: stepId,
-                      }),
+                      }), analyticsIntentId: learningIntentId },
                     });
                     return;
                   }
 
                   router.navigate({
                     pathname: "/question",
-                    params: buildQuestionRouteParams({
+                    params: { ...buildQuestionRouteParams({
                       mode: "learning",
                       questionLimit: step.questionLimit,
                       roadmapStepId: stepId,
@@ -329,7 +337,7 @@ function StepRows({
                         !examPrep && topics.length === 1 ? topics[0] : undefined,
                       topics:
                         !examPrep && topics.length > 1 ? topics : undefined,
-                    }),
+                    }), analyticsIntentId: learningIntentId },
                   });
                 }}
                 style={styles.stepCell}
@@ -437,9 +445,13 @@ function ExamSimulatorCard({
             sectionIndex >= 0
               ? roadmapStepId(examCountry, sectionIndex, stepIndex)
               : null;
+          const learningIntentId = createLearningIntent({
+            source: "roadmap", roadmap_step_id: stepId, mode: "exam", target_screen: "exam_loading",
+          });
 
           if (stepId) {
             track(ANALYTICS_EVENTS.roadmapStepOpened.key, {
+              learning_intent_id: learningIntentId,
               locked: premiumLocked,
               premium: true,
               roadmap_step_id: stepId,
@@ -450,6 +462,7 @@ function ExamSimulatorCard({
 
           if (premiumLocked && stepId) {
             openTrackedPaywall(track, {
+              properties: { learning_intent_id: learningIntentId },
               roadmapStepId: stepId,
               source: "roadmap",
               surface: "home_step",
@@ -459,11 +472,11 @@ function ExamSimulatorCard({
 
           router.navigate({
             pathname: "/exam",
-            params: buildExamRouteParams({
+            params: { ...buildExamRouteParams({
               entry: "roadmap_simulator",
               mode: "exam",
               roadmapStepId: stepId,
-            }),
+            }), analyticsIntentId: learningIntentId },
           });
         }}
         style={styles.finalButton}

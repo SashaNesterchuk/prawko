@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useNavigation } from "expo-router/react-navigation";
+import { useIsFocused, useNavigation } from "expo-router/react-navigation";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -52,6 +52,9 @@ import {
 } from "../../src/features/questions/question-engine";
 import { getOfflineGateDescription } from "../../src/features/offline/offline-gate-copy";
 import { useOfflineFeatureGate } from "../../src/features/offline/useOfflineFeatureGate";
+import { useOfflineGateAnalytics } from "../../src/features/offline/useOfflineGateAnalytics";
+import { useExamCategoryMismatchAnalytics } from "../../src/features/exam/useExamCategoryMismatchAnalytics";
+import { buildPaywallHref } from "../../src/features/monetization/v2/paywall";
 import { syncQuestionBookmarkState } from "../../src/features/questions/supabase-question-state";
 import type { LocalQuestion } from "../../src/features/questions/types";
 import { usePrefetchQuestionMedia } from "../../src/features/questions/usePrefetchQuestionMedia";
@@ -59,6 +62,11 @@ import { isMobileSupabaseConfigured } from "../../src/config/env";
 import { CText, getFontFamily, useResponsiveStyles } from "../../src/portable-ui";
 import { useTheme } from "../../src/providers/ThemeProvider";
 import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { useAnalyticsDuration } from "../../src/analytics/useAnalyticsDuration";
+import { useAnalyticsViewState } from "../../src/analytics/useAnalyticsViewState";
+import { useLearningReadyAnalytics } from "../../src/analytics/useLearningReadyAnalytics";
+import { createAnalyticsId } from "../../src/analytics/runtime-context";
+import { readLearningIntentId, reportLearningOperationFailure } from "../../src/analytics/operations";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
@@ -96,9 +104,11 @@ function ExamSessionShell({ children, styles }: ExamSessionShellProps) {
 export default function ExamSessionScreen() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
+  const isFocused = useIsFocused();
   const { accents, colors } = useTheme();
   const navigation = useNavigation();
   const params = useLocalSearchParams<{
+    analyticsIntentId?: string | string[];
     sessionId?: string | string[];
   }>();
   const authMode = useAppShellStore((state) => state.authMode);
@@ -152,6 +162,7 @@ export default function ExamSessionScreen() {
 
   const rawSessionId = getSingleParam(params.sessionId);
   const sessionId = isExamSessionId(rawSessionId) ? rawSessionId : null;
+  const learningIntentId = readLearningIntentId(getSingleParam(params.analyticsIntentId));
   const gateCategory = snapshot?.session.currentCategory ?? preferredCategory;
   const offlineGate = useOfflineFeatureGate(gateCategory);
   const currentQuestionRef = useMemo(() => {
@@ -215,6 +226,94 @@ export default function ExamSessionScreen() {
     scope: currentQuestion?.scope ?? null,
   });
   const styles = useStyles();
+  const offlineBlockVisible =
+    Boolean(sessionId) &&
+    !isLoading &&
+    (questionCatalogResolved || Boolean(currentQuestion)) &&
+    offlineGate.status === "blocked" &&
+    (!snapshot || snapshot.session.status === "active");
+  const offlineBlock = useOfflineGateAnalytics({
+    gate: offlineGate,
+    visible: offlineBlockVisible,
+    properties: {
+      feature: "exam",
+      screen_name: "exam_session",
+      exam_session_id: sessionId,
+      requested_category: gateCategory,
+      mode: snapshot?.session.mode ?? null,
+    },
+  });
+  const categoryMismatch = useExamCategoryMismatchAnalytics({
+    examSessionId: snapshot?.session.id ?? null,
+    currentCategory: preferredCategory,
+    sessionCategory: snapshot?.session.currentCategory,
+    screenName: "exam_session",
+    eligible:
+      !isLoading &&
+      (questionCatalogResolved || Boolean(currentQuestion)) &&
+      !(offlineGate.status === "checking" && !offlineGate.offlineReady) &&
+      !offlineBlockVisible,
+    resolvedReady: questionCatalogResolved || Boolean(currentQuestion),
+  });
+  const examViewState = isLoading || (!questionCatalogResolved && !currentQuestion) ||
+    (offlineGate.status === "checking" && !offlineGate.offlineReady) ? "loading"
+    : offlineBlockVisible ? "offline_blocked" : !snapshot ? "error"
+    : snapshot.session.currentCategory !== preferredCategory ? "category_mismatch"
+    : snapshot.session.status !== "active" ? "result_redirect"
+    : !currentQuestion ? "missing_question"
+    : showExitDialog ? "exit_confirmation" : showFinishDialog ? "finish_confirmation"
+    : errorMessage ? "question_with_error" : "question";
+  const questionReady = examViewState === "question" || examViewState === "question_with_error";
+  const questionDuration = useAnalyticsDuration(
+    `${sessionId}:${currentQuestionRef?.order ?? ""}`,
+    isFocused && questionReady
+  );
+  const examDuration = useAnalyticsDuration(sessionId, isFocused && snapshot?.session.status === "active");
+  const analyticsContext = {
+    learning_intent_id: learningIntentId,
+    exam_session_id: sessionId,
+    ...examAnalyticsFromMetadata(snapshot?.session.metadata ?? {}),
+    mode: snapshot?.session.mode ?? null,
+    question_id: currentQuestionRef?.questionSourceId ?? null,
+    question_index: currentQuestionRef?.order ?? null,
+    question_total: snapshot?.session.totalQuestionsTarget ?? null,
+    navigation_mode: examProfile.navigation,
+  };
+  useAnalyticsViewState(examViewState, { ...analyticsContext, screen_name: "exam_session" });
+  useLearningReadyAnalytics(sessionId, questionReady, { ...analyticsContext, feature: "exam" });
+  const viewedQuestionRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isFocused || !questionReady) { viewedQuestionRef.current = null; return; }
+    const viewKey = `${sessionId}:${currentQuestionRef?.order}`;
+    if (viewedQuestionRef.current === viewKey) return;
+    viewedQuestionRef.current = viewKey;
+    const answer = snapshot?.answers.find((item) => item.order === currentQuestionRef?.order);
+    track(ANALYTICS_EVENTS.examQuestionViewed.key, {
+      ...analyticsContext,
+      already_answered: Boolean(answer),
+      is_flagged: readExamFlaggedOrders(snapshot?.session.metadata).includes(currentQuestionRef?.order ?? -1),
+      media_type: currentQuestion?.media?.type ?? "none",
+      answer_type: currentQuestion?.answerType ?? null,
+    });
+  }, [analyticsContext, currentQuestion, currentQuestionRef?.order, isFocused, questionReady, sessionId, snapshot, track]);
+  // An answer's logical slot is stable; individual submissions are separate revisions.
+  function answerAnalytics(answerGiven: string) {
+    const previous = snapshot?.answers.find((answer) => answer.order === currentQuestionRef?.order);
+    return {
+      answer_id: `${sessionId}:${currentQuestionRef?.order}`,
+      answer_revision_id: createAnalyticsId("answer_revision"),
+      answer_action: previous ? "update" : "create",
+      answer_changed: previous ? previous.answerGiven !== answerGiven : null,
+      previous_is_correct: previous?.isCorrect ?? null,
+      question_visible_foreground_ms: questionDuration.measure().visible_foreground_ms,
+      answer_duration_scope: "current_question_visit",
+    };
+  }
+  function operationFailure(operation: string, error: unknown, userVisible = true) {
+    reportLearningOperationFailure(track, operation, error, {
+      ...analyticsContext, user_visible: userVisible, screen_name: "exam_session",
+    });
+  }
 
   const handleSwitchToSessionCategory = () => {
     const sessionCategory = snapshot?.session.currentCategory;
@@ -223,6 +322,7 @@ export default function ExamSessionScreen() {
       return;
     }
 
+    categoryMismatch.selectAction("switch_category");
     useQuestionCatalogStore.getState().setLoading();
     setPreferredCategory(sessionCategory);
   };
@@ -248,6 +348,7 @@ export default function ExamSessionScreen() {
       pathname: "/exam/result",
       params: {
         sessionId: nextSessionId,
+        ...(learningIntentId ? { analyticsIntentId: learningIntentId } : {}),
         ...(options?.justFinished ? { justFinished: "1" } : {}),
       },
     });
@@ -290,6 +391,7 @@ export default function ExamSessionScreen() {
           return;
         }
 
+        operationFailure("load_snapshot", error);
         setErrorMessage(getErrorMessage(error));
       } finally {
         if (!cancelled) {
@@ -498,6 +600,7 @@ export default function ExamSessionScreen() {
     submitLockRef.current = true;
     setIsSubmitting(true);
     setErrorMessage(null);
+    const observedAnswer = answerAnalytics(answerGiven);
 
     try {
       const isCorrect = currentQuestion.correctAnswer === answerGiven;
@@ -520,6 +623,8 @@ export default function ExamSessionScreen() {
       });
 
       track(ANALYTICS_EVENTS.examQuestionAnswered.key, {
+        exam_session_id: snapshot.session.id,
+        ...observedAnswer,
         ...examAnalyticsFromMetadata(snapshot.session.metadata),
         answer_duration_ms: answerDurationMs,
         answer_type: currentQuestion.answerType,
@@ -537,6 +642,7 @@ export default function ExamSessionScreen() {
       setSnapshot(nextSnapshot);
     } catch (error) {
       console.warn("Failed to submit exam answer.", error);
+      operationFailure("submit_answer", error);
       setErrorMessage(getErrorMessage(error));
     } finally {
       submitLockRef.current = false;
@@ -562,6 +668,7 @@ export default function ExamSessionScreen() {
     submitLockRef.current = true;
     setIsSubmitting(true);
     setErrorMessage(null);
+    const observedAnswer = answerAnalytics(answerGiven);
 
     try {
       const answerDurationMs = Math.max(
@@ -582,6 +689,8 @@ export default function ExamSessionScreen() {
         sessionId,
       });
       track(ANALYTICS_EVENTS.examQuestionAnswered.key, {
+        exam_session_id: snapshot.session.id,
+        ...observedAnswer,
         ...examAnalyticsFromMetadata(snapshot.session.metadata),
         answer_duration_ms: answerDurationMs,
         answer_type: currentQuestion.answerType,
@@ -599,6 +708,7 @@ export default function ExamSessionScreen() {
       setSnapshot(nextSnapshot);
     } catch (error) {
       console.warn("Failed to save exam answer.", error);
+      operationFailure("submit_answer", error);
       setErrorMessage(getErrorMessage(error));
     } finally {
       submitLockRef.current = false;
@@ -620,6 +730,11 @@ export default function ExamSessionScreen() {
     if (questionOrder === snapshot.session.currentQuestionIndex) {
       return;
     }
+    track(ANALYTICS_EVENTS.examQuestionNavigationRequested.key, {
+      ...analyticsContext,
+      target_question_index: questionOrder,
+      navigation_direction: questionOrder > snapshot.session.currentQuestionIndex ? "forward" : "backward",
+    });
 
     submitLockRef.current = true;
     setIsSubmitting(true);
@@ -632,6 +747,7 @@ export default function ExamSessionScreen() {
       setSnapshot(nextSnapshot);
     } catch (error) {
       console.warn("Failed to change exam question.", error);
+      operationFailure("navigate_question", error);
       setErrorMessage(getErrorMessage(error));
     } finally {
       submitLockRef.current = false;
@@ -651,9 +767,14 @@ export default function ExamSessionScreen() {
         questionOrder: currentQuestionRef.order,
         sessionId,
       });
+      track(ANALYTICS_EVENTS.examQuestionFlagChanged.key, {
+        ...analyticsContext,
+        is_flagged: readExamFlaggedOrders(nextSnapshot.session.metadata).includes(currentQuestionRef.order),
+      });
       setSnapshot(nextSnapshot);
     } catch (error) {
       console.warn("Failed to flag exam question.", error);
+      operationFailure("toggle_flag", error);
       setErrorMessage(getErrorMessage(error));
     } finally {
       setIsSubmitting(false);
@@ -683,6 +804,9 @@ export default function ExamSessionScreen() {
         sessionId,
       });
       track(ANALYTICS_EVENTS.examSessionEnded.key, {
+        exam_session_id: nextSnapshot.session.id,
+        visit_foreground_ms: examDuration.measure().visible_foreground_ms,
+        duration_scope: "current_component_visit",
         ...examAnalyticsFromMetadata(nextSnapshot.session.metadata),
         answered_count: nextSnapshot.session.totalQuestionsAnswered,
         correct_count: nextSnapshot.session.correctAnswersCount,
@@ -697,6 +821,7 @@ export default function ExamSessionScreen() {
       });
     } catch (error) {
       console.warn("Failed to finish exam session.", error);
+      operationFailure("finish_session", error);
       setErrorMessage(getErrorMessage(error));
     } finally {
       confirmLockRef.current = false;
@@ -749,6 +874,9 @@ export default function ExamSessionScreen() {
       });
 
       track(ANALYTICS_EVENTS.examSessionEnded.key, {
+        exam_session_id: nextSnapshot.session.id,
+        visit_foreground_ms: examDuration.measure().visible_foreground_ms,
+        duration_scope: "current_component_visit",
         ...examAnalyticsFromMetadata(nextSnapshot.session.metadata),
         answered_count: nextSnapshot.session.totalQuestionsAnswered,
         correct_count: nextSnapshot.session.correctAnswersCount,
@@ -762,6 +890,7 @@ export default function ExamSessionScreen() {
       navigateToResult(nextSnapshot.session.id, nextSnapshot);
     } catch (error) {
       console.warn("Failed to end exam session.", error);
+      operationFailure("end_session", error);
       setErrorMessage(getErrorMessage(error));
       timeoutHandledRef.current = false;
     } finally {
@@ -876,6 +1005,7 @@ export default function ExamSessionScreen() {
     }
 
     track(ANALYTICS_EVENTS.questionProblemReportRequested.key, {
+      exam_session_id: sessionId,
       question_id: currentQuestionRef.questionSourceId,
       source: "exam",
     });
@@ -894,6 +1024,7 @@ export default function ExamSessionScreen() {
     const questionSourceId = currentQuestionRef.questionSourceId;
     const isBookmarked = toggleBookmark(questionSourceId);
     track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+      exam_session_id: sessionId,
       is_bookmarked: isBookmarked,
       mode: snapshot?.session.mode ?? null,
       question_id: questionSourceId,
@@ -943,6 +1074,7 @@ export default function ExamSessionScreen() {
         status: "abandoned",
       });
       track(ANALYTICS_EVENTS.examEmptyExit.key, {
+        exam_session_id: discardedSnapshot.session.id,
         ...examAnalyticsFromMetadata(discardedSnapshot.session.metadata),
         answered_count: 0,
         mode: discardedSnapshot.session.mode,
@@ -951,6 +1083,7 @@ export default function ExamSessionScreen() {
     } catch (error) {
       // Still leave — empty exit is a miss-click, not a result flow.
       console.warn("Failed to discard empty exam session.", error);
+      operationFailure("discard_empty_session", error, false);
     } finally {
       allowNavigationRef.current = true;
       setExamSessionActive(false);
@@ -1059,6 +1192,7 @@ export default function ExamSessionScreen() {
               label={t("common.retry")}
               testID="exam-session-offline-retry"
               onPress={() => {
+                offlineBlock.trackAction("retry");
                 void offlineGate.refresh();
               }}
             />
@@ -1066,14 +1200,24 @@ export default function ExamSessionScreen() {
               variant="secondary"
               label={t("offlineGate.openOfflineMode")}
               testID="exam-session-offline-open-offline-mode"
-              onPress={() =>
-                router.push(hasPlusAccess ? "/offline-mode" : "/paywall")
-              }
+              onPress={() => {
+                offlineBlock.trackAction("open_offline_mode", hasPlusAccess ? "offline_mode" : "paywall");
+                router.push(hasPlusAccess ? "/offline-mode" : buildPaywallHref({
+                  source: "offline_mode",
+                  surface: "offline_gate",
+                  sourceScreen: "exam_session",
+                  examSessionId: sessionId ?? undefined,
+                  accessBlockId: offlineBlock.getBlockId(),
+                }));
+              }}
             />
             <AppButton
               variant="ghost"
               label={t("common.close")}
-              onPress={() => router.replace("/(tabs)")}
+              onPress={() => {
+                offlineBlock.trackAction("close", "home");
+                router.replace("/(tabs)");
+              }}
             />
           </View>
         </View>
@@ -1119,7 +1263,10 @@ export default function ExamSessionScreen() {
             <AppButton
               variant="ghost"
               label={t("common.close")}
-              onPress={() => router.replace("/(tabs)")}
+              onPress={() => {
+                categoryMismatch.selectAction("close");
+                router.replace("/(tabs)");
+              }}
             />
           </View>
         </View>

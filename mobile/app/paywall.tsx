@@ -101,6 +101,12 @@ export default function PaywallPage() {
     returnTo?: string | string[];
     roadmapStepId?: string | string[];
     surface?: string | string[];
+    topicId?: string | string[];
+    trainingSessionId?: string | string[];
+    examSessionId?: string | string[];
+    premiumGateId?: string | string[];
+    accessBlockId?: string | string[];
+    sourceScreen?: string | string[];
     selectedAnswer?: string | string[];
     source?: string | string[];
     postPurchase?: string | string[];
@@ -176,6 +182,12 @@ export default function PaywallPage() {
     getSingleParam(params.presentation) ?? "modal";
   const paywallSurface = getSingleParam(params.surface);
   const paywallRoadmapStepId = getSingleParam(params.roadmapStepId);
+  const paywallTopicId = getSingleParam(params.topicId);
+  const paywallTrainingSessionId = getSingleParam(params.trainingSessionId);
+  const paywallExamSessionId = getSingleParam(params.examSessionId);
+  const paywallGateId = getSingleParam(params.premiumGateId);
+  const paywallAccessBlockId = getSingleParam(params.accessBlockId);
+  const paywallSourceScreen = getSingleParam(params.sourceScreen);
   const paywallSource =
     requestedSource ??
     (returnTo === "exam"
@@ -185,6 +197,13 @@ export default function PaywallPage() {
         : "profile");
   const paywallEntry = {
     source: paywallSource,
+    ...(returnQuestionId ? { question_id: returnQuestionId } : {}),
+    ...(paywallTopicId ? { topic_id: paywallTopicId } : {}),
+    ...(paywallTrainingSessionId ? { training_session_id: paywallTrainingSessionId } : {}),
+    ...(paywallExamSessionId ? { exam_session_id: paywallExamSessionId } : {}),
+    ...(paywallGateId ? { premium_gate_id: paywallGateId } : {}),
+    ...(paywallAccessBlockId ? { block_id: paywallAccessBlockId } : {}),
+    ...(paywallSourceScreen ? { source_screen: paywallSourceScreen } : {}),
     ...(paywallSurface ? { surface: paywallSurface } : {}),
     ...(paywallRoadmapStepId
       ? { roadmap_step_id: paywallRoadmapStepId }
@@ -255,13 +274,9 @@ export default function PaywallPage() {
   const dismissMethodRef = useRef("navigation");
   const didTrackDismissRef = useRef(false);
   const paywallMomentRef = useRef(paywallMoment);
-  const paywallSourceRef = useRef(paywallSource);
-  const paywallSurfaceRef = useRef(paywallSurface);
-  const paywallRoadmapStepIdRef = useRef(paywallRoadmapStepId);
+  const paywallEntryRef = useRef(paywallEntry);
+  paywallEntryRef.current = paywallEntry;
   paywallMomentRef.current = paywallMoment;
-  paywallSourceRef.current = paywallSource;
-  paywallSurfaceRef.current = paywallSurface;
-  paywallRoadmapStepIdRef.current = paywallRoadmapStepId;
   const trackRef = useRef(track);
   trackRef.current = track;
   const trackPaywallDismissRef = useRef<(method: string) => void>(
@@ -293,13 +308,7 @@ export default function PaywallPage() {
       has_plus_access: accessUnlocked,
       is_plus: accessUnlocked,
       ...(paywallMomentRef.current ? { moment: paywallMomentRef.current } : {}),
-      source: paywallSourceRef.current,
-      ...(paywallSurfaceRef.current
-        ? { surface: paywallSurfaceRef.current }
-        : {}),
-      ...(paywallRoadmapStepIdRef.current
-        ? { roadmap_step_id: paywallRoadmapStepIdRef.current }
-        : {}),
+      ...paywallEntryRef.current,
       time_visible_ms: Math.max(0, Date.now() - paywallShownAtRef.current),
     });
   };
@@ -525,19 +534,46 @@ export default function PaywallPage() {
   };
 
   const handlePurchase = async (confirmedRetryAttemptId?: string) => {
+    if (viewClosedRef.current) {
+      return;
+    }
+    const ctaProperties = {
+      ...offerTracker.getProperties(),
+      ...paywallEntry,
+      paywall_view_id: paywallViewId,
+      action: confirmedRetryAttemptId ? "retry_purchase" : "purchase",
+      offer_state: offerLoadStatus,
+      package_available: Boolean(selectedPackage),
+      revenuecat_configured: sdkConfigured,
+      retry_of_attempt_id: confirmedRetryAttemptId ?? null,
+    };
+    track(ANALYTICS_EVENTS.paywallCtaSelected.key, ctaProperties);
     if ((checkoutBusy && !confirmedRetryAttemptId) || operationBusy || hasPlusAccess || viewClosedRef.current) {
+      track(ANALYTICS_EVENTS.paywallCheckoutBlocked.key, {
+        ...ctaProperties,
+        blocked_reason: hasPlusAccess ? "already_entitled" : "checkout_busy",
+      });
       return;
     }
     if (!FEATURE_FLAGS.enablePlusPurchase) {
+      track(ANALYTICS_EVENTS.paywallCheckoutBlocked.key, {
+        ...ctaProperties,
+        blocked_reason: "purchase_disabled",
+      });
       showPurchaseError(t("paywall.purchaseUnavailable"));
       return;
     }
     if (!sdkConfigured) {
+      track(ANALYTICS_EVENTS.paywallCheckoutBlocked.key, {
+        ...ctaProperties,
+        blocked_reason: "not_configured",
+      });
       captureRevenueCat("paywall_not_configured", {
         kind: "purchase",
         severity: "warning",
         step: "purchase_package",
         why: "not_configured",
+        extra: { ...offerTracker.getProperties(), paywall_view_id: paywallViewId },
       });
       showPurchaseError(t("paywall.directMissingConfig"));
       return;
@@ -576,15 +612,36 @@ export default function PaywallPage() {
   };
 
   const handleRestore = async () => {
+    if (viewClosedRef.current) {
+      return;
+    }
+    const ctaProperties = {
+      ...offerTracker.getProperties(),
+      ...paywallEntry,
+      paywall_view_id: paywallViewId,
+      action: "restore",
+      offer_state: offerLoadStatus,
+      revenuecat_configured: sdkConfigured,
+    };
+    track(ANALYTICS_EVENTS.paywallCtaSelected.key, ctaProperties);
     if (operationBusy || viewClosedRef.current) {
+      track(ANALYTICS_EVENTS.paywallCheckoutBlocked.key, {
+        ...ctaProperties,
+        blocked_reason: "checkout_busy",
+      });
       return;
     }
     if (!sdkConfigured) {
+      track(ANALYTICS_EVENTS.paywallCheckoutBlocked.key, {
+        ...ctaProperties,
+        blocked_reason: "not_configured",
+      });
       captureRevenueCat("paywall_not_configured", {
         kind: "restore",
         severity: "warning",
         step: "restore_purchases",
         why: "not_configured",
+        extra: { ...offerTracker.getProperties(), paywall_view_id: paywallViewId },
       });
       showPurchaseError(t("paywall.directMissingConfig"));
       return;

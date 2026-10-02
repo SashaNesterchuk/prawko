@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
@@ -25,6 +25,7 @@ import { useTheme } from "../../../providers/ThemeProvider";
 import { useHasPlusAccess } from "../../../state/entitlements";
 import { openTrackedPaywall } from "../../monetization/v2/analytics";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
+import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import {
   useMonetizationV2Active,
   useMonetizationV2Store,
@@ -58,12 +59,14 @@ import {
   type TrainingScoreDelta,
 } from "./training-result-stats";
 import type { QuestionTrainingSession } from "./useQuestionTrainingSession";
+import { useTrainingResultAnalytics } from "./useTrainingResultAnalytics";
 
 /** How far the content has to scroll before the top fade is at full strength. */
 const TOP_FADE_RAMP = 16;
 
 export function QuestionSessionResultView({
   activeSession,
+  resultOrigin,
   onClose,
   onWorkOnMistakes,
   sessionMode,
@@ -72,6 +75,7 @@ export function QuestionSessionResultView({
 }: Pick<
   QuestionTrainingSession,
   | "activeSession"
+  | "resultOrigin"
   | "sessionMode"
   | "sessionResultPercent"
   | "summary"
@@ -103,7 +107,8 @@ export function QuestionSessionResultView({
     (state) => state.clearActiveSession
   );
 
-  const [reviewIndex, setReviewIndex] = useState<number | null>(null);
+  const review = useTrainingResultAnalytics({ activeSession, resultOrigin, summary });
+  const { reviewIndex } = review;
   const didRecordPercentRef = useRef(false);
   const isHomeDailyPractice = isHomeDailySessionKey(
     activeSession?.request.sessionKey
@@ -240,27 +245,17 @@ export function QuestionSessionResultView({
         isBookmarked={
           getQuestionUserState(questionUserState, reviewQuestionId).isBookmarked
         }
-        onBack={() => setReviewIndex(null)}
-        onNext={() =>
-          setReviewIndex((current) => {
-            if (current === null) {
-              return null;
-            }
-
-            if (current >= reviewQuestionIds.length - 1) {
-              return null;
-            }
-
-            return current + 1;
-          })
-        }
-        onPrevious={() =>
-          setReviewIndex((current) =>
-            current === null ? null : Math.max(current - 1, 0)
-          )
-        }
+        onBack={() => review.closeReview("back")}
+        onNext={review.nextReviewQuestion}
+        onPrevious={review.previousReviewQuestion}
         onToggleBookmark={() => {
           const isBookmarked = toggleBookmark(reviewQuestionId);
+          track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+            ...review.context,
+            question_id: reviewQuestionId,
+            is_bookmarked: isBookmarked,
+            source: "training_review",
+          });
           if (authMode === "supabase" && isMobileSupabaseConfigured) {
             void syncQuestionBookmarkState({
               questionSourceId: reviewQuestionId,
@@ -287,8 +282,15 @@ export function QuestionSessionResultView({
   }
 
   function handlePrimaryAction() {
+    track(ANALYTICS_EVENTS.trainingResultAction.key, {
+      ...review.context,
+      action: quotaExhausted ? "upgrade" : isPositiveResult ? "finish" : "work_on_mistakes",
+    });
     if (quotaExhausted) {
-      openTrackedPaywall(track, { source: "training_limit" });
+      openTrackedPaywall(track, {
+        source: "training_limit",
+        trainingSessionId: activeSession?.id,
+      });
       return;
     }
 
@@ -301,6 +303,10 @@ export function QuestionSessionResultView({
   }
 
   function handleNewAttempt() {
+    track(ANALYTICS_EVENTS.trainingResultAction.key, {
+      ...review.context,
+      action: "new_attempt",
+    });
     const nextParams = buildQuestionRouteParams({
       mode: activeSession?.request.mode ?? sessionMode,
       questionLimit: activeSession?.request.questionLimit,
@@ -319,7 +325,11 @@ export function QuestionSessionResultView({
       return;
     }
 
-    setReviewIndex(0);
+    track(ANALYTICS_EVENTS.trainingResultAction.key, {
+      ...review.context,
+      action: "answers",
+    });
+    review.openReview();
   }
 
   return (
@@ -335,7 +345,13 @@ export function QuestionSessionResultView({
             inset
             type="close"
             accessibilityLabel={t("common.close")}
-            onPress={onClose}
+            onPress={() => {
+              track(ANALYTICS_EVENTS.trainingResultAction.key, {
+                ...review.context,
+                action: "close",
+              });
+              onClose();
+            }}
           />
         </View>
 

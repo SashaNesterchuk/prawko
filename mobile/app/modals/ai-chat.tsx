@@ -86,7 +86,7 @@ export default function AiChatModalScreen() {
       question_id: questionId,
       source: "modal",
     });
-    trackPremiumGateOpen(track, {
+    const gateId = trackPremiumGateOpen(track, {
       question_id: questionId,
       source: "ai_chat",
     });
@@ -96,6 +96,7 @@ export default function AiChatModalScreen() {
         feature: "ai_question_chat",
         returnTo: "ai-chat",
         source: "ai_chat",
+        premiumGateId: gateId,
         questionId,
         locale,
         ...(selectedAnswer ? { selectedAnswer } : {}),

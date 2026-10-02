@@ -9,6 +9,8 @@ import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
 import { ANALYTICS_EVENTS, getAnalyticsErrorCode } from "../../analytics/catalog";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { createAiMessageId } from "./create-ai-id";
+import { createAnalyticsId } from "../../analytics/runtime-context";
+import { analyticsMonotonicNow } from "../../analytics/activity";
 import { createIntroAiMessage } from "./mock-question-chat";
 import { PREGENERATED_EXPLANATION_MODEL } from "./pregenerated-question-explanation";
 import { buildQuestionChatContext } from "./question-chat-context";
@@ -128,7 +130,14 @@ export function useQuestionAiChat(input: {
     setDraft("");
     setErrorCode(null);
     setIsSending(true);
+    const requestId = createAnalyticsId("ai_request");
+    const requestStartedAt = analyticsMonotonicNow();
+    const requestContext = {
+      request_id: requestId, conversation_id: targetConversation.conversationId,
+      user_message_id: userMessage.id, question_id: questionContext.questionId,
+    };
     track(ANALYTICS_EVENTS.aiChatMessageSent.key, {
+      ...requestContext,
       message_source: nextPrompt ? "suggestion" : "custom",
       question_id: questionContext.questionId,
     });
@@ -164,6 +173,8 @@ export function useQuestionAiChat(input: {
         questionId: questionContext.questionId,
       });
       track(ANALYTICS_EVENTS.aiChatMessageResolved.key, {
+        ...requestContext,
+        request_duration_ms: Math.round(analyticsMonotonicNow() - requestStartedAt),
         fallback_used: response.fallbackUsed,
         provider: response.provider,
         question_id: questionContext.questionId,
@@ -182,6 +193,8 @@ export function useQuestionAiChat(input: {
         });
       }
       track(ANALYTICS_EVENTS.aiChatMessageFailed.key, {
+        ...requestContext,
+        request_duration_ms: Math.round(analyticsMonotonicNow() - requestStartedAt),
         error_code:
           error instanceof QuestionChatLimitError
             ? "question_chat_limit"

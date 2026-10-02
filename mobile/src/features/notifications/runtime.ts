@@ -9,6 +9,9 @@ import {
   useAppShellStore,
 } from "../../state/app-shell";
 import { areNotificationsAllowed } from "./permission";
+import { analyticsActivity, analyticsMonotonicNow } from "../../analytics/activity";
+import { ANALYTICS_EVENTS, getAnalyticsErrorCode } from "../../analytics/catalog";
+import { createAnalyticsId } from "../../analytics/runtime-context";
 
 export { areNotificationsAllowed } from "./permission";
 
@@ -107,6 +110,7 @@ async function scheduleStudyNotificationsAsync(hours: NotificationHour[]) {
         title: copy.title,
         body: copy.body,
         sound: true,
+        data: { analytics_reminder_kind: "study_daily" },
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DAILY,
@@ -124,12 +128,12 @@ async function scheduleStudyNotificationsAsync(hours: NotificationHour[]) {
   return scheduledNotificationIds;
 }
 
-export async function disableStudyNotificationsAsync() {
+async function disableStudyNotificationsImpl() {
   await cancelAllStudyNotificationsAsync();
   useAppShellStore.getState().setScheduleNotificationEnabled(false);
 }
 
-export async function enableStudyNotificationsAsync(): Promise<EnableStudyNotificationsResult> {
+async function enableStudyNotificationsImpl(): Promise<EnableStudyNotificationsResult> {
   await ensureNotificationChannelAsync();
 
   let permission = await Notifications.getPermissionsAsync();
@@ -166,7 +170,7 @@ export async function enableStudyNotificationsAsync(): Promise<EnableStudyNotifi
   return { ok: true };
 }
 
-export async function syncNotificationStateAsync() {
+async function syncNotificationStateImpl() {
   await ensureNotificationChannelAsync();
 
   const permission = await Notifications.getPermissionsAsync();
@@ -203,4 +207,42 @@ export async function syncNotificationStateAsync() {
   nextStore.setScheduleNotificationEnabled(true);
 
   return true;
+}
+
+async function observeSchedule<T>(operation: string, run: () => Promise<T>): Promise<T> {
+  const operationId = createAnalyticsId("notification_schedule");
+  const startedAt = analyticsMonotonicNow();
+  const record = (outcome: string, error?: unknown) => {
+    try {
+      analyticsActivity.capture(ANALYTICS_EVENTS.notificationScheduleResolved.key, {
+        operation_id: operationId, operation, outcome, reminder_kind: "study_daily",
+        request_duration_ms: Math.round(analyticsMonotonicNow() - startedAt),
+        scheduled_count: useAppShellStore.getState().scheduledNotificationIds.length,
+        enabled: useAppShellStore.getState().isScheduleNotificationEnabled,
+        confirmation_scope: "helper_result_not_delivery",
+        ...(error ? { error_code: getAnalyticsErrorCode(error) } : {}),
+      });
+    } catch { /* Observation cannot change the schedule helper outcome. */ }
+  };
+  try {
+    const result = await run();
+    record(result && typeof result === "object" && "ok" in result && !result.ok
+      ? "permission_denied" : useAppShellStore.getState().isScheduleNotificationEnabled ? "enabled" : "disabled");
+    return result;
+  } catch (error) {
+    record("failed", error);
+    throw error;
+  }
+}
+
+export function disableStudyNotificationsAsync() {
+  return observeSchedule("disable", disableStudyNotificationsImpl);
+}
+
+export function enableStudyNotificationsAsync(): Promise<EnableStudyNotificationsResult> {
+  return observeSchedule("enable", enableStudyNotificationsImpl);
+}
+
+export function syncNotificationStateAsync() {
+  return observeSchedule("sync", syncNotificationStateImpl);
 }

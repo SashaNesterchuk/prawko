@@ -39,6 +39,7 @@ import { getQuestionTopicTitle } from "../../question-topics/catalog";
 import { buildTrainingQuestionChips } from "../training/training-result-stats";
 import type { TrainingResultQuestionChip } from "../training/training-result-stats";
 import type { QuestionTrainingSession } from "../training/useQuestionTrainingSession";
+import { useTrainingResultAnalytics } from "../training/useTrainingResultAnalytics";
 
 import { DiagnosticReminderPrompt } from "./DiagnosticReminderPrompt";
 import { formatDiagnosticExamDate } from "./format-exam-date";
@@ -57,12 +58,13 @@ const TOP_FADE_RAMP = 16;
 
 export function InitialDiagnosticResultView({
   activeSession,
+  resultOrigin,
   onClose,
   onWorkOnMistakes,
   summary,
 }: Pick<
   QuestionTrainingSession,
-  "activeSession" | "summary"
+  "activeSession" | "resultOrigin" | "summary"
 > & {
   onClose: () => void;
   onWorkOnMistakes: () => void;
@@ -80,7 +82,8 @@ export function InitialDiagnosticResultView({
   const toggleBookmark = useQuestionProgressStore(
     (state) => state.toggleBookmark
   );
-  const [reviewIndex, setReviewIndex] = useState<number | null>(null);
+  const review = useTrainingResultAnalytics({ activeSession, resultOrigin, summary });
+  const { reviewIndex } = review;
   const [reminderVisible, setReminderVisible] = useState(false);
   const [reminderPresentKey, setReminderPresentKey] = useState(0);
   const [isFinishing, setIsFinishing] = useState(false);
@@ -137,12 +140,14 @@ export function InitialDiagnosticResultView({
 
   async function handleEnableReminders() {
     track(ANALYTICS_EVENTS.notificationPermissionRequested.key, {
+      ...review.context,
       source: "initial_diagnostic",
     });
 
     try {
       const result = await enableStudyNotificationsAsync();
       track(ANALYTICS_EVENTS.notificationPermissionResolved.key, {
+        ...review.context,
         can_ask_again: result.ok ? null : result.canAskAgain,
         enabled: result.ok,
         source: "initial_diagnostic",
@@ -150,6 +155,7 @@ export function InitialDiagnosticResultView({
     } catch (error) {
       console.warn("Failed to enable study notifications.", error);
       track(ANALYTICS_EVENTS.notificationPermissionResolved.key, {
+        ...review.context,
         enabled: false,
         error_code: getAnalyticsErrorCode(error),
         source: "initial_diagnostic",
@@ -161,6 +167,7 @@ export function InitialDiagnosticResultView({
 
   function handleContinue() {
     track(ANALYTICS_EVENTS.diagnosticResultAction.key, {
+      ...review.context,
       action: "continue",
     });
 
@@ -206,27 +213,17 @@ export function InitialDiagnosticResultView({
         isBookmarked={
           getQuestionUserState(questionUserState, reviewQuestionId).isBookmarked
         }
-        onBack={() => setReviewIndex(null)}
-        onNext={() =>
-          setReviewIndex((current) => {
-            if (current === null) {
-              return null;
-            }
-
-            if (current >= reviewQuestionIds.length - 1) {
-              return null;
-            }
-
-            return current + 1;
-          })
-        }
-        onPrevious={() =>
-          setReviewIndex((current) =>
-            current === null ? null : Math.max(current - 1, 0)
-          )
-        }
+        onBack={() => review.closeReview("back")}
+        onNext={review.nextReviewQuestion}
+        onPrevious={review.previousReviewQuestion}
         onToggleBookmark={() => {
           const isBookmarked = toggleBookmark(reviewQuestionId);
+          track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+            ...review.context,
+            question_id: reviewQuestionId,
+            is_bookmarked: isBookmarked,
+            source: "diagnostic_review",
+          });
           if (authMode === "supabase" && isMobileSupabaseConfigured) {
             void syncQuestionBookmarkState({
               questionSourceId: reviewQuestionId,
@@ -267,6 +264,7 @@ export function InitialDiagnosticResultView({
             accessibilityLabel={t("common.close")}
             onPress={() => {
               track(ANALYTICS_EVENTS.diagnosticResultAction.key, {
+                ...review.context,
                 action: "close",
               });
               onClose();
@@ -399,9 +397,10 @@ export function InitialDiagnosticResultView({
                   }
 
                   track(ANALYTICS_EVENTS.diagnosticResultAction.key, {
+                    ...review.context,
                     action: "answers",
                   });
-                  setReviewIndex(0);
+                  review.openReview();
                 }}
                 testID="question-result-answers"
                 style={({ pressed }) => [
@@ -419,6 +418,7 @@ export function InitialDiagnosticResultView({
                 accessibilityRole="button"
                 onPress={() => {
                   track(ANALYTICS_EVENTS.diagnosticResultAction.key, {
+                    ...review.context,
                     action: "mistakes",
                   });
                   onWorkOnMistakes();
@@ -439,6 +439,7 @@ export function InitialDiagnosticResultView({
         </View>
       </SafeAreaView>
       <DiagnosticReminderPrompt
+        trainingSessionId={activeSession?.id ?? null}
         examDateLabel={examDateLabel}
         key={reminderPresentKey}
         onEnable={() => {

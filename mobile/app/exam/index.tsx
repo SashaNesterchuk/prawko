@@ -12,6 +12,7 @@ import {
 import { CText, useResponsiveStyles } from "../../src/portable-ui";
 import { getOfflineGateDescription } from "../../src/features/offline/offline-gate-copy";
 import { useOfflineFeatureGate } from "../../src/features/offline/useOfflineFeatureGate";
+import { useOfflineGateAnalytics } from "../../src/features/offline/useOfflineGateAnalytics";
 import { getExamQuestionTarget, isExamSimulatorMode } from "../../src/features/exam/exam-config";
 import { examAnalyticsFromRoute } from "../../src/features/exam/exam-entry";
 import { resolveExamLaunchDecision } from "../../src/features/exam/exam-launch";
@@ -28,9 +29,12 @@ import {
 } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
 import { useQuestionCatalogResolved } from "../../src/state/question-catalog";
-import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
+import { ANALYTICS_EVENTS, getAnalyticsErrorCode } from "../../src/analytics/catalog";
+import { createAnalyticsId } from "../../src/analytics/runtime-context";
+import { readLearningIntentId } from "../../src/analytics/operations";
+import { useAnalyticsViewState } from "../../src/analytics/useAnalyticsViewState";
 import { trackPremiumGateOpen } from "../../src/features/monetization/v2/analytics";
-import { openPaywall } from "../../src/features/monetization/v2/paywall";
+import { buildPaywallHref, openPaywall } from "../../src/features/monetization/v2/paywall";
 import {
   isMonetizationV2Active,
   useMonetizationV2Store,
@@ -47,6 +51,7 @@ export default function ExamIntroScreen() {
   const styles = useStyles();
   const hasPlusAccess = useHasPlusAccess();
   const params = useLocalSearchParams<{
+    analyticsIntentId?: string | string[];
     entry?: string | string[];
     mode?: string | string[];
     questionLimit?: string | string[];
@@ -69,12 +74,29 @@ export default function ExamIntroScreen() {
     entry: getSingleParam(params.entry),
     roadmapStepId: getSingleParam(params.roadmapStepId),
   });
+  const learningIntentId = readLearningIntentId(getSingleParam(params.analyticsIntentId));
+  const examAnalyticsContext = { ...examLaunch, learning_intent_id: learningIntentId };
   const mode = isExamSimulatorMode(rawMode) ? rawMode : "exam";
   const requestedQuestionLimit = parsePositiveInteger(rawQuestionLimit);
   const studyPlanTaskId = isUuidString(rawStudyPlanTaskId)
     ? rawStudyPlanTaskId
     : undefined;
   const totalQuestionsTarget = getExamQuestionTarget(mode, requestedQuestionLimit);
+  const block = useOfflineGateAnalytics({
+    gate: offlineGate,
+    visible: !startError && questionCatalogResolved && offlineGate.status === "blocked",
+    properties: {
+      ...examAnalyticsContext,
+      feature: "exam",
+      screen_name: "exam_loading",
+      requested_category: preferredCategory,
+      mode,
+    },
+  });
+  useAnalyticsViewState(startError ? "error" : !questionCatalogResolved || offlineGate.status === "checking"
+    ? "loading" : offlineGate.status === "blocked" ? "offline_blocked" : "launching", {
+    ...examAnalyticsContext, screen_name: "exam_loading", mode,
+  });
 
   useEffect(() => {
     if (
@@ -95,12 +117,18 @@ export default function ExamIntroScreen() {
       pathname: "/exam/session",
       params: {
         sessionId,
+        ...(learningIntentId ? { analyticsIntentId: learningIntentId } : {}),
       },
     });
 
   const launchExam = async () => {
+    const launchAttemptId = createAnalyticsId("launch");
+    let launchStep = "fetch_active_session";
     track(ANALYTICS_EVENTS.examStartRequested.key, {
-      ...examLaunch,
+      ...examAnalyticsContext,
+      launch_attempt_id: launchAttemptId,
+      is_online: offlineGate.isOnline,
+      offline_ready: offlineGate.offlineReady,
       mode,
       question_total: totalQuestionsTarget,
       source: studyPlanTaskId ? "study_plan" : "manual",
@@ -127,11 +155,14 @@ export default function ExamIntroScreen() {
 
         if (examDecision.action === "sheet") {
           const usage = useMonetizationV2Store.getState().usage;
-          trackPremiumGateOpen(track, {
+          const gateId = trackPremiumGateOpen(track, {
+            ...examAnalyticsContext,
+            launch_attempt_id: launchAttemptId,
             exams_completed: usage.freeExamUsed ? 1 : 0,
             source: "exam_limit",
           });
           openPaywall({
+            premiumGateId: gateId,
             postPurchaseAction: {
               type: "START_EXAM",
               entry: examLaunch.exam_entry,
@@ -149,7 +180,9 @@ export default function ExamIntroScreen() {
       if (launchDecision.action === "resume" && activeSnapshot) {
         cacheExamSnapshot(activeSnapshot);
         track(ANALYTICS_EVENTS.examSessionResumed.key, {
-          ...examLaunch,
+          ...examAnalyticsContext,
+          launch_attempt_id: launchAttemptId,
+          exam_session_id: activeSnapshot.session.id,
           mode: activeSnapshot.session.mode,
           question_total: activeSnapshot.session.totalQuestionsTarget,
           resumed_at_question: launchDecision.currentQuestionIndex,
@@ -159,6 +192,7 @@ export default function ExamIntroScreen() {
       }
 
       if (launchDecision.action === "abandon" && activeSnapshot) {
+        launchStep = "abandon_previous_session";
         await setExamSessionStatus({
           sessionId: launchDecision.sessionId,
           status: "abandoned",
@@ -173,6 +207,7 @@ export default function ExamIntroScreen() {
         });
       }
 
+      launchStep = "start_session";
       const snapshot = await startExamSession(
         {
           category: preferredCategory,
@@ -193,7 +228,9 @@ export default function ExamIntroScreen() {
         useMonetizationV2Store.getState().commitExamStarted(accessMethod);
       }
       track(ANALYTICS_EVENTS.examSessionStarted.key, {
-        ...examLaunch,
+        ...examAnalyticsContext,
+        launch_attempt_id: launchAttemptId,
+        exam_session_id: snapshot.session.id,
         mode: snapshot.session.mode,
         question_total: snapshot.session.totalQuestionsTarget,
         source: studyPlanTaskId ? "study_plan" : "manual",
@@ -207,6 +244,13 @@ export default function ExamIntroScreen() {
       openExamSession(snapshot.session.id);
     } catch (error: unknown) {
       console.warn("Failed to launch exam session.", error);
+      track(ANALYTICS_EVENTS.examStartFailed.key, {
+        ...examAnalyticsContext,
+        launch_attempt_id: launchAttemptId,
+        mode,
+        launch_step: launchStep,
+        error_code: getAnalyticsErrorCode(error),
+      });
       setStartError(getErrorMessage(error));
     }
   };
@@ -265,6 +309,7 @@ export default function ExamIntroScreen() {
               label={t("common.retry")}
               testID="exam-offline-retry"
               onPress={() => {
+                block.trackAction("retry");
                 didLaunchRef.current = false;
                 void offlineGate.refresh();
               }}
@@ -273,14 +318,23 @@ export default function ExamIntroScreen() {
               variant="secondary"
               label={t("offlineGate.openOfflineMode")}
               testID="exam-offline-open-offline-mode"
-              onPress={() =>
-                router.push(hasPlusAccess ? "/offline-mode" : "/paywall")
-              }
+              onPress={() => {
+                block.trackAction("open_offline_mode", hasPlusAccess ? "offline_mode" : "paywall");
+                router.push(hasPlusAccess ? "/offline-mode" : buildPaywallHref({
+                  source: "offline_mode",
+                  surface: "offline_gate",
+                  sourceScreen: "exam_loading",
+                  accessBlockId: block.getBlockId(),
+                }));
+              }}
             />
             <AppButton
               variant="ghost"
               label={t("common.close")}
-              onPress={() => router.replace("/(tabs)")}
+              onPress={() => {
+                block.trackAction("close", "home");
+                router.replace("/(tabs)");
+              }}
             />
           </View>
         }

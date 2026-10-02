@@ -884,6 +884,7 @@ export default function StatisticsScreen() {
         />
 
         <QuestionCountDialog
+          analyticsContext={{ feature: "sign_test", sign_test_entry: "statistics" }}
           title={t("signs.title")}
           subtitle={t("signs.chooseQuestionCount")}
           startLabel={t("signs.startTrainingCta")}

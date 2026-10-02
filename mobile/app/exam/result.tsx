@@ -60,10 +60,16 @@ import {
   useQuestionCatalogVersion,
 } from "../../src/state/question-catalog";
 import { useQuestionProgressStore } from "../../src/state/question-progress";
+import { useExamCategoryMismatchAnalytics } from "../../src/features/exam/useExamCategoryMismatchAnalytics";
+import { useIsFocused } from "expo-router/react-navigation";
+import { useAnalyticsViewState } from "../../src/analytics/useAnalyticsViewState";
+import { createAnalyticsId } from "../../src/analytics/runtime-context";
+import { withLearningIntent, reportLearningOperationFailure } from "../../src/analytics/operations";
 
 export default function ExamResultScreen() {
   const { t } = useTranslation();
   const { track } = useAnalytics();
+  const isFocused = useIsFocused();
   const authMode = useAppShellStore((state) => state.authMode);
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
@@ -110,6 +116,16 @@ export default function ExamResultScreen() {
   const isReviewingRef = useRef(false);
   const didAttemptResultFollowUpForSessionRef = useRef<string | null>(null);
   const didTrackCompletionRef = useRef<string | null>(null);
+  const reviewIdRef = useRef<string | null>(null);
+  const resultViewedRef = useRef(false);
+  const categoryMismatch = useExamCategoryMismatchAnalytics({
+    examSessionId: snapshot?.session.id ?? null,
+    currentCategory: preferredCategory,
+    sessionCategory: snapshot?.session.currentCategory,
+    screenName: "exam_result",
+    eligible: !isLoading,
+    resolvedReady: questionCatalogResolved,
+  });
 
   useEffect(() => {
     isReviewingRef.current = reviewIndex !== null;
@@ -167,6 +183,9 @@ export default function ExamResultScreen() {
         // Keep a finished cached/persisted snapshot so Answers review still works
         // even when the live session store was wiped (Fast Refresh / local Map).
         if (!persisted || !isFinishedExamStatus(persisted.session.status)) {
+          reportLearningOperationFailure(track, "load_result", error, {
+            exam_session_id: sessionId, screen_name: "exam_result", user_visible: true,
+          });
           setErrorMessage(getErrorMessage(error));
           if (!persisted) {
             setSnapshot(null);
@@ -281,6 +300,7 @@ export default function ExamResultScreen() {
     });
     if (completionAnalytics) {
       track(ANALYTICS_EVENTS.examSessionCompleted.key, {
+        exam_session_id: snapshot.session.id,
         ...completionAnalytics,
         correct_count: snapshot.session.correctAnswersCount,
         duration_seconds: getExamDurationSeconds(snapshot.session),
@@ -350,8 +370,39 @@ export default function ExamResultScreen() {
       return;
     }
 
+    categoryMismatch.selectAction("switch_category");
     useQuestionCatalogStore.getState().setLoading();
     setPreferredCategory(sessionCategory);
+  }
+  const resultViewState = isLoading ? "loading" : !snapshot ? "error"
+    : snapshot.session.currentCategory !== preferredCategory ? "category_mismatch"
+    : !questionCatalogResolved ? "loading"
+    : snapshot.session.status === "active" ? "session_redirect"
+    : reviewIndex !== null ? "review" : isRestartGateVisible ? "restart_gate" : "result";
+  useAnalyticsViewState(reviewIndex !== null ? null : resultViewState, {
+    screen_name: "exam_result", exam_session_id: sessionId,
+    mode: snapshot?.session.mode ?? null,
+    review_id: reviewIndex !== null ? reviewIdRef.current : null,
+  });
+  useEffect(() => {
+    if (!isFocused || resultViewState !== "result") { resultViewedRef.current = false; return; }
+    if (!snapshot || resultViewedRef.current) return;
+    resultViewedRef.current = true;
+    track(ANALYTICS_EVENTS.examResultViewed.key, {
+      exam_session_id: snapshot.session.id,
+      ...examCompletionAnalytics({ justFinished: getSingleParam(params.justFinished) === "1", metadata: snapshot.session.metadata }),
+      result_origin: getSingleParam(params.justFinished) === "1" ? "just_finished" : "existing_result",
+      status: snapshot.session.status, mode: snapshot.session.mode, outcome,
+      answered_count: snapshot.session.totalQuestionsAnswered,
+      question_total: snapshot.session.totalQuestionsTarget,
+      correct_count: snapshot.session.correctAnswersCount,
+      wrong_count: snapshot.session.wrongAnswersCount,
+    });
+  }, [isFocused, outcome, params.justFinished, resultViewState, snapshot, track]);
+  function resultAction(action: string) {
+    track(ANALYTICS_EVENTS.examResultAction.key, {
+      exam_session_id: sessionId, mode: snapshot?.session.mode ?? null, action,
+    });
   }
 
   if (isLoading) {
@@ -427,6 +478,7 @@ export default function ExamResultScreen() {
   });
 
   function goHome() {
+    resultAction("home");
     router.replace("/(tabs)");
   }
 
@@ -434,7 +486,7 @@ export default function ExamResultScreen() {
     setIsRestartGateVisible(false);
     router.replace({
       pathname: "/exam",
-      params: restartParams,
+      params: withLearningIntent(restartParams, { source: "result_restart", previous_exam_session_id: loadedSnapshot.session.id }),
     });
   }
 
@@ -459,6 +511,7 @@ export default function ExamResultScreen() {
   }
 
   function handleNewAttempt() {
+    resultAction("new_attempt");
     if (isMonetizationV2Active()) {
       startNewExam();
       return;
@@ -466,6 +519,7 @@ export default function ExamResultScreen() {
 
     if (hasPlusAccess) {
       track(ANALYTICS_EVENTS.examRestartSelected.key, {
+        exam_session_id: loadedSnapshot.session.id,
         [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.plus,
         source: "exam_result",
       });
@@ -474,6 +528,7 @@ export default function ExamResultScreen() {
     }
 
     track(ANALYTICS_EVENTS.examRestartGateShown.key, {
+      exam_session_id: loadedSnapshot.session.id,
       source: "exam_result",
     });
     setIsRestartGateVisible(true);
@@ -487,6 +542,7 @@ export default function ExamResultScreen() {
 
     setIsRestartGateVisible(false);
     track(ANALYTICS_EVENTS.examRestartSelected.key, {
+      exam_session_id: loadedSnapshot.session.id,
       [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.dismiss,
       source: "exam_result",
     });
@@ -508,6 +564,7 @@ export default function ExamResultScreen() {
       }
 
       track(ANALYTICS_EVENTS.examRestartSelected.key, {
+        exam_session_id: loadedSnapshot.session.id,
         ad_shown: shown,
         [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.watchAd,
         source: "exam_result",
@@ -516,6 +573,7 @@ export default function ExamResultScreen() {
     } catch (error) {
       console.warn("Exam restart ad failed.", error);
       track(ANALYTICS_EVENTS.examRestartSelected.key, {
+        exam_session_id: loadedSnapshot.session.id,
         ad_shown: false,
         [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.watchAd,
         source: "exam_result",
@@ -529,12 +587,14 @@ export default function ExamResultScreen() {
   function handlePremium() {
     setIsRestartGateVisible(false);
     track(ANALYTICS_EVENTS.examRestartSelected.key, {
+      exam_session_id: loadedSnapshot.session.id,
       [ANALYTICS_PROPERTIES.choice]: ANALYTICS_EXAM_RESTART_CHOICES.upgrade,
       source: "exam_result",
     });
     router.replace({
       pathname: "/paywall",
       params: {
+        examSessionId: loadedSnapshot.session.id,
         feature: "premium_access",
         returnTo: "exam",
         ...restartParams,
@@ -543,24 +603,34 @@ export default function ExamResultScreen() {
   }
 
   function goWorkOnMistakes() {
+    resultAction("work_on_mistakes");
     router.replace("/mistakes");
   }
 
   function handleReviewAnswers() {
+    resultAction("answers");
     if (sortedQuestions.length === 0) {
       console.warn("Exam Answers review has no questions in snapshot.", {
         sessionId: loadedSnapshot.session.id,
         status: loadedSnapshot.session.status,
       });
+      reportLearningOperationFailure(track, "open_review", { code: "empty_snapshot" }, {
+        exam_session_id: loadedSnapshot.session.id, user_visible: false,
+      });
       return;
     }
 
     cacheExamSnapshot(loadedSnapshot);
+    reviewIdRef.current = createAnalyticsId("review");
     track(ANALYTICS_EVENTS.examAnswersReviewOpened.key, {
+      exam_session_id: loadedSnapshot.session.id,
+      review_id: reviewIdRef.current,
+      source: "result",
       mode: loadedSnapshot.session.mode,
       question_total: sortedQuestions.length,
     });
     track(ANALYTICS_EVENTS.screenViewed.key, {
+      exam_session_id: loadedSnapshot.session.id,
       route_pattern: "/exam/answers",
       screen_name: ANALYTICS_SCREENS.examAnswers,
     });
@@ -570,6 +640,7 @@ export default function ExamResultScreen() {
   function handleToggleBookmark(questionSourceId: string) {
     const isBookmarked = toggleBookmark(questionSourceId);
     track(ANALYTICS_EVENTS.questionBookmarkChanged.key, {
+      exam_session_id: loadedSnapshot.session.id,
       is_bookmarked: isBookmarked,
       mode: loadedSnapshot.session.mode,
       question_id: questionSourceId,
@@ -606,6 +677,8 @@ export default function ExamResultScreen() {
 
       return (
         <ExamAnswersReviewView
+          examSessionId={loadedSnapshot.session.id}
+          reviewId={reviewIdRef.current ?? undefined}
           answer={currentAnswer}
           canGoNext
           canGoPrevious={reviewIndex > 0}

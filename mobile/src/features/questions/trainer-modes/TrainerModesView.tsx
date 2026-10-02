@@ -25,6 +25,8 @@ import {
   getTrainerModeStats,
 } from "../question-engine";
 import { buildQuestionRouteParams } from "../question-routes";
+import { withLearningIntent } from "../../../analytics/operations";
+import type { AnalyticsProperties } from "../../../analytics/catalog";
 import { useResponsiveFonts, useResponsiveStyles } from "../../../portable-ui";
 import { useTheme } from "../../../providers/ThemeProvider";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
@@ -221,7 +223,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     },
   ];
 
-  const startMode = (mode: QuestionSessionMode, questionLimit: number | null) => {
+  const startMode = (mode: QuestionSessionMode, questionLimit: number | null, setup?: AnalyticsProperties) => {
     const cappedLimit = capTopicFreeSlice(mode, questionLimit, freeSliceLimit);
     track(ANALYTICS_EVENTS.trainingModeSelected.key, {
       mode,
@@ -231,7 +233,9 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     });
     router.navigate({
       pathname: "/question",
-      params: buildQuestionRouteParams({ mode, topic, questionLimit: cappedLimit }),
+      params: withLearningIntent(buildQuestionRouteParams({ mode, topic, questionLimit: cappedLimit }), {
+        setup_id: setup?.setup_id ?? null, source: "trainer_modes", target_screen: "question_training",
+      }),
     });
   };
 
@@ -264,7 +268,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     setPendingTile(tile);
   };
 
-  const startPendingMode = () => {
+  const startPendingMode = (setup?: AnalyticsProperties) => {
     if (!pendingTile) {
       return;
     }
@@ -272,7 +276,7 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
     const mode = pendingTile.mode;
     setPendingTile(null);
 
-    startMode(mode, toQuestionLimit(selectedCount));
+    startMode(mode, toQuestionLimit(selectedCount), setup);
   };
 
   const toActionItems = (tiles: TrainerModeTile[]): ActionTileItem[] =>
@@ -356,6 +360,11 @@ export function TrainerModesView({ topic }: TrainerModesViewProps) {
       </SafeAreaView>
 
       <QuestionCountDialog
+        analyticsContext={{
+          feature: "training",
+          mode: pendingTile?.mode ?? null,
+          topic_id: topic ?? null,
+        }}
         title={pendingTile?.title ?? ""}
         subtitle={t("trainerModes.chooseQuestionCount", {
           defaultValue: "Обери кількість питань",

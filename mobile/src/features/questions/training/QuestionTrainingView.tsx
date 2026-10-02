@@ -1,4 +1,5 @@
 import { StatusBar } from "expo-status-bar";
+import { useIsFocused } from "expo-router/react-navigation";
 import { useCallback, useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +23,7 @@ import type { QuestionTrainingSession } from "./useQuestionTrainingSession";
 import { useQuestionRouteParams } from "./route-params";
 import { getQuestionStepState } from "./visible-steps";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
+import { createAnalyticsId } from "../../../analytics/runtime-context";
 import { openPaywall } from "../../monetization/v2/paywall";
 import { useHasPlusAccess } from "../../../state/entitlements";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
@@ -91,6 +93,7 @@ export function QuestionTrainingView({
   const { t } = useTranslation();
   const { title: routeTitle } = useQuestionRouteParams();
   const { track } = useAnalytics();
+  const isFocused = useIsFocused();
   const hasPlusAccess = useHasPlusAccess();
   const insets = useSafeAreaInsets();
   const stepperRef = useRef<ScrollView>(null);
@@ -126,14 +129,15 @@ export function QuestionTrainingView({
   const isCorrectAnswer = currentAnswerCorrect;
   const explanationLocked = hasAnswered && !hasPlusAccess;
   const explanationTrackedRef = useRef<string | null>(null);
+  const explanationGateIdRef = useRef<string | null>(null);
   const sessionMode = activeSession.request.mode;
 
   useEffect(() => {
-    if (!hasAnswered) {
+    if (!hasAnswered || !isFocused) {
       return;
     }
 
-    const recordToken = `${currentQuestionId}:${hasPlusAccess}`;
+    const recordToken = `${activeSession.id}:${currentQuestionId}:${hasPlusAccess}`;
 
     if (explanationTrackedRef.current === recordToken) {
       return;
@@ -142,7 +146,11 @@ export function QuestionTrainingView({
     explanationTrackedRef.current = recordToken;
 
     if (!hasPlusAccess) {
+      explanationGateIdRef.current = createAnalyticsId("gate");
       track(ANALYTICS_EVENTS.premiumGateViewed.key, {
+        premium_gate_id: explanationGateIdRef.current,
+        training_session_id: activeSession.id,
+        presentation: "inline_lock",
         free_explanations_remaining: 0,
         question_id: currentQuestionId,
         source: "explanation",
@@ -151,6 +159,7 @@ export function QuestionTrainingView({
     }
 
     track(ANALYTICS_EVENTS.answerExplanationViewed.key, {
+      training_session_id: activeSession.id,
       access_method: "premium",
       free_explanations_remaining: 0,
       is_correct: isCorrectAnswer,
@@ -158,10 +167,12 @@ export function QuestionTrainingView({
       question_id: currentQuestionId,
     });
   }, [
+    activeSession.id,
     currentQuestionId,
     hasAnswered,
     hasPlusAccess,
     isCorrectAnswer,
+    isFocused,
     sessionMode,
     track,
   ]);
@@ -181,6 +192,7 @@ export function QuestionTrainingView({
   const scopeLabel = t(`question.scopes.${currentQuestion.scope}`);
   const handleReportProblem = () => {
     track(ANALYTICS_EVENTS.questionProblemReportRequested.key, {
+      training_session_id: activeSession.id,
       question_id: currentQuestionId,
       source: "training",
     });
@@ -333,10 +345,17 @@ export function QuestionTrainingView({
                 showExplain={explanationLocked}
                 onUnlockExplanation={() => {
                   track(ANALYTICS_EVENTS.premiumGateAction.key, {
+                    premium_gate_id: explanationGateIdRef.current,
+                    training_session_id: activeSession.id,
+                    question_id: currentQuestionId,
+                    presentation: "inline_lock",
                     action: "open_paywall",
                     source: "explanation",
                   });
                   openPaywall({
+                    premiumGateId: explanationGateIdRef.current ?? undefined,
+                    trainingSessionId: activeSession.id,
+                    sourceScreen: "question_training",
                     questionId: currentQuestionId,
                     postPurchaseAction: {
                       type: "OPEN_EXPLANATION",
