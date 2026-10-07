@@ -121,7 +121,9 @@ def test_version_contrast_needs_two_versions_with_enough_completions():
 
 
 def test_degraded_identity_excludes_only_the_legacy_key(tmp_path):
-    events = [event("paywall_viewed", "2026-09-12T10:00:00Z", f"usr_{index}") for index in range(40)]
+    events = [event(
+        "paywall_viewed", "2026-09-12T10:00:00Z", f"usr_{index}", paywall_view_id=f"view_{index}",
+    ) for index in range(40)]
     events.append(
         {
             "uuid": "legacy",

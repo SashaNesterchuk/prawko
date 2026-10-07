@@ -11,6 +11,13 @@ jest.mock("@react-native-async-storage/async-storage", () => {
       removeItem: jest.fn(async (key: string) => {
         memory.delete(key);
       }),
+      getAllKeys: jest.fn(async () => [...memory.keys()]),
+      multiGet: jest.fn(async (keys: string[]) =>
+        keys.map((key) => [key, memory.get(key) ?? null])
+      ),
+      multiRemove: jest.fn(async (keys: string[]) => {
+        for (const key of keys) memory.delete(key);
+      }),
       multiSet: jest.fn(async (entries: [string, string][]) => {
         for (const [key, value] of entries) {
           memory.set(key, value);
@@ -24,6 +31,9 @@ jest.mock("@react-native-async-storage/async-storage", () => {
 });
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getCountryConfig } from "@prawko/config";
+import { contentFingerprint } from "../../../analytics/content-revisions";
+import { getExamSessionRulesProperties } from "../../../analytics/exam-rules-observation";
 
 import { useQuestionProgressStore } from "../../../state/question-progress";
 import {
@@ -117,6 +127,39 @@ describe("local exam session lifecycle", () => {
     expect(snapshot.session.currentQuestionIndex).toBe(1);
     expect(snapshot.answers).toEqual([]);
     expect(snapshot.session.totalQuestionsTarget).toBe(3);
+  });
+
+  it("persists an analytics-only creation profile without changing score, navigation or question targets", async () => {
+    const initial = startMiniExam();
+    const origin = initial.session.metadata.analytics_exam_origin_rules;
+    expect(origin).toMatchObject({ version: 1, profileRevision: contentFingerprint(getCountryConfig("PL").exam) });
+    const firstQuestion = initial.questions[0]!;
+    const updated = submitLocalExamAnswer({
+      sessionId: initial.session.id, locale: "ua", questionOrder: firstQuestion.order, answerGiven: "A",
+      metadata: { analytics_exam_origin_rules: { version: 999, profileRevision: "replacement" } },
+    });
+    expect(updated.session.metadata.analytics_exam_origin_rules).toEqual(origin);
+    expect(updated.session.totalQuestionsTarget).toBe(3);
+    expect(updated.session.scorePoints).toBe(firstQuestion.points);
+    expect(updated.session.metadata.navigation).toBe(initial.session.metadata.navigation);
+    await waitForExamSnapshotPersistForTests();
+    resetLocalExamSessionsForTests();
+    await resetExamSnapshotCacheForTests();
+    const restored = await fetchLocalExamSessionSnapshot(initial.session.id);
+    expect(restored.session.metadata.analytics_exam_origin_rules).toEqual(origin);
+    expect(getExamSessionRulesProperties(restored).exam_origin_profile_basis).toBe("persisted_creation_profile");
+  });
+
+  it("still starts and scores when optional profile fingerprinting fails", () => {
+    const profile = { ...getCountryConfig("PL").exam };
+    Object.defineProperty(profile, "unreadable_metadata", { enumerable: true, get: () => { throw new Error("analytics-only"); } });
+    const started = startLocalExamSession({ category: "B", locale: "ua", mode: "mini_test", requestedTotalQuestions: 3, profile });
+    expect(started.session.status).toBe("active");
+    expect(started.session.metadata.analytics_exam_origin_rules).toBeUndefined();
+    const updated = submitLocalExamAnswer({
+      sessionId: started.session.id, locale: "ua", questionOrder: 1, answerGiven: "A",
+    });
+    expect(updated.session.scorePoints).toBe(started.questions[0]!.points);
   });
 
   it("advances to question 2 after the first answer", () => {
@@ -303,6 +346,7 @@ describe("local exam session lifecycle", () => {
       },
     };
 
+    await waitForExamSnapshotPersistForTests();
     await seedPersistedExamSnapshot(expiredClock);
     resetLocalExamSessionsForTests();
     await resetExamSnapshotCacheForTests();

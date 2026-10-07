@@ -6,6 +6,7 @@ import { getMobileSupabaseClient } from "../lib/supabase";
 import { clearOfflinePack } from "../features/offline/offline-pack";
 import { clearQuestionCatalogCache } from "../features/questions/question-catalog-cache";
 import { isAppleSearchAdsStorageKey } from "../analytics/apple-search-ads";
+import { isDurableAnalyticsStorageKey } from "../analytics/install-observation";
 import { isCheckoutJournalStorageKey } from "../features/entitlements/checkout-journal";
 import { clearLocalExamSessions } from "../features/exam/local-exam";
 import { clearExamSnapshotMemory, flushExamSnapshotPersistence } from "../features/exam/exam-snapshot-cache";
@@ -66,7 +67,8 @@ export async function resetAppToFreshStart() {
   clearExamSnapshotMemory();
   try {
     const learningKeys = (await AsyncStorage.getAllKeys())
-      .filter((key) => !isCheckoutJournalStorageKey(key) && !isAppleSearchAdsStorageKey(key));
+      .filter((key) => !isCheckoutJournalStorageKey(key) && !isAppleSearchAdsStorageKey(key) &&
+        !isDurableAnalyticsStorageKey(key));
     if (learningKeys.length > 0) {
       await AsyncStorage.multiRemove(learningKeys);
     }

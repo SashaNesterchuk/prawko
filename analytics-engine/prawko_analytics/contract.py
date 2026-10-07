@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 
 from prawko_analytics.paths import CONTRACT_PATH, REPO_ROOT
+from prawko_analytics.paywall_contract import ELIGIBILITY_EVENTS
 
 
 class ContractError(ValueError):
@@ -60,6 +61,7 @@ class Funnel:
     slice_by: tuple[str, ...]
     steps: tuple[FunnelStep, ...]
     never_required_steps: tuple[str, ...]
+    conversion_window_seconds: int = 86400
 
 
 @dataclass(frozen=True)
@@ -77,6 +79,9 @@ class MetricDef:
     min_denominator: int
     maturity_days: int | None
     definition: str | None
+    conversion_window_seconds: int | None = None
+    cohort_timestamp_property: str | None = None
+    return_rule: str | None = None
 
 
 @dataclass(frozen=True)
@@ -119,7 +124,7 @@ class Contract:
     catalog_keys: frozenset[str] = field(default_factory=frozenset)
 
     def is_product_event(self, event: str) -> bool:
-        return event not in self.sdk_events and event != "$set"
+        return event not in self.sdk_events and event != "$set" and event not in ELIGIBILITY_EVENTS
 
 
 def catalog_event_keys(catalog_path: Path) -> set[str]:
@@ -233,6 +238,7 @@ def _funnel(item: dict) -> Funnel:
         slice_by=tuple(item["slice_by"]),
         steps=steps,
         never_required_steps=tuple(item.get("never_required_steps") or ()),
+        conversion_window_seconds=int(item.get("conversion_window_seconds", 86400)),
     )
 
 
@@ -254,6 +260,9 @@ def _metric(item: dict) -> MetricDef:
         min_denominator=int(eligibility["min_denominator"]),
         maturity_days=maturity_days,
         definition=item.get("definition"),
+        conversion_window_seconds=item.get("conversion_window_seconds"),
+        cohort_timestamp_property=item.get("cohort_timestamp_property"),
+        return_rule=item.get("return_rule"),
     )
 
 
@@ -272,6 +281,8 @@ def _validate(contract: Contract) -> None:
             if item.funnel_role not in {"never_required", "optional", "required_when_in_scope"}:
                 raise ContractError(f"{event_name}.{item.id} has unknown funnel_role")
     for funnel in contract.funnels.values():
+        if funnel.conversion_window_seconds <= 0:
+            raise ContractError(f"Funnel {funnel.id} must have a positive conversion window")
         for step in funnel.steps:
             if step.event not in known:
                 raise ContractError(f"Funnel {funnel.id} step {step.event} is not a known event")
@@ -287,6 +298,14 @@ def _validate(contract: Contract) -> None:
                 raise ContractError(f"Funnel {funnel.id} names unknown inactive step {inactive}")
     metric_ids = {metric.id for metric in contract.metrics}
     for metric in contract.metrics:
+        if metric.return_rule not in {None, "learning-v1"}:
+            raise ContractError(f"Metric {metric.id} has an unsupported return rule")
+        if metric.cohort_timestamp_property not in {None, "first_observed_at"}:
+            raise ContractError(f"Metric {metric.id} has an unsupported cohort anchor")
+        if metric.maturity_days is not None and metric.maturity_days <= 0:
+            raise ContractError(f"Metric {metric.id} must have positive cohort maturity")
+        if metric.conversion_window_seconds is not None and metric.conversion_window_seconds <= 0:
+            raise ContractError(f"Metric {metric.id} must have a positive conversion window")
         if metric.funnel and metric.funnel not in contract.funnels:
             raise ContractError(f"Metric {metric.id} references unknown funnel {metric.funnel}")
         if metric.evidence_class not in contract.confidence_ceilings:

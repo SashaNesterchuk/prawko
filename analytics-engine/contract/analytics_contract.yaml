@@ -1,6 +1,6 @@
 # Interpretation overlay. Event keys come from mobile/src/analytics/catalog.ts.
 # A new meaning is a new interpretation id. Do not edit the meaning of an existing id.
-contract_version: 1
+contract_version: 2
 catalog_ref: mobile/src/analytics/catalog.ts
 keys_ref: docs/analytics/keys.md
 
@@ -28,7 +28,7 @@ comparison:
     - platform
     - is_plus
     - auth_mode
-  acquisition_mix: unavailable
+  acquisition_mix: asa-installation-v1
 
 concentration:
   top_n: 3
@@ -53,6 +53,202 @@ sdk_events:
 changes: []
 
 events:
+  app_entry_resolved:
+    interpretations:
+      - id: scoped_external_signal_received_v1
+        when_properties: { entry_observation_version: 1 }
+        meaning: A processed external signal with explicit observation ID and current, awaiting or unattributed foreground scope. Receipt is not tap time.
+        intent_signal: false
+        must_not_be_interpreted_as: [notification_delivery, successful_destination, acquisition_attribution, causal_reminder_effect]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: legacy_entry_reason_observation
+        meaning: Launch or foreground entry reason was resolved without versioned destination association.
+        intent_signal: false
+        must_not_be_interpreted_as: [successful_destination, notification_delivery, acquisition_attribution]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  notification_opened:
+    interpretations:
+      - id: scoped_os_notification_response_v1
+        when_properties: { entry_observation_version: 1 }
+        meaning: An OS notification response was observed with explicit cached/live and bound/unattributed scope. Cached responses have no current-visit attribution.
+        intent_signal: false
+        must_not_be_interpreted_as: [notification_delivery, tap_timestamp, causal_reminder_effect, learning_completion]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: legacy_os_notification_response
+        meaning: The OS supplied a notification response; cached last responses can belong to an earlier launch.
+        intent_signal: false
+        must_not_be_interpreted_as: [notification_delivery, current_visit_source, tap_timestamp, learning_completion]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  external_entry_destination_observed:
+    interpretations:
+      - id: scoped_foreground_destination_observation_v1
+        when_properties: { entry_observation_version: 1 }
+        meaning: A route/entity/state was observed in the explicitly bound foreground visit within sixty seconds. Preexisting snapshots are separate from later route/state observations.
+        intent_signal: false
+        must_not_be_interpreted_as: [dispatcher_success, native_rendering_success, notification_delivery, causal_reminder_effect]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  external_entry_destination_ended:
+    interpretations:
+      - id: bounded_destination_observation_terminal_v1
+        when_properties: { entry_observation_version: 1 }
+        meaning: Destination observation ended by horizon, scope termination, observation limit or a censored observer/clock boundary.
+        intent_signal: false
+        must_not_be_interpreted_as: [routing_failure, product_timeout, notification_delivery]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  external_entry_ended:
+    interpretations:
+      - id: same_visit_entry_association_terminal_v1
+        when_properties: { entry_observation_version: 1 }
+        meaning: Same-foreground-visit association ended or was censored. The one-hour horizon is analytics-only.
+        intent_signal: false
+        must_not_be_interpreted_as: [learning_failure, product_timeout, causal_reminder_effect]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  ad_requested:
+    interpretations:
+      - id: rewarded_opportunity_observation_v1
+        when_properties: { ad_observation_version: 1 }
+        meaning: Rewarded opportunity processing reached the existing requested event. Missing configuration can still prevent SDK load.
+        intent_signal: false
+        must_not_be_interpreted_as: [native_load_invocation, impression, revenue, reward_grant]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: legacy_ad_request_observation
+        meaning: An ad request path was observed without the rewarded request/impression contract.
+        intent_signal: false
+        must_not_be_interpreted_as: [impression, verified_revenue]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  ad_native_request_started:
+    interpretations:
+      - id: rewarded_sdk_load_invocation_v1
+        when_properties: { ad_observation_version: 1 }
+        meaning: The existing rewarded SDK load invocation was observed with request and instance scope.
+        intent_signal: false
+        must_not_be_interpreted_as: [loaded_ad, impression, production_delivery]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  ad_shown:
+    interpretations:
+      - id: rewarded_fullscreen_opened_v1
+        when_properties: { ad_observation_version: 1 }
+        meaning: Rewarded fullscreen OPENED was observed, separately from SDK PAID impression evidence.
+        intent_signal: false
+        must_not_be_interpreted_as: [native_impression_callback, revenue, reward_grant]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  ad_impression_observed:
+    interpretations:
+      - id: rewarded_paid_impression_evidence_v1
+        when_properties: { ad_observation_version: 1 }
+        meaning: A valid SDK PAID callback supplied scoped rewarded impression evidence. OPENED is not this evidence.
+        intent_signal: false
+        must_not_be_interpreted_as: [dedicated_native_impression_callback, settled_money, reward_grant, verified_production_delivery]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  ad_impression_revenue:
+    interpretations:
+      - id: rewarded_sdk_paid_value_v1
+        when_properties: { ad_observation_version: 1 }
+        meaning: Client SDK PAID value with currency, precision and duplicate callback sequence. Warehouse keeps currencies separate and quarantines conflicts.
+        intent_signal: false
+        must_not_be_interpreted_as: [settled_money, store_proceeds, admob_reconciliation, reward_grant]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  ad_reward_earned:
+    interpretations:
+      - id: rewarded_sdk_earned_callback_v1
+        when_properties: { ad_observation_version: 1 }
+        meaning: The existing EARNED_REWARD callback was observed. Product reward behavior remains separate and unchanged.
+        intent_signal: false
+        must_not_be_interpreted_as: [paid_revenue, persisted_exam_credit, new_learning]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  ad_dismissed:
+    interpretations:
+      - id: rewarded_closed_callback_v1
+        when_properties: { ad_observation_version: 1 }
+        meaning: The existing rewarded CLOSED callback was observed with whether EARNED_REWARD had been seen.
+        intent_signal: false
+        must_not_be_interpreted_as: [persisted_exam_credit, settled_money]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  ad_failed:
+    interpretations:
+      - id: rewarded_disabled_configuration_or_sdk_failure_v1
+        when_properties: { ad_observation_version: 1 }
+        meaning: Existing failed outcome with normalized policy/configuration/SDK category. Disabled opportunities are not native ad failures.
+        intent_signal: false
+        must_not_be_interpreted_as: [native_failure_from_disabled_opportunity, reward_grant, negative_revenue]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  ad_observation_failed:
+    interpretations:
+      - id: optional_rewarded_observer_failure_v1
+        when_properties: { ad_observation_version: 1 }
+        meaning: Optional PAID listener or payload observation failed without changing the product ad/reward result.
+        intent_signal: false
+        must_not_be_interpreted_as: [product_ad_failure, reward_revocation, negative_revenue]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  install_observation_resolved:
+    interpretations:
+      - id: persistent_observation_anchor_v1
+        when_properties: { observation_contract_version: 1 }
+        meaning: Persistent first-observed metadata resolved. first_observed_at is separate from native installation time; the event can repeat.
+        intent_signal: false
+        must_not_be_interpreted_as: [new_install, unique_person, acquisition_channel]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  analytics_identity_observed:
+    interpretations:
+      - id: install_account_link_observation_v1
+        when_properties: { identity_link_version: 1 }
+        meaning: Event-time install/account link, unlink or switch, with no irreversible SDK alias.
+        intent_signal: false
+        must_not_be_interpreted_as: [person_merge, entitlement_transfer, successful_authentication]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  onboarding_flow_completed:
+    interpretations:
+      - id: accepted_local_onboarding_completion
+        meaning: The local plan was written and onboarding completion returned successfully.
+        intent_signal: false
+        must_not_be_interpreted_as: [home_arrival, learning_activation]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  onboarding_home_arrived:
+    interpretations:
+      - id: foreground_home_after_local_onboarding
+        meaning: A foreground Home route was observed after accepted local onboarding with the same persistent attempt ID.
+        intent_signal: false
+        must_not_be_interpreted_as: [usable_content, learning_activation, notification_delivery]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
   Application Installed:
     interpretations:
       - id: sdk_install_marker
@@ -201,6 +397,36 @@ events:
         zero_events_mean: not_observed
         funnel_role: required_when_in_scope
 
+  paywall_trial_eligibility_started:
+    interpretations:
+      - id: trial_eligibility_helper_invoked_v1
+        when_properties: { trial_eligibility_observation_version: 1 }
+        meaning: A scoped eligibility helper invocation began. Unsupported or unconfigured paths may never query the SDK.
+        intent_signal: false
+        must_not_be_interpreted_as: [native_query, displayed_trial, trial_start, purchase]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  paywall_trial_eligibility_resolved:
+    interpretations:
+      - id: trial_eligibility_product_outcome_v1
+        when_properties: { trial_eligibility_observation_version: 1 }
+        meaning: A normalized product outcome from an observed request. Unknown and UI filtering do not establish ineligibility; detached outcomes do not prove current display.
+        intent_signal: false
+        must_not_be_interpreted_as: [displayed_trial, trial_start, paid_conversion, entitlement, native_delivery]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  paywall_trial_eligibility_completed:
+    interpretations:
+      - id: trial_eligibility_request_terminal_v1
+        when_properties: { trial_eligibility_observation_version: 1 }
+        meaning: A helper request resolved, failed or skipped its SDK query, retaining request scope and observation timing rather than a checkout outcome.
+        intent_signal: false
+        must_not_be_interpreted_as: [trial_start, purchase, paid_conversion, displayed_trial, native_delivery]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
   paywall_cta_selected:
     interpretations:
       - id: purchase_cta
@@ -280,10 +506,60 @@ events:
 
   exam_question_answered:
     interpretations:
+      - id: exam_answer_created_v3
+        since_schema: 3
+        when_properties: { answer_action: create }
+        meaning: A successful submission created one logical exam answer slot. Submission revisions and retries are separate from unique questions.
+        intent_signal: false
+        must_not_be_interpreted_as: [exam_completed, exam_pass, repeated_learning_after_review]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: exam_answer_updated_v3
+        since_schema: 3
+        when_properties: { answer_action: update }
+        meaning: A successful submission edited an existing logical exam answer slot. This is not another uniquely answered question or a repeated-learning attempt.
+        intent_signal: false
+        must_not_be_interpreted_as: [new_answered_question, repeated_learning_after_review, exam_completed, exam_pass]
+        zero_events_mean: not_observed
+        funnel_role: optional
       - id: exam_answer
         meaning: The learner submitted one exam question. Not a finished exam and not a pass.
         intent_signal: false
         must_not_be_interpreted_as: [exam_completed, exam_pass]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  answer_explanation_viewed:
+    interpretations:
+      - id: rendered_explanation_text_observed_v1
+        when_properties: { explanation_display_observation_version: 1, explanation_rendered_state: text }
+        meaning: An explanation text value was visible with a declared rendered fingerprint and variant. It is not proof of reading or comprehension.
+        intent_signal: false
+        must_not_be_interpreted_as: [explain_tap, reading_completed, causal_learning_effect, premium_purchase]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: explanation_surface_observed
+        meaning: An explanation surface was observed. Text/source/revision evidence may be absent; do not infer a rendered variant.
+        intent_signal: false
+        must_not_be_interpreted_as: [reading_completed, causal_learning_effect, premium_purchase]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  training_answers_review_question_viewed:
+    interpretations:
+      - id: training_review_question_observed
+        meaning: A training review position was observed. view_state and was_answered distinguish usable answered content from missing/unanswered positions; display metadata does not prove reading.
+        intent_signal: false
+        must_not_be_interpreted_as: [new_answer, explanation_read, causal_learning_effect]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  exam_answers_review_question_viewed:
+    interpretations:
+      - id: exam_review_question_observed
+        meaning: An exam review position was observed. view_state and was_answered distinguish usable answered content from missing/unanswered positions; display metadata does not prove reading.
+        intent_signal: false
+        must_not_be_interpreted_as: [new_answer, explanation_read, causal_learning_effect, actual_exam_outcome]
         zero_events_mean: not_observed
         funnel_role: optional
 
@@ -335,6 +611,27 @@ events:
 
   apple_search_ads_attribution_resolved:
     interpretations:
+      - id: ios_installation_adservices_attributed_v1
+        when_properties: { platform: ios, asa_result: attributed }
+        meaning: An explicit iOS installation AdServices terminal reports attribution. Replay is not another acquisition; resolution may follow a purchase on the same installation identity. Numeric source IDs can be unavailable.
+        intent_signal: false
+        must_not_be_interpreted_as: [visit_entry, physical_install_date, spend, verified_money, causal_channel_lift, missing_is_organic]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: ios_installation_adservices_organic_v1
+        when_properties: { platform: ios, asa_result: organic }
+        meaning: An explicit iOS installation AdServices terminal reports attribution false. This does not classify missing checks, Android or unavailable results as organic.
+        intent_signal: false
+        must_not_be_interpreted_as: [visit_entry, physical_install_date, spend, verified_money, android_organic, missing_is_organic]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: ios_installation_adservices_unavailable_v1
+        when_properties: { platform: ios, asa_result: unavailable }
+        meaning: An explicit iOS installation check reached unavailable. Its reason is diagnostic, not an organic source or delivery guarantee.
+        intent_signal: false
+        must_not_be_interpreted_as: [organic_install, paid_install, native_delivery]
+        zero_events_mean: not_observed
+        funnel_role: optional
       - id: asa_attributed_install
         when_properties: { asa_result: attributed }
         meaning: Apple Search Ads click or impression led to this iOS install. Campaign, ad group, and keyword are numeric ids. Names and spend are not on the event.
@@ -367,6 +664,7 @@ funnels:
   - id: paywall_purchase
     grain: paywall_view_id
     slice_by: [app_version, analytics_schema_version]
+    conversion_window_seconds: 86400
     steps:
       - event: paywall_viewed
       - event: paywall_offer_ready
@@ -374,8 +672,9 @@ funnels:
       - event: paywall_cta_selected
         when_properties: { action: purchase }
       - event: purchase_started
-        join: purchase_attempt_id
+        join: paywall_view_id
       - event: purchase_succeeded
+        join: purchase_attempt_id
     never_required_steps:
       - paywall_package_selected
       - premium_prompt_shown
@@ -396,6 +695,12 @@ metrics:
     numerator_event: purchase_succeeded
     denominator_event: paywall_viewed
     count: analysis_keys
+    conversion_window_seconds: 3600
+    definition: >
+      Install-level conversion through ordered paywall view, offer ready, purchase CTA,
+      native start and success, linked by view and attempt, within one hour.
+      Only views with a fully observed one-hour horizon enter the denominator.
+      This client outcome is not verified revenue.
     homogeneity: [app_version, analytics_schema_version]
     eligibility:
       min_denominator: 30
@@ -428,6 +733,24 @@ metrics:
     eligibility:
       min_denominator: 30
       require_homogeneous_slice: true
+      maturity: { kind: calendar_day, n: 7 }
+
+  - id: learning_d7_return
+    evidence_class: descriptive_metric
+    definition: >
+      Share of durable installation observations first observed on Warsaw day D
+      with a learning-v1 outcome on day D+7. A learning-v1 outcome is a completed
+      training with at least five distinct accepted questions, or a completed
+      exam with every target question answered. This is not paid retention.
+    cohort_event: install_observation_resolved
+    cohort_timestamp_property: first_observed_at
+    return_rule: learning-v1
+    grain: installation_observation_id
+    count: grain
+    homogeneity: []
+    maturity: { kind: calendar_day, n: 7 }
+    eligibility:
+      min_denominator: 30
       maturity: { kind: calendar_day, n: 7 }
 
 error_signatures:

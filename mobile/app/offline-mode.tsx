@@ -55,6 +55,7 @@ import { createAnalyticsId } from "../src/analytics/runtime-context";
 import { analyticsMonotonicNow } from "../src/analytics/activity";
 import { useAnalyticsViewState } from "../src/analytics/useAnalyticsViewState";
 import { reportLearningOperationFailure } from "../src/analytics/operations";
+import type { OfflineDownloadTerminal } from "../src/analytics/operation-payloads";
 
 type FeedbackState =
   | {
@@ -246,7 +247,7 @@ export default function OfflineModeScreen() {
       terminal: false, transfer: snapshot?.transfer ?? null,
     };
     operationRef.current = operation;
-    let operationStage = "download";
+    let operationStage: OfflineDownloadTerminal["operation_stage"] = "download";
     function terminal(event: typeof ANALYTICS_EVENTS.offlinePackDownloadCompleted.key |
       typeof ANALYTICS_EVENTS.offlinePackDownloadCancelled.key | typeof ANALYTICS_EVENTS.offlinePackDownloadFailed.key,
       error?: unknown) {

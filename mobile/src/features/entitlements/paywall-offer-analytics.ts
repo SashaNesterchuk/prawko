@@ -3,6 +3,9 @@ import { AppState } from "react-native";
 import { ANALYTICS_EVENTS, type AnalyticsProperties } from "../../analytics/catalog";
 import type { AnalyticsTrack } from "../../hooks/useAnalytics";
 import { createAppUserId } from "../../identity/app-user-id";
+import { getPackageAnalyticsSnapshot } from "./offer-snapshot";
+import type { OfferEventPayloads, OfferScope } from "../../analytics/critical-payloads";
+import type { AnalyticsEventPayloads } from "../../analytics/catalog";
 import { getCurrentUserFromState, useAppShellStore } from "../../state/app-shell";
 import {
   useEntitlementStore,
@@ -43,7 +46,7 @@ export function createPaywallOfferTracker(input: {
   let unsubscribe: (() => void) | null = null;
   let appStateSubscription: { remove: () => void } | null = null;
 
-  function getProperties(): AnalyticsProperties {
+  function getProperties() {
     const context = input.getContext();
     const state = useEntitlementStore.getState();
     const selected = context.selectPackage(state.revenueCatOfferings);
@@ -56,12 +59,14 @@ export function createPaywallOfferTracker(input: {
     };
   }
 
-  function track(event: Parameters<AnalyticsTrack>[0], extra: AnalyticsProperties) {
+  function track<EventName extends keyof OfferEventPayloads>(
+    event: EventName, extra: Omit<OfferEventPayloads[EventName], keyof OfferScope> & AnalyticsProperties,
+  ) {
     const context = input.getContext();
     const user = getCurrentUserFromState(useAppShellStore.getState());
     const hasPlusAccess = readHasPlusAccess();
     try {
-      context.track(event, {
+      const payload = {
         ...context.properties,
         ...getProperties(),
         auth_mode: user?.provider ?? "guest",
@@ -72,7 +77,9 @@ export function createPaywallOfferTracker(input: {
         is_cached: cycle.cached,
         time_since_view_ms: Math.max(0, Date.now() - (viewedAt ?? cycle.startedAt)),
         ...extra,
-      });
+      };
+      // Extra fields are checked at the producer; scope is supplied by this composer.
+      context.track(event, payload as AnalyticsEventPayloads[EventName]);
     } catch (error) {
       // Telemetry must never reject purchase preparation through a store subscriber.
       console.warn("Failed to track paywall offer availability.", error);
@@ -116,12 +123,7 @@ export function createPaywallOfferTracker(input: {
     } else {
       track(ANALYTICS_EVENTS.paywallOfferReady.key, {
         ...timing,
-        product_id: selected.productIdentifier,
-        package_id: selected.identifier,
-        offering_id: selected.offeringIdentifier,
-        price: selected.price,
-        price_string: selected.priceString,
-        currency: selected.currencyCode,
+        ...getPackageAnalyticsSnapshot(selected),
       });
     }
   }

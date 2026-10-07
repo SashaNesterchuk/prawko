@@ -2,6 +2,7 @@ import { useIsFocused } from "expo-router/react-navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
+import { getExplanationDisplayProperties, getQuestionContentProperties } from "../../../analytics/content-revisions";
 import { trainingPracticeEntry } from "../../../analytics/practice-entry";
 import { createAnalyticsId } from "../../../analytics/runtime-context";
 import { useAnalyticsDuration } from "../../../analytics/useAnalyticsDuration";
@@ -9,7 +10,10 @@ import { useAnalyticsViewState } from "../../../analytics/useAnalyticsViewState"
 import type { TrainingResultOrigin } from "../../../analytics/training-lifecycle";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
 import { useQuestionCatalogVersion } from "../../../state/question-catalog";
-import { getQuestionById } from "../question-engine";
+import { useAppShellStore } from "../../../state/app-shell";
+import { useHasPlusAccess } from "../../../state/entitlements";
+import { resolveLearnerExplanationAccess } from "../explanation-access";
+import { getLocalizedText, getQuestionById, getQuestionTopicIds } from "../question-engine";
 import type { QuestionSession, QuestionSessionSummary } from "../types";
 
 export function useTrainingResultAnalytics({
@@ -24,6 +28,9 @@ export function useTrainingResultAnalytics({
   const { track } = useAnalytics();
   const isFocused = useIsFocused();
   const catalogVersion = useQuestionCatalogVersion();
+  const displayLocale = useAppShellStore((state) => state.preferredLocale);
+  const examCountry = useAppShellStore((state) => state.examCountry);
+  const hasPlusAccess = useHasPlusAccess();
   const [reviewIndex, setReviewIndex] = useState<number | null>(null);
   const reviewRef = useRef<{
     id: string;
@@ -34,6 +41,7 @@ export function useTrainingResultAnalytics({
   const resultVisibleRef = useRef<string | null>(null);
   const resultReasonRef = useRef<"initial" | "review_return">("initial");
   const context = {
+    content_requested_locale: displayLocale,
     training_session_id: activeSession?.id ?? null,
     mode: activeSession?.request.mode ?? null,
     topic_id: activeSession?.request.topic ?? null,
@@ -89,8 +97,24 @@ export function useTrainingResultAnalytics({
     if (!isFocused || !review || reviewIndex === null || !questionId || !activeSession) {
       return;
     }
-    const viewState = getQuestionById(questionId) ? "question" : "missing_question";
-    const viewKey = `${reviewIndex}:${viewState}`;
+    const question = getQuestionById(questionId);
+    const viewState = question ? "question" : "missing_question";
+    let displayProperties = {};
+    const contentProperties = question ? getQuestionContentProperties(question, displayLocale) : {};
+    try {
+      if (question) {
+        const access = resolveLearnerExplanationAccess({
+          country: examCountry, hasPlusAccess, topicIds: getQuestionTopicIds(question),
+        });
+        displayProperties = getExplanationDisplayProperties(question, displayLocale,
+          access === "locked" ? "locked" : access === "preview" ? "free_topic_marked" : "full",
+          access === "locked" ? null : getLocalizedText(question.explanation, displayLocale));
+      }
+    } catch {
+      // Optional observation must not affect review state or navigation.
+    }
+    const display = displayProperties as Record<string, unknown>;
+    const viewKey = `${reviewIndex}:${viewState}:${displayLocale}:${contentProperties.question_revision}:${display.explanation_display_variant}:${display.explanation_display_revision}`;
     if (review.lastViewKey === viewKey) {
       return;
     }
@@ -100,6 +124,7 @@ export function useTrainingResultAnalytics({
     }
     const answer = activeSession.answers[questionId];
     track(ANALYTICS_EVENTS.trainingAnswersReviewQuestionViewed.key, {
+      ...contentProperties, ...displayProperties,
       ...context,
       review_id: review.id,
       question_id: questionId,
@@ -109,7 +134,7 @@ export function useTrainingResultAnalytics({
       was_answered: Boolean(answer),
       is_correct: answer?.isCorrect ?? null,
     });
-  }, [activeSession, catalogVersion, context, isFocused, questionIds, reviewIndex, track]);
+  }, [activeSession, catalogVersion, context, displayLocale, examCountry, hasPlusAccess, isFocused, questionIds, reviewIndex, track]);
 
   function openReview() {
     if (!activeSession || questionIds.length === 0) {

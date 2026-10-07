@@ -116,4 +116,33 @@ describe("checkout journal", () => {
     expect(isCheckoutJournalStorageKey("prawko.checkout.v1:ios:user")).toBe(true);
     expect(isCheckoutJournalStorageKey("prawko.question-progress")).toBe(false);
   });
+
+  it("preserves the immutable billing model and period for recovery", async () => {
+    const saved = record();
+    saved.properties = {
+      ...saved.properties, plan: "quarter", paywall_variant: "paywall2",
+      paywall_offer: "plans", trial_days: 3, trial_eligibility: "eligible", trial_shown: true,
+    };
+    saved.attempt.package.subscriptionPeriod = "P3M";
+    saved.attempt.package.freeTrialDays = 3;
+    await writeCheckoutJournal(APP_USER_ID, [saved]);
+    const [restored] = await readCheckoutJournal(APP_USER_ID);
+    expect(restored.properties).toMatchObject({
+      plan: "quarter", paywall_offer: "plans", trial_days: 3, trial_eligibility: "eligible",
+    });
+    expect(restored.attempt.package.subscriptionPeriod).toBe("P3M");
+    expect(restored.attempt.package.freeTrialDays).toBe(3);
+  });
+
+  it("still reads older v1 journals without optional analytics metadata", async () => {
+    const saved = record();
+    const { subscriptionPeriod: _period, freeTrialDays: _trial, ...legacyPackage } = saved.attempt.package;
+    await AsyncStorage.setItem(`prawko.checkout.v1:ios:${APP_USER_ID}`, JSON.stringify({
+      version: 1, appUserId: APP_USER_ID,
+      attempts: [{ ...saved, attempt: { ...saved.attempt, package: legacyPackage } }],
+    }));
+    const [restored] = await readCheckoutJournal(APP_USER_ID);
+    expect(restored.attempt.package.subscriptionPeriod).toBeNull();
+    expect(restored.attempt.package.freeTrialDays).toBeNull();
+  });
 });

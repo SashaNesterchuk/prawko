@@ -7,6 +7,7 @@ from datetime import timedelta
 
 from prawko_analytics.interpret import values_equal
 from prawko_analytics.models import EligibilityModel, FindingModel, ReasonModel, SegmentModel
+from prawko_analytics.quality import observation_usable
 
 MIN_CELL = 8
 MEDIUM_CELL = 20
@@ -37,7 +38,8 @@ VERSION_CLAUSE = (
 
 def discover_patterns(rows: list, *, concentration_warning: bool) -> list[FindingModel]:
     primary = {row.analysis_key for row in rows if row.key_source == "primary" and row.analysis_key}
-    usable = [row for row in rows if row.analysis_key in primary and row.key_source == "primary"]
+    usable = [row for row in rows if row.analysis_key in primary and row.key_source == "primary"
+              and observation_usable(row.properties)]
     excluded = len({row.analysis_key for row in rows if row.analysis_key and row.analysis_key not in primary})
     builders = (
         _prior_training,

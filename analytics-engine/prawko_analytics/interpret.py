@@ -73,7 +73,12 @@ def select_interpretation(
 
 
 def _properties_match(expected: dict, properties: dict) -> bool:
-    return all(values_equal(value, properties.get(key)) for key, value in expected.items())
+    return all(
+        type(properties.get(key)) is int and properties[key] == value
+        if key == "trial_eligibility_observation_version"
+        else values_equal(value, properties.get(key))
+        for key, value in expected.items()
+    )
 
 
 def _version(value: str) -> tuple[int, ...]:

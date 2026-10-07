@@ -30,6 +30,8 @@ import {
   writeCheckoutJournal,
   type CheckoutJournalRecord,
 } from "./checkout-journal";
+import { createCheckoutOriginSnapshot } from "./offer-origin";
+import type { RestoreResult } from "../../analytics/critical-payloads";
 
 export type CheckoutStatus =
   | "purchasing" | "restoring" | "awaiting_confirmation" | "outcome_unknown"
@@ -259,8 +261,8 @@ function forgetJournaledAttempt(current: CheckoutRuntime) {
 function safeTelemetry(input: CheckoutInput): CheckoutInput {
   return {
     ...input, properties: { ...input.properties },
-    track: (event, payload) => {
-      try { input.track(event, payload); }
+    track: (event, ...args) => {
+      try { input.track(event, ...args); }
       catch (error) { console.warn("Failed to track checkout event.", error); }
     },
     captureError: (error) => {
@@ -269,7 +271,8 @@ function safeTelemetry(input: CheckoutInput): CheckoutInput {
     },
   };
 }
-function acquire(input: CheckoutInput, kind: CheckoutAttempt["kind"], retryOf?: CheckoutRuntime) {
+function acquire(input: CheckoutInput, kind: CheckoutAttempt["kind"], retryOf?: CheckoutRuntime,
+  selectedPackage: RevenueCatPackageSummary | null = null) {
   const state = useCheckoutStore.getState();
   if ((kind === "purchase" &&
       (state.journalStatus !== "ready" || state.journalAppUserId !== input.appUserId)) ||
@@ -292,6 +295,11 @@ function acquire(input: CheckoutInput, kind: CheckoutAttempt["kind"], retryOf?: 
         category: useAppShellStore.getState().preferredCategory,
         locale: useAppShellStore.getState().preferredLocale,
         ...input.properties, exam_country: getExamCountry(),
+        ...createCheckoutOriginSnapshot({
+          category: useAppShellStore.getState().preferredCategory,
+          locale: useAppShellStore.getState().preferredLocale,
+          ...input.properties, exam_country: getExamCountry(),
+        }, selectedPackage),
       },
     }),
     nativePurchaseCompleted: false, nativePurchaseStarted: false, journaled: false,
@@ -331,7 +339,7 @@ export function observeCheckoutAppState(nextState: AppStateStatus) {
     if (current) persistInBackground(current);
   }
 }
-function properties(current: CheckoutRuntime): AnalyticsProperties {
+function properties(current: CheckoutRuntime) {
   accumulateAppState(current, Date.now());
   const offer = current.attempt.package;
   return {
@@ -344,11 +352,17 @@ function properties(current: CheckoutRuntime): AnalyticsProperties {
     offering_id: offer?.offeringIdentifier ?? null, offering_identifier: offer?.offeringIdentifier ?? null,
     package_id: offer?.identifier ?? null, package_identifier: offer?.identifier ?? null,
     package_type: offer?.packageType ?? null, price: offer?.price ?? null,
+    subscription_period: offer?.subscriptionPeriod ?? null,
+    price_basis: "store_display" as const,
     product_id: offer?.productIdentifier ?? null, product_identifier: offer?.productIdentifier ?? null,
     step: current.attempt.stage, elapsed_ms: Math.max(0, Date.now() - current.startedAt),
     app_active_ms: current.activeMs, app_background_ms: current.backgroundMs, app_inactive_ms: current.inactiveMs,
     app_unobserved_ms: current.unobservedMs, resumed_after_restart: current.resumedAfterRestart,
   };
+}
+function restoreResult(active: boolean): RestoreResult {
+  return active ? { entitlement_active: true, restore_outcome: "restored" }
+    : { entitlement_active: false, restore_outcome: "empty" };
 }
 function stage(current: CheckoutRuntime, next: CheckoutStage) {
   update(current, { stage: next });
@@ -471,7 +485,7 @@ async function recover(
     recovery_view_id: requester?.originViewId ?? null, recovery_surface: requester?.properties.source ?? null,
   });
   if (source === "restore") {
-    const started = { ...entry(), restore_outcome: "started" };
+    const started = { ...entry(), restore_outcome: "started" as const };
     current.input.track(ANALYTICS_EVENTS.purchaseRestoreStarted.key, started);
     current.input.track(ANALYTICS_EVENTS.restoreStarted.key, started);
   } else current.input.track(ANALYTICS_EVENTS.purchaseStatusCheckStarted.key, entry());
@@ -484,8 +498,7 @@ async function recover(
     // Do not interpret missing access as a cancelled payment or no charge.
     useCheckoutStore.setState({ recoveryStatus: active ? "active" : "not_found", recoveryErrorKind: null });
     if (source === "restore") {
-      const completed = { ...entry(), entitlement_active: active,
-        restore_outcome: active ? "restored" : "empty" };
+      const completed = { ...entry(), ...restoreResult(active) };
       current.input.track(ANALYTICS_EVENTS.restoreSucceeded.key, completed);
       current.input.track(active ? ANALYTICS_EVENTS.purchaseRestoreSucceeded.key : ANALYTICS_EVENTS.purchaseRestoreEmpty.key,
         { ...completed, active_entitlements_count: snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0, is_plus: active });
@@ -504,7 +517,7 @@ async function recover(
       metadata: getRevenueCatDiagnostic({ extra: diagnostic, kind: source, step: diagnostic.step, why: getRevenueCatWhy(error) }),
     });
     if (source === "restore") {
-      const failed = { ...diagnostic, entitlement_active: active, restore_outcome: "failed" };
+      const failed = { ...diagnostic, entitlement_active: active, restore_outcome: "failed" as const };
       current.input.track(ANALYTICS_EVENTS.purchaseRestoreFailed.key, failed);
       current.input.track(ANALYTICS_EVENTS.restoreFailed.key, failed);
     } else current.input.track(ANALYTICS_EVENTS.purchaseStatusCheckFailed.key, diagnostic);
@@ -541,8 +554,9 @@ export async function startCheckoutPurchase(
       transactionId: null, retryOfAttemptId: null,
     };
     const telemetry = safeTelemetry(input);
-    const diagnostic = { ...input.properties, purchase_attempt_id: failed.id,
-      checkout_view_id: input.originViewId, step: "persist_checkout", error_category: "local_storage" };
+    const diagnostic = { ...input.properties, ...createCheckoutOriginSnapshot(input.properties, input.selectedPackage),
+      purchase_attempt_id: failed.id,
+      checkout_view_id: input.originViewId, step: "persist_checkout", error_category: "local_storage" as const };
     telemetry.captureError({ area: "monetization", error, severity: "warning",
       eventName: "checkout_journal_read_failed", metadata: diagnostic });
     telemetry.track(ANALYTICS_EVENTS.purchasePreparationFailed.key, diagnostic);
@@ -561,7 +575,7 @@ export async function startCheckoutPurchase(
       previous.attempt.status !== "outcome_unknown") return previous.attempt;
     retryOf = previous;
   }
-  const current = acquire(input, "purchase", retryOf);
+  const current = acquire(input, "purchase", retryOf, input.selectedPackage);
   if (!current) return null;
   try {
     // Also check before an ordinary purchase, including after a process restart.
@@ -732,15 +746,14 @@ export async function startCheckoutRestore(input: CheckoutInput): Promise<Checko
   if (!current) return null;
   const entry = () => ({ ...properties(current), restore_attempt_id: current.attempt.id });
   try {
-    const started = { ...entry(), restore_outcome: "started" };
+    const started = { ...entry(), restore_outcome: "started" as const };
     current.input.track(ANALYTICS_EVENTS.purchaseRestoreStarted.key, started);
     current.input.track(ANALYTICS_EVENTS.restoreStarted.key, started);
     const snapshot = await restoreRevenueCatPurchases(input.appUserId);
     acceptSnapshot(input.appUserId, snapshot);
     const active = hasCurrentPurchaseAccess();
     update(current, { status: active ? "succeeded" : "empty" });
-    const completed = { ...entry(), entitlement_active: active, is_plus: active,
-      restore_outcome: active ? "restored" : "empty" };
+    const completed = { ...entry(), is_plus: active, ...restoreResult(active) };
     current.input.track(ANALYTICS_EVENTS.restoreSucceeded.key, completed);
     current.input.track(active ? ANALYTICS_EVENTS.purchaseRestoreSucceeded.key : ANALYTICS_EVENTS.purchaseRestoreEmpty.key,
       { ...completed, active_entitlements_count: snapshot.purchaseAccess?.activeEntitlementIds.length ?? 0 });
@@ -748,7 +761,7 @@ export async function startCheckoutRestore(input: CheckoutInput): Promise<Checko
     update(current, { status: "failed", errorKind: getRevenueCatCheckoutErrorKind(error),
       errorCode: getRevenueCatErrorCode(error), errorMessage: getRevenueCatErrorMessage(error) });
     const diagnostic = { ...entry(), ...getRevenueCatStructuredErrorProperties(error),
-      entitlement_active: hasCurrentPurchaseAccess(), restore_outcome: "failed" };
+      entitlement_active: hasCurrentPurchaseAccess(), restore_outcome: "failed" as const };
     current.input.captureError({ area: "monetization", error, eventName: "purchase_restore_failed",
       metadata: getRevenueCatDiagnostic({ extra: diagnostic, kind: "restore", step: "restore_purchases", why: getRevenueCatWhy(error) }) });
     current.input.track(ANALYTICS_EVENTS.purchaseRestoreFailed.key, diagnostic);

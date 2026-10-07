@@ -11,6 +11,7 @@ import type {
   ContentLocale,
 } from "@prawko/config";
 import type { QuestionDeliveryAsset } from "@prawko/schemas";
+import type { QuestionContentProvenance } from "../../analytics/content-provenance";
 
 export type QuestionOptionValue = "A" | "B" | "C" | "true" | "false";
 export type QuestionMediaAnswerSlot = "A" | "B" | "C";
@@ -57,6 +58,8 @@ export type LocalQuestion = {
   topicIds?: QuestionTopicId[];
   difficultySeed: number;
   examBasketId?: number;
+  /** Optional analytics-only provenance; old catalogue caches remain usable. */
+  contentProvenance?: QuestionContentProvenance;
 };
 
 export type QuestionAttempt = {

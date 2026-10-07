@@ -8,6 +8,8 @@ jest.mock("react-native-purchases", () => ({
   default: {},
 }));
 
+jest.mock("../../../lib/auth-storage", () => ({ secureSessionStorage: {} }));
+
 jest.mock("react-native-purchases-ui", () => ({
   PAYWALL_RESULT: {
     PURCHASED: "PURCHASED",

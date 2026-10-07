@@ -122,6 +122,8 @@ class FunnelModel(BaseModel):
     grain: str
     slice: dict[str, Any]
     steps: list[FunnelStepModel]
+    conversion_window_seconds: int | None = None
+    missing_join_rows: int = 0
 
 
 class EligibilityModel(BaseModel):
@@ -139,6 +141,29 @@ class MetricModel(BaseModel):
     confidence_ceiling: str | None
     value: float | None
     lead_visible: bool
+    grain: str | None = None
+    conversion_window_seconds: int | None = None
+    censored_units: int = 0
+    unjoinable_rows: int = 0
+    invalid_payload_rows: int = 0
+    import_conflict_rows: int = 0
+    business_conflict_rows: int = 0
+    invalid_business_rows: int = 0
+    business_order_uncertain_rows: int = 0
+
+
+class LearningTimingModel(BaseModel):
+    rule_version: str = "learning-v1"
+    grain: str = "installation_observation_id"
+    cohort: str = "first_observed_in_window"
+    status: str
+    observations: int
+    achieved: int
+    censored: int
+    excluded_observations: int
+    invalid_observation_rows: int = 0
+    median_achieved_seconds: float | None
+    as_of: datetime
 
 
 class MixBucket(BaseModel):
@@ -149,6 +174,14 @@ class MixBucket(BaseModel):
 
 class AcquisitionMix(BaseModel):
     status: str
+    rule_version: str | None = None
+    grain: str | None = None
+    population: str | None = None
+    installations: int = 0
+    terminal_observations: int = 0
+    quality_issue_count: int = 0
+    coverage_complete: bool = False
+    buckets: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class SegmentModel(BaseModel):
@@ -189,6 +222,21 @@ class ValidatedContext(BaseModel):
     findings: list[FindingModel]
     mixes: dict[str, list[MixBucket]]
     acquisition_mix: AcquisitionMix
+    learning_time_to_value: LearningTimingModel | None = None
+    financial: dict[str, Any] | None = None
+    identity_links: dict[str, Any] | None = None
+    feature_access: dict[str, Any] | None = None
+    content_observations: dict[str, Any] | None = None
+    repeat_answers: dict[str, Any] | None = None
+    external_entries: dict[str, Any] | None = None
+    rewarded_ads: dict[str, Any] | None = None
+    data_quality: dict[str, Any] | None = None
+    spend: dict[str, Any] | None = None
+    acquisition: dict[str, Any] | None = None
+    financial_cohorts: dict[str, Any] | None = None
+    billing_learning: dict[str, Any] | None = None
+    onboarding: dict[str, Any] | None = None
+    paywall_observations: dict[str, Any] | None = None
 
 
 class ConfounderStatus(BaseModel):
@@ -216,3 +264,4 @@ class ComparisonReport(BaseModel):
     current_window: WindowModel
     metrics: list[MetricComparison]
     acquisition_mix: AcquisitionMix = Field(default_factory=lambda: AcquisitionMix(status="unavailable"))
+    acquisition_comparison: dict[str, Any] | None = None

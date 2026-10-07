@@ -67,6 +67,8 @@ import { useAnalyticsViewState } from "../../src/analytics/useAnalyticsViewState
 import { useLearningReadyAnalytics } from "../../src/analytics/useLearningReadyAnalytics";
 import { createAnalyticsId } from "../../src/analytics/runtime-context";
 import { readLearningIntentId, reportLearningOperationFailure } from "../../src/analytics/operations";
+import type { LearningOperationName } from "../../src/analytics/operation-payloads";
+import type { LearningInteractionPayloads } from "../../src/analytics/learning-interaction-payloads";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { useAppShellStore } from "../../src/state/app-shell";
 import { useHasPlusAccess } from "../../src/state/entitlements";
@@ -302,14 +304,14 @@ export default function ExamSessionScreen() {
     return {
       answer_id: `${sessionId}:${currentQuestionRef?.order}`,
       answer_revision_id: createAnalyticsId("answer_revision"),
-      answer_action: previous ? "update" : "create",
+      answer_action: previous ? "update" as const : "create" as const,
       answer_changed: previous ? previous.answerGiven !== answerGiven : null,
       previous_is_correct: previous?.isCorrect ?? null,
       question_visible_foreground_ms: questionDuration.measure().visible_foreground_ms,
       answer_duration_scope: "current_question_visit",
     };
   }
-  function operationFailure(operation: string, error: unknown, userVisible = true) {
+  function operationFailure(operation: LearningOperationName, error: unknown, userVisible = true) {
     reportLearningOperationFailure(track, operation, error, {
       ...analyticsContext, user_visible: userVisible, screen_name: "exam_session",
     });
@@ -881,7 +883,7 @@ export default function ExamSessionScreen() {
         answered_count: nextSnapshot.session.totalQuestionsAnswered,
         correct_count: nextSnapshot.session.correctAnswersCount,
         end_reason:
-          typeof metadata.reason === "string" ? metadata.reason : "unknown",
+          (typeof metadata.reason === "string" ? metadata.reason : "unknown") as LearningInteractionPayloads["exam_session_ended"]["end_reason"],
         mode: nextSnapshot.session.mode,
         question_total: nextSnapshot.session.totalQuestionsTarget,
         status,
@@ -1474,6 +1476,7 @@ export default function ExamSessionScreen() {
           <View style={styles.mediaBleed}>
             {currentQuestion.media ? (
               <QuestionMediaCard
+                analyticsProperties={{ question_id: currentQuestion.id, exam_session_id: snapshot.session.id }}
                 key={currentQuestion.id}
                 autoPlayVideo={false}
                 locale={displayLocale}

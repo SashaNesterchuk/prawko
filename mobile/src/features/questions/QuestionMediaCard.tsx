@@ -4,12 +4,17 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Image,
+  AppState,
   Pressable,
   View,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { ANALYTICS_PROPERTIES } from "../../analytics/catalog";
+import { ANALYTICS_PROPERTIES, getAnalyticsErrorCode, type AnalyticsProperties } from "../../analytics/catalog";
+import { getMediaRevision } from "../../analytics/content-revisions";
+import { createMediaAnalyticsTracker } from "../../analytics/media-lifecycle";
+import { useAnalytics } from "../../hooks/useAnalytics";
+import { useIsFocused } from "expo-router/react-navigation";
 import type { SupportedLocale } from "@prawko/config";
 import type { QuestionDeliveryAsset } from "@prawko/schemas";
 
@@ -43,6 +48,7 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
   onVideoProgress,
   onVideoStarted,
   playbackLocked = false,
+  analyticsProperties,
 }: {
   autoPlayVideo?: boolean;
   locale: SupportedLocale;
@@ -56,11 +62,14 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
   onVideoStarted?: () => void;
   /** When true, hide play affordance and ignore taps (exam: no replay). */
   playbackLocked?: boolean;
+  analyticsProperties?: AnalyticsProperties;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const { captureError } = useErrorLogger();
+  const { track } = useAnalytics();
+  const isFocused = useIsFocused();
   const enablePjmTracks = useAppShellStore((state) => state.enablePjmTracks);
   const styles = useStyles();
   const [previewFailed, setPreviewFailed] = useState(false);
@@ -90,6 +99,31 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
     ? getQuestionDeliveryPosterUrl(activeVideoAsset) ??
     (activeVideoAsset.mediaKey === media.asset.mediaKey ? previewUrl : null)
     : null;
+  const telemetryRef = useRef({ track, analyticsProperties, isFocused, locale });
+  telemetryRef.current = { track, analyticsProperties, isFocused, locale };
+  const observedAsset = activeVideoAsset ?? media.asset;
+  const observedRevision = getMediaRevision(observedAsset);
+  const observedIsVideo = Boolean(activeVideoAsset) || isVideo;
+  const observedUrl = observedIsVideo ? activeVideoUrl : previewUrl;
+  const mediaTracker = useMemo(() => createMediaAnalyticsTracker({
+    track: (event, properties) => telemetryRef.current.track(event, properties),
+    getProperties: () => ({
+      ...telemetryRef.current.analyticsProperties,
+      content_requested_locale: telemetryRef.current.locale,
+      media_key: observedAsset.mediaKey,
+      media_type: observedAsset.mediaType,
+      media_revision: observedRevision,
+      media_revision_basis: "asset_descriptor",
+      media_source_kind: observedAsset.sourceKind,
+      media_focused: telemetryRef.current.isFocused && AppState.currentState === "active",
+      media_load_reason: reloadKey > 0 ? "retry" : "component_mount",
+    }),
+  }), [observedRevision, reloadKey, observedUrl]);
+  useEffect(() => {
+    mediaTracker.start();
+    if (!observedUrl) mediaTracker.fail("asset_unavailable");
+    return () => mediaTracker.close();
+  }, [mediaTracker, observedUrl]);
 
   const playVideoAsset = (asset: QuestionDeliveryAsset) => {
     setActiveVideoAsset(asset);
@@ -146,6 +180,7 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
           posterUrl={activeVideoPosterUrl}
           styles={styles}
           url={activeVideoUrl}
+          mediaTracker={mediaTracker}
         />
       </View>
     );
@@ -214,9 +249,13 @@ export const QuestionMediaCard = memo(function QuestionMediaCard({
           source={{ uri: previewUrl ?? undefined }}
           resizeMode={imageResizeMode}
           style={styles.preview}
-          onLoad={() => setIsLoaded(true)}
+          onLoad={() => {
+            mediaTracker.ready();
+            setIsLoaded(true);
+          }}
           onError={(event) => {
             setPreviewFailed(true);
+            mediaTracker.fail(getQuestionImagePreviewErrorCode(event.nativeEvent));
 
             if (didLogPreviewFailureRef.current) {
               return;
@@ -271,6 +310,7 @@ function InlineQuestionVideo({
   posterUrl,
   styles,
   url,
+  mediaTracker,
 }: {
   accessibilityLabel: string;
   autoPlay: boolean;
@@ -283,6 +323,7 @@ function InlineQuestionVideo({
   posterUrl: string | null;
   styles: ReturnType<typeof useStyles>;
   url: string;
+  mediaTracker: ReturnType<typeof createMediaAnalyticsTracker>;
 }) {
   const { colors } = useTheme();
   // Direct URI, no `{ useCaching: true }`: expo-video's VideoCacheManager
@@ -338,6 +379,7 @@ function InlineQuestionVideo({
   });
 
   useEventListener(player, "sourceLoad", ({ duration: nextDuration }) => {
+    mediaTracker.ready();
     if (nextDuration > 0) {
       setDuration(nextDuration);
       onProgressRef.current?.({
@@ -348,6 +390,7 @@ function InlineQuestionVideo({
   });
 
   useEventListener(player, "playToEnd", () => {
+    mediaTracker.ended();
     const endedAt = player.duration || currentTime;
     setCurrentTime(endedAt);
     setHasStarted(true);
@@ -362,6 +405,15 @@ function InlineQuestionVideo({
 
     endedRef.current = true;
     onEnded?.();
+  });
+
+  useEventListener(player, "playingChange", ({ isPlaying: playing }) => {
+    if (playing) mediaTracker.playing();
+  });
+  useEventListener(player, "statusChange", ({ status, error }) => {
+    if (status === "readyToPlay") mediaTracker.ready();
+    else if (status === "loading") mediaTracker.buffering();
+    else if (status === "error") mediaTracker.fail(getAnalyticsErrorCode(error));
   });
 
   useEffect(() => {

@@ -17,7 +17,7 @@ def test_oct_3_context_matches_the_manual_review(tmp_path):
 
     assert context.dataset.event_rows == 4264
     assert context.dataset.analysis_keys == 20
-    assert context.dataset.window.complete is True
+    assert context.dataset.window.complete is False
     assert context.identity.quality == "ok"
     assert context.identity.primary_analysis_key == "app_user_id"
     assert context.identity.fallback_rows == 99

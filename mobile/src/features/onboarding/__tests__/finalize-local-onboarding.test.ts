@@ -21,6 +21,7 @@ function createStore(overrides: Record<string, unknown> = {}) {
     preferredCategory: "B",
     preferredLocale: "pl",
     currentStudyPlan: null,
+    onboardingCompleted: false,
     studyPlanSetup: {
       daysUntilExam: 14,
       examDate: "2026-10-01",
@@ -59,14 +60,36 @@ describe("finalizeLocalOnboarding", () => {
     });
   });
 
-  it("does not track when a plan already exists", () => {
+  it("does not duplicate plan creation when a plan already exists", () => {
     const track = jest.fn();
     const store = createStore({ currentStudyPlan: plan });
 
     finalizeLocalOnboarding(store as never, track);
 
-    expect(track).not.toHaveBeenCalled();
+    expect(track.mock.calls.map(([event]) => event)).toEqual([ANALYTICS_EVENTS.onboardingFlowCompleted.key]);
     expect(store.saveCurrentStudyPlan).toHaveBeenCalledWith(plan);
     expect(store.completeOnboarding).toHaveBeenCalled();
+  });
+
+  it("does not call a settings revisit a new onboarding completion", () => {
+    const track = jest.fn();
+    const store = createStore({ currentStudyPlan: plan, onboardingCompleted: true });
+    finalizeLocalOnboarding(store as never, track);
+    expect(track).not.toHaveBeenCalled();
+  });
+
+  it("does not claim completion when local persistence rejects", () => {
+    const track = jest.fn();
+    const store = createStore({ saveCurrentStudyPlan: jest.fn(() => { throw new Error("save failed"); }) });
+    expect(() => finalizeLocalOnboarding(store as never, track)).toThrow("save failed");
+    expect(track).not.toHaveBeenCalled();
+    expect(store.completeOnboarding).not.toHaveBeenCalled();
+  });
+
+  it("isolates new completion telemetry from the accepted product operation", () => {
+    const track = jest.fn(() => { throw new Error("observer failed"); });
+    const store = createStore({ currentStudyPlan: plan });
+    expect(() => finalizeLocalOnboarding(store as never, track)).not.toThrow();
+    expect(store.completeOnboarding).toHaveBeenCalledTimes(1);
   });
 });

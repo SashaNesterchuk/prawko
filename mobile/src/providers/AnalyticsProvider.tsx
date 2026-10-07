@@ -2,8 +2,12 @@ import { PropsWithChildren, useEffect, useRef } from "react";
 import { PostHogProvider, usePostHog } from "posthog-react-native";
 
 import { ANALYTICS_EVENTS, ANALYTICS_PROPERTIES, sanitizeSdkAnalyticsValue } from "../analytics/catalog";
+import type { AccessSource } from "../analytics/activity-payloads";
 import { AnalyticsLifecycleObserver } from "../analytics/AnalyticsLifecycleObserver";
 import { AppleSearchAdsObserver } from "../analytics/AppleSearchAdsObserver";
+import { ContentAnalyticsObserver } from "../analytics/ContentAnalyticsObserver";
+import { InstallAnalyticsObserver } from "../analytics/InstallAnalyticsObserver";
+import { createIdentityObservationTracker } from "../analytics/identity-observation";
 import { getAnalyticsBaseProperties } from "../analytics/base-properties";
 import { useAnalytics } from "../hooks/useAnalytics";
 import { isPostHogCaptureEnabled } from "../analytics/posthog-build-gate";
@@ -56,6 +60,8 @@ export function AnalyticsProvider({ children }: PropsWithChildren) {
       <PostHogIdentitySync />
       <AnalyticsLifecycleObserver />
       <AppleSearchAdsObserver />
+      <ContentAnalyticsObserver />
+      <InstallAnalyticsObserver />
       <AccessAnalyticsObserver />
       {children}
     </PostHogProvider>
@@ -64,7 +70,7 @@ export function AnalyticsProvider({ children }: PropsWithChildren) {
 
 function PostHogIdentitySync() {
   const posthog = usePostHog();
-  const { identify } = useAnalytics();
+  const { identify, track } = useAnalytics();
   const appUserId = useAppUserId();
   const currentUser = useCurrentUser();
   const isPlus = useHasPlusAccess();
@@ -72,12 +78,15 @@ function PostHogIdentitySync() {
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const previousIdentitySignatureRef = useRef<string | null>(null);
-  const aliasedSupabaseUserIdRef = useRef<string | null>(null);
+  const identityObserver = useRef(createIdentityObservationTracker()).current;
+
+  useEffect(() => {
+    identityObserver(track, appUserId, currentUser?.provider === "supabase" ? currentUser.id : null);
+  }, [appUserId, currentUser?.id, currentUser?.provider, identityObserver, track]);
 
   useEffect(() => {
     if (!posthog || !isPostHogCaptureEnabled()) {
       previousIdentitySignatureRef.current = null;
-      aliasedSupabaseUserIdRef.current = null;
       return;
     }
 
@@ -110,16 +119,8 @@ function PostHogIdentitySync() {
       void posthog.register(getAnalyticsBaseProperties(appUserId)).catch(() => undefined);
     } catch { /* Optional SDK context cannot affect identity synchronization. */ }
 
-    if (
-      supabaseUserId &&
-      aliasedSupabaseUserIdRef.current !== supabaseUserId &&
-      typeof posthog.alias === "function"
-    ) {
-      try {
-        posthog.alias(supabaseUserId);
-        aliasedSupabaseUserIdRef.current = supabaseUserId;
-      } catch { /* Analytics identity must not affect auth. */ }
-    }
+    // Keep the shared install distinct ID. Account links are event-time
+    // observations, not irreversible aliases across account switches.
 
     previousIdentitySignatureRef.current = identitySignature;
   }, [
@@ -143,7 +144,7 @@ function AccessAnalyticsObserver() {
     state.revenueCatFeatureEntitlements.premium_access || state.revenueCatFeatureEntitlements.ai_question_chat);
   const school = useEntitlementStore((state) => Boolean(state.schoolAccess) &&
     (state.featureEntitlements.premium_access || state.featureEntitlements.ai_question_chat));
-  const previous = useRef<{ plus: boolean; source: string } | null>(null);
+  const previous = useRef<{ plus: boolean; source: AccessSource } | null>(null);
   useEffect(() => {
     const source = !isPlus ? "none" : purchase ? "purchase" : school ? "school" : "other";
     const before = previous.current;

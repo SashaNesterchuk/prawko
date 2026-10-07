@@ -38,7 +38,7 @@ export function getCheckoutErrorTranslationKey(kind: RevenueCatCheckoutErrorKind
 }
 
 /** Bounded structured codes/domains, never receipts, raw userInfo or account data. */
-export function getRevenueCatStructuredErrorProperties(error: unknown): AnalyticsProperties {
+export function getRevenueCatStructuredErrorProperties(error: unknown) {
   const record = error && typeof error === "object" ? error as Record<string, unknown> : {};
   const info = record.userInfo && typeof record.userInfo === "object"
     ? record.userInfo as Record<string, unknown> : {};

@@ -2,7 +2,107 @@
 
 Решение зафиксировано 5 октября 2026. Менять его только новой версией контракта (`contract_version`), не обсуждением агентов.
 
+**Дополнение 7 октября 2026, contract_version=2:** повторный импорт теперь merge/dedupe, не замена дня; календарные даты не доказывают полноту. Rates требуют coverage manifest. Funnel joins проверяют identity, порядок, horizon и сохраняют исходный grain при retries. Добавлены отдельные meaningful-learning D7 и TTV с censored observations. Точные правила и пример manifest: [analytics-engine/README.md](../../analytics-engine/README.md). Описание замены partitions и календарной полноты ниже сохранено как историческое поведение версии 1, не текущая спецификация.
+
+В текущем health attempts связываются по installation-scoped session ID;
+временная реконструкция остаётся только помеченным legacy proxy. Exam attempt
+completion использует зрелый 24-hour horizon; молодые starts censored.
+`build_health` по умолчанию имеет `coverage_complete=false`: rates и ranked drops
+не считаются надёжными, пока вызывающая сторона не передаст проверенную полноту.
+Replay start, answer updates, conflicting outcomes и missing IDs имеют отдельную
+диагностику. Поля `users`/`people` сохранены для совместимости, но
+`identity_grain=app_user_id_installation`, не доказанный человек.
+
+Отдельный [RevenueCat ledger](./revenuecat-ledger.md) принимает offline webhook
+archive, не создаёт production receiver. `context.financial` и аргумент
+`build_health(..., financial=report)` сохраняют gross event activity, adjustments,
+валюту, as-of coverage и scoped reconciliation. Старый текст об отсутствии RC API
+ниже не запрещает offline import и не является подтверждением production setup;
+store proceeds и settled money этим импортом не доказываются.
+
+`context.content_observations` / health отделяют выбранное locale-поле от
+source provenance, catalogue explanation hash от rendered revision и текущий
+exam config от persisted origin. `context.repeat_answers` / health используют
+ordered baseline → explanation/review → следующий distinct logical answer,
+контроль revision/language/selection, семь дней horizon и censoring.
+Exam updates не становятся повторным обучением; без coverage/integrity
+descriptive fractions запрещены. Это не causal explanation lift.
+Паспорт и границы проверки: [content-observations.md](./content-observations.md).
+
 Код: `analytics-engine/`. Продуктовый контракт: `analytics-engine/contract/analytics_contract.yaml`. Словарь ключей по-прежнему `mobile/src/analytics/catalog.ts` и [keys.md](./keys.md). Этот файл смысл ключей не копирует.
+
+`context.data_quality` / health и команда `data-quality` используют отдельный
+warehouse-backed `data-quality-v1`: cross-partition provider/client conflicts,
+business-operation dedupe, pre-window replay и receipt-minus-client lag.
+Сырые счётчики сохранены; activity/funnels используют canonical observations.
+Business integrity ограничивает зависимые rates, не меняя event meanings,
+identity или RevenueCat money. Partial-day чтение включает последний
+пересекающийся день; export time не подменяет receipt. Паспорт и оставшаяся
+приёмка: [data-quality.md](./data-quality.md).
+
+Client payload QA v2 has a separate
+[producer and warehouse passport](./payload-contracts.md).
+`data_quality.client_payload_validation` distinguishes reported legacy/v1/v2
+validation, undefined rules and unusable annotations without retroactive v2
+validation. Invalid, contradictory or unsupported client annotations restrict
+dependent observations, not independent learning or RevenueCat source money.
+Meaningful-learning D7/TTV and generic calendar return retain different source
+dependencies. This does not change product decisions or SDK delivery policy.
+
+`context.spend` и отдельные `ingest-spend` / `spend` читают Apple Ads CSV через
+явный source manifest. Campaign/keyword aggregate views, account/app namespaces,
+валюты и source windows не смешиваются; overlaps/partial windows не распределяются
+по дням. Сентябрьские CSV не означают текущие расходы. AdMob earnings и RevenueCat
+money остаются отдельными; сам spend importer не выполняет финансовый join.
+Паспорт: [acquisition-spend.md](./acquisition-spend.md).
+
+`context.acquisition` / `acquisition_mix` и CLI `acquisition` считают отдельный
+ASA installation mix и first-observed D7/D30 client/learning cohorts. Только
+явный iOS terminal устанавливает атрибуцию; super properties и visit entries
+не создают новых acquisitions. История позволяет связать purchase, пришедший
+раньше ASA response; это клиентское наблюдение, не verified charge. Unknown,
+invalid anchors, maturity и full source coverage остаются явными.
+`compare.acquisition_comparison` показывает оба install-grain mix и сдвиг как
+confounder, не causal channel effect. Passport:
+[acquisition-cohorts.md](./acquisition-cohorts.md).
+
+`context.financial_cohorts` и CLI `acquisition-finance` используют отдельный
+reviewed native/ASA/Apple/RevenueCat mapping и наблюдавшийся original transaction
+origin. D7/D30 gross activity сохраняет maturity, source coverage, валюты и
+ограничения ownership/monetary horizons. Exact campaign-window expense даёт только
+помеченный subset diagnostic; `proceeds` / `roas` всегда null.
+Historical client delivery-as-of и production mappings этим не доказываются.
+Паспорт: [acquisition-finance.md](./acquisition-finance.md).
+
+`context.billing_learning` и CLI `billing-learning` используют отдельный
+native/RevenueCat mapping без зависимости от ASA. `billing-learning-v1`
+наблюдает обучение после trial/first positive charge с известным original
+lineage: activation, elapsed D7/D30, bounded trial revisions, cancellation
+usage и post-activation calendar return. Answer/open/start/outcome defects
+ограничивают свои fractions; trial/paid memberships не аддитивны.
+Rates требуют explicit client `coverage.application_ids` и production archive
+coverage. Это не current entitlement, settled money или causal paid lift.
+Паспорт: [billing-learning.md](./billing-learning.md).
+
+`context.onboarding`, CLI `onboarding` и supplied `health.onboarding` используют
+отдельный `onboarding-activation-v1`: durable first-observed и persistent attempt
+roots не смешиваются. Declared local acceptance, foreground Home, open, entry,
+usable question, accepted answer и meaningful completion имеют независимые
+gates; same-session chain требует доказанного порядка. Learning после Home
+остаётся temporal installation association до следующего attempt/reset,
+не direct attempt или causal join. Elapsed 24h/D7/D30 и first-observed
+post-activation Warsaw calendar D1/D7 сохраняют nonachievers, censoring,
+app-scoped coverage и unknown roots. Без supplied history health возвращает
+`history_not_supplied`. Паспорт: [onboarding-activation.md](./onboarding-activation.md).
+
+`context.paywall_observations`, CLI `paywall-observations` и health используют
+`paywall-observations-v1`: отдельные request/product outcomes eligibility и
+immutable paywall/checkout input origins. Доступная pre-window история,
+replay/conflicts, неизвестные terminals и detached callbacks остаются явными.
+Свежий native SKU/price не перезаписывает исходный выбор; старые journals не
+получают выдуманный текущий config. Eligibility callbacks не создают calendar
+return или learning/TTV. Отчёт count-only, не displayed-trial rate, оплата
+или native delivery. Паспорт: [paywall-observations.md](./paywall-observations.md).
 
 ## Что это
 
@@ -51,7 +151,15 @@ LLM analyst                ← ещё не подключён: объяснен�
 
 Дата выкладки продукта живёт в `changes` контракта. Модель её из скачка метрики не выводит. Пока запись не внесена человеком, реестр пуст.
 
-Источник кампании не считается в `acquisition_mix`: процессор не строит микс по id. Новые iOS-установки после релиза AdServices пишут `apple_search_ads_attribution_resolved` с числовыми `asa_campaign_id`, `asa_ad_group_id` и `asa_keyword_id`. Это проверка установки, не источник визита и не название ключа. `asa_result=organic` — Apple ответил, что клика не было. `unavailable` — проверки не получилось, это не органика. Android и старые билды событие не шлют. `app_entry_resolved` по-прежнему direct, notification или известный deep link визита. В контексте `acquisition_mix.status = unavailable`, пока джойна id со спендом нет.
+`acquisition_mix` теперь считает наблюдаемые primary installation IDs, не строки
+с повторяющимися ASA super properties и не physical new installs. Явный
+`apple_search_ads_attribution_resolved` может дать `attributed`, `organic` или
+`unavailable`; Android/старые билды без проверки не превращаются в organic.
+Числовые org/campaign/ad-group/keyword/ad IDs остаются namespace dimensions,
+не названиями, spend или соответствием RevenueCat app. `app_entry_resolved`
+по-прежнему источник визита. Финансовая сверка и ROAS остаются unjoined, даже
+если diagnostic ASA mix доступен. Полный паспорт и критерии долей:
+[acquisition-cohorts.md](./acquisition-cohorts.md).
 
 ## Процессор
 
@@ -118,6 +226,16 @@ LLM-аналитик не подключён. Он понадобится, ко�
 Дашборд `/dashboard/prawko` считает unique users в окне 7/30/90 дней. Это другой вопрос. Воронки дашборда в контракт движка не копируются: там paywall всё ещё идёт через выбор пакета, first start — через spotlight, знаки — через обязательный `sign_opened`.
 
 ## Регрессия
+
+`context.external_entries` / `health.external_entries` используют
+`external-entry-v1`: scoped source/destination observations и ordered notification
+learning с новыми accepted answers, mature nonachievers и unknown-tail censoring.
+`context.rewarded_ads` / `health.rewarded_ads` используют `rewarded-sdk-v1`:
+SDK invocation / OPENED / PAID evidence / earned / terminal отдельно, scoped PAID
+dedupe/conflicts и decimal totals по валютам. Эти client SDK значения не входят
+в RevenueCat finance и не являются settled revenue. Новые QA IDs ограничивают
+выводы при invalid/orphan/conflicting observations. Полный паспорт и оставшаяся
+приёмка: [external-entry-rewarded-observations.md](./external-entry-rewarded-observations.md).
 
 День 3 октября 2026 — фикстура семантики, не оценка размера продукта. Тест `analytics-engine/tests/test_oct03.py` гоняет gitignored дамп и проверяет контекст, не сходство текста с `2026-10-03.md`.
 

@@ -5,12 +5,18 @@ import type { AnalyticsProperties } from "../../analytics/catalog";
 import type { RevenueCatPackageSummary } from "../../state/entitlements";
 import type { CheckoutAttempt } from "./checkout";
 import type { RevenueCatCheckoutErrorKind } from "./revenuecat-errors";
+import { CHECKOUT_ORIGIN_KEYS, PAYWALL_ORIGIN_KEYS } from "./offer-origin";
 
 const JOURNAL_PREFIX = "prawko.checkout.v1:";
 const CONTEXT_KEYS = [
   "source", "surface", "roadmap_step_id", "presentation", "moment", "feature",
   "exam_country", "category", "locale",
   "auth_mode", "app_version", "monetization_version", "paywall_reason",
+  "plan", "default_plan", "paywall_variant", "paywall_offer", "paywall_config_version",
+  "trial_days", "trial_eligibility", "trial_shown", "subscription_period", "price_basis",
+  "offer_load_id", "offer_request_id",
+  "trial_eligibility_observation_version", "trial_eligibility_basis", "trial_eligibility_request_id",
+  ...PAYWALL_ORIGIN_KEYS, ...CHECKOUT_ORIGIN_KEYS,
 ] as const;
 const ERROR_KINDS: RevenueCatCheckoutErrorKind[] = [
   "cancelled", "payment_pending", "store_problem", "operation_in_progress",
@@ -81,6 +87,8 @@ export function writeCheckoutJournal(appUserId: string, attempts: CheckoutJourna
           packageType: saved.attempt.package.packageType,
           price: saved.attempt.package.price,
           currencyCode: saved.attempt.package.currencyCode,
+          subscriptionPeriod: saved.attempt.package.subscriptionPeriod,
+          freeTrialDays: saved.attempt.package.freeTrialDays ?? null,
         },
       },
     })),
@@ -173,7 +181,11 @@ function parsePackage(value: unknown): RevenueCatPackageSummary {
     pricePerMonthString: null,
     pricePerWeekString: null,
     pricePerYearString: null,
-    subscriptionPeriod: null,
+    // Optional metadata preserves backwards compatibility with v1 journals.
+    subscriptionPeriod: typeof offer.subscriptionPeriod === "string" &&
+      /^P[1-9]\d*[DWMY]$/.test(offer.subscriptionPeriod) ? offer.subscriptionPeriod : null,
+    freeTrialDays: typeof offer.freeTrialDays === "number" &&
+      Number.isFinite(offer.freeTrialDays) && offer.freeTrialDays >= 0 ? offer.freeTrialDays : null,
   };
 }
 

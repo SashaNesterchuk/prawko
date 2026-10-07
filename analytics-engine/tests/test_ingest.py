@@ -55,5 +55,6 @@ def test_partial_export_day_is_not_complete(tmp_path):
     )
     written = ingest_dump(dump, tmp_path / "warehouse")
     by_day = {item.day: item.complete for item in written}
-    assert by_day[date(2026, 9, 12)] is True
+    # A date range alone does not prove pagination or delivery coverage.
+    assert by_day[date(2026, 9, 12)] is False
     assert by_day[date(2026, 9, 20)] is False

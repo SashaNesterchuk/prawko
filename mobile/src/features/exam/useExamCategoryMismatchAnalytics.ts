@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { ANALYTICS_EVENTS, type AnalyticsProperties } from "../../analytics/catalog";
 import { createAnalyticsId } from "../../analytics/runtime-context";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
+import type { CategoryMismatchScope } from "../../analytics/learning-interaction-payloads";
 
 export function useExamCategoryMismatchAnalytics({
   examSessionId,
@@ -14,15 +15,15 @@ export function useExamCategoryMismatchAnalytics({
   resolvedReady,
 }: {
   examSessionId: string | null;
-  currentCategory: string;
-  sessionCategory?: string;
-  screenName: string;
+  currentCategory: CategoryMismatchScope["current_category"];
+  sessionCategory?: CategoryMismatchScope["session_category"];
+  screenName: CategoryMismatchScope["screen_name"];
   eligible: boolean;
   resolvedReady: boolean;
 }) {
   const { track } = useAnalytics();
   const isFocused = useIsFocused();
-  const mismatchRef = useRef<AnalyticsProperties | null>(null);
+  const mismatchRef = useRef<(AnalyticsProperties & CategoryMismatchScope) | null>(null);
 
   useEffect(() => {
     if (!isFocused || !eligible || !examSessionId || !sessionCategory) {

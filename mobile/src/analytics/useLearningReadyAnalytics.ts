@@ -3,11 +3,12 @@ import { AppState } from "react-native";
 import { useIsFocused } from "expo-router/react-navigation";
 
 import { ANALYTICS_EVENTS, type AnalyticsProperties } from "./catalog";
+import type { LearningReadyContext, LearningReadyPayload } from "./activity-payloads";
 import { useAnalyticsDuration } from "./useAnalyticsDuration";
 import { useAnalytics } from "../hooks/useAnalytics";
 
 /** Ready means usable question UI, not decoded media or a responsive main thread. */
-export function useLearningReadyAnalytics(key: string | null, ready: boolean, properties: AnalyticsProperties) {
+export function useLearningReadyAnalytics(key: string | null, ready: boolean, properties: AnalyticsProperties & LearningReadyContext) {
   const { track } = useAnalytics();
   const focused = useIsFocused();
   const duration = useAnalyticsDuration(key, focused);
@@ -20,7 +21,7 @@ export function useLearningReadyAnalytics(key: string | null, ready: boolean, pr
     duration.setVisible(focused && AppState.currentState === "active");
   }, [duration, key, focused]);
   useEffect(() => {
-    function record(reason: string) {
+    function record(reason: LearningReadyPayload["ready_reason"]) {
       const current = latest.current;
       if (observed.current || !current.focused || !current.ready || AppState.currentState !== "active") return;
       observed.current = true;

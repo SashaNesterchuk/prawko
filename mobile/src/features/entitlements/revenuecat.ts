@@ -10,6 +10,7 @@ import { PAYWALL_RESULT } from "react-native-purchases-ui";
 
 import { mobileEnv } from "../../config/env";
 import { getFreeTrialDays } from "./free-trial";
+import { observeTrialEligibility, type TrialEligibilityObserver, type ResolvedTrialEligibilityProduct } from "./trial-eligibility-observation";
 import { createAppUserId } from "../../identity/app-user-id";
 import {
   createEmptyFeatureEntitlements,
@@ -34,6 +35,7 @@ import {
 } from "./store-request-timeout";
 
 import {
+  getRevenueCatCheckoutErrorKind,
   getRevenueCatDiagnostic,
   getRevenueCatErrorCode,
   getRevenueCatErrorMessage,
@@ -233,16 +235,54 @@ export async function purchaseRevenueCatPackage(input: {
  */
 export async function fetchTrialIneligibleProductIds(
   appUserId: string,
-  productIds: string[]
+  productIds: string[],
+  observer?: TrialEligibilityObserver,
 ): Promise<string[]> {
-  if (Platform.OS !== "ios" || productIds.length === 0) return [];
-  if (!(await ensureRevenueCatReady(appUserId))) return [];
-
-  const Purchases = (await getRevenueCatModule()).default;
-  const eligibility = await Purchases.checkTrialOrIntroductoryPriceEligibility(productIds);
-  return productIds.filter(
-    (id) => eligibility[id]?.status !== Purchases.INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE
-  );
+  observeTrialEligibility(observer, () => ({ phase: "started", platform: Platform.OS }));
+  let nativeQueryInvoked = false;
+  const complete = (outcome: "unsupported" | "not_configured" | "no_products" | "error", error?: unknown) =>
+    observeTrialEligibility(observer, () => ({
+      phase: "completed", platform: Platform.OS, outcome, nativeQueryInvoked,
+      errorCategory: outcome === "error" ? getRevenueCatCheckoutErrorKind(error) : null,
+      products: productIds.map((productId) => ({
+        productId, outcome: outcome === "error" ? "error" : "unknown",
+        basis: outcome === "unsupported" ? "unsupported_platform" : outcome === "error" ? "request_error" : "not_configured",
+      })),
+    }));
+  if (Platform.OS !== "ios" || productIds.length === 0) {
+    complete(productIds.length === 0 ? "no_products" : "unsupported");
+    return [];
+  }
+  try {
+    if (!(await ensureRevenueCatReady(appUserId))) {
+      complete("not_configured");
+      return [];
+    }
+    const Purchases = (await getRevenueCatModule()).default;
+    nativeQueryInvoked = true;
+    const eligibility = await Purchases.checkTrialOrIntroductoryPriceEligibility(productIds);
+    const ineligible = productIds.filter(
+      (id) => eligibility[id]?.status !== Purchases.INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE
+    );
+    observeTrialEligibility(observer, () => ({
+      phase: "completed", platform: Platform.OS, outcome: "resolved", nativeQueryInvoked, errorCategory: null,
+      products: productIds.map((productId): ResolvedTrialEligibilityProduct => {
+        const status = eligibility[productId]?.status;
+        const statuses = Purchases.INTRO_ELIGIBILITY_STATUS;
+        const outcome = status === statuses.INTRO_ELIGIBILITY_STATUS_ELIGIBLE ? "eligible"
+          : status === statuses.INTRO_ELIGIBILITY_STATUS_INELIGIBLE ? "ineligible"
+          : status === statuses.INTRO_ELIGIBILITY_STATUS_NO_INTRO_OFFER_EXISTS ? "no_intro_offer" : "unknown";
+        return {
+          productId, outcome, basis: outcome !== "unknown" ? "revenuecat_ios_status"
+            : eligibility[productId] == null ? "missing_product_response" : "sdk_status_unknown",
+        };
+      }),
+    }));
+    return ineligible;
+  } catch (error) {
+    complete("error", error);
+    throw error;
+  }
 }
 
 export async function restoreRevenueCatPurchases(appUserId: string) {

@@ -558,6 +558,8 @@ export function useQuestionTrainingSession() {
       track(ANALYTICS_EVENTS.trainingSessionCompleted.key, {
         ...context,
         answered_count: summary.answered,
+        accepted_unique_question_count: Object.keys(activeSession.answers).length,
+        learning_outcome_rule_version: "learning-v1",
         correct_count: summary.correct,
         incorrect_count: summary.wrong,
         passed: sessionPassed,
@@ -621,6 +623,7 @@ export function useQuestionTrainingSession() {
     }
     viewedQuestionRef.current = key;
     track(ANALYTICS_EVENTS.trainingQuestionViewed.key, {
+      content_requested_locale: displayLocale,
       training_session_id: activeSession.id,
       mode: activeSession.request.mode,
       question_id: currentQuestion.id,
@@ -632,7 +635,7 @@ export function useQuestionTrainingSession() {
       topic_id: activeSession.request.topic ?? null,
       ...roadmapStepAnalytics(activeSession.request.roadmapStepId),
     });
-  }, [activeSession, currentAnswer, currentQuestion, entrySessionId, isEmptyState, isFocused, lifecycle, track]);
+  }, [activeSession, currentAnswer, currentQuestion, displayLocale, entrySessionId, isEmptyState, isFocused, lifecycle, track]);
 
   useEffect(() => {
     if (
@@ -698,6 +701,7 @@ export function useQuestionTrainingSession() {
     );
 
     track(ANALYTICS_EVENTS.trainingQuestionAnswered.key, {
+      content_requested_locale: displayLocale,
       training_session_id: answeredAttempt.sessionId,
       answer_id: answeredAttempt.id,
       answer_duration_ms: answerDurationMs,

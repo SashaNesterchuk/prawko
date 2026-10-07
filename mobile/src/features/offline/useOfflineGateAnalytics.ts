@@ -5,6 +5,7 @@ import { ANALYTICS_EVENTS, type AnalyticsProperties } from "../../analytics/cata
 import { createAnalyticsId } from "../../analytics/runtime-context";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
 import type { useOfflineFeatureGate } from "./useOfflineFeatureGate";
+import type { OfflineBlockContext, OfflineBlockScope } from "../../analytics/learning-interaction-payloads";
 
 export function useOfflineGateAnalytics({
   gate,
@@ -13,11 +14,11 @@ export function useOfflineGateAnalytics({
 }: {
   gate: ReturnType<typeof useOfflineFeatureGate>;
   visible: boolean;
-  properties: AnalyticsProperties;
+  properties: AnalyticsProperties & OfflineBlockContext;
 }) {
   const { track } = useAnalytics();
   const isFocused = useIsFocused();
-  const blockRef = useRef<AnalyticsProperties | null>(null);
+  const blockRef = useRef<(AnalyticsProperties & OfflineBlockScope) | null>(null);
 
   useEffect(() => {
     if (!isFocused || !visible || gate.status !== "blocked") {

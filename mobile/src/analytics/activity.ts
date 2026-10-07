@@ -1,8 +1,10 @@
-import { ANALYTICS_EVENTS, type AnalyticsEventName, type AnalyticsProperties } from "./catalog";
+import { ANALYTICS_EVENTS, type AnalyticsProperties } from "./catalog";
 import { createAnalyticsId } from "./runtime-context";
+import { externalEntryObservation, type ExternalEntryObserver } from "./external-entry-observation";
+import type { ActivityDurations, AppVisibility, AppVisitScope, ScreenVisitScope } from "./activity-payloads";
+import type { AnalyticsTrack } from "../hooks/useAnalytics";
 
-type AppVisibility = "active" | "inactive" | "background" | "unknown" | "extension";
-type Emit = (event: AnalyticsEventName, properties: AnalyticsProperties) => void;
+type Emit = AnalyticsTrack;
 type TimedVisit = {
   id: string;
   startedAt: number;
@@ -29,13 +31,14 @@ export function createActivityTracker(input: {
   now?: () => number;
   wallNow?: () => number;
   createId?: (prefix: string) => string;
+  entryObserver?: ExternalEntryObserver;
 } = {}) {
   const now = input.now ?? analyticsMonotonicNow;
   const wallNow = input.wallNow ?? Date.now;
   const createId = input.createId ?? createAnalyticsId;
   let emitter: Emit = () => undefined;
-  const emit: Emit = (event, properties) => {
-    try { emitter(event, properties); } catch { /* Telemetry is best effort. */ }
+  const emit: Emit = (event, ...args) => {
+    try { emitter(event, ...args); } catch { /* Telemetry is best effort. */ }
   };
   let visibility: AppVisibility = "unknown";
   let observedAt = now();
@@ -70,7 +73,7 @@ export function createActivityTracker(input: {
     observedAt = current;
   }
 
-  function counters(target: TimedVisit): AnalyticsProperties {
+  function counters(target: TimedVisit): ActivityDurations {
     return {
       foreground_ms: Math.round(target.foregroundMs),
       inactive_ms: Math.round(target.inactiveMs),
@@ -88,10 +91,19 @@ export function createActivityTracker(input: {
       screen_visit_id: screen?.id ?? null,
       app_visibility: visibility,
       ...entry,
+      ...(input.entryObserver?.getAssociation(visit?.id ?? null, visibility) ?? {}),
     };
   }
 
-  function beginScreen(reason: string) {
+  // These composers run only with an existing visit/screen. Route metadata is also checked by runtime QA.
+  function appContext() {
+    return context() as AnalyticsProperties & AppVisitScope;
+  }
+  function screenContext() {
+    return context() as AnalyticsProperties & ScreenVisitScope;
+  }
+
+  function beginScreen(reason: "navigation" | "foreground") {
     if (!visit || !desiredScreen || screen) return;
     screen = {
       id: createId("screen"),
@@ -102,19 +114,20 @@ export function createActivityTracker(input: {
       properties: { ...desiredScreen },
     };
     emit(ANALYTICS_EVENTS.screenVisitStarted.key, {
-      ...context(),
+      ...screenContext(),
       start_reason: reason,
     });
     if (desiredScreen.view_state !== "route_entered") {
-      emit(ANALYTICS_EVENTS.screenStateViewed.key, context());
+      emit(ANALYTICS_EVENTS.screenStateViewed.key, screenContext());
     }
+    input.entryObserver?.observeDestination(context(), "foreground_route_transition");
   }
 
-  function endScreen(reason: string) {
+  function endScreen(reason: "navigation" | "background") {
     if (!screen) return;
     const previous = screen;
     emit(ANALYTICS_EVENTS.screenVisitEnded.key, {
-      ...context(),
+      ...screenContext(),
       ...previous.properties,
       screen_visit_id: previous.id,
       ...counters(previous),
@@ -125,9 +138,7 @@ export function createActivityTracker(input: {
 
   return {
     setEmitter(next: Emit) { emitter = next; },
-    capture(event: AnalyticsEventName, properties: AnalyticsProperties) {
-      try { emit(event, properties); } catch { /* Telemetry is best effort. */ }
-    },
+    capture: emit,
     getContext: context,
     getForegroundMs() { settle(); return totalForegroundMs; },
     getVisibility: () => visibility,
@@ -142,35 +153,41 @@ export function createActivityTracker(input: {
         };
         checkpointIndex = 0;
         lastInteractionAt = null;
+        input.entryObserver?.bindVisit(visit.id);
         emit(ANALYTICS_EVENTS.appVisitStarted.key, {
-          ...context(),
+          ...appContext(),
           start_reason: hasOpened ? "foreground_resume" : "runtime_start",
           previous_visibility: previous,
         });
         hasOpened = true;
         beginScreen("foreground");
+      } else if (next === "active" && visit) {
+        input.entryObserver?.bindVisit(visit.id);
+        input.entryObserver?.observeDestination(context(), "foreground_view_state");
       } else if (next === "background" && visit) {
         const lastScreenVisitId = screen?.id ?? null;
         endScreen("background");
         emit(ANALYTICS_EVENTS.appVisitEnded.key, {
-          ...context(), ...counters(visit), end_reason: "background",
+          ...appContext(), ...counters(visit), end_reason: "background",
           last_screen_visit_id: lastScreenVisitId,
           checkpoint_index: ++checkpointIndex,
         });
+        input.entryObserver?.visitEnded(visit.id);
         visit = null;
         lastInteractionAt = null;
       }
     },
-    checkpoint(reason = "interval") {
+    checkpoint(reason: "interval" | "observer_unmount" = "interval") {
       settle();
+      input.entryObserver?.tick();
       if (!visit || visibility !== "active") return;
       emit(ANALYTICS_EVENTS.appVisitCheckpoint.key, {
-        ...context(), ...counters(visit),
+        ...appContext(), ...counters(visit),
         checkpoint_index: ++checkpointIndex, checkpoint_reason: reason,
       });
       if (screen) {
         emit(ANALYTICS_EVENTS.screenVisitCheckpoint.key, {
-          ...context(), ...counters(screen),
+          ...screenContext(), ...counters(screen),
           checkpoint_index: checkpointIndex, checkpoint_reason: reason,
         });
       }
@@ -201,7 +218,8 @@ export function createActivityTracker(input: {
       desiredScreen = { ...routeScreen, ...properties };
       if (screen) screen.properties = { ...desiredScreen };
       if (visit && visibility === "active") {
-        emit(ANALYTICS_EVENTS.screenStateViewed.key, context());
+        emit(ANALYTICS_EVENTS.screenStateViewed.key, screenContext());
+        input.entryObserver?.observeDestination(context(), "foreground_view_state");
       }
     },
     recordInteraction() {
@@ -214,7 +232,7 @@ export function createActivityTracker(input: {
   };
 }
 
-export const analyticsActivity = createActivityTracker();
+export const analyticsActivity = createActivityTracker({ entryObserver: externalEntryObservation });
 
 export function createAnalyticsDurationClock() {
   let startedAt = analyticsMonotonicNow();

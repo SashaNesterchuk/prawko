@@ -10,11 +10,31 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from prawko_analytics.contract import Contract, MetricDef, load_contract
+from prawko_analytics.contract import Contract, Funnel, MetricDef, load_contract
 from prawko_analytics.eligibility import decide_eligibility
 from prawko_analytics.ingest import WARSAW, load_events, partition_days
 from prawko_analytics.interpret import select_interpretation, values_equal
 from prawko_analytics.patterns import discover_patterns
+from prawko_analytics.learning import (
+    learning_source_dependency, learning_time_to_value, meaningful_learning, observation_anchors,
+)
+from prawko_analytics.revenuecat import financial_report
+from prawko_analytics.identity import identity_link_report
+from prawko_analytics.access import feature_access_report
+from prawko_analytics.content import content_observations_report
+from prawko_analytics.repeat_answers import repeat_answer_report
+from prawko_analytics.external_entries import external_entry_report
+from prawko_analytics.rewarded_ads import rewarded_ad_report
+from prawko_analytics.data_quality import canonical_observations, diagnostic_observations, warehouse_data_quality
+from prawko_analytics.spend import spend_report
+from prawko_analytics.acquisition import warehouse_acquisition_report
+from prawko_analytics.acquisition_finance import financial_cohort_report
+from prawko_analytics.billing_learning import warehouse_billing_learning_report
+from prawko_analytics.onboarding import warehouse_onboarding_report
+from prawko_analytics.paywall_observations import warehouse_paywall_report
+from prawko_analytics.paywall_contract import ELIGIBILITY_EVENTS
+from prawko_analytics.payload_validation import invalid_client_payload
+from prawko_analytics.quality import observation_usable
 from prawko_analytics.models import (
     AcquisitionMix,
     DatasetModel,
@@ -61,6 +81,9 @@ class PreparedRow:
     interpretation_id: str | None
     match_status: str
     distinct_id: str | None = None
+    client_event_id: str | None = None
+    client_occurred_at: str | None = None
+    received_at: str | None = None
 
 
 def day_window(day) -> AnalysisWindow:
@@ -79,10 +102,26 @@ def load_prepared_rows(
     window: AnalysisWindow,
     contract: Contract | None = None,
 ) -> list[PreparedRow]:
+    return load_quality_observations(warehouse, window, contract)[0]
+
+
+def load_quality_observations(
+    warehouse: Path,
+    window: AnalysisWindow,
+    contract: Contract | None = None,
+) -> tuple[list[PreparedRow], dict]:
     contract = contract or load_contract()
     partitions = partition_days(warehouse, window.start, window.end)
     paths = [path for _day, path, _meta in partitions if path is not None]
-    return [_prepare(raw, contract) for raw in load_events(paths, window.start, window.end)]
+    rows = [_prepare(raw, contract) for raw in load_events(paths, window.start, window.end)]
+    complete = bool(partitions) and all(
+        path is not None and meta is not None and meta.get("metadata_version") == 2 and meta.get("complete") is True
+        for _day, path, meta in partitions
+    )
+    return warehouse_data_quality(
+        warehouse, rows, start=window.start, end=window.end, prepare=lambda raw: _prepare(raw, contract),
+        coverage_complete=complete,
+    )
 
 
 def build_context(
@@ -94,15 +133,67 @@ def build_context(
     partitions = partition_days(warehouse, window.start, window.end)
     missing_days = [day for day, path, _meta in partitions if path is None]
     complete = bool(partitions) and not missing_days and all(
-        meta is not None and meta.get("complete") is True
+        meta is not None and meta.get("metadata_version") == 2 and meta.get("complete") is True
         for _day, path, meta in partitions
         if path is not None
     )
-    paths = [path for _day, path, _meta in partitions if path is not None]
-    raw_rows = load_events(paths, window.start, window.end)
-    rows = [_prepare(raw, contract) for raw in raw_rows]
+    rows, data_quality = load_quality_observations(warehouse, window, contract)
+    analytical_rows = canonical_observations(rows)
+    diagnostic_rows = diagnostic_observations(rows)
+    identity_links = identity_link_report(warehouse, start=window.start, end=window.end)
+    content_observations = content_observations_report(diagnostic_rows, coverage_complete=complete)
+    repeat_answers = repeat_answer_report(
+        diagnostic_rows, start=window.start, end=window.end, coverage_complete=complete, content_quality=content_observations,
+    )
+    external_entries = external_entry_report(diagnostic_rows, start=window.start, end=window.end, coverage_complete=complete)
+    rewarded_ads = rewarded_ad_report(diagnostic_rows, coverage_complete=complete)
+    paywall_observations = warehouse_paywall_report(
+        warehouse, start=window.start, end=window.end, contract=contract,
+    )
+    acquisition = warehouse_acquisition_report(
+        warehouse, start=window.start, end=window.end, contract=contract,
+    )
+    financial_cohorts = financial_cohort_report(
+        warehouse, start=window.start, end=window.end, acquisition=acquisition,
+    )
     identity, identity_qa = _identity(rows, contract)
     qa: list[QaItem] = list(identity_qa)
+    if paywall_observations["quality_issue_count"]:
+        qa.append(QaItem(
+            id="paywall_observations_limited", severity="WARNING", effect="prohibit_eligibility_origin_conclusions",
+            summary="Eligibility request/product bindings or origin snapshots are invalid, conflicting or unverified. "
+                    "These observations do not establish trial exposure, billing or native delivery.",
+        ))
+    if external_entries["quality_issue_count"]:
+        qa.append(QaItem(
+            id="external_entry_observations_limited", severity="WARNING", effect="prohibit_entry_learning_rates",
+            summary="External entries have invalid, orphaned or conflicting scope/destination/learning observations. "
+                    "No notification delivery or causal reminder effect is inferred.",
+        ))
+    if rewarded_ads["quality_issue_count"]:
+        qa.append(QaItem(
+            id="rewarded_ad_observations_limited", severity="WARNING", effect="prohibit_ad_revenue_conclusions",
+            summary="Rewarded request/impression or PAID observations have missing scope or integrity conflicts. "
+                    "Client SDK values are not settled money or verified production delivery.",
+        ))
+    if content_observations["quality_issue_count"]:
+        qa.append(QaItem(
+            id="content_observations_limited", severity="WARNING", effect="prohibit_content_revision_rates",
+            summary="Content provenance/display or persisted exam-rule observations have invalid or conflicting "
+                    "metadata. Diagnostic counts do not establish clean revision-specific rates.",
+        ))
+    if repeat_answers["quality_issue_count"]:
+        qa.append(QaItem(
+            id="repeat_answer_observations_limited", severity="WARNING", effect="prohibit_repeat_answer_rates",
+            summary="Repeat-answer observations have incomplete join metadata, conflicting answers or uncertain order. "
+                    "No causal explanation/review effect is inferred.",
+        ))
+    if identity_links["status"] == "limited" or identity_links["historical_sdk_quality_status"] == "review_required":
+        qa.append(QaItem(
+            id="identity_links_limited", severity="WARNING", effect="prohibit_automatic_account_joins",
+            summary="Observed account links have incomplete history or identity quality signals. "
+                    "Install-level analysis remains separate; SDK profiles and entitlement transfers are not inferred.",
+        ))
     if missing_days:
         qa.append(
             QaItem(
@@ -112,8 +203,36 @@ def build_context(
                 summary="Missing day partitions: " + ", ".join(day.isoformat() for day in missing_days),
             )
         )
+    if not complete:
+        qa.append(QaItem(
+            id="incomplete_coverage", severity="BLOCKS_METRIC", effect="prohibit_metric",
+            summary="Pagination/delivery coverage is not verified for the full window. Observed counts are not complete rates.",
+        ))
     concentration_warning = _concentration_warning(rows, contract, qa)
     ambiguous_events = sorted({row.event for row in rows if row.match_status == "ambiguous"})
+    invalid_payloads = sum(invalid_client_payload(row.properties) for row in rows)
+    if invalid_payloads:
+        qa.append(QaItem(
+            id="invalid_client_payload", severity="BLOCKS_METRIC", effect="prohibit_dependent_metric",
+            summary=f"{invalid_payloads} client events have invalid, contradictory or unsupported payload annotations.",
+        ))
+    import_conflicts = sum(row.properties.get("_warehouse_import_conflict") is True for row in rows)
+    if import_conflicts:
+        qa.append(QaItem(
+            id="import_identity_conflict", severity="BLOCKS_METRIC", effect="prohibit_metric",
+            summary=f"{import_conflicts} retained rows have conflicting bodies for the same provider/client event ID.",
+        ))
+    for field, qa_id, summary in (
+        ("conflicting_business_rows", "business_identity_conflict", "conflicting installation-scoped business observations"),
+        ("invalid_business_rows", "invalid_business_observation", "invalid business IDs or declared immutable fields"),
+        ("uncertain_business_order_rows", "business_order_unproven", "unproven order among earliest business observations"),
+    ):
+        count = data_quality["counts"].get(field, 0)
+        if count:
+            qa.append(QaItem(
+                id=qa_id, severity="BLOCKS_METRIC", effect="prohibit_dependent_metric",
+                summary=f"{count} retained rows have {summary}. Raw evidence is retained; no first/last-write repair is inferred.",
+            ))
     for event_name in ambiguous_events:
         qa.append(
             QaItem(
@@ -123,19 +242,23 @@ def build_context(
                 summary=f"{event_name} matched more than one interpretation",
             )
         )
-    qa.append(
-        QaItem(
-            id="acquisition_unavailable",
-            severity="INFO",
-            effect="none",
-            summary="Apple Search Ads ids may be on apple_search_ads_attribution_resolved. This mix is not computed from them. app_entry_resolved is a visit entry, not acquisition.",
-        )
-    )
+    if acquisition["mix"]["status"] == "unavailable":
+        qa.append(QaItem(
+            id="acquisition_unavailable", severity="INFO", effect="none",
+            summary="No usable installation-scoped ASA terminal is observed for current primary identities. "
+                    "Missing results, Android and visit entries are not organic acquisition.",
+        ))
+    if acquisition["quality_issue_count"] or acquisition["outcome_quality_issue_count"]:
+        qa.append(QaItem(
+            id="acquisition_observations_limited", severity="WARNING", effect="prohibit_dependent_acquisition_rates",
+            summary="ASA installation/platform/anchor or dependent client-purchase/learning observations are invalid or conflicting. "
+                    "Client purchases are not verified money; financial app mapping remains separate.",
+        ))
     observations = _observations(rows, contract)
     absences = _absences(rows, contract)
     uninterpreted = _uninterpreted(rows, contract)
-    signatures = _signatures(rows, contract, identity.quality)
-    funnels = _funnels(rows, contract)
+    signatures = _signatures(analytical_rows, contract, identity.quality)
+    funnels = _funnels(analytical_rows, contract)
     metrics = _metrics(
         rows,
         contract,
@@ -143,8 +266,11 @@ def build_context(
         identity.quality,
         concentration_warning,
         set(ambiguous_events),
+        complete=complete,
     )
-    findings = discover_patterns(rows, concentration_warning=concentration_warning)
+    findings = discover_patterns(analytical_rows, concentration_warning=concentration_warning)
+    if not complete or import_conflicts or invalid_payloads or data_quality["quality_issue_count"]:
+        findings = [finding.model_copy(update={"lead_visible": False}) for finding in findings]
     fatal_ids = [item.id for item in qa if item.severity == "FATAL"]
     if fatal_ids:
         status = "blocked"
@@ -189,7 +315,28 @@ def build_context(
         metrics=metrics,
         findings=findings,
         mixes=_mixes(rows, contract),
-        acquisition_mix=AcquisitionMix(status=contract.acquisition_mix),
+        acquisition_mix=AcquisitionMix.model_validate(acquisition["mix"]),
+        learning_time_to_value=learning_time_to_value(
+            rows, start=window.start, end=window.end, complete=complete,
+        ),
+        financial=financial_report(
+            warehouse, start=window.start, end=window.end, client_rows=rows,
+        ),
+        identity_links=identity_links,
+        feature_access=feature_access_report(rows, coverage_complete=complete),
+        content_observations=content_observations,
+        repeat_answers=repeat_answers,
+        external_entries=external_entries,
+        rewarded_ads=rewarded_ads,
+        data_quality=data_quality,
+        spend=spend_report(warehouse, start=window.start, end=window.end),
+        acquisition=acquisition,
+        financial_cohorts=financial_cohorts,
+        billing_learning=warehouse_billing_learning_report(
+            warehouse, start=window.start, end=window.end, contract=contract,
+        ),
+        onboarding=warehouse_onboarding_report(warehouse, start=window.start, end=window.end, contract=contract),
+        paywall_observations=paywall_observations,
     )
 
 
@@ -238,6 +385,9 @@ def _prepare(raw: dict, contract: Contract) -> PreparedRow:
         interpretation_id=interpretation_id,
         match_status=match_status,
         distinct_id=distinct_id if isinstance(distinct_id, str) and distinct_id else None,
+        client_event_id=_text(properties.get("event_id")) or None,
+        client_occurred_at=_text(properties.get("client_occurred_at")) or None,
+        received_at=_text(raw.get("received_at")) or None,
     )
 
 
@@ -403,6 +553,7 @@ def _signatures(rows: list[PreparedRow], contract: Contract, quality: str) -> li
             row
             for row in rows
             if row.event == signature.event
+            and observation_usable(row.properties)
             and all(values_equal(expected, row.properties.get(key)) for key, expected in signature.match.items())
         ]
         if not matched:
@@ -433,46 +584,80 @@ def _funnels(rows: list[PreparedRow], contract: Contract) -> list[FunnelModel]:
             slice_rows = slices[key]
             if not any(_step_match(row, step) for row in slice_rows for step in funnel.steps):
                 continue
-            carried_rows: list[PreparedRow] = []
-            steps = []
-            for index, step in enumerate(funnel.steps):
-                matched = [row for row in slice_rows if _step_match(row, step)]
-                if index == 0:
-                    units = {_unit(row, funnel.grain) for row in matched}
-                else:
-                    join_key = step.join or funnel.grain
-                    previous_ids = {
-                        _text(row.properties.get(join_key))
-                        for row in carried_rows
-                        if row.properties.get(join_key) not in (None, "")
-                    }
-                    matched = [
-                        row
-                        for row in matched
-                        if _text(row.properties.get(join_key)) in previous_ids
-                    ]
-                    units = {
-                        _text(row.properties.get(join_key))
-                        for row in matched
-                        if row.properties.get(join_key) not in (None, "")
-                    }
-                carried_rows = matched
-                steps.append(
-                    FunnelStepModel(
-                        event=step.event,
-                        units=len(units),
-                        analysis_keys=len({row.analysis_key for row in matched if row.analysis_key}),
-                    )
-                )
+            steps, _origins, _paths = _funnel_paths(slice_rows, funnel)
             models.append(
                 FunnelModel(
                     id=funnel.id,
                     grain=funnel.grain,
                     slice=_slice_dict(funnel.slice_by, key),
                     steps=steps,
+                    conversion_window_seconds=funnel.conversion_window_seconds,
+                    missing_join_rows=_missing_funnel_join_rows(slice_rows, funnel),
                 )
             )
     return models
+
+
+def _funnel_paths(rows: list[PreparedRow], funnel: Funnel, *, horizon: int | None = None):
+    """Carry the original grain through retries; joins never change the counting unit."""
+    rows = [row for row in rows if observation_usable(row.properties)]
+    horizon = horizon if horizon is not None else funnel.conversion_window_seconds
+    first = [row for row in rows if _step_match(row, funnel.steps[0])]
+    origins = {}
+    for row in sorted(first, key=lambda item: item.timestamp):
+        root = (row.analysis_key, _unit(row, funnel.grain))
+        origins.setdefault(root, row)
+    paths = {root: [(row, row)] for root, row in origins.items()}
+    steps = [FunnelStepModel(
+        event=funnel.steps[0].event, units=len(origins),
+        analysis_keys=len({row.analysis_key for row in origins.values() if row.analysis_key}),
+    )]
+    for step in funnel.steps[1:]:
+        join = step.join or funnel.grain
+        index: dict[tuple, list[PreparedRow]] = defaultdict(list)
+        for row in rows:
+            value = _text(row.properties.get(join))
+            if value and row.analysis_key and _step_match(row, step):
+                index[(row.analysis_key, value)].append(row)
+        next_paths = {}
+        for root, candidates in paths.items():
+            reached = {}
+            for origin, previous in candidates:
+                value = _text(previous.properties.get(join))
+                for row in index.get((previous.analysis_key, value), []):
+                    if _ordered(previous, row) and row.timestamp <= origin.timestamp + timedelta(seconds=horizon):
+                        reached[id(row)] = (origin, row)
+            if reached:
+                next_paths[root] = list(reached.values())
+        paths = next_paths
+        steps.append(FunnelStepModel(
+            event=step.event, units=len(paths),
+            analysis_keys=len({root[0] for root in paths if root[0]}),
+        ))
+    return steps, origins, paths
+
+
+def _ordered(previous: PreparedRow, current: PreparedRow) -> bool:
+    if current.timestamp != previous.timestamp:
+        return current.timestamp > previous.timestamp
+    run = previous.properties.get("app_run_id")
+    before = previous.properties.get("event_sequence")
+    after = current.properties.get("event_sequence")
+    if run and run == current.properties.get("app_run_id") and isinstance(before, int) and isinstance(after, int):
+        return after >= before
+    return True
+
+
+def _missing_funnel_join_rows(rows: list[PreparedRow], funnel: Funnel) -> int:
+    missing = set()
+    for index, step in enumerate(funnel.steps):
+        required = {step.join or funnel.grain}
+        if index + 1 < len(funnel.steps):
+            required.add(funnel.steps[index + 1].join or funnel.grain)
+        for row in rows:
+            if _step_match(row, step) and any(not _text(row.properties.get(key)) for key in required):
+                missing.add(id(row))
+    return len(missing)
 
 
 def _rows_for_metric(rows: list[PreparedRow], count: str) -> list[PreparedRow]:
@@ -489,6 +674,8 @@ def _metrics(
     quality: str,
     concentration_warning: bool,
     ambiguous_events: set[str],
+    *,
+    complete: bool = True,
 ) -> list[MetricModel]:
     models = []
     for metric in contract.metrics:
@@ -497,27 +684,62 @@ def _metrics(
                 _cohort_metric(rows, metric, contract, window, quality, concentration_warning, ambiguous_events)
             )
             continue
-        groups: dict[tuple, dict[str, set[str]]] = defaultdict(lambda: {"num": set(), "den": set()})
+        groups: dict[tuple, list[PreparedRow]] = defaultdict(list)
         metric_rows = _rows_for_metric(rows, metric.count)
+        dependent = {metric.numerator_event, metric.denominator_event} - {None}
+        if metric.funnel:
+            dependent.update(step.event for step in contract.funnels[metric.funnel].steps)
         for row in metric_rows:
             if metric.count == "analysis_keys" and not row.analysis_key:
                 continue
             key = tuple(_slice_value(row, dimension) for dimension in metric.homogeneity)
-            unit = _metric_unit(row, metric)
-            if row.event == metric.denominator_event:
-                groups[key]["den"].add(unit)
-            if row.event == metric.numerator_event and all(
-                values_equal(expected, row.properties.get(prop))
-                for prop, expected in metric.numerator_where.items()
-            ):
-                groups[key]["num"].add(unit)
+            if row.event in dependent:
+                groups[key].append(row)
         if not groups:
-            groups[tuple(None for _dimension in metric.homogeneity)] = {"num": set(), "den": set()}
-        dependent = {metric.numerator_event, metric.denominator_event} - {None}
+            groups[tuple(None for _dimension in metric.homogeneity)] = []
         ambiguous = bool(dependent & ambiguous_events)
         for key in sorted(groups, key=_slice_sort):
-            numerator = len(groups[key]["num"])
-            denominator = len(groups[key]["den"])
+            group = groups[key]
+            censored = 0
+            unjoinable = 0
+            invalid_payload_rows = sum(invalid_client_payload(row.properties) for row in group)
+            import_conflict_rows = sum(row.properties.get("_warehouse_import_conflict") is True for row in group)
+            business_conflict_rows = sum(row.properties.get("_warehouse_business_conflict") is True for row in group)
+            invalid_business_rows = sum(row.properties.get("_warehouse_business_invalid") is True for row in group)
+            business_order_uncertain_rows = sum(row.properties.get("_warehouse_business_order_uncertain") is True for row in group)
+            analytical_group = [row for row in canonical_observations(group) if observation_usable(row.properties)]
+            if metric.funnel:
+                funnel = contract.funnels[metric.funnel]
+                horizon = metric.conversion_window_seconds or funnel.conversion_window_seconds
+                _steps, origins, paths = _funnel_paths(analytical_group, funnel, horizon=horizon)
+                mature = {
+                    root for root, origin in origins.items()
+                    if origin.timestamp + timedelta(seconds=horizon) <= window.end
+                }
+                censored = len({_metric_unit(origin, metric) for root, origin in origins.items() if root not in mature})
+                denominator_units = {_metric_unit(origin, metric) for root, origin in origins.items() if root in mature}
+                numerator_units = {
+                    _metric_unit(origins[root], metric) for root, candidates in paths.items()
+                    if root in mature and any(
+                        last.event == metric.numerator_event and all(
+                            values_equal(expected, last.properties.get(prop))
+                            for prop, expected in metric.numerator_where.items()
+                        ) for _origin, last in candidates
+                    )
+                }
+                unjoinable = _missing_funnel_join_rows(group, funnel)
+            else:
+                denominator_rows = [row for row in analytical_group if row.event == metric.denominator_event]
+                denominator_units = {_metric_unit(row, metric) for row in denominator_rows}
+                numerator_units = {
+                    _metric_unit(row, metric) for row in analytical_group
+                    if row.event == metric.numerator_event
+                    and all(values_equal(expected, row.properties.get(prop)) for prop, expected in metric.numerator_where.items())
+                    and any(_metric_unit(before, metric) == _metric_unit(row, metric) and _ordered(before, row)
+                            for before in denominator_rows)
+                } & denominator_units
+            numerator = len(numerator_units)
+            denominator = len(denominator_units)
             models.append(
                 _metric_model(
                     metric,
@@ -529,8 +751,42 @@ def _metrics(
                     quality=quality,
                     concentration_warning=concentration_warning,
                     ambiguous=ambiguous,
-                )
+                ).model_copy(update={
+                    "grain": metric.grain or metric.count,
+                    "conversion_window_seconds": metric.conversion_window_seconds,
+                    "censored_units": censored,
+                    "unjoinable_rows": unjoinable,
+                    "invalid_payload_rows": invalid_payload_rows,
+                    "import_conflict_rows": import_conflict_rows,
+                    "business_conflict_rows": business_conflict_rows,
+                    "invalid_business_rows": invalid_business_rows,
+                    "business_order_uncertain_rows": business_order_uncertain_rows,
+                })
             )
+    for index, model in enumerate(models):
+        reasons = list(model.eligibility.reasons)
+        if not complete:
+            reasons.append(ReasonModel(rule="incomplete_coverage"))
+        if model.unjoinable_rows:
+            reasons.append(ReasonModel(rule="missing_join_id", actual=model.unjoinable_rows, required=0))
+        if model.invalid_payload_rows:
+            reasons.append(ReasonModel(rule="invalid_client_payload", actual=model.invalid_payload_rows, required=0))
+        if model.import_conflict_rows:
+            reasons.append(ReasonModel(rule="import_identity_conflict", actual=model.import_conflict_rows, required=0))
+        for field, rule in (
+            ("business_conflict_rows", "business_identity_conflict"),
+            ("invalid_business_rows", "invalid_business_observation"),
+            ("business_order_uncertain_rows", "business_order_unproven"),
+        ):
+            count = getattr(model, field)
+            if count:
+                reasons.append(ReasonModel(rule=rule, actual=count, required=0))
+        if (not complete or model.unjoinable_rows or model.invalid_payload_rows or model.import_conflict_rows
+                or model.business_conflict_rows or model.invalid_business_rows or model.business_order_uncertain_rows):
+            models[index] = model.model_copy(update={
+                "eligibility": EligibilityModel(status="prohibited", reasons=reasons),
+                "confidence_ceiling": None, "value": None, "lead_visible": False,
+            })
     return models
 
 
@@ -543,16 +799,30 @@ def _cohort_metric(
     concentration_warning: bool,
     ambiguous_events: set[str],
 ) -> MetricModel:
+    rows = [row for row in rows if row.event not in ELIGIBILITY_EVENTS]
     installs: dict[str, set] = defaultdict(set)
     product_days: dict[str, set] = defaultdict(set)
-    for row in _rows_for_metric(rows, metric.count):
-        if not row.analysis_key:
+    anchors, _excluded = observation_anchors(rows) if metric.cohort_timestamp_property else ({}, set())
+    quality_rows = (
+        [row for row in rows if learning_source_dependency(row, anchors)]
+        if metric.return_rule == "learning-v1" else rows
+    )
+    for row in canonical_observations(_rows_for_metric(rows, metric.count)):
+        if not row.analysis_key or not observation_usable(row.properties):
             continue
         day = row.timestamp.astimezone(WARSAW).date()
+        unit = row.analysis_key
+        if metric.count == "grain":
+            if not metric.grain or not isinstance(row.properties.get(metric.grain), str) or not row.properties[metric.grain]:
+                continue
+            unit = f"{row.analysis_key}:{row.properties[metric.grain]}"
         if row.event == metric.cohort_event:
-            installs[row.analysis_key].add(day)
-        if contract.is_product_event(row.event):
-            product_days[row.analysis_key].add(day)
+            anchor = anchors.get((row.analysis_key, row.properties.get(metric.grain))) if metric.cohort_timestamp_property else row.timestamp
+            if anchor is not None:
+                installs[unit].add(anchor.astimezone(WARSAW).date())
+        is_return = meaningful_learning(row) if metric.return_rule == "learning-v1" else contract.is_product_event(row.event)
+        if is_return and observation_usable(row.properties):
+            product_days[unit].add(day)
     window_start = window.start.astimezone(WARSAW).date()
     window_end = window.end.astimezone(WARSAW).date()
     mature: set[str] = set()
@@ -577,7 +847,26 @@ def _cohort_metric(
         quality=quality,
         concentration_warning=concentration_warning,
         ambiguous=metric.cohort_event in ambiguous_events,
-    )
+    ).model_copy(update={
+        "grain": metric.grain or metric.count,
+        "invalid_payload_rows": sum(
+            invalid_client_payload(row.properties)
+            for row in quality_rows
+            if metric.return_rule == "learning-v1" or row.event == metric.cohort_event or contract.is_product_event(row.event)
+        ),
+        "import_conflict_rows": sum(
+            row.properties.get("_warehouse_import_conflict") is True for row in quality_rows
+        ),
+        "business_conflict_rows": sum(
+            row.properties.get("_warehouse_business_conflict") is True for row in quality_rows
+        ),
+        "invalid_business_rows": sum(
+            row.properties.get("_warehouse_business_invalid") is True for row in quality_rows
+        ),
+        "business_order_uncertain_rows": sum(
+            row.properties.get("_warehouse_business_order_uncertain") is True for row in quality_rows
+        ),
+    })
 
 
 def _metric_model(
@@ -739,4 +1028,4 @@ def _metric_unit(row: PreparedRow, metric: MetricDef) -> str:
 
 
 def _text(value: Any) -> str:
-    return "" if value is None else str(value)
+    return value if isinstance(value, str) else ""

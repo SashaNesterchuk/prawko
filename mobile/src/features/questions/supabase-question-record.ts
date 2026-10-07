@@ -5,8 +5,12 @@ import {
   type QuestionAnswerType,
   type QuestionScope,
   type TopicBlockId,
+  type ContentLocale,
 } from "@prawko/config";
 import type { QuestionDeliveryAsset } from "@prawko/schemas";
+import {
+  firstDefinedSource, sourceText, withQuestionContentProvenance, type SourceTextMap,
+} from "../../analytics/content-provenance";
 
 import type {
   LocalQuestion,
@@ -90,7 +94,7 @@ export function mapSupabaseQuestionV2RecordToLocalQuestion(record: SupabaseQuest
   const topicIds = normalizeQuestionTopicIds(record.topic_ids ?? []);
   const topicBlock = record.official_metadata?.legacy_topic_block ?? (record.scope === "specialist" ? "technical" : "safety");
   const fallback = getQuestionTopicFallbackFromTopicBlock(topicBlock);
-  return {
+  const question: LocalQuestion = {
     id: record.source_id, sourceRowNumber: record.source_row_number,
     prompt: localizedText(prompt.pl, prompt.ua, prompt.en, prompt.de, prompt.cs, prompt.el, prompt.sk),
     explanation: localizedText(record.ai_explanations?.pl, record.ai_explanations?.ua, record.ai_explanations?.en, record.ai_explanations?.de, record.ai_explanations?.cs, record.ai_explanations?.el, record.ai_explanations?.sk), answerType: record.answer_kind === "choice" ? "abc" : "boolean",
@@ -106,6 +110,20 @@ export function mapSupabaseQuestionV2RecordToLocalQuestion(record: SupabaseQuest
     topicIds: topicIds.length ? topicIds : fallback.topicIds, difficultySeed: record.difficulty_seed ?? 1,
     examBasketId: readExamBasketId(record.official_metadata),
   };
+  return withQuestionContentProvenance(question, () => ({
+    prompt: declaredSources(prompt, "question_content"),
+    explanation: declaredSources(record.ai_explanations ?? {}, "ai_explanation"),
+    choices: Object.fromEntries(options.map((option) => [option.id, declaredSources(option.text ?? {}, "question_content")])),
+  }));
+}
+
+function declaredSources(
+  values: Partial<Record<string, string | null | undefined>>,
+  kind: "question_content" | "ai_explanation" | "legacy_explanation",
+): SourceTextMap {
+  return Object.fromEntries(["pl", "ua", "en", "de", "cs", "el", "sk"].map((locale) => [
+    locale, sourceText(values[locale], locale as ContentLocale, kind),
+  ]));
 }
 
 function nonEmptyText(value: string | null | undefined) {
@@ -259,7 +277,7 @@ export function mapSupabaseQuestionRecordToLocalQuestion(
     ),
   ].filter(Boolean) as QuestionChoice[];
 
-  return {
+  const question: LocalQuestion = {
     id: record.question_source_id,
     sourceRowNumber: record.source_row_number,
     prompt: localizedText(
@@ -305,4 +323,24 @@ export function mapSupabaseQuestionRecordToLocalQuestion(
     topicIds,
     difficultySeed: record.difficulty_seed,
   };
+  return withQuestionContentProvenance(question, () => {
+    const ai = (locale: ContentLocale) => sourceText(readAiExplanation(record.ai_explanations, locale), locale, "ai_explanation");
+    const pl = firstDefinedSource(ai("pl"), sourceText(record.explanation_pl, "pl", "legacy_explanation"));
+    const ua = firstDefinedSource(ai("ua"), sourceText(record.explanation_ua, "ua", "legacy_explanation"), pl);
+    const en = firstDefinedSource(ai("en"), sourceText(record.explanation_en, "en", "legacy_explanation"), pl);
+    return {
+      prompt: declaredSources({
+        pl: record.question_pl, ua: record.question_ua, en: record.question_en, de: record.question_de,
+      }, "question_content"),
+      explanation: {
+        pl, ua, en, de: firstDefinedSource(ai("de"), en), cs: firstDefinedSource(ai("cs"), en),
+        el: firstDefinedSource(ai("el"), en),
+      },
+      choices: {
+        A: declaredSources({ pl: record.option_a, ua: record.option_a_ua, en: record.option_a_en, de: record.option_a_de }, "question_content"),
+        B: declaredSources({ pl: record.option_b, ua: record.option_b_ua, en: record.option_b_en, de: record.option_b_de }, "question_content"),
+        C: declaredSources({ pl: record.option_c, ua: record.option_c_ua, en: record.option_c_en, de: record.option_c_de }, "question_content"),
+      },
+    };
+  });
 }

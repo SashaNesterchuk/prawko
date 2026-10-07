@@ -2,6 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { AppState } from "react-native";
 
 import { FEATURE_FLAGS } from "@prawko/config";
 
@@ -20,12 +21,14 @@ import {
   pickRecommendedPackage,
 } from "../entitlements/revenuecat";
 import { getCheckoutErrorTranslationKey } from "../entitlements/revenuecat-errors";
-import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { ANALYTICS_EVENTS, type AnalyticsProperties } from "../../analytics/catalog";
+import { useAnalyticsDuration } from "../../analytics/useAnalyticsDuration";
 import { createPaywallOfferTracker } from "../entitlements/paywall-offer-analytics";
-import {
-  getMonetizationContextProperties,
-  getMonetizationOfferSnapshot,
-} from "../monetization/monetization-analytics";
+import { getPackageAnalyticsSnapshot } from "../entitlements/offer-snapshot";
+import { createPaywallOriginSnapshot } from "../entitlements/offer-origin";
+import { createPaywallTrialEligibilityTracker } from "../entitlements/trial-eligibility-observation";
+import type { CriticalAnalyticsPayloads } from "../../analytics/critical-payloads";
+import { getMonetizationContextProperties } from "../monetization/monetization-analytics";
 import {
   getPaywallEntryProperties,
   getSingleParam,
@@ -34,6 +37,7 @@ import {
 import { useMonetizationV2Active } from "../monetization/v2/store";
 import { useCountryConfig } from "../../countries/use-country";
 import { Paywall2View, type Paywall2Offer } from "./Paywall2View";
+import { getPaywall2PlanAnalyticsSnapshot, selectPaywall2AnalyticsPlan } from "./analytics";
 import {
   findPaywall2PlanPackage,
   PAYWALL2_DEFAULT_PLAN,
@@ -44,7 +48,7 @@ import {
 import { useAppUserId } from "../../identity/AppIdentityProvider";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
 import { useErrorLogger } from "../../providers/ErrorLoggingProvider";
-import { useCurrentUser } from "../../state/app-shell";
+import { useAppShellStore, useCurrentUser } from "../../state/app-shell";
 import {
   readHasPlusAccess,
   useEntitlementStore,
@@ -73,10 +77,30 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
   const [viewId] = useState(createCheckoutId);
   const [feedback, setFeedback] = useState<string | null>(null);
   const mountedRef = useRef(true);
+  const focusedRef = useRef(true);
+  const [analyticsFocused, setAnalyticsFocused] = useState(true);
+  const visibleClock = useAnalyticsDuration(viewId, analyticsFocused);
 
   const offersLoadStatus = useEntitlementStore((state) => state.revenueCatOfferingsLoad?.status);
   const [selectedPlanId, setSelectedPlanId] = useState<Paywall2PlanId>(PAYWALL2_DEFAULT_PLAN);
   const [trialIneligible, setTrialIneligible] = useState<{ key: string; ids: string[] } | null>(null);
+  const [trialEligibilityErrorKey, setTrialEligibilityErrorKey] = useState<string | null>(null);
+  const [paywallOrigin] = useState(() => {
+    const shell = useAppShellStore.getState();
+    return createPaywallOriginSnapshot({
+      variant: "paywall2", offer: subscriptionOffer ? "plans" : "lifetime",
+      default_plan: subscriptionOffer ? PAYWALL2_DEFAULT_PLAN : null, config_version: 1,
+      country: shell.examCountry, category: shell.preferredCategory, locale: shell.preferredLocale,
+      monetization_version: monetizationV2 ? 2 : 1, presentation,
+      source: paywallEntry.source ?? null, surface: paywallEntry.surface ?? null,
+    });
+  });
+  const [trialTracker] = useState<ReturnType<typeof createPaywallTrialEligibilityTracker>>(() => createPaywallTrialEligibilityTracker({
+    viewId, getContext: () => ({
+      properties: analyticsRef.current.paywallProperties, track: analyticsRef.current.track,
+      isVisible: mountedRef.current && focusedRef.current && AppState.currentState === "active",
+    }),
+  }));
   const trialProductIds = useMemo(
     () => offerings.filter((item) => item.freeTrialDays).map((item) => item.productIdentifier),
     [offerings]
@@ -85,15 +109,18 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
   useEffect(() => {
     if (!trialKey) return;
     let active = true;
-    fetchTrialIneligibleProductIds(appUserId, trialKey.split(","))
+    const observation = trialTracker.begin(trialKey.split(","));
+    fetchTrialIneligibleProductIds(appUserId, trialKey.split(","), observation.observe)
       .then((ids) => active && setTrialIneligible({ key: trialKey, ids }))
       .catch((error) => {
+        if (active) setTrialEligibilityErrorKey(trialKey);
         console.warn("Failed to check free trial eligibility on paywall2.", error);
       });
     return () => {
       active = false;
+      observation.stop();
     };
-  }, [appUserId, trialKey]);
+  }, [appUserId, trialKey, trialTracker]);
 
   const planOffer = useMemo(
     () => resolvePaywall2Plans(offerings, {
@@ -130,7 +157,8 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
   const offerUnavailable = subscriptionOffer && !hasPlusAccess && !selectedPackage &&
     (offersLoadStatus === "ready" || offersLoadStatus === "empty" || offersLoadStatus === "failed");
 
-  const paywallProperties = {
+  const paywallProperties: AnalyticsProperties = {
+    ...paywallOrigin,
     ...paywallEntry,
     presentation,
     feature: "premium_access",
@@ -138,18 +166,49 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
     paywall_offer: offer.kind,
     plan: selectedPlan?.id ?? null,
     trial_days: selectedPlan?.trialDays ?? null,
+    ...(subscriptionOffer ? getPaywall2PlanAnalyticsSnapshot({
+      offers: offerings,
+      selectedPlanId,
+      trialIneligibleProductIds: !trialKey ? [] : trialIneligible?.key === trialKey ? trialIneligible.ids : null,
+      trialEligibilityFailed: trialIneligible?.key !== trialKey && trialEligibilityErrorKey === trialKey,
+      trialEligibilityProduct: trialTracker.getProduct(selectedPackage?.productIdentifier ?? "", trialKey),
+    }) : getPackageAnalyticsSnapshot(selectedPackage)),
   };
-  const analyticsRef = useRef({ paywallProperties, selectedPackage, track });
-  analyticsRef.current = { paywallProperties, selectedPackage, track };
+  const analyticsRef = useRef({
+    paywallProperties, selectedPackage, selectedPlanId, subscriptionOffer, monetizationV2,
+    trialIneligible, trialEligibilityErrorKey, track,
+  });
+  analyticsRef.current = {
+    paywallProperties, selectedPackage, selectedPlanId, subscriptionOffer, monetizationV2,
+    trialIneligible, trialEligibilityErrorKey, track,
+  };
   const [offerTracker] = useState(() => createPaywallOfferTracker({
     viewId,
-    getContext: () => ({
-      properties: analyticsRef.current.paywallProperties,
-      track: analyticsRef.current.track,
-      sdkConfigured,
-      isVisible: mountedRef.current,
-      selectPackage: () => analyticsRef.current.selectedPackage,
-    }),
+    getContext: () => {
+      const current = analyticsRef.current;
+      const offers = useEntitlementStore.getState().revenueCatOfferings;
+      const liveTrialKey = offers.filter((item) => item.freeTrialDays).map((item) => item.productIdentifier).join(",");
+      const livePackage = selectPaywall2AnalyticsPlan(offers, current.selectedPlanId)?.package;
+      return {
+        properties: {
+          ...current.paywallProperties,
+          ...(current.subscriptionOffer ? getPaywall2PlanAnalyticsSnapshot({
+            offers, selectedPlanId: current.selectedPlanId,
+            trialIneligibleProductIds: !liveTrialKey ? [] : current.trialIneligible?.key === liveTrialKey
+              ? current.trialIneligible.ids : null,
+            trialEligibilityFailed: current.trialIneligible?.key !== liveTrialKey &&
+              current.trialEligibilityErrorKey === liveTrialKey,
+            trialEligibilityProduct: trialTracker.getProduct(livePackage?.productIdentifier ?? "", liveTrialKey),
+          }) : {}),
+        },
+        track: current.track,
+        sdkConfigured,
+        isVisible: mountedRef.current && focusedRef.current,
+        selectPackage: (available: RevenueCatPackageSummary[]) => current.subscriptionOffer
+          ? selectPaywall2AnalyticsPlan(available, current.selectedPlanId)?.package ?? null
+          : selectLifetimePackage(available, current.monetizationV2),
+      };
+    },
   }));
   const shownAtRef = useRef(Date.now());
   const dismissMethodRef = useRef("navigation");
@@ -178,7 +237,7 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
       const ownCheckout = checkout?.originViewId === viewId ? checkout : null;
       const accessUnlocked = readHasPlusAccess();
       analyticsRef.current.track(ANALYTICS_EVENTS.paywallDismissed.key, {
-        ...getMonetizationOfferSnapshot(),
+        ...getMonetizationContextProperties(),
         ...offerTracker.getProperties(),
         ...analyticsRef.current.paywallProperties,
         purchase_attempt_id: ownCheckout?.id ?? null,
@@ -187,13 +246,20 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
         has_plus_access: accessUnlocked,
         is_plus: accessUnlocked,
         time_visible_ms: Math.max(0, Date.now() - shownAtRef.current),
+        ...visibleClock.measure(),
       });
     };
     // Exactly one view/dismiss pair per mounted paywall.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useFocusEffect(useCallback(() => {
+    focusedRef.current = true;
+    setAnalyticsFocused(true);
     offerTracker.observe();
+    return () => {
+      focusedRef.current = false;
+      setAnalyticsFocused(false);
+    };
   }, [offerTracker]));
 
   const selectPlan = (id: Paywall2PlanId, placement: "offer" | "final") => {
@@ -210,10 +276,18 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
       product_id: plan?.package?.productIdentifier ?? null,
       price: plan?.package?.price ?? null,
       currency: plan?.package?.currencyCode ?? null,
+      ...getPaywall2PlanAnalyticsSnapshot({
+        offers: offerings,
+        selectedPlanId: id,
+        trialIneligibleProductIds: !trialKey ? [] : trialIneligible?.key === trialKey ? trialIneligible.ids : null,
+        trialEligibilityFailed: trialIneligible?.key !== trialKey && trialEligibilityErrorKey === trialKey,
+        trialEligibilityProduct: trialTracker.getProduct(plan?.package?.productIdentifier ?? "", trialKey),
+      }),
     });
   };
 
-  const trackCta = (action: "purchase" | "restore", blockedReason: string | null) => {
+  const trackCta = (action: "purchase" | "restore",
+    blockedReason: CriticalAnalyticsPayloads["paywall_checkout_blocked"]["blocked_reason"] | null) => {
     const properties = {
       ...offerTracker.getProperties(),
       ...paywallProperties,

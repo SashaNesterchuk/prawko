@@ -11,6 +11,7 @@ import { NavigationButton } from "../../components/shell/NavigationButton";
 import { CText, getFontFamily, useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
 import { resolveLearnerExplanationAccess } from "../questions/explanation-access";
+import { getExplanationDisplayProperties, getQuestionContentProperties } from "../../analytics/content-revisions";
 import {
   getLocalizedText,
   getQuestionById,
@@ -33,6 +34,7 @@ import { useAppShellStore } from "../../state/app-shell";
 import { useHasPlusAccess } from "../../state/entitlements";
 import { openSupportEmail } from "../support/support-email";
 import type { RemoteExamAnswer, RemoteExamQuestionRef } from "./types";
+import type { LearningInteractionPayloads } from "../../analytics/learning-interaction-payloads";
 
 type ExamAnswersReviewViewProps = {
   examSessionId?: string;
@@ -112,6 +114,7 @@ export function ExamAnswersReviewView({
   const reviewDuration = useAnalyticsDuration(reviewId ?? null, isFocused && Boolean(examSessionId));
   const reviewObservationRef = useRef({ closed: false, viewed: new Set<string>(), lastView: "" });
   const context = {
+    content_requested_locale: displayLocale,
     exam_session_id: examSessionId ?? null,
     review_id: reviewId ?? null,
     question_id: questionRef.questionSourceId,
@@ -126,18 +129,24 @@ export function ExamAnswersReviewView({
     }
     const observation = reviewObservationRef.current;
     const viewState = question ? "question" : "missing_question";
-    const key = `${reviewId}:${currentIndex}:${viewState}`;
+    const contentProperties = question ? getQuestionContentProperties(question, displayLocale) : {};
+    const displayProperties = question ? getExplanationDisplayProperties(question, displayLocale,
+      explanationLocked ? "locked" : explanationPreview ? "free_topic_marked" : "full",
+      explanationLocked ? null : explanationText) : {};
+    const key = `${reviewId}:${currentIndex}:${viewState}:${displayLocale}:${contentProperties.question_revision}:${displayProperties.explanation_display_variant}:${displayProperties.explanation_display_revision}`;
     if (observation.lastView === key) return;
     observation.lastView = key;
     if (question) observation.viewed.add(questionRef.questionSourceId);
     track(ANALYTICS_EVENTS.examAnswersReviewQuestionViewed.key, {
+      ...contentProperties, ...displayProperties,
       ...context, view_state: viewState, was_answered: Boolean(answer),
       is_correct: answer?.isCorrect ?? null,
     });
-  }, [answer, context, currentIndex, examSessionId, isFocused, question, questionRef.questionSourceId, reviewId, track]);
+  }, [answer, context, currentIndex, displayLocale, examSessionId, explanationLocked, explanationPreview,
+    explanationText, isFocused, question, questionRef.questionSourceId, reviewId, track]);
   const latestReviewRef = useRef({ context, track });
   latestReviewRef.current = { context, track };
-  function closeReview(reason: string) {
+  function closeReview(reason: LearningInteractionPayloads["exam_answers_review_closed"]["close_reason"]) {
     const observation = reviewObservationRef.current;
     if (!examSessionId || observation.closed) return;
     observation.closed = true;
@@ -209,6 +218,7 @@ export function ExamAnswersReviewView({
       <View style={styles.mediaBleed}>
         {question.media ? (
           <QuestionMediaCard
+            analyticsProperties={{ question_id: question.id, media_surface: "exam_review" }}
             key={question.id}
             locale={displayLocale}
             media={question.media}

@@ -5,10 +5,15 @@ import { Platform } from "react-native";
 
 import { mobileEnv } from "../config/env";
 import { getQuestionSetKey } from "../countries/runtime";
+import { getExamProfileForCountry } from "../features/exam/exam-profile";
 import { getCurrentUserFromState, useAppShellStore } from "../state/app-shell";
 import { readHasPlusAccess, useEntitlementStore } from "../state/entitlements";
 import { useQuestionCatalogStore } from "../state/question-catalog";
 import type { AnalyticsProperties } from "./catalog";
+import { contentFingerprint } from "./content-revisions";
+import { getObservedBankRevision } from "./ContentAnalyticsObserver";
+import { getInstallObservationProperties } from "./install-observation";
+import { getApplicationScopeProperties } from "./application-scope";
 
 export function getAnalyticsBaseProperties(appUserId: string): AnalyticsProperties {
   const shell = useAppShellStore.getState();
@@ -22,6 +27,8 @@ export function getAnalyticsBaseProperties(appUserId: string): AnalyticsProperti
   let timezone: string | null = null;
   try { timezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? null; } catch { /* Optional locale metadata. */ }
   return {
+    ...getInstallObservationProperties(appUserId),
+    ...getApplicationScopeProperties(),
     app_user_id: appUserId,
     app_version: Constants.expoConfig?.version ?? "unknown",
     app_build: Application.nativeBuildVersion ?? null,
@@ -40,6 +47,10 @@ export function getAnalyticsBaseProperties(appUserId: string): AnalyticsProperti
     question_set_key: getQuestionSetKey(),
     catalog_source: catalog.status,
     catalog_generation: catalog.version,
+    bank_revision: getObservedBankRevision(),
+    bank_revision_basis: "loaded_catalogue_fingerprint",
+    exam_rules_revision: contentFingerprint(getExamProfileForCountry(shell.examCountry)),
+    exam_rules_revision_basis: "current_country_config",
     catalog_ready: catalog.resolved,
     monetization_policy: FEATURE_FLAGS.monetizationV2 ? "v2" : "legacy",
     ads_policy_enabled: FEATURE_FLAGS.enableAds,

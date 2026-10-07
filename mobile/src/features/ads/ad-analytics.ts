@@ -26,7 +26,7 @@ export const AD_PLACEMENTS = {
 export type AdPlacement = (typeof AD_PLACEMENTS)[keyof typeof AD_PLACEMENTS];
 
 export type AdRevenueEvent = {
-  adFormat: "interstitial";
+  adFormat: "interstitial" | "rewarded";
   adNetwork: string;
   adUnitId: string;
   currency: string;
@@ -131,7 +131,7 @@ export function getAdPlacement(input: {
 }
 
 export function buildAdRevenueEvent(input: {
-  adFormat?: "interstitial";
+  adFormat?: "interstitial" | "rewarded";
   adUnitId: string;
   paid: NativePaidEvent;
   placement: string;

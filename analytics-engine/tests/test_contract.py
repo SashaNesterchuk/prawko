@@ -8,12 +8,12 @@ from prawko_analytics.paths import CONTRACT_PATH
 
 def test_contract_matches_catalog():
     contract = load_contract()
-    assert contract.version == 1
+    assert contract.version == 2
     assert contract.primary_analysis_key == "app_user_id"
     assert "first_start_shown" in contract.catalog_keys
     assert contract.recommendations_enabled is False
     assert contract.changes == ()
-    assert contract.acquisition_mix == "unavailable"
+    assert contract.acquisition_mix == "asa-installation-v1"
 
 
 def test_unknown_event_is_rejected(tmp_path):

@@ -1,7 +1,10 @@
+import { markOnboardingObservationReset } from "./onboarding-observation";
+
 let pendingResetId: string | null = null;
 
 export function markAnalyticsProgressReset(resetId: string) {
   pendingResetId = resetId;
+  markOnboardingObservationReset(resetId);
 }
 
 export function consumeOnboardingEntryContext() {

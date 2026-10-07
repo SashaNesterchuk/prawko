@@ -7,6 +7,7 @@ import { analyticsActivity, ACTIVITY_CHECKPOINT_MS } from "./activity";
 import { ANALYTICS_EVENTS } from "./catalog";
 import { resolveScreenRoute } from "./screenRoutes";
 import { useAnalytics } from "../hooks/useAnalytics";
+import { externalEntryObservation } from "./external-entry-observation";
 
 const SEEN_RESPONSES_KEY = "prawko.analytics.notification-responses.v1";
 
@@ -33,8 +34,11 @@ export function AnalyticsLifecycleObserver() {
   trackRef.current = track;
 
   useLayoutEffect(() => {
-    const emit: typeof track = (event, payload) => trackRef.current(event, payload);
+    const emit: typeof track = (event, payload) => {
+      try { trackRef.current(event, payload); } catch { /* Optional lifecycle telemetry. */ }
+    };
     analyticsActivity.setEmitter(emit);
+    externalEntryObservation.setEmitter(emit);
     analyticsActivity.observeVisibility(AppState.currentState);
     const visibility = AppState.addEventListener("change", (state) => {
       analyticsActivity.observeVisibility(state);
@@ -47,15 +51,19 @@ export function AnalyticsLifecycleObserver() {
     let resolvedEntry = false;
     const linking = Linking.addEventListener("url", ({ url }) => {
       const properties = deepLinkProperties(url);
+      const observation = externalEntryObservation.receiveLink(url, "live_url", analyticsActivity.getContext());
       resolvedEntry = true;
       analyticsActivity.setEntry(properties);
-      emit(ANALYTICS_EVENTS.appEntryResolved.key, properties);
+      emit(ANALYTICS_EVENTS.appEntryResolved.key, { ...properties, ...observation });
+      externalEntryObservation.observeDestination(analyticsActivity.getContext(), "preexisting_route_snapshot");
     });
     void Linking.getInitialURL().then((url) => {
       if (disposed || resolvedEntry) return;
       const properties = url ? deepLinkProperties(url) : { entry_reason: "direct" };
+      const observation = url ? externalEntryObservation.receiveLink(url, "initial_url", analyticsActivity.getContext()) : {};
       analyticsActivity.setEntry(properties);
-      emit(ANALYTICS_EVENTS.appEntryResolved.key, properties);
+      emit(ANALYTICS_EVENTS.appEntryResolved.key, { ...properties, ...observation });
+      if (url) externalEntryObservation.observeDestination(analyticsActivity.getContext(), "preexisting_route_snapshot");
     }).catch(() => {
       if (!disposed) emit(ANALYTICS_EVENTS.appEntryResolved.key, { entry_reason: "unknown" });
     });
@@ -70,6 +78,7 @@ export function AnalyticsLifecycleObserver() {
       } catch { /* Bad analytics state never affects reminder handling. */ }
     }).catch(() => undefined);
     function recordResponse(response: Notifications.NotificationResponse, cached: boolean) {
+      const received = externalEntryObservation.recordSignal(analyticsActivity.getContext());
       responseQueue = responseQueue.then(async () => {
         await loaded;
         if (disposed) return;
@@ -85,15 +94,19 @@ export function AnalyticsLifecycleObserver() {
           entry_attributed: !cached,
           attribution_confidence: cached ? "cached_os_response" : "live_os_response",
         };
+        const observation = externalEntryObservation.receiveNotification(
+          key, cached, analyticsActivity.getContext(), received,
+        );
         // The last OS response has no tap timestamp and may belong to an old launch.
         if (!cached) {
           resolvedEntry = true;
           analyticsActivity.setEntry({ entry_reason: "notification", ...properties });
-          emit(ANALYTICS_EVENTS.appEntryResolved.key, { entry_reason: "notification", ...properties });
+          emit(ANALYTICS_EVENTS.appEntryResolved.key, { entry_reason: "notification", ...properties, ...observation });
+          externalEntryObservation.observeDestination(analyticsActivity.getContext(), "preexisting_route_snapshot");
         }
         if (seen.has(key)) return;
         seen.add(key);
-        emit(ANALYTICS_EVENTS.notificationOpened.key, properties);
+        emit(ANALYTICS_EVENTS.notificationOpened.key, { ...properties, ...observation });
         await AsyncStorage.setItem(SEEN_RESPONSES_KEY, JSON.stringify([...seen].slice(-50))).catch(() => undefined);
       }).catch(() => undefined);
     }
@@ -114,6 +127,8 @@ export function AnalyticsLifecycleObserver() {
       linking.remove();
       notifications?.remove();
       analyticsActivity.checkpoint("observer_unmount");
+      externalEntryObservation.end("observer_unmount");
+      externalEntryObservation.setEmitter(() => undefined);
       analyticsActivity.setEmitter(() => undefined);
     };
   }, []);

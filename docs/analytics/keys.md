@@ -6,6 +6,11 @@
 
 Полная проверка покрытия, длительности, частоты, retention и качества экспорта: [аудит 2 октября 2026](./2026-10-02-instrumentation-audit.md). Предложения новых событий в нём не означают, что они уже отправляются.
 
+Warehouse `data-quality-v1` отделяет сырые строки от canonical activity,
+проверяет installation-scoped business IDs и исторический replay, не меняя
+смыслы событий. Receipt lag не доказывает native delivery; business conflicts
+ограничивают зависимые rates. Паспорт: [data-quality.md](./data-quality.md).
+
 ---
 
 ## Общие свойства продуктовых событий
@@ -13,6 +18,7 @@
 | Ключ | Значение |
 |---|---|
 | `app_user_id` | Устойчивый локальный app identity (`usr_…`), не доказанный уникальный человек |
+| `application_id` / `application_id_basis` | Existing native application namespace для явного финансового mapping. `native_application_id`, иначе null с `not_available` / `observation_failed`; не выводится из exam country, locale или SDK identity |
 | `app_version` | Версия приложения (`1.0.21`) |
 | `auth_mode` | `guest` или `supabase`; dev/mock identity может дать `mock` |
 | `category` | Категория прав (`B`, `AM`, …) |
@@ -33,7 +39,7 @@
 | `view_state` | Наблюдаемое состояние UI: loader, question, feedback, result, review, блокировка или ошибка; без специального observer — `route_entered` |
 | `route_entity_id` | Известный параметр session/sign/category/topic маршрута, не полный URL |
 | `learning_intent_id` | ID фактического запроса обучения в инструментированном click-handler. Не учебная попытка; на прямом deep-link/history может быть `null` |
-| `flow_context` / `onboarding_attempt_id` | `onboarding`, `settings` или `product`; ID наблюдаемого onboarding внутри runtime, не acquisition identity |
+| `flow_context` / `onboarding_attempt_id` | `onboarding`, `settings` или `product`; в observation v1 ID сохраняется между runtime внутри install identity. Settings не создаёт first-run попытку; не acquisition identity |
 | `onboarding_completed` | Текущий persisted флаг, не доказательство первого запуска |
 | `access_source` | Наблюдаемый источник Plus: `purchase`, `school`, `other`, `none`. При нескольких источниках purchase имеет приоритет; не серверное подтверждение покупки |
 | `question_set_key` / `catalog_source` / `catalog_ready` | Текущий question set, статус catalog store и его resolved-флаг. Ошибка может быть resolved без годного контента |
@@ -42,6 +48,12 @@
 | `timezone` / `utc_offset_minutes` | Часовой пояс устройства и текущий offset; продуктовый день по-прежнему Europe/Warsaw |
 
 Поля схемы 3 добавляются к product capture и SDK screen в общей точке отправки. `identify` является обновлением свойств человека, не продуктовым действием, и этих полей не получает. Текущие store properties читаются в момент capture, не из старого callback.
+
+`application_id` не заполняет старые дампы задним числом и не является account ID.
+Source-gated `acquisition-financial-cohorts-v1` использует отдельные reviewed
+native/ASA/Apple/RevenueCat namespaces и original transaction lineage.
+D7/D30 gross activity не называется выплатами магазина или ROAS.
+Паспорт: [acquisition-finance.md](./acquisition-finance.md).
 
 SDK получает безопасный срез общих properties через `register` при identity/preferences sync. Автоматические lifecycle-события всё равно не имеют гарантированно свежего view/visit/ordering-контекста и могут появиться до регистрации. `$session_id`, `app_run_id`, `app_visit_id` и учебные IDs — разные сущности. Частота и retention являются расчётами по полному окну событий, а не отдельными event names.
 
@@ -141,7 +153,44 @@ JSONL хранит порядок приёма асинхронных запро
 
 Сейчас first-run шлёт только `category` и `exam_schedule`, затем Home.
 
-`onboarding_flow_viewed` присваивает `onboarding_attempt_id`, `flow_version=category_schedule_v1`. `start_reason=incomplete_onboarding_observed` не доказывает новую установку; после успешного reset в этом runtime — `progress_reset` с `reset_operation_id`. Settings-маршруты имеют `flow_context=settings` и не создают first-run воронку. При перезапуске runtime onboarding ID новый.
+`onboarding_flow_viewed` использует `onboarding_attempt_id`, `flow_version=category_schedule_v1`.
+Новый observation v1 сохраняет ID между runtime внутри той же install identity.
+`start_reason=incomplete_onboarding_observed` не доказывает новую установку;
+подтверждённый helper reset даёт `progress_reset` с `reset_operation_id`.
+Повторный incomplete без такой причины имеет
+`repeat_incomplete_onboarding_observed`, не выдуманный install/reset.
+Settings-маршруты имеют `flow_context=settings` и не создают first-run воронку.
+Исторические события без observation v1 имели runtime-only ID.
+
+`onboarding_flow_completed` означает, что локальные save/complete calls вернули
+управление (`completion_scope=local_store_operations_returned`), не гарантированный
+physical storage flush. `onboarding_completed_at` фиксирует момент принятия, даже
+если аналитическая запись произошла позже. Автофинализация без наблюдавшегося входа
+помечена `completion_without_entry_observed`.
+
+`onboarding_home_arrived` отдельно связывает эту попытку с первым наблюдением Home
+в foreground (`home_arrival_basis=foreground_route_observed`), не доказывает usable
+content или обучение. Settings/Home без принятого локального финала не создают
+его. `onboarding_storage_status=memory_only`, `onboarding_detection_method` и
+`onboarding_clock_order_valid=false` раскрывают ограничения. Ранний screen может
+иметь `onboarding_observation_state=pending`; null ID не склеивать по догадке.
+Persisted аналитический marker и SDK delivery не образуют exactly-once транзакцию.
+
+`context.onboarding` / CLI `onboarding` отдельно рассчитывают first-observed и
+persistent-attempt когорты с `onboarding-activation-v1`. Local completion, Home,
+open, entry, usable question, accepted answer, meaningful completion и ordered
+same-session chain не подменяют друг друга. Learning events не несут persistent
+attempt ID: `after_home_*` явно остаётся temporal installation association до
+следующего наблюдавшегося attempt/reset, не прямой или causal join.
+Unverified late attempt/reset и intent без confirmed boundary ограничивают
+затронутую post-Home ассоциацию; они не становятся clean zero, успешным reset
+или доказательством отсутствия изменений после failed helper.
+Elapsed 24h/D7/D30, first-observed post-activation Warsaw calendar D1/D7 и TTV
+сохраняют nonachievers/censoring; unknown roots и missing app coverage не дают
+ложный чистый знаменатель. Late Home за D7 не ограничивает ранний D7 только
+из-за отсутствующего explicit completion; provider/business conflicts сохраняются.
+Health принимает supplied report либо `history_not_supplied`.
+Паспорт и оставшаяся приёмка: [onboarding-activation.md](./onboarding-activation.md).
 
 ---
 
@@ -329,6 +378,9 @@ Skip и start у одного человека в разные визиты — 
 | `paywall_offer_load_started` | Начался цикл доступности оффера на этом paywall. `paywall_view_id`, `offer_load_id`, при наличии `offer_request_id`; `load_reason=initial/refresh`, `offer_load_source`, `is_cached`. Не каждый цикл является новым запросом SDK |
 | `paywall_offer_ready` | Выбранный пакет реально доступен: product/package/offering, price/currency, число предложений и duration. Есть связанный `offer_load_id`; кеш приложения отмечается `is_cached=true`, `load_duration_ms=0`. Это готовность предложения, не покупка и не утверждение о доступности CTA для уже активного Premium |
 | `paywall_offer_failed` | Завершившийся запрос не дал готового оффера или SDK не настроен. `failure_reason`: `request_error`, `empty_offerings`, `not_configured`; `error_code`, структурированная диагностика. Ноль предложений **во время** загрузки не создаёт failed |
+| `paywall_trial_eligibility_started` | Вызван существующий eligibility helper: `eligibility_request_id`, `paywall_view_id`, observation v1, request scope и product counts. Не доказательство native query или показа trial |
+| `paywall_trial_eligibility_resolved` | Request + product outcome: `eligible/ineligible/unknown/no_intro_offer/error`, basis, native-query flag и normalized error category. Unknown/missing и Android не становятся ineligible/eligible по UI-фильтру |
+| `paywall_trial_eligibility_completed` | Helper terminal `resolved/unsupported/not_configured/no_products/error`; distinct delivered-product count и wall duration. Detached response остаётся диагностикой, не текущим показом, trial start или оплатой |
 | `premium_gate_viewed` | Упёрлись в лимит V2 или открыли премиум-вход, который сразу ведёт на paywall. `source` как у paywall. `surface` есть, когда `source` общий. Не путать с `exam_restart_gate_shown` |
 | `premium_gate_action` | `open_paywall` / `watch_ad` / `dismiss` на этом лимите. `surface` как у `premium_gate_viewed` |
 | `answer_explanation_viewed` | Полное объяснение показано. `access_method`: `premium`, либо `free_topic` (бесплатная тема PL без Premium, текст открыт и только помечен как Premium) |
@@ -411,14 +463,17 @@ Restore неопределённой покупки сохраняет исхо�
 
 | Событие | Значение |
 |---|---|
-| `ad_requested` | Политика разрешила показ |
-| `ad_shown` | Показали |
+| `ad_requested` | Вошли в request path; для rewarded это opportunity, не доказательство вызова SDK load |
+| `ad_shown` | Наблюдали SDK OPENED; не отдельный impression callback |
 | `ad_dismissed` | Закрыли. `why` = native close reason |
 | `ad_skipped` | Не показали. Каждый вызов, включая `trigger_not_ready` |
-| `ad_failed` | Политика разрешила, показ сломался |
-| `ad_impression_revenue` | Impression-level revenue из Google Mobile Ads paid callback. Суммировать `revenue` по `app_user_id` — ad LTV / install. Не считать из eCPM |
+| `ad_failed` | Existing failed outcome; rewarded `disabled` / missing unit отдельно от SDK failure |
+| `ad_impression_revenue` | Client SDK PAID value. Валюты отдельно, scoped дубли убрать, конфликты карантинировать; не settled money и не verified AdMob LTV |
+| `ad_native_request_started` | Rewarded SDK load invocation, с request/instance ID; не loaded ad |
+| `ad_impression_observed` | Rewarded impression evidence от валидного PAID, не от OPENED |
+| `ad_observation_failed` | Optional rewarded listener/payload failure; не меняет ad result/reward |
 
-На всех ad-событиях кроме `ad_impression_revenue` строки:
+На существующих interstitial decision-событиях кроме `ad_impression_revenue` строки:
 
 - `after` — триггер (`after_question_answer`, `after_exam_complete`, …)
 - `should_show` — `yes` / `no`
@@ -433,10 +488,19 @@ Restore неопределённой покупки сохраняет исхо�
 - `revenue` — значение из SDK (валютные единицы, не micros)
 - `currency` — код валюты SDK, обычно `USD`
 - `ad_unit_id` — AdMob unit
-- `ad_format` — сейчас `interstitial`
+- `ad_format` — `interstitial` / `rewarded`; rewarded остаётся выключен текущим config
 - `ad_network` — winning source (`adSourceName`), иначе adapter class, иначе `unknown`
 - `revenue_precision` — `unknown` / `estimated` / `publisher_provided` / `precise`
-- `placement` — `after_training` / `training_questions` / `after_exam` / `sign_test` / `other`
+- `placement` — `after_training` / `training_questions` / `after_exam` / `sign_test` / `other`; rewarded — `exam_unlock`
+
+Rewarded `ad_observation_version=1` добавляет `ad_request_id`, `ad_impression_id`,
+test/configured unit basis, load-invocation/opened flags, PAID callback sequence и
+normalized failure category/stage. OPENED не заменяет PAID evidence; PAID не
+выдаёт exam credit. Optional PAID listener живёт ещё 2 секунды после settlement,
+не задерживая существующий product promise. `enableAds=false` не меняется.
+Warehouse `rewarded-sdk-v1` оставляет валюты раздельными, дубли/конфликты явными;
+эти значения не входят в RevenueCat finance. Контракт и границы:
+[external-entry-rewarded-observations.md](./external-entry-rewarded-observations.md).
 
 `client_error_logged` `area=ads`: `ad_not_shown` (warning, должен был показаться), `ad_failed`, `ad_preload_failed`, `ad_impression_revenue_rejected` (`why: unparseable_revenue`).
 
@@ -477,15 +541,47 @@ Raw `asset_url` теперь удаляется sanitizer, в том числе 
 
 `access_state_changed` — initial snapshot/change с previous/current Plus и source; не purchase/renewal/revenue.
 
+Существующие gate/content events могут содержать `access_observation_version=1`,
+`access_rule_version=plus-feature-observation-v1`, observed feature и
+`access_expected`/`access_observed`/`access_comparison`. Это сравнение с актуальным
+локальным store, не изменение gate и не доказанная оплата. CustomerInfo age —
+возраст `requestDate`; remote verification age неизвестен. Обычный paywall,
+PL free-topic Premium mark и офлайн dependency block не объявляются access defect.
+Контракт, warehouse identity ledger и ограничения: [identity-access.md](./identity-access.md).
+
 ### Источник Возврата
 
 `app_entry_resolved` содержит `entry_reason=direct/deep_link/notification/unknown`; deep link — только известный route pattern и screen, без URL/query. Resolution может прийти после started, поэтому смотреть оба события по визиту.
 
 External signal внутри уже active приложения может обновить entry context без нового `app_visit_id`. Это не дополнительный возврат пользователя: границу визита определяют visit-события, не число entry-resolved.
 
+`entry_observation_version=1` отдельно задаёт entry ID, signal receipt/processing
+time и явно bound/awaiting/cached/queued-unattributed scope.
+`external_entry_destination_observed` связывает normalized route/entity/state
+с тем же foreground visit в течение 60 секунд; preexisting snapshot не означает,
+что ссылка вызвала переход. `external_entry_destination_ended` /
+`external_entry_ended` завершают только аналитическое наблюдение.
+Association живёт не более часа и не переживает background/supersession.
+`entry_attributed` по-прежнему отличает live от cached signal, но сама по себе
+не разрешает новую scoped attribution при смене визита в storage queue.
+Warehouse `external-entry-v1` требует start/resume после входа, новый accepted
+answer и meaningful completion с теми же install/entry/visit/attempt IDs.
+Старый result/replayed answer не становится новым learning; missing visit tail
+остаётся censored даже после календарного горизонта. Доли требуют coverage и
+чистых связей, confidence не выше low; delivery и causal lift не выводятся.
+Подробности: [external-entry-rewarded-observations.md](./external-entry-rewarded-observations.md).
+
 ### Apple Search Ads
 
 `apple_search_ads_attribution_resolved` — одна проверка установки на iOS. Пишется после ответа Apple AdServices, не в момент тапа по объявлению. Те же поля потом висят на человеке (`$set_once`) и на следующих событиях.
+
+Warehouse `asa-installation-v1` считает только явные terminal observations по
+primary `app_user_id`, а не каждое повторение super properties. `acquisition`
+CLI/context/health сохраняют unknown, replay/conflicts, delayed response и
+first-observed D7/D30 client/learning cohorts. Это не physical new installs,
+verified revenue или ROAS; financial app-scope mapping ещё не подключён.
+Паспорт и критерии maturity/coverage:
+[acquisition-cohorts.md](./acquisition-cohorts.md).
 
 | Поле | Значение |
 |---|---|
@@ -548,3 +644,293 @@ External signal внутри уже active приложения может об�
 | `$set` | Обновили person properties |
 
 Последний `screen_viewed` до наблюдаемого `Application Backgrounded` — только последняя оболочка маршрута; фактическое состояние уточнять специальными ready/result/review/block событиями. При kill/background gap или неполном окне «последний экран перед уходом» может быть неизвестен.
+
+---
+
+## Аудит По Handbook: 7 Октября 2026
+
+### Вывод
+
+**Учебная и клиентская purchase-аналитика уже хорошо проработаны, но считать всю систему готовой нельзя.** Переписывать её с нуля или добавлять все 116 событий хендбука не нужно. Главные улучшения: устранить ложные ошибки готовности PL-оффера, сделать проверяемой финансовую связку, исправить расчёт воронок и полноты данных, определить identity/privacy policy. Следующий слой пользы — learning retention, версии контента и диагностика медиа.
+
+Есть конкретно воспроизведённый дефект: при поздней успешной загрузке пакетов paywall2 может отправить `paywall_offer_failed failure_reason=empty_offerings`, хотя пакет доступен. Остальные находки ниже разделяют подтверждённые свойства кода, риски и непроверенные внешние настройки. Они **не доказывают**, что реальные пользователи сейчас массово теряют покупки или что конкретная цена/гейт ухудшает конверсию.
+
+### Метод И Границы
+
+Основа: [Mobile_App_Analytics_Handbook.html](../../Mobile_App_Analytics_Handbook.html), версия 1.0 от 7 октября 2026; рассмотрены главы 1–42 и группы каталога. Хендбук сам предупреждает, что его taxonomy и пороги — проектные рекомендации, а не обязательные vendor event names.
+
+Проверен текущий worktree на `HEAD=f344fca`: `mobile/src/analytics`, providers/hooks, training/exam/signs, оба billing flow, checkout/journal, reminders, media/ads, `analytics-engine`, Supabase functions/migrations и локальная документация/экспорты. Версия в `mobile/app.config.ts` — `1.0.31`; установленный PostHog RN — `4.45.11`, Purchases RN — `10.7.0`. Это состояние исходников и локальных dependencies, **не подтверждение версии опубликованного бинарника**. `1.0.21` в таблице общих свойств выше — старый пример, не текущий release filter.
+
+Проверка read-only, кроме добавления этого отчёта. Код, конфигурация, lockfile, схемы и данные не менялись; зависимости не устанавливались. Магазинные покупки, приложение на устройстве и Maestro в этом аудите не запускались. Текущие кабинеты PostHog/RevenueCat/Apple Ads, внешние webhooks/destinations, отдельный `mindjar-dashboard` и store financial reports не инспектировались. Старые октябрьские аудиты и дампы не использованы как доказательство текущего production-поведения.
+
+Обозначения: **подтверждено** — виден конкретный механизм в коде; **воспроизведено** — проверен существующий helper в контролируемом окружении; **не проверено** — нужны внешние настройки/данные; **условно** — функция выключена или не найдена в действующем продукте. P0 ниже означает «закрыть до доверия бизнес-отчётам», не утверждение о критическом сбое каждого пользователя.
+
+### Приоритетные Находки
+
+#### A. P0: Ложный Failed При Успешной Загрузке PL-Оффера
+
+**Воспроизведено.** [Paywall2Screen.tsx](/home/lastday/prawko/mobile/src/features/paywall2/Paywall2Screen.tsx:151) передаёт tracker selector, который игнорирует актуальный массив `offers` и возвращает `selectedPackage` из последнего React-render. [paywall-offer-analytics.ts](/home/lastday/prawko/mobile/src/features/entitlements/paywall-offer-analytics.ts:93) синхронно подписан на Zustand store и завершает цикл загрузки до того, как React обновит этот snapshot.
+
+Контролируемый сценарий на фактическом helper, с установленным Zustand и mocked native/context dependencies: пустой кеш → `loading` → store получает один подходящий пакет и `status=ready` → обновляется render snapshot → повторный `observe()`. Получено: `paywall_offer_load_started`, затем `paywall_offer_failed`, `offers_count=1`, `failure_reason=empty_offerings`; ready не появляется, поскольку цикл уже terminal. Контрольный selector, читающий текущие `offers`, даёт `paywall_offer_ready`.
+
+**Последствие:** завышенные load failures и заниженная ready-конверсия нового PL-paywall. Это ошибка измерения, не доказанная ошибка выдачи пакета в UI или оплаты. При анализе текущих данных нельзя без проверки считать такой failed реальным отсутствием продукта.
+
+**Рекомендация:** определять пригодность пакета из актуального store state, отдельно наблюдать готовность реально отображённого предложения. Приёмка: cold/cached load, delayed hydration, refresh, смена плана и неподдерживаемый offering; при успешном пакете нет ложного failed, одна terminal-запись на `offer_load_id`. Нужен интеграционный тест связки screen + tracker, не только package-matching helper. Главы 15, 24, 32–35.
+
+#### B. P0: Деньги И Subscription Lifecycle Не Замкнуты В Проверенном Контуре
+
+**Подтверждено в репозитории; внешняя интеграция не проверена.** Клиент различает checkout outcomes и доступ, но [health.py](/home/lastday/prawko/analytics-engine/prawko_analytics/health.py:230) всегда возвращает `revenuecat=not_loaded`. В просмотренных Supabase functions, scripts и engine нет обработки RC subscription lifecycle/финансового ledger. Это не доказывает отсутствие RevenueCat → PostHog интеграции в кабинете.
+
+Для PL нужны подтверждённые trial start, first paid/trial conversion, renewal, auto-renew intent, billing issue, expiry и refund. Для CZ/SK — подтверждённая non-recurring lifetime-покупка. `purchase_succeeded`, `trial_days`, `price` и `access_source=purchase` не заменяют эти факты: entitlement может быть trial/restore, цена — snapshot выбранного пакета, а продление может произойти без открытого приложения.
+
+Связка IDs выглядит разумно: [revenuecat.ts](/home/lastday/prawko/mobile/src/features/entitlements/revenuecat.ts:172) отправляет `app_user_id`/`supabase_user_id`, SDK конфигурируется с тем же `appUserID`, что используется как PostHog distinct ID. Отсутствие `$posthogUserId` **само по себе не дефект**: хендбук S03 описывает fallback на RC App User ID. Но delivery и совпадение реального server event с учебной личностью пока не подтверждены.
+
+**Рекомендация:** сначала проверить существующую RC integration и назначить единственный денежный источник, а не строить новый backend вслепую. Минимально достаточно канонических RC events/экспорта и небольшой сверки по transaction/store/environment; клиентские outcomes оставить диагностикой UI. Раздельно хранить refund adjustments, subscription lineage, валюту, revenue basis и `as_of`. Не считать restore/transfer новой выручкой, trial платящим, proceeds банковской выплатой.
+
+Приёмка: одна controlled покупка, trial conversion, renewal при закрытом app, refund, duplicate delivery и restore дают ожидаемые отдельные финансовые эффекты; sandbox исключён; видно matched/unmatched transactions. Exact join к `paywall_view_id` не выдумывать, если RC его не предоставляет. Главы 2–4, 15–16, 26, 32, 34.
+
+#### C. P0: Расчёт «Conversion» Не Всегда Является Воронкой
+
+**Подтверждено статически.** В [context.py](/home/lastday/prawko/analytics-engine/prawko_analytics/context.py:485) `_metrics()` независимо собирает пользователей с numerator и denominator events. Для `paywall_purchase_conversion` нет требования, чтобы покупатель входил в viewer cohort, чтобы view предшествовал покупке, или чтобы сохранялся тот же view/attempt. Поле `funnel` в контракте не заставляет этот расчёт использовать результат `_funnels()`.
+
+Поэтому покупка после старого paywall за пределами окна может попасть в numerator текущего окна; отношение теоретически может превышать 100%. Это риск из алгоритма, не установленное значение на production-данных. Отдельный `_funnels()` соединяет IDs, но не проверяет порядок timestamps и conversion window; шаг с несколькими checkout attempts также меняет фактическую единицу подсчёта с view на attempt.
+
+[health.py](/home/lastday/prawko/analytics-engine/prawko_analytics/health.py:343) использует первые события пользователя в окне и временное соседство экзаменов. Это полезный пользовательский обзор, но не completion rate одной конкретной попытки. Слова `users`/`people` не превращают install-centric key в доказанного человека.
+
+**Рекомендация:** дать отдельные паспорта user-, view-, checkout- и learning-attempt метрикам; numerator должен быть outcome допустимой denominator cohort. Проверять порядок, связи IDs, horizon и censoring. Для grain=view несколько retry-покупок не создают несколько converted views. Неполное окно или неизвестный исход не объявлять отказом.
+
+Приёмка на fixture: покупка до view, покупка без view, два view одного пользователя, два retry одного view, completion другой учебной попытки и outcome после конца окна не искажают соответствующую метрику. Главы 17–20, 28, 33, 36.
+
+#### D. P0: Импорт И Полнота Данных Слабее Клиентского Контракта
+
+**Подтверждено.** [ingest.py](/home/lastday/prawko/analytics-engine/prawko_analytics/ingest.py:25) переносит PostHog `uuid` в верхнеуровневый `event_id`, а клиентский `properties.event_id` остаётся отдельным значением. Нет дедупликации по клиентскому ID/answer revision/attempt terminal; повторный импорт заменяет дневной partition целиком.
+
+Замена partition допустима для **полного snapshot дня**, но перекрывающийся частичный экспорт может затереть ранее загруженные строки. `complete` определяется датой выгрузки/границей `to`, не доказательством полной pagination, отсутствия лимита или учтённого offline lag. [context.py](/home/lastday/prawko/analytics-engine/prawko_analytics/context.py:94) вычисляет completeness, однако `_metrics()` не получает её как обязательный eligibility gate.
+
+В клиенте есть `event_sequence`, UTC occurrence и непрерывающие UI wrappers. Установленный PostHog RN по умолчанию использует file persistence; **очередь не отсутствует**. Однако запись capture не является подтверждением доставки. `useAnalytics` глотает ошибки без собственного счётчика потерь; store completion и capture не образуют durable outbox.
+
+**Рекомендация:** разделить provider UUID, client event ID, business IDs, occurrence и received time; определить dedupe/merge policy и явный export watermark. Не объявлять полноту по одному календарю. Не требовать собственного outbox для каждого screen event, но проверять потерю critical completion/access observations и queue/reset behavior.
+
+Приёмка: duplicate row, overlapping partial dumps, поздний offline event, kill между сохранением результата и capture; все известные записи сохраняются, missing coverage ограничивает метрики. Главы 5–6, 32–35.
+
+#### E. P0: Privacy Policy Не Представлена Управляемым Collection State
+
+**Подтверждено как технический пробел; это не юридическое заключение.** [AnalyticsProvider.tsx](/home/lastday/prawko/mobile/src/providers/AnalyticsProvider.tsx:23) и build gate включают PostHog по build/API key/TestFlight/e2e, не по purpose/consent state. В проверенном mobile-коде нет analytics opt-in/opt-out, consent ledger или соответствующей queue-cleanup orchestration.
+
+Хорошо: touch autocapture выключен, wrapper и `before_send` удаляют email, текст, URL, tokens и receipts по именам ключей. Но denylist не проверяет смысл произвольной строки под разрешённым ключом. Прогресс-reset сохраняет app identity/checkout/ASA и **не является удалением аккаунта или исторической аналитики**. [Privacy page](/home/lastday/prawko/web/src/app/legal/privacy/page.tsx:15) остаётся beta foundation без конкретных сроков и процедуры удаления; внешние retention/deletion настройки не проверены.
+
+**Рекомендация:** сначала определить основания и цели сбора с ответственным за privacy; технически реализовать требуемое управление analytics/attribution/replay/marketing независимо от billing и notification permission. Документировать recipients, retention, отзыв и удаление из vendors/exports. Если для цели нужно предварительное согласие, не накапливать запрещённую активность до него и не досылать её после позднего opt-in. Проверять безопасные bounded поля, не только denylist.
+
+Приёмка: отказ/отзыв/поздний opt-in и deletion имеют проверенный результат во всех применимых destinations; покупки и разрешённая работа продукта не зависят от выключенной аналитики. Правовое решение не выводить из EU host, UUID или native privacy manifest. Главы 3, 25, 30–32, 39.
+
+#### F. P0 При Account Analytics: Install Identity И Account Identity Смешиваются
+
+**Подтверждено устройство схемы; последствие требует проверки политики продукта.** [app-user-id.ts](/home/lastday/prawko/mobile/src/identity/app-user-id.ts:7) хранит устойчивый локальный `usr_…`; PostHog и RC используют его. [useAnalytics.ts](/home/lastday/prawko/mobile/src/hooks/useAnalytics.ts:101) делает `reset` no-op. [AnalyticsProvider.tsx](/home/lastday/prawko/mobile/src/providers/AnalyticsProvider.tsx:113) alias-ит каждый наблюдаемый Supabase account к текущему install ID.
+
+Путь A login → reset/signout → B login на том же устройстве способен отправить aliases обоих аккаунтов к одной аналитической install identity. Один аккаунт на двух устройствах, наоборот, даёт два `app_user_id`. Нет версионированного identity-link ledger в проверенном аналитическом слое. Фактическое объединение person profiles и перенос entitlement в этом аудите не проверялись.
+
+Для guest/install-level отчётов текущая схема приемлема и помогает recovery. Но person/account retention, payer CAC и портфельные unique users нельзя считать простым unique `app_user_id` или суммой рынков. Отсутствие `signed_out` также не равно потере события: ключ есть в каталоге, но активного call site не найдено.
+
+**Рекомендация:** явно выбрать grain и правила account switch, restore, transfer и cross-device анализа. Проверить A → B и две установки одного account, описать миграцию/link table до изменения SDK identity. Не добавлять бездумный `Purchases.logOut()`/новый distinct ID: это может разорвать уже существующую финансовую связку. Эта находка не доказывает неправомерную выдачу Premium второму аккаунту. Главы 4, 17, 20, 33–34.
+
+### Следующий Слой Улучшений
+
+| ID / Приоритет | Подтверждённый пробел или ограничение | Что улучшить и как проверить |
+|---|---|---|
+| G / P1 | Есть legacy persisted `installedAt` и `days_since_install`: [PremiumTeaserHost.tsx](/home/lastday/prawko/mobile/src/features/monetization/PremiumTeaserHost.tsx:60) пытается получить native installation time, иначе остаётся локальное время инициализации. Нет отдельного надёжного first-observed/observation-start контракта с provenance; reset меняет legacy timestamp. `Application Installed` — SDK marker; onboarding attempt живёт только в runtime. `exam_schedule` пишется до `finalizeLocalOnboarding`, отдельного whole-flow completion event нет. | Сохранить однозначный cohort anchor и detection method; отличать progress reset, дату установки, позднее наблюдение и новую установку. Завершение onboarding наблюдать после принятого финала либо явно вывести из согласованных событий/состояния. Не считать шаг даты сам по себе доказательством доставки на Home. |
+| H / P1 | [checkout-journal.ts](/home/lastday/prawko/mobile/src/features/entitlements/checkout-journal.ts:10) не сохраняет `plan`, `paywall_variant`, `paywall_offer`, `trial_days`; package после восстановления также не содержит `subscriptionPeriod`. Recovery events теряют эти dimensions. | Сохранить безопасный immutable origin snapshot и реальный store period. После kill/restore сохраняются исходные attempt/view/product и исходная модель PL plans либо CZ/SK lifetime; текущие настройки не подменяют исходный checkout. |
+| I / P1 | На paywall2 `trial_days=0` может означать unknown eligibility, ineligible или отсутствие trial. Нет отдельного eligibility outcome/error и immutable default field. Dismiss использует [getMonetizationOfferSnapshot()](/home/lastday/prawko/mobile/src/features/monetization/monetization-analytics.ts:6), выбирающий recommended package, не `selectedPlan`: можно получить `plan=quarter` с product/price месячного пакета. CTA не содержит полного product/price snapshot; `time_visible_ms` — wall clock до unmount. | Согласовать product/price с реально выбранным планом на view/CTA/dismiss и сохранить исходный default отдельно. Разделить eligible/ineligible/unknown/error; измерять реально показанный trial, не объявляя выбором preselection. Версионировать layout/config и добавить active visible time, не переименовывать существующее wall field. |
+| J / P1 | Есть `access_state_changed`, SDK state и gates, но нет явной проверки expected feature access против observed blocker, verification age/rule version. `is_plus`/`access_source` не разделяют trial/paid/restore. | Проверяемый access mismatch на конкретной функции с источником/свежестью подтверждения. Ожидаемый premium gate не ошибка; `paywall_viewed is_plus=true` не автоматически дефект. Paid/trial history получать из B, не угадывать по bool. |
+| K / P1 | `question_set_key` и `catalog_generation` есть, но generation — runtime-счётчик. На ответах нет immutable bank/question revision; фактический content language и exam rules version тоже не закреплены в analytics payload. | Сохранять revision/hash контента, explanation/media и exam config, реальный display language отдельно от UI locale. Проверка: изменение ответа/перевода не смешивается с предыдущей ревизией в accuracy/report-rate. |
+| L / P1 | [QuestionMediaCard.tsx](/home/lastday/prawko/mobile/src/features/questions/QuestionMediaCard.tsx:217) логирует image preview error, но image load success только меняет UI. Video `sourceLoad`/`playToEnd` обслуживают UI/callbacks; полного ready/error denominator в analytics нет. `learning_screen_ready` явно имеет `media_readiness=not_measured`. | Под гипотезу фрикции добавить safe media-ready/failure и необходимые video outcomes, связанные с вопросом/ревизией. Проверять missing file, decode/playback failure, buffering и последующий answer; не считать usable question гарантией просмотра видео. Есть JS error boundary/global logger, но native crash/ANR coverage и доставка fatal-события не доказаны. |
+| M / P1 | Engine `d7_return` использует `Application Installed` и любой product event на calendar D+7. В health active days добавляются по обработанным событиям; meaningful completion threshold не применяется. | Раздельные open, learning, post-activation и paid engagement cohorts с maturity/lag. Версия meaningful rule: например, завершённая тренировка с хотя бы 5 уникальными принятыми вопросами либо завершённый exam. Это гипотеза хендбука, а не обязательный размер тренировки. Время до пользы показывать вместе с долей ещё не достигших её; foreground не называть минутами учёбы. |
+| N / P1 | ASA реализована и имеет корректные unknown/organic различия, но engine всегда объявляет acquisition mix unavailable. В repo есть исторические Apple Ads CSV за 12–20 сентября, не daily spend pipeline. Android referrer/MMP не найден. | Сначала join ASA IDs к одному свежему CSV/spend source и B; считать realised cohort proceeds D7/D30 и coverage. CSV учитывает UTC/EUR, product day — Warsaw. Не складывать campaign totals с дочерними строками и не превращать периодный spend в дневной. Android/Meta/aggregate attribution добавлять при реальном запуске соответствующего канала. |
+| O / P1 | Reminder schedule/open наблюдаются, но это локальные daily reminders, не доказанная provider delivery воронка. Cached last response намеренно не задаёт источник визита. `app_entry_resolved` для deep link описывает полученный route pattern, не успешный показ destination. | Связать наблюдаемый reminder open с дальнейшим учебным outcome и раскрыть attribution confidence. Отдельно проверять ошибочный destination при наличии таких ссылок. Не создавать FCM/backend campaigns ради checklist и не выводить причинный эффект из сравнения openers с non-openers. |
+| P / P1 | `AnalyticsEventPayloads` для всех событий — одинаковый `Record<string, primitive>`; обязательные domain keys/enums/grain на уровне типа не проверяются. QA содержит unit helpers и Maestro UI paths, но не полный автоматический analytics acceptance gate. | Event-specific контракт и обязательные IDs/null rules, golden traces, schema/enum/dedupe/lag quality checks. Приоритет — screen + tracker, recovery snapshot, idle/background duration, native SDK queue и финансовая сверка; отсутствие event не должно автоматически становиться abandon. Owner/runbook и rollout log важнее ещё десятка графиков. |
+| Q / P2, условно | `enableAds=false`. При включении interstitial уже имеет paid callback с currency/precision, но rewarded exam path не подписан на `PAID`, не имеет общего request/impression ID и отправляет иной набор полей. | До возврата рекламы проверить revenue всех активных formats, reward integrity, no-fill/network категории и единый request/impression scope. Нулевые ad events сейчас ожидаемы; не «чинить» выключенную рекламу и не ставить эту задачу выше PL billing. |
+| R / P2 | Есть explanation exposure, mistakes mode, bookmarks, report mailto, review request и support/share intents. Нет подтверждённого реального exam outcome/journey end; replay, referral rewards и experiment exposure в действующей конфигурации не найдены. | Оценивать повторную правильность после explanations/review с контролем revision и selection; добровольный bounded self-report поможет отличить достигнутую цель от dropout. Mailto/share/review request не считать отправленным ticket, referral install или опубликованным отзывом. Replay/A-B/referrals отложить до конкретной задачи и подходящего объёма. |
+
+### Что Уже Хорошо
+
+- Сохраняются существующие canonical names; каталог содержит 157 объявлений, но количество не принимается за coverage. Intent/setup, usable question, accepted answer, completion, saved result и review разделены; ID попыток есть. Открытие старого training result не генерирует новый completion.
+- [activity.ts](/home/lastday/prawko/mobile/src/analytics/activity.ts:26) считает наблюдаемый foreground, inactive и cumulative checkpoints; у component clocks есть focus/AppState. Kill и unknown tail честно отделены от explicit exit; elapsed/engagement ограничения документированы.
+- `getAnalyticsBaseProperties()` читает текущие stores в момент capture. `exam_country`, UI locale, access source и schema/build контекст отделены от GeoIP/person state. Для engine установлен календарь Warsaw с DST, не постоянный UTC offset.
+- Checkout учитывает native start, preparation failure, cancellation, pending, outcome unknown, recovery и restore empty. Маркер пишется до native purchase; восстановление доступа не выдаётся за повторную успешную оплату. Доступ не зависит от PostHog delivery или запроса offerings.
+- PL выбирает планы `P1W/P1M/P3M` по стране, не языку. CZ/SK остаются lifetime; пустые/annual/lifetime-only PL offerings не переключают billing model. Trial скрыт до подтверждения eligibility, default quarter не создаёт `paywall_plan_selected`. Аналитический пробел I не означает выдуманное обещание trial.
+- ASA сохраняет campaign/adgroup/keyword IDs и отличает attributed, completed non-attribution и unavailable. Install attribution не перезаписывается reminder return; progress reset не запускает второй ASA check. Exact finance/RC linkage ещё требует B/N.
+- Touch autocapture выключен; нет необходимости добавлять clickstream, raw question text, chat prompt, signed URL или receipt. Существующий local collector позволяет сверять известный UI-путь с событиями без загрязнения production.
+- Engine имеет interpretation overlay, ограничения causal claims, minimum denominators и предупреждения концентрации. Это правильное направление, но эти guards не исправляют дефекты denominator/completeness из C/D.
+
+### Соответствие Каталогу Хендбука
+
+Не переименовывать живые события в имена хендбука. Его `practice_started` привязан к первому usable вопросу, а текущий `training_session_started` — к созданию попытки: эквивалентный milestone нужно выразить через started + question-viewed/ready, не менять старый trigger.
+
+| Группа Хендбука | Что Есть Сейчас / Ограничение |
+|---|---|
+| launch | `app_visit_*`, SDK install/update/open; own first-observed anchor требует G |
+| identity | `auth_*`, install ID и account aliases; F, active logout capture не найден |
+| attribution | `apple_search_ads_attribution_resolved`; pending persist/retries, N |
+| links | `app_entry_resolved`; destination success/failure не замкнуты, O |
+| onboarding | flow + step + screens; runtime flow и whole-flow завершение, G |
+| dashboard | `screen_viewed home`, state/roadmap entries; отдельный `dashboard_viewed` не обязателен |
+| recommendations | `roadmap_step_opened`; contextual shown/selected только на legacy Home, не текущая обязательная воронка |
+| practice | `learning_intent_requested`, setup, `training_*`, ready/operation failed; activation — derived задача M |
+| exam | request/launch IDs, started/resumed/completed/result/review; `exam_restart_*` только result modal |
+| learning | exposure объяснений, bookmarks/report intent, mistakes/review, plan/country/settings; revisions/outcome — K/R |
+| media | image-error observation и UI media callbacks; full media denominator — L |
+| paywall | viewed/load/ready/failed/select/dismiss/gates; A/I, terms/section micro-events необязательны |
+| purchase | CTA/preparation/native/outcomes/recovery; развитый клиентский контур, деньги — B |
+| access | state change, gates, restore canonical/legacy; mismatch — J; не суммировать restore aliases |
+| subscription | клиент не заменяет server lifecycle; локальный pipeline не найден, external RC setup не проверен, B |
+| push | permission/schedule/OS response; локальные reminders, не remote campaign delivery, O |
+| ads | interstitial/reward lifecycle, interstitial paid revenue; выключено, Q |
+| quality | learning operation failed, ready latency, JS error/fallback logging; P/L |
+| experiment | действующий exposure/assignment не найден; условно R |
+| support | profile/support/question-report intents, не ticket lifecycle; R |
+| reviews | requested/skipped/failed; не доказанный системный показ или публикация, R |
+| privacy | sanitizer/build filtering/reset; purpose/consent/deletion orchestration — E |
+| referral | share intent; qualification/reward model не найдена, внедрять только при наличии функции |
+
+### Проверка Всех Глав
+
+| Глава | Оценка Текущего Состояния |
+|---|---|
+| 1. Система решений | Есть развитая телеметрия; центральную learning outcome metric ещё нужно закрепить, M |
+| 2. Источники истины | Client/access разделены; verified money/spend контур не проверен, B/N |
+| 3. Ключи и идентификаторы | В просмотренном SDK setup используются public integration keys; внешние server secrets/destinations не аудитированы |
+| 4. Identity | Устойчивая install-связка есть; person/account policy требует F |
+| 5. Время/установка/сессия | Хорошие clocks/ordering; first-observed и delivery coverage — D/G |
+| 6. Контракт | Схема 3 и единый wrapper есть; domain validation/app/source контекст — P |
+| 7. Имена/типы/properties | Стабильные имена и snapshots есть; payload typing и recovery snapshot — H/P |
+| 8. Атрибуция | ASA отдельно от entry; общая acquisition dimension — N |
+| 9. Apple Ads → выручка | ASA реализована; проверяемые finance/spend joins — B/N |
+| 10. Meta/Android/ссылки | Referrer/Meta path не найден; deep-link receipt не outcome, N/O |
+| 11. Aggregate iOS | Реализация/кабинет не подтверждены; условно при соответствующем канале |
+| 12. Spend | Исторические CSV есть; ежедневная свежесть и merge/granularity не замкнуты, N |
+| 13. ASO | Store console/карточка/эксперименты не проверены; SDK не покрывает pre-install воронку |
+| 14. Internal events | Основной цикл хорошо покрыт; names маппировать по смыслу, не копировать |
+| 15. Paywall/purchase/access | Billing модель верна; конкретный offer race, snapshot/mismatch — A/H/I/J |
+| 16. Subscriptions/trials/refunds | Клиентские статусы недостаточны; B |
+| 17. Воронки | IDs есть; расчёт grain/order/denominator — C |
+| 18. Activation/TTV | Ready/answer/completion доступны; versioned meaningful rule и незавершившие — M |
+| 19. Retention | Calendar return proxy есть; learning/paid cohorts — M, completeness — D |
+| 20. Сегменты | Event-time country/locale/access есть; identity и content/version границы — F/K |
+| 21. Контент/рекомендации | Answer/explanation/report/review signals есть; revisions/media/outcome — K/L/R |
+| 22. Push | Локальные reminders наблюдаемы; delivery и причинный эффект не доказаны, O |
+| 23. In-app ads | Текущий kill switch выключен; расширения условны, Q |
+| 24. Техническое качество | Ready/errors/checkout stages есть; media/native failures и A/L |
+| 25. Support/reviews/deletion | Intent events есть; ticket/outcome/deletion proof — E/R |
+| 26. Денежные метрики | Verified ledger/basis/maturity не замкнуты, B/N |
+| 27. Dashboard | Отдельный dashboard repo не проверен; engine ограничения — C/D/M/P |
+| 28. Малые выборки | Minimum counts/concentration есть; не заменяют корректный знаменатель и intervals |
+| 29. Эксперименты | Exposure/assignment не найден; не приоритет до качества данных |
+| 30. Replay | В provider не включён; installed SDK default — off; это не обязательная доработка |
+| 31. Privacy | Sanitization есть; управляющий collection/deletion state — E |
+| 32. Delivery/dedupe | SDK persistence и checkout journal есть; critical delivery/import semantics — D/H |
+| 33. Pre-release QA | Частичные unit/реальные helper проверки; полноценного end-to-end analytics gate не доказано, P |
+| 34. Reconciliation | Identity prerequisites есть; реальные RC/export/spend сверки не выполнены, B/N |
+| 35. Data quality | Interpretation/identity/sample guards есть; full quality monitoring/runbook не подтверждены, D/P |
+| 36. Расчёты/схемы | Warehouse зачаток есть; код engine расходится с рекомендуемыми правилами, C/D/M |
+| 37. План Prawko | Первый шаг — точность A–F, затем B/N/M; не массовый rollout events |
+| 38. Слепые зоны | Pending/restore/foreground закрыты лучше; offer race, lifecycle/revisions остаются |
+| 39. Acceptance/регулярность | Есть тесты и словарь; gate/owners/еженедельная сверка требуют P |
+| 40. Benchmarks | Реальные сопоставимые proceeds/first-open cohorts не подтверждены; target из benchmark назначать нельзя |
+| 41. Термины | Главное сохранить различия install/person/visit/attempt, client success/money, renewal intent/access |
+| 42. Источники | Использованы предоставленный handbook и текущий код; SDK сверялся с установленными модулями, RC identity/webhook references — S03/S21 |
+
+### Результаты Проверок
+
+Jest запускался из `mobile/` напрямую через установленный runner, без cache/установки dependencies: аналитика, identity, entitlements, paywall plans, monetization, notifications и ad analytics/interstitial controller. `pnpm` в shell отсутствует, поэтому использован `node node_modules/jest/bin/jest.js --runInBand --no-cache` с указанными test paths.
+
+**Результат: 26 suites; 24 прошли, 2 проблемные. Из запущенных tests: 172 passed, 1 failed, 173 total.** Один suite не смог загрузиться, поэтому его tests не входят в этот total.
+
+- [catalog.test.ts](/home/lastday/prawko/mobile/src/analytics/__tests__/catalog.test.ts:94): устаревшее ожидание дословной фразы `Home/Learn exam tile does not check this gate`. Текущее описание верно различает result restart modal и отдельный V2 launch gate. Это failure текстового assertion, не доказательство поломки экзамена. Не «исправлять» семантику на отсутствие любого launch gate.
+- [revenuecat-packages.test.ts](/home/lastday/prawko/mobile/src/features/entitlements/__tests__/revenuecat-packages.test.ts:1): suite не загрузился из-за ESM `expo-secure-store` через `auth-storage` в текущем Jest окружении. Это тестовая configuration/mocking проблема, не результат native package purchase.
+- Checkout recovery/journal, PL plans и premium-copy, training lifecycle, runtime ordering, ASA parser/policy, build gates, notifications helper и interstitial paid callback tests в выбранном прогоне прошли. Они не покрывают RC кабинет, native checkout, privacy opt-out или screen/tracker race.
+- A воспроизведён дополнительным in-memory запуском фактического offer tracker; никаких helper/test файлов не создавалось. Это controlled helper-level proof, не запись реального native UI-прогона.
+- Python tests engine не выполнены: `python3 -m pytest -p no:cacheprovider -q` остановился на `No module named pytest`. Пакеты не устанавливались; engine находки подтверждены чтением реализации, не зелёным runtime suite.
+- Maestro/native billing/SDK offline queue/Crashlytics-vitals/replay recordings не проверялись. Наличие flows и старого local dump не объявлено успешным текущим e2e.
+
+### Практический Порядок
+
+1. Перед использованием paywall-ready rates разобрать A и восстановить проверяемый QA; не объявлять каждый `empty_offerings` отказом магазина.
+2. Проверить существующие RC destinations и финансовый источник B; параллельно согласовать identity/privacy E/F. Не менять ID или создавать конкурирующие money events без миграции.
+3. Закрепить cohort/metric passports и исправить расчёт/покрытие C/D/G. Добавить безопасный persisted billing snapshot H; проверить mismatch J.
+4. Соединить один свежий spend экспорт, ASA и verified transactions; начать с realised D7/D30 и actual counts/coverage, не lifetime forecasts.
+5. Построить три компактных рабочих отчёта: качество/ошибки и freshness; acquisition + verified proceeds; обучение + зрелые learning cohorts. Каждый имеет grain, numerator/denominator, window, version, source, owner и дату обновления.
+6. По обнаруженному провалу выбрать одно продуктовое улучшение: K/L для непонятного/неработающего контента, M/O для следующего учебного шага и возвращения, R для понимания достигнутой цели. Цена, hard gates, MMP, replay и A/B не назначаются «лечением» без данных.
+
+**Что не менять ради хендбука:** canonical event names, PL subscriptions/CZ-SK lifetime routing, отмену/pending/restore semantics, install identity без migration, отключённые ads, рабочий onboarding только ради дополнительных шагов. `exam_restart_*` остаётся result-screen modal; отдельный `premium_gate_viewed source=exam_limit` не превращается в дневной кап или обязательный restart-step всех Home-запусков.
+
+Итог: база не требует полной переделки. Наибольшая отдача сейчас — **точность уже собираемых данных и связка «привлечение → verified деньги → доступ → содержательное обучение»**, а не увеличение количества событий.
+
+## Реализация Аудита: В Работе
+
+Начата 7 октября 2026. Аудит выше описывает исходное состояние; текущая реализация и оставшиеся требования находятся в [handbook-implementation.md](./handbook-implementation.md). Полное завершение и production readiness пока не заявлены.
+
+Добавленные canonical events:
+
+| Event | Grain / Meaning |
+| --- | --- |
+| `analytics_identity_observed` | Install/account link, unlink or switch; не SDK alias, auth outcome или перенос доступа. |
+| `install_observation_resolved` | Разрешён persisted first-observed anchor; событие может повторяться, не новая установка. |
+| `onboarding_flow_completed` | Локальные save/complete calls вернули успех; не physical storage flush или Home arrival. |
+| `onboarding_home_arrived` | Foreground Home route после принятого локального финала, тот же persistent attempt ID; не usable content или learning activation. |
+| `question_media_load_started` | Запрос asset компонентом, `media_load_id`; не просмотр видео. |
+| `question_media_ready` | Native callback image/video подтвердил готовность один раз на load ID. |
+| `question_media_failed` | Нормализованная missing/load/playback ошибка, без URL. |
+| `question_media_playback_started` | Native player сообщил actual playback, не tap intent. |
+| `question_media_playback_ended` | Native playToEnd, не доказательство focused просмотра/обучения. |
+| `question_media_buffering` | Наблюдаемый post-ready интервал; `buffering_completed=false` означает censored duration. |
+
+Новые snapshots: выбранный `product_id/package_id/offering_id/subscription_period`, `default_plan`, `trial_eligibility`, `trial_shown`, `price_basis=store_display`; recovery сохраняет исходный billing-контекст. `time_visible_ms` остаётся wall time, `visible_foreground_ms` измеряется отдельно.
+
+`trial_eligibility_observation_version=1` сохраняет raw request/product evidence
+отдельно от UI-фильтра; `trial_eligibility_basis` / `trial_eligibility_request_id`
+позволяют проверить snapshot. `trial_shown` следует текущим resolved plan days,
+не означает SDK eligible или trial start. `paywall_origin_*` сохраняет исходный
+local screen/country config, не remote revision; `checkout_origin_*` — input и
+selected package отдельно от refreshed native package. Journal/recovery не
+заменяют эти origins текущей страной/config и не заполняют отсутствующие поля
+старых записей. `context.paywall_observations` / CLI / health дают count-only
+request/product/origin диагностику; eligibility callbacks не product return.
+Паспорт: [paywall-observations.md](./paywall-observations.md).
+
+Контент: `question_revision`, `explanation_revision`, `bank_revision`, `media_revision`, `content_language`, `explanation_language`. `content_language_basis=selected_text_field` описывает выбранное поле, не языковую детекцию. `content_provenance_version=1` отдельно сохраняет mapper source language/kind и selected-field agreement; old cache, stale revision и failed observation остаются unknown. `choice_source_languages` / `choice_unknown_source_count` не подменяют prompt provenance. Fingerprint `content-v1` — версия аналитического сравнения, не криптографическое доказательство. `media_revision_basis=asset_descriptor` не подтверждает содержимое файла.
+
+`explanation_display_observation_version=1`: `explanation_display_revision` — hash реально показанного значения, отдельно от multilingual `explanation_revision`; `full/free_topic_marked/locked` и `text/empty/locked/not_observed` сохраняются независимо. Locked/empty не являются text exposure. `exam_rules_revision_basis=current_country_config` не подменяет origin старой попытки: `exam_origin_profile_revision` и `exam_session_rules_revision` имеют отдельные persisted bases; `exam_origin_category` берётся из session, не текущей app category. Cache miss/legacy/invalid origin не backfill из текущего config.
+
+`context.content_observations` / health показывают bounded revision/source/display groups и installation/session rule conflicts. `context.repeat_answers` / health связывают actual baseline → explanation/review → next distinct logical answer с `repeat-answer-v1`, семью днями horizon, revision/language/selection controls и censoring. Exam updates не создают новые repeated questions. Fractions разрешены только на mature comparable pairs с coverage/integrity; они не доказывают causal learning effect. Подробный паспорт: [content-observations.md](./content-observations.md).
+
+Critical payload QA: `analytics_payload_contract_version=2`,
+`analytics_payload_contract_status`, `analytics_payload_valid`,
+`analytics_payload_invalid_keys`; отклонённые значения не копируются в
+диагностику. Invalid payload остаётся capturable, не product guard.
+`not_defined` не означает проверенный контракт; legacy/v1 rows не становятся
+v2-validated. `data_quality.client_payload_validation` отдельно сохраняет
+наблюдённые версии, malformed/unsupported annotations и retained-row grain.
+Runtime capture counters не являются доказательством доставки SDK.
+Паспорт типизации, QA и границ приёмки:
+[payload-contracts.md](./payload-contracts.md).
+
+Engine contract 2: merge/dedupe и явный coverage manifest, ordered funnel с сохранением root grain, one-hour paywall conversion и отдельный 24-hour diagnostic funnel. Незрелые views учитываются как censored, не отказ. `learning_d7_return` использует `learning-v1`, не любой product event; TTV показывает achieved и censored observations вместе.
+
+Добавлен отдельный offline RevenueCat ledger: `ingest-revenuecat`, `finance` и
+`context.financial`. Он хранит source-reported gross activity, lifecycle/lineage,
+refund adjustments, sandbox exclusions и scoped reconciliation. Клиентская цена
+не участвует в денежных итогах; incomplete scope не становится exact join.
+Producer verification и coverage имеют явный `as_of`, не являются доказанным
+production delivery или store proceeds. Формат и приёмка:
+[revenuecat-ledger.md](./revenuecat-ledger.md).
+
+`context.billing_learning` / CLI `billing-learning` отдельно связывают
+наблюдённые RevenueCat trial/first-positive-charge origins с обучением.
+Mapping native/RevenueCat не требует ASA IDs; Plus, price и restore не создают
+paid start. `billing-learning-v1` сохраняет nonachievers, elapsed D7/D30,
+verified trial-expiry revisions, pre-cancel accepted usage и post-activation
+calendar return. Exam `create` добавляет accepted answer; `update` и timeout нет.
+Trials, paid starts и несколько lineages могут пересекаться, не unique people.
+Legacy client coverage без явного `application_ids` не доказывает нулевое
+использование; malformed coverage ограничивает fractions, не падает.
+Это не current paid access, revoked access, churn, proceeds или causal lift.
+Паспорт и оставшаяся приёмка: [billing-learning.md](./billing-learning.md).

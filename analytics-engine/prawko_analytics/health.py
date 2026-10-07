@@ -12,6 +12,18 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from prawko_analytics.context import PreparedRow
+from prawko_analytics.access import feature_access_report
+from prawko_analytics.content import content_observations_report
+from prawko_analytics.repeat_answers import repeat_answer_report
+from prawko_analytics.external_entries import external_entry_report
+from prawko_analytics.rewarded_ads import rewarded_ad_report
+from prawko_analytics.data_quality import canonical_observations, diagnostic_observations, observe_data_quality
+from prawko_analytics.paywall_contract import ELIGIBILITY_EVENTS
+from prawko_analytics.payload_validation import invalid_client_payload
+from prawko_analytics.paywall_observations import paywall_observations_report
+from prawko_analytics.quality import observation_integrity_issue, observation_usable
+from prawko_analytics.identity import safe_identity_id
+from prawko_analytics.acquisition import observed_acquisition
 
 WARSAW = ZoneInfo("Europe/Warsaw")
 
@@ -54,7 +66,7 @@ class Transition:
     label: str
     from_users: int
     to_users: int
-    rate: float
+    rate: float | None
     note: str
 
 
@@ -100,17 +112,86 @@ class Health:
     reliability_label: str
     reportable_metrics: int
     health_metrics: int
+    coverage_complete: bool = False
+    identity_grain: str = "app_user_id_installation"
+    attempt_quality: dict = field(default_factory=dict)
+    feature_access: dict = field(default_factory=dict)
+    content_observations: dict = field(default_factory=dict)
+    repeat_answers: dict = field(default_factory=dict)
+    external_entries: dict = field(default_factory=dict)
+    rewarded_ads: dict = field(default_factory=dict)
+    data_quality: dict = field(default_factory=dict)
+    acquisition: dict = field(default_factory=dict)
+    onboarding: dict = field(default_factory=dict)
+    paywall_observations: dict = field(default_factory=dict)
 
 
-def build_health(rows: list[PreparedRow], *, window_start: datetime, window_end: datetime) -> Health:
+def build_health(
+    rows: list[PreparedRow],
+    *,
+    window_start: datetime,
+    window_end: datetime,
+    financial: dict | None = None,
+    spend: dict | None = None,
+    acquisition: dict | None = None,
+    financial_cohorts: dict | None = None,
+    billing_learning: dict | None = None,
+    onboarding: dict | None = None,
+    paywall_observations: dict | None = None,
+    coverage_complete: bool = False,
+) -> Health:
+    if window_start.tzinfo is None or window_end.tzinfo is None:
+        raise ValueError("Health window bounds must have an explicit timezone.")
     if window_start >= window_end:
         raise ValueError("window_start must be before window_end")
-    people, attempts = _people(rows)
+    rows = [row for row in rows if _utc(window_start) <= _utc(row.timestamp) < _utc(window_end)]
+    rows, data_quality = observe_data_quality(
+        rows, start=window_start, end=window_end, coverage_complete=coverage_complete,
+    )
+    analytical_rows = canonical_observations(rows)
+    activity_rows = [row for row in analytical_rows if row.event not in ELIGIBILITY_EVENTS]
+    activity_integrity = sum(
+        observation_integrity_issue(row.properties) for row in rows if row.event not in ELIGIBILITY_EVENTS
+    )
+    diagnostic_rows = diagnostic_observations(rows)
+    reconstructed = reconstruct_attempts(activity_rows)
+    people, attempts = _people(activity_rows, reconstructed)
     installers = {key: person for key, person in people.items() if person.install is not None}
     d1_num, d1_den = _return_rate(installers, window_end, days=1)
     d7_num, d7_den = _return_rate(installers, window_end, days=7)
     first_pass, first_n = _first_exam_pass(people)
-    paired_done, paired_starts = _paired_exam_results(people)
+    horizon = timedelta(hours=24)
+    exams = [attempt for attempt in reconstructed if attempt.kind == "exam"]
+    mature = [attempt for attempt in exams if attempt.started_at + horizon <= _utc(window_end)]
+    paired_starts = len(mature)
+    paired_done = sum(
+        attempt.completed and attempt.completed_at <= attempt.started_at + horizon
+        for attempt in mature
+    )
+    quality = {
+        "grain": "installation_scoped_learning_session_id",
+        "exam_horizon_seconds": int(horizon.total_seconds()),
+        "exam_censored": len(exams) - len(mature),
+        "id_linked_attempts": sum(attempt.join_basis == "session_id" for attempt in reconstructed),
+        "legacy_time_paired_attempts": sum(attempt.join_basis == "legacy_time_pairing" for attempt in reconstructed),
+        "unlinked_attempts": sum(attempt.join_basis == "missing_attempt_id" for attempt in reconstructed),
+        "invalid_payload_rows": sum(invalid_client_payload(row.properties) for row in rows),
+        "import_conflict_rows": sum(row.properties.get("_warehouse_import_conflict") is True for row in rows),
+        "business_conflict_rows": sum(row.properties.get("_warehouse_business_conflict") is True for row in rows),
+        "invalid_business_rows": sum(row.properties.get("_warehouse_business_invalid") is True for row in rows),
+        "business_order_uncertain_rows": sum(row.properties.get("_warehouse_business_order_uncertain") is True for row in rows),
+        "ambiguous_attempts": sum(bool(attempt.join_issues) for attempt in reconstructed),
+        "activity_integrity_issue_count": activity_integrity,
+        "missing_exam_join_rows": sum(
+            row.event in {
+                "exam_session_started", "exam_session_resumed", "exam_session_completed",
+                "exam_session_ended", "exam_empty_exit", "exam_question_answered",
+            } and _session_id(row, "exam") is None for row in rows
+        ),
+    }
+    attempt_reliable = coverage_complete and bool(mature) and all(
+        attempt.join_basis == "session_id" and not attempt.join_issues for attempt in mature
+    ) and not activity_integrity and not quality["missing_exam_join_rows"]
     restart_num, restart_den = attempts
 
     funnels = [
@@ -180,16 +261,23 @@ def build_health(rows: list[PreparedRow], *, window_start: datetime, window_end:
             cohort_label="people who saw the paywall",
         ),
     ]
-    ranked = _ranked_drops(
-        [funnel for funnel in funnels if funnel.id in {"activation", "learning", "exam_result"}]
-    )
+    ranked = _ranked_drops([
+        funnel for funnel in funnels
+        if funnel.id in {"activation", "learning"}
+        or (funnel.id == "exam_result" and attempt_reliable and not quality["exam_censored"])
+    ]) if coverage_complete and not activity_integrity else []
     transitions = [_as_transition(next(funnel for funnel in funnels if funnel.id == "exam"))]
+    if not coverage_complete or activity_integrity:
+        for transition in transitions:
+            transition.rate = None
+            transition.note += " Full source coverage and clean business integrity are required for a fraction."
     paywall_users = sum(person.paywall is not None for person in people.values())
     purchase_users = sum(person.purchase is not None for person in people.values())
     purchase_events = sum(
         1
-        for row in rows
-        if row.event == "purchase_succeeded" and _user_key(row, _primary_by_distinct(rows))
+        for row in analytical_rows
+        if row.event == "purchase_succeeded" and observation_usable(row.properties)
+        and _user_key(row, _primary_by_distinct(analytical_rows))
     )
     metrics = _metrics(
         users=len(people),
@@ -217,8 +305,38 @@ def build_health(rows: list[PreparedRow], *, window_start: datetime, window_end:
         purchase_users=purchase_users,
         biggest=ranked[0] if ranked else None,
     )
+    attempt_metric = next(metric for metric in metrics if metric.id == "exam_attempt_completion")
+    attempt_metric.label = "Observed exam starts completed within 24 hours"
+    attempt_metric.note = (
+        f"Installation-scoped session ID; {quality['exam_censored']} starts are censored. "
+        "Legacy time pairing and missing/conflicting IDs are descriptive proxies only."
+    )
+    if not attempt_reliable:
+        attempt_metric.reliable = False
+        attempt_metric.tone = "unknown"
+    if quality["ambiguous_attempts"]:
+        for metric in metrics:
+            if metric.area == "exam":
+                metric.reliable = False
+                metric.tone = "unknown"
+                metric.note += " Conflicting or unjoinable attempt observations restrict this summary."
+    if not coverage_complete or activity_integrity:
+        for metric in metrics:
+            if metric.unit == "rate":
+                metric.reliable = False
+                metric.tone = "unknown"
+                metric.note += " Full source coverage, valid client payloads and clean business integrity are required for a rate."
+    financial_status = financial.get("status", "not_loaded") if financial else "not_loaded"
+    if financial_status != "not_loaded":
+        revenue_metric = next(metric for metric in metrics if metric.id == "revenuecat_revenue")
+        revenue_metric.label = "RevenueCat source-reported gross event activity"
+        revenue_metric.note = (
+            "Separate currency amounts and refunds are in monetization.financial. "
+            "Producer verification and coverage are explicit as-of assertions; this is not settled revenue or proceeds."
+        )
     reportable = sum(metric.reliable for metric in metrics if metric.unit != "source")
     scored = sum(metric.unit != "source" for metric in metrics)
+    content_observations = content_observations_report(diagnostic_rows, coverage_complete=coverage_complete)
     return Health(
         users=len(people),
         installs=len(installers),
@@ -227,7 +345,11 @@ def build_health(rows: list[PreparedRow], *, window_start: datetime, window_end:
         drops=ranked[:3],
         transitions=transitions,
         monetization={
-            "revenuecat": "not_loaded",
+            "revenuecat": financial_status,
+            "financial": financial,
+            "spend": spend,
+            "financial_cohorts": financial_cohorts,
+            "billing_learning": billing_learning,
             "purchase_events": purchase_events,
             "purchase_users": purchase_users,
             "paywall_users": paywall_users,
@@ -236,10 +358,36 @@ def build_health(rows: list[PreparedRow], *, window_start: datetime, window_end:
         reliability_label="Limited" if reportable < scored else "Open",
         reportable_metrics=reportable,
         health_metrics=scored,
+        coverage_complete=coverage_complete,
+        attempt_quality=quality,
+        feature_access=feature_access_report(diagnostic_rows, coverage_complete=coverage_complete),
+        content_observations=content_observations,
+        repeat_answers=repeat_answer_report(
+            diagnostic_rows, start=window_start, end=window_end, coverage_complete=coverage_complete,
+            content_quality=content_observations,
+        ),
+        external_entries=external_entry_report(
+            diagnostic_rows, start=window_start, end=window_end, coverage_complete=coverage_complete,
+        ),
+        rewarded_ads=rewarded_ad_report(diagnostic_rows, coverage_complete=coverage_complete),
+        data_quality=data_quality,
+        acquisition=acquisition if acquisition is not None else observed_acquisition(
+            rows, start=window_start, end=window_end, coverage_complete=coverage_complete,
+        ),
+        onboarding=onboarding if onboarding is not None else {
+            "status": "history_not_supplied", "rule_version": "onboarding-activation-v1",
+            "source_scope": "supplied_health_rows_are_not_verified_app_scoped_history",
+        },
+        paywall_observations=paywall_observations if paywall_observations is not None else paywall_observations_report(
+            rows, start=window_start, end=window_end, coverage_complete=coverage_complete,
+        ),
     )
 
 
-def _people(rows: list[PreparedRow]) -> tuple[dict[str, Person], tuple[int, int]]:
+def _people(
+    rows: list[PreparedRow],
+    reconstructed: list[ReconstructedAttempt],
+) -> tuple[dict[str, Person], tuple[int, int]]:
     linked = _primary_by_distinct(rows)
     people: dict[str, Person] = {}
     fails = 0
@@ -247,6 +395,8 @@ def _people(rows: list[PreparedRow]) -> tuple[dict[str, Person], tuple[int, int]
     starts: dict[str, list[datetime]] = {}
     completions: dict[str, list[tuple[datetime, bool]]] = {}
     for row in rows:
+        if not observation_usable(row.properties):
+            continue
         key = _user_key(row, linked)
         if key is None:
             continue
@@ -267,17 +417,25 @@ def _people(rows: list[PreparedRow]) -> tuple[dict[str, Person], tuple[int, int]
         if row.event == "exam_session_started":
             _mark(person, "exam_start", moment)
             person.exam_marks.append((moment, "start"))
-            starts.setdefault(key, []).append(moment)
         elif row.event == "exam_session_completed":
-            _mark(person, "exam_done", moment)
-            passed = row.properties.get("passed") is True
-            person.exam_results.append((moment, passed))
+            passed = row.properties.get("passed")
+            if isinstance(passed, bool):
+                person.exam_results.append((moment, passed))
             person.exam_marks.append((moment, "complete"))
-            completions.setdefault(key, []).append((moment, passed))
         elif row.event == "paywall_viewed":
             _mark(person, "paywall", moment)
         elif row.event == "purchase_succeeded":
             _mark(person, "purchase", moment)
+    for attempt in reconstructed:
+        if attempt.kind != "exam":
+            continue
+        starts.setdefault(attempt.person, []).append(attempt.started_at)
+        if not attempt.completed or attempt.join_issues:
+            continue
+        person = people[attempt.person]
+        _mark(person, "exam_done", attempt.completed_at)
+        if attempt.passed is not None:
+            completions.setdefault(attempt.person, []).append((attempt.completed_at, attempt.passed))
     for key, attempts in completions.items():
         later = sorted(starts.get(key, []))
         for moment, passed in attempts:
@@ -296,11 +454,11 @@ def _people(rows: list[PreparedRow]) -> tuple[dict[str, Person], tuple[int, int]
 
 
 def _primary_by_distinct(rows: list[PreparedRow]) -> dict[str, str]:
-    linked: dict[str, str] = {}
+    candidates: dict[str, set[str]] = {}
     for row in rows:
-        if row.key_source == "primary" and row.distinct_id and row.analysis_key:
-            linked[row.distinct_id] = row.analysis_key
-    return linked
+        if observation_usable(row.properties) and row.key_source == "primary" and row.distinct_id and row.analysis_key:
+            candidates.setdefault(row.distinct_id, set()).add(row.analysis_key)
+    return {distinct: next(iter(keys)) for distinct, keys in candidates.items() if len(keys) == 1}
 
 
 def _user_key(row: PreparedRow, linked: dict[str, str]) -> str | None:
@@ -381,20 +539,6 @@ def _first_exam_pass(people: dict[str, Person]) -> tuple[int, int]:
         _moment, ok = min(person.exam_results)
         passed += int(ok)
     return passed, total
-
-
-def _paired_exam_results(people: dict[str, Person]) -> tuple[int, int]:
-    starts = 0
-    completed = 0
-    for person in people.values():
-        marks = sorted(person.exam_marks)
-        start_times = [moment for moment, kind in marks if kind == "start"]
-        for index, moment in enumerate(start_times):
-            starts += 1
-            nxt = start_times[index + 1] if index + 1 < len(start_times) else None
-            if any(kind == "complete" and moment < done and (nxt is None or done < nxt) for done, kind in marks):
-                completed += 1
-    return completed, starts
 
 
 def _as_transition(funnel: Funnel) -> Transition:
@@ -504,22 +648,22 @@ def _metrics(**values) -> list[AreaMetric]:
         _rate_metric(
             "exam",
             "exam_attempt_completion",
-            "Exam starts that reach a result before the next start",
+            "Observed exam starts completed within 24 hours",
             values["paired_done"],
             values["paired_starts"],
             paired_rate,
             _majority_tone(paired_rate, values["paired_starts"]),
-            "No exam_session_id in this window, so attempts are paired by time.",
+            "Requires complete coverage, mature starts and installation-scoped session IDs.",
         ),
         _rate_metric(
             "exam",
             "first_exam_pass",
-            "First exam passed",
+            "First observed exam result passed",
             values["first_pass"],
             values["first_n"],
             first_rate,
             _outcome_tone(first_rate, values["first_n"]),
-            "Pass rate of each person's earliest exam completion.",
+            "Earliest known pass/fail completion per installation in this window, not the first-ever exam.",
         ),
         _rate_metric(
             "exam",
@@ -654,7 +798,8 @@ def presentation(health: Health) -> tuple[list[AreaMetric], list[Drop], list[Are
     strong = [
         metric
         for metric in health.metrics
-        if metric.tone == "good" and metric.id not in leaked and metric.id not in _TRANSITION_METRICS
+        if metric.tone == "good" and metric.id not in leaked
+        and metric.id not in _TRANSITION_METRICS and metric.id not in _UNSCORED
     ]
     unscored = [metric for metric in health.metrics if metric.id in _UNSCORED]
     return strong, list(health.drops), unscored
@@ -679,10 +824,16 @@ class ReconstructedAttempt:
     app_after: str
     stop_day: date
     later_days: tuple[str, ...]
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    passed: bool | None = None
+    attempt_id: str | None = None
+    join_basis: str = "legacy_time_pairing"
+    join_issues: tuple[str, ...] = ()
 
 
 def reconstruct_attempts(rows: list[PreparedRow]) -> list[ReconstructedAttempt]:
-    """Pair starts with the next start for the same person. This window has no session id."""
+    """Use installation-scoped IDs. Time pairing is an explicitly labelled legacy proxy."""
     owned = _events_by_person(rows)
     found: list[ReconstructedAttempt] = []
     for person, events in owned.items():
@@ -692,6 +843,134 @@ def reconstruct_attempts(rows: list[PreparedRow]) -> list[ReconstructedAttempt]:
 
 
 def _attempts_for(events: list[PreparedRow], kind: str, person: str) -> list[ReconstructedAttempt]:
+    events = sorted(events, key=_row_order)
+    field = f"{kind}_session_id"
+    start_name = f"{kind}_session_started"
+    roots: dict[str, PreparedRow] = {}
+    for row in events:
+        identifier = _session_id(row, kind)
+        if row.event == start_name and identifier is not None:
+            roots.setdefault(identifier, row)
+    legacy = [
+        row for row in events
+        if observation_usable(row.properties)
+        and (not row.event.startswith(f"{kind}_") or _session_id(row, kind) is None)
+    ]
+    attempts = _legacy_attempts_for(legacy, kind, person)
+    legacy_roots = [row for row in legacy if row.event == start_name]
+    for attempt, root in zip(attempts, legacy_roots, strict=True):
+        if root.schema is not None and root.schema >= 3:
+            attempt.join_basis = "missing_attempt_id"
+            attempt.join_issues = ("start_missing_session_id",)
+    for identifier, root in roots.items():
+        start = _utc(root.timestamp)
+        matching = [row for row in events if row.properties.get(field) == identifier]
+        valid = [
+            row for row in matching
+            if observation_usable(row.properties)
+            and (row is root or _follows(row, root))
+        ]
+        done = [row for row in valid if row.event == f"{kind}_session_completed"]
+        close_names = {"exam_session_ended", "exam_empty_exit"} if kind == "exam" else {"training_session_abandoned"}
+        closes = [row for row in valid if row.event in close_names]
+        issues = []
+        if any(invalid_client_payload(row.properties) for row in matching):
+            issues.append("invalid_payload")
+        if any(row.properties.get("_warehouse_import_conflict") is True for row in matching):
+            issues.append("import_identity_conflict")
+        for marker, issue in (
+            ("_warehouse_business_conflict", "business_identity_conflict"),
+            ("_warehouse_business_invalid", "invalid_business_observation"),
+            ("_warehouse_business_order_uncertain", "business_order_unproven"),
+        ):
+            if any(row.properties.get(marker) is True for row in matching):
+                issues.append(issue)
+        if any(
+            row.event == f"{kind}_session_completed" and not _follows(row, root)
+            for row in matching
+        ):
+            issues.append("completion_order_unproven")
+        if kind == "exam" and done and any(
+            row.event == "exam_empty_exit"
+            or row.properties.get("status") in ("abandoned", "expired")
+            or row.properties.get("end_reason") in ("user_ended_early", "miss_click_empty_exit", "timeout", "expired")
+            for row in closes
+        ):
+            issues.append("conflicting_terminal_observation")
+        passed_values = {row.properties.get("passed") for row in done if isinstance(row.properties.get("passed"), bool)}
+        if len(passed_values) > 1:
+            issues.append("conflicting_exam_result")
+        completion = done[0] if done and not issues else None
+        close = closes[-1] if closes else None
+        questions = [row for row in valid if row.event == f"{kind}_question_answered"]
+        stop_row = completion or close or (questions[-1] if questions else root)
+        stop = _utc(stop_row.timestamp)
+        answers = _unique_answers(questions)
+        count = stop_row.properties.get("answered_count")
+        if isinstance(count, int) and not isinstance(count, bool) and count >= answers:
+            answers = count
+        screen, friction, open_seconds, home_soon = _entry_facts(kind, events, start, stop, close)
+        later_exam_seconds, app_after, stop_day, later_days = _after_stop(events, stop)
+        attempts.append(ReconstructedAttempt(
+            kind, completion is not None, answers,
+            "Completed" if completion else _attempt_close(kind, close, valid, start, False),
+            _next_learning(events, stop, kind=kind, attempt_id=identifier),
+            _return_bucket(events, stop),
+            _next_detail(events, stop, kind=kind, attempt_id=identifier),
+            screen, friction, open_seconds, home_soon, person, 0,
+            later_exam_seconds, app_after, stop_day, later_days,
+            started_at=start,
+            completed_at=_utc(completion.timestamp) if completion else None,
+            passed=next(iter(passed_values)) if len(passed_values) == 1 else None,
+            attempt_id=identifier,
+            join_basis="session_id",
+            join_issues=tuple(issues),
+        ))
+    attempts.sort(key=lambda attempt: (attempt.started_at, attempt.attempt_id or ""))
+    for index, attempt in enumerate(attempts):
+        attempt.attempt_index = index + 1
+    return attempts
+
+
+def _session_id(row: PreparedRow, kind: str) -> str | None:
+    return safe_identity_id(row.properties.get(f"{kind}_session_id"))
+
+
+def _row_order(row: PreparedRow) -> tuple:
+    sequence = row.properties.get("event_sequence")
+    sequence = sequence if isinstance(sequence, int) and not isinstance(sequence, bool) else 0
+    return _utc(row.timestamp), str(row.properties.get("app_run_id") or ""), sequence, row.event_id
+
+
+def _follows(row: PreparedRow, root: PreparedRow) -> bool:
+    if _utc(row.timestamp) != _utc(root.timestamp):
+        return _utc(row.timestamp) > _utc(root.timestamp)
+    run = row.properties.get("app_run_id")
+    sequence, origin = row.properties.get("event_sequence"), root.properties.get("event_sequence")
+    return (
+        isinstance(run, str) and bool(run) and run == root.properties.get("app_run_id")
+        and isinstance(sequence, int) and not isinstance(sequence, bool)
+        and isinstance(origin, int) and not isinstance(origin, bool) and sequence > origin
+    )
+
+
+def _unique_answers(events: list[PreparedRow]) -> int:
+    slots = set()
+    for row in events:
+        props = row.properties
+        identifier = props.get("answer_id")
+        index = props.get("question_index")
+        question = props.get("question_id")
+        if isinstance(index, int) and not isinstance(index, bool) and index > 0:
+            slots.add(("index", index))
+        elif isinstance(identifier, str) and identifier:
+            slots.add(("answer", identifier))
+        elif isinstance(question, str) and question:
+            slots.add(("question", question))
+    return len(slots)
+
+
+def _legacy_attempts_for(events: list[PreparedRow], kind: str, person: str) -> list[ReconstructedAttempt]:
     start_name = f"{kind}_session_started"
     done_name = f"{kind}_session_completed"
     question_name = f"{kind}_question_answered"
@@ -735,6 +1014,15 @@ def _attempts_for(events: list[PreparedRow], kind: str, person: str) -> list[Rec
                 app_after,
                 stop_day,
                 later_days,
+                started_at=start,
+                completed_at=min(
+                    (_utc(row.timestamp) for row in inside if row.event == done_name and _utc(row.timestamp) > start),
+                    default=None,
+                ),
+                passed=next((
+                    row.properties["passed"] for row in inside
+                    if row.event == done_name and isinstance(row.properties.get("passed"), bool)
+                ), None),
             )
         )
     return attempts
@@ -780,10 +1068,18 @@ def _attempt_close(kind: str, close: PreparedRow | None, events: list[PreparedRo
     return "New exam started" if kind == "exam" else "Another training started"
 
 
-def _next_learning(events: list[PreparedRow], stop: datetime) -> str:
+def _next_learning(
+    events: list[PreparedRow],
+    stop: datetime,
+    *,
+    kind: str | None = None,
+    attempt_id: str | None = None,
+) -> str:
     after = [row for row in events if _utc(row.timestamp) > stop]
     for row in after:
         if row.event == "training_session_resumed":
+            if attempt_id is not None and (kind != "training" or _session_id(row, "training") != attempt_id):
+                return "Another training"
             return "Same training later"
         if row.event == "training_session_started":
             return "Another training"
@@ -807,7 +1103,13 @@ def _next_learning(events: list[PreparedRow], stop: datetime) -> str:
     return "Other, no later training or exam"
 
 
-def _next_detail(events: list[PreparedRow], stop: datetime) -> str:
+def _next_detail(
+    events: list[PreparedRow],
+    stop: datetime,
+    *,
+    kind: str | None = None,
+    attempt_id: str | None = None,
+) -> str:
     after = [row for row in events if _utc(row.timestamp) > stop]
     learn = next(
         (
@@ -836,7 +1138,11 @@ def _next_detail(events: list[PreparedRow], stop: datetime) -> str:
         return "Other, no later training or exam"
     delta = _utc(learn.timestamp) - stop
     if learn.event == "training_session_resumed":
-        kind = "Same training"
+        kind = (
+            "Training" if attempt_id is not None and
+            (kind != "training" or _session_id(learn, "training") != attempt_id)
+            else "Same training"
+        )
     elif learn.event == "training_session_started":
         kind = "Training"
     else:
@@ -872,8 +1178,9 @@ def _entry_facts(
         end_bound = _utc(background.timestamp) if background is not None else start + timedelta(seconds=15)
         open_seconds = (end_bound - start).total_seconds()
     span = [row for row in events if start <= _utc(row.timestamp) <= end_bound]
+    screen_name = "question_training" if kind == "training" else "exam_session"
     saw_screen = any(
-        row.event == "screen_viewed" and row.properties.get("screen_name") == f"{kind}_session"
+        row.event == "screen_viewed" and row.properties.get("screen_name") == screen_name
         for row in span
     )
     friction = "none"
@@ -1002,9 +1309,11 @@ def _attempt_drill(attempts: list[ReconstructedAttempt], kind: str, drill_id: st
         "tailPeople": people,
         "started": len(selected),
         "completed": done,
-        "cohort": f"{no_return} attempts, {people} people. No training_session_id in this window; paired by person and time.",
+        "cohort": f"{no_return} attempts, {people} installation identities. {_join_label(selected, kind)}",
+        "identityGrain": "app_user_id_installation",
+        "joinQuality": dict(Counter(item.join_basis for item in selected)),
         "note": (
-            f"{no_return} attempts and {people} people had no later training or exam. "
+            f"{no_return} attempts and {people} installation identities had no later training or exam in the observed data. "
             f"{switched} of {len(unfinished)} incomplete attempts were followed by another training and {exams} by an exam, "
             f"so {len(unfinished)} of {len(selected)} is not scored as a drop-off. "
             "A later completion does not erase the earlier attempt."
@@ -1133,10 +1442,12 @@ def _exam_attempt_drill(
         "started": len(selected),
         "completed": done,
         "cohort": (
-            f"{len(tail)} attempts, {tail_people} people. "
-            "reconstructed exam attempts. No exam_session_id in this window; paired by person and time. "
+            f"{len(tail)} attempts, {tail_people} installation identities. "
+            f"{_join_label(selected, 'exam')} "
             "Each list adds up on its own."
         ),
+        "identityGrain": "app_user_id_installation",
+        "joinQuality": dict(Counter(item.join_basis for item in selected)),
         "note": (
             f"{len(selected)} starts, {done} completed, {len(unfinished)} not completed. "
             f"{new_exam + training} of {len(unfinished)} continued in another exam or training. "
@@ -1159,6 +1470,16 @@ def describe_drills(rows: list[PreparedRow], window_end: date | None = None) -> 
         _attempt_drill(attempts, "training", "activity_unfinished", window_end),
         _attempt_drill(attempts, "exam", "exam_unfinished", window_end),
     ]
+
+
+def _join_label(selected: list[ReconstructedAttempt], kind: str) -> str:
+    counts = Counter(item.join_basis for item in selected)
+    return (
+        f"{counts['session_id']} attempts joined by installation-scoped {kind}_session_id. "
+        f"{counts['legacy_time_pairing']} reconstructed {kind} attempts paired by time (legacy proxy). "
+        f"{counts['missing_attempt_id']} starts missing required IDs. "
+        f"{sum(bool(item.join_issues) for item in selected)} attempts have join/validation issues."
+    )
 
 
 def _events_by_person(rows: list[PreparedRow]) -> dict[str, list[PreparedRow]]:

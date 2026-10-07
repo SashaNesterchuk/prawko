@@ -4,6 +4,9 @@
  * Keep event names stable. Dashboard logic must use these keys rather than
  * component-local strings so that releases remain comparable in PostHog.
  */
+import type { PaywallEligibilityPayloads } from "./paywall-payloads";
+import type { CriticalAnalyticsPayloads } from "./critical-payloads";
+
 export type AnalyticsValue = string | number | boolean | null;
 export type AnalyticsProperties = Record<string, AnalyticsValue>;
 
@@ -45,6 +48,18 @@ export const ANALYTICS_EVENTS = {
     key: "app_entry_resolved",
     description: "Observed launch/foreground entry attribution resolved to direct, notification, or a normalized deep link. No raw URL.",
   },
+  externalEntryDestinationObserved: {
+    key: "external_entry_destination_observed",
+    description: "A received external signal was linked to an observed foreground route/state in its bound visit. Not dispatcher success, native rendering, notification delivery or causal attribution.",
+  },
+  externalEntryDestinationEnded: {
+    key: "external_entry_destination_ended",
+    description: "The bounded destination observation window ended. Missing target observations are not automatically routing failures.",
+  },
+  externalEntryEnded: {
+    key: "external_entry_ended",
+    description: "An external signal's same-foreground-visit association ended, was superseded or reached its observation horizon. Not a product timeout.",
+  },
   appleSearchAdsAttributionResolved: {
     key: "apple_search_ads_attribution_resolved",
     description: "Apple Search Ads install check finished for this iOS install. Campaign, ad group, and keyword are numeric ids, not names. asa_result=organic is a completed check with no ad click. Not a visit source, not Android, and not spend.",
@@ -60,6 +75,46 @@ export const ANALYTICS_EVENTS = {
   accessStateChanged: {
     key: "access_state_changed",
     description: "Observed access state changed, with previous/current source and Plus. Not a new purchase or financial transaction.",
+  },
+  analyticsIdentityObserved: {
+    key: "analytics_identity_observed",
+    description: "A versioned install/account link, unlink or switch was observed. Not a person merge, login outcome or access transfer.",
+  },
+  installObservationResolved: {
+    key: "install_observation_resolved",
+    description: "Persistent first-observed metadata resolved for an install identity. Native install time is separate; this event can repeat and is not a new install.",
+  },
+  onboardingFlowCompleted: {
+    key: "onboarding_flow_completed",
+    description: "Local plan save and completeOnboarding calls returned successfully for previously incomplete onboarding. Not proof of physical storage flush or arrival on Home.",
+  },
+  onboardingHomeArrived: {
+    key: "onboarding_home_arrived",
+    description: "A foreground Home route was observed after accepted local onboarding, with a persisted attempt ID. Not usable content, learning activation, or proof of event delivery.",
+  },
+  questionMediaLoadStarted: {
+    key: "question_media_load_started",
+    description: "A displayed media component requested an asset. media_load_id is the load grain, not a video view.",
+  },
+  questionMediaReady: {
+    key: "question_media_ready",
+    description: "The native image/video component reported readiness once per media_load_id. Does not imply playback or comprehension.",
+  },
+  questionMediaFailed: {
+    key: "question_media_failed",
+    description: "A missing asset or native media load/playback failure was observed, with a normalized code and no URL.",
+  },
+  questionMediaPlaybackStarted: {
+    key: "question_media_playback_started",
+    description: "The video player reported actual playback, distinct from the learner's play intent.",
+  },
+  questionMediaPlaybackEnded: {
+    key: "question_media_playback_ended",
+    description: "The native player reported playToEnd. Not proof of focused viewing or learning.",
+  },
+  questionMediaBuffering: {
+    key: "question_media_buffering",
+    description: "An observed post-ready loading interval ended or was censored; completed=false is not a full buffering duration.",
   },
   onboardingFlowViewed: {
     key: "onboarding_flow_viewed",
@@ -135,7 +190,7 @@ export const ANALYTICS_EVENTS = {
   },
   screenViewed: {
     key: "screen_viewed",
-    description: "A production app screen became visible.",
+    description: "A production app screen became visible. screen_observation_scope distinguishes route observations from inline exam review, which does not imply navigation.",
   },
   onboardingStepCompleted: {
     key: "onboarding_step_completed",
@@ -478,6 +533,18 @@ export const ANALYTICS_EVENTS = {
     key: "paywall_offer_failed",
     description: "Offer loading failed, returned no packages or is not configured. Not an empty snapshot while loading.",
   },
+  paywallTrialEligibilityStarted: {
+    key: "paywall_trial_eligibility_started",
+    description: "A scoped trial-eligibility helper invocation started. Not necessarily a native query or display.",
+  },
+  paywallTrialEligibilityResolved: {
+    key: "paywall_trial_eligibility_resolved",
+    description: "Normalized product eligibility outcome from that request. Unknown is not ineligible; not displayed trial or conversion.",
+  },
+  paywallTrialEligibilityCompleted: {
+    key: "paywall_trial_eligibility_completed",
+    description: "Eligibility request resolved, errored or was not queried. A detached observer result is not current UI exposure.",
+  },
   paywallDismissed: {
     key: "paywall_dismissed",
     description: "The Plus paywall closed. Not a purchase outcome; access_unlocked identifies closure after access activation.",
@@ -604,6 +671,18 @@ export const ANALYTICS_EVENTS = {
     description:
       "Google Mobile Ads impression-level paid revenue. Properties: revenue, currency, ad_unit_id, ad_format, ad_network, revenue_precision, placement. app_user_id is a super-property. Use SDK value, never derive from eCPM.",
   },
+  adNativeRequestStarted: {
+    key: "ad_native_request_started",
+    description: "A scoped rewarded SDK load call was invoked. Not provider receipt, fill, OPENED, impression, reward or settled money.",
+  },
+  adImpressionObserved: {
+    key: "ad_impression_observed",
+    description: "A scoped rewarded impression has SDK PAID callback evidence. OPENED alone is not promoted to a native impression callback.",
+  },
+  adObservationFailed: {
+    key: "ad_observation_failed",
+    description: "Optional ad paid-listener/payload observation failed. Not an ad load/show failure or a change to the reward outcome.",
+  },
   offlinePackDownloadStarted: {
     key: "offline_pack_download_started",
     description: "Offline pack download started.",
@@ -684,8 +763,14 @@ export type AnalyticsEventName =
  * primitive by design. Key sanitization is not a semantic free-text allowlist.
  */
 export type AnalyticsEventPayloads = {
-  [EventName in AnalyticsEventName]: AnalyticsProperties;
+  [EventName in AnalyticsEventName]: EventName extends keyof CriticalAnalyticsPayloads
+    ? CriticalAnalyticsPayloads[EventName] & AnalyticsProperties
+    : EventName extends keyof PaywallEligibilityPayloads
+      ? PaywallEligibilityPayloads[EventName] & AnalyticsProperties : AnalyticsProperties;
 };
+export type TypedAnalyticsEventName = keyof CriticalAnalyticsPayloads | keyof PaywallEligibilityPayloads;
+export type AnalyticsPayloadArguments<EventName extends AnalyticsEventName> =
+  [payload: AnalyticsEventPayloads[EventName]];
 
 const FORBIDDEN_ANALYTICS_PROPERTY_KEYS = new Set([
   "answer_given",
@@ -716,6 +801,11 @@ const FORBIDDEN_ANALYTICS_PROPERTY_KEYS = new Set([
   "query",
 ]);
 
+function isSafeAnalyticsString(value: string) {
+  return value.length <= 1024 &&
+    !/https?:\/\/|(?:^|\s)bearer\s+\S+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/i.test(value);
+}
+
 /**
  * Product analytics must never receive free-form or authentication content.
  * This denylist is key-based because payloads are assembled by
@@ -732,7 +822,7 @@ export function sanitizeAnalyticsProperties(payload?: AnalyticsProperties) {
     Object.entries(payload).filter(
       ([key, value]) =>
         !FORBIDDEN_ANALYTICS_PROPERTY_KEYS.has(key.toLowerCase()) &&
-        (value === null || typeof value === "boolean" || typeof value === "string" ||
+        (value === null || typeof value === "boolean" || (typeof value === "string" && isSafeAnalyticsString(value)) ||
           (typeof value === "number" && Number.isFinite(value)))
     )
   ) as AnalyticsProperties;
@@ -740,7 +830,8 @@ export function sanitizeAnalyticsProperties(payload?: AnalyticsProperties) {
 
 /** Also protects SDK lifecycle and nested person updates, outside our wrapper. */
 export function sanitizeSdkAnalyticsValue(value: unknown): unknown {
-  if (value === null || typeof value === "boolean" || typeof value === "string") return value;
+  if (value === null || typeof value === "boolean") return value;
+  if (typeof value === "string") return isSafeAnalyticsString(value) ? value : undefined;
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
   if (Array.isArray(value)) return value.map(sanitizeSdkAnalyticsValue);
   if (value && typeof value === "object") {
@@ -831,6 +922,8 @@ export const ANALYTICS_PROPERTIES = {
   adNetwork: "ad_network",
   adUnitId: "ad_unit_id",
   appUserId: "app_user_id",
+  applicationId: "application_id",
+  applicationIdBasis: "application_id_basis",
   asaAdGroupId: "asa_ad_group_id",
   asaAdId: "asa_ad_id",
   asaCampaignId: "asa_campaign_id",

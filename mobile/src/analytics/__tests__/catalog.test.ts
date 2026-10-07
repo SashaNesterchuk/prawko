@@ -92,8 +92,9 @@ describe("analytics catalog", () => {
       /result-screen/i
     );
     expect(ANALYTICS_EVENTS.examRestartSelected.description).toMatch(
-      /Home\/Learn exam tile does not check this gate/
+      /Home\/Learn do not show this modal/
     );
+    expect(ANALYTICS_EVENTS.examRestartSelected.description).toMatch(/separate V2 exam_limit gate/);
   });
 
   it("normalizes unknown errors without sending their message", () => {

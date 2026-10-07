@@ -2,12 +2,13 @@ import { ANALYTICS_EVENTS, getAnalyticsErrorCode, type AnalyticsProperties } fro
 import { analyticsActivity } from "./activity";
 import { createAnalyticsId } from "./runtime-context";
 import type { AnalyticsTrack } from "../hooks/useAnalytics";
+import type { LearningFailureContext, LearningIntentContext, LearningOperationName } from "./operation-payloads";
 
 export function reportLearningOperationFailure(
   track: AnalyticsTrack,
-  operation: string,
+  operation: LearningOperationName,
   error: unknown,
-  properties: AnalyticsProperties
+  properties: AnalyticsProperties & LearningFailureContext
 ) {
   try {
     track(ANALYTICS_EVENTS.learningOperationFailed.key, {
@@ -20,7 +21,7 @@ export function reportLearningOperationFailure(
   } catch { /* Failure reporting must preserve the original error handling. */ }
 }
 
-export function createLearningIntent(properties: AnalyticsProperties) {
+export function createLearningIntent(properties: AnalyticsProperties & LearningIntentContext) {
   const id = createAnalyticsId("intent");
   analyticsActivity.capture(ANALYTICS_EVENTS.learningIntentRequested.key, {
     ...properties,
@@ -39,7 +40,7 @@ export function withLearningIntent(params: Record<string, string>, properties: A
       roadmap_step_id: params.roadmapStepId ?? null,
       topic_id: params.topic ?? null,
       ...properties,
-    }),
+    } as AnalyticsProperties & LearningIntentContext),
   };
 }
 

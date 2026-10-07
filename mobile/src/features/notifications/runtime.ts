@@ -12,6 +12,7 @@ import { areNotificationsAllowed } from "./permission";
 import { analyticsActivity, analyticsMonotonicNow } from "../../analytics/activity";
 import { ANALYTICS_EVENTS, getAnalyticsErrorCode } from "../../analytics/catalog";
 import { createAnalyticsId } from "../../analytics/runtime-context";
+import type { NotificationSchedulePayload } from "../../analytics/operation-payloads";
 
 export { areNotificationsAllowed } from "./permission";
 
@@ -209,10 +210,10 @@ async function syncNotificationStateImpl() {
   return true;
 }
 
-async function observeSchedule<T>(operation: string, run: () => Promise<T>): Promise<T> {
+async function observeSchedule<T>(operation: NotificationSchedulePayload["operation"], run: () => Promise<T>): Promise<T> {
   const operationId = createAnalyticsId("notification_schedule");
   const startedAt = analyticsMonotonicNow();
-  const record = (outcome: string, error?: unknown) => {
+  const record = (outcome: NotificationSchedulePayload["outcome"], error?: unknown) => {
     try {
       analyticsActivity.capture(ANALYTICS_EVENTS.notificationScheduleResolved.key, {
         operation_id: operationId, operation, outcome, reminder_kind: "study_daily",

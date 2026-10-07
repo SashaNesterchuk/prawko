@@ -6,6 +6,7 @@ import {
 } from "@prawko/config";
 
 import { getExamCountry, useAppShellStore } from "../../state/app-shell";
+import { createExamOriginRuleMetadata } from "../../analytics/exam-rules-observation";
 
 import {
   flushQuestionProgressPersist,
@@ -119,6 +120,7 @@ function mergeSessionMetadata(
     navigation: snapshot.session.metadata.navigation,
     learning_progress_version: snapshot.session.metadata.learning_progress_version,
     learning_progress_baseline_orders: snapshot.session.metadata.learning_progress_baseline_orders,
+    analytics_exam_origin_rules: snapshot.session.metadata.analytics_exam_origin_rules,
   };
 }
 
@@ -300,6 +302,8 @@ export function startLocalExamSession(
     wrongQuestionSourceIds: [],
   };
 
+  const originRules = createExamOriginRuleMetadata(profile, snapshot.session);
+  if (originRules) snapshot.session.metadata.analytics_exam_origin_rules = originRules;
   saveLocalSnapshot(snapshot);
   return cloneSnapshot(snapshot);
 }

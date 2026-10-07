@@ -1,6 +1,8 @@
 import { STUDY_PLAN_LIMITS, type PlanLevel } from "@prawko/config";
 
 import { ANALYTICS_EVENTS } from "../../analytics/catalog";
+import { analyticsActivity } from "../../analytics/activity";
+import { observeAcceptedOnboardingCompletion } from "../../analytics/onboarding-observation";
 import type { AnalyticsTrack } from "../../hooks/useAnalytics";
 import { generateLocalStudyPlan } from "../study-plan/generate-local-study-plan";
 import { useAppShellStore } from "../../state/app-shell";
@@ -23,6 +25,7 @@ export function finalizeLocalOnboarding(
   const daysUntilExam =
     setup.daysUntilExam ?? STUDY_PLAN_LIMITS.recommendedDays;
   const isFirstPlan = store.currentStudyPlan == null;
+  const wasOnboardingCompleted = store.onboardingCompleted;
 
   if (setup.level == null) {
     store.setLevel(level);
@@ -43,6 +46,14 @@ export function finalizeLocalOnboarding(
 
   store.saveCurrentStudyPlan(plan);
   store.completeOnboarding();
+
+  if (!wasOnboardingCompleted) {
+    observeAcceptedOnboardingCompletion(
+      track,
+      typeof analyticsActivity.getContext().onboarding_attempt_id === "string"
+        ? analyticsActivity.getContext().onboarding_attempt_id as string : null,
+    );
+  }
 
   if (isFirstPlan) {
     track?.(ANALYTICS_EVENTS.studyPlanCreated.key, {

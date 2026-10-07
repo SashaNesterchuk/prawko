@@ -9,6 +9,7 @@ import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../../components/shell/NavigationButton";
 import { TrainingExitDialog } from "../../../components/shell/TrainingExitDialog";
 import { resolveLearnerExplanationAccess } from "../explanation-access";
+import { getExplanationDisplayProperties, getQuestionContentProperties } from "../../../analytics/content-revisions";
 import {
   formatSessionCountdown,
   getLocalizedText,
@@ -147,7 +148,11 @@ export function QuestionTrainingView({
       return;
     }
 
-    const recordToken = `${activeSession.id}:${currentQuestionId}:${explanationAccess}`;
+    const displayProperties = getExplanationDisplayProperties(currentQuestion, displayLocale,
+      explanationAccess === "locked" ? "locked" : explanationAccess === "preview" ? "free_topic_marked" : "full",
+      explanationAccess === "locked" ? null : getLocalizedText(currentQuestion.explanation, displayLocale));
+    const contentProperties = getQuestionContentProperties(currentQuestion, displayLocale);
+    const recordToken = `${activeSession.id}:${currentQuestionId}:${explanationAccess}:${displayLocale}:${contentProperties.question_revision}:${displayProperties.explanation_display_revision}`;
 
     if (explanationTrackedRef.current === recordToken) {
       return;
@@ -158,6 +163,7 @@ export function QuestionTrainingView({
     if (explanationAccess === "locked") {
       explanationGateIdRef.current = createAnalyticsId("gate");
       track(ANALYTICS_EVENTS.premiumGateViewed.key, {
+        ...contentProperties, ...displayProperties, content_requested_locale: displayLocale,
         premium_gate_id: explanationGateIdRef.current,
         training_session_id: activeSession.id,
         presentation: "inline_lock",
@@ -171,6 +177,7 @@ export function QuestionTrainingView({
     if (explanationAccess === "preview") {
       explanationGateIdRef.current = createAnalyticsId("gate");
       track(ANALYTICS_EVENTS.premiumGateViewed.key, {
+        ...contentProperties, ...displayProperties, content_requested_locale: displayLocale,
         premium_gate_id: explanationGateIdRef.current,
         training_session_id: activeSession.id,
         presentation: "inline_mark",
@@ -181,6 +188,8 @@ export function QuestionTrainingView({
     }
 
     track(ANALYTICS_EVENTS.answerExplanationViewed.key, {
+      ...contentProperties, ...displayProperties,
+      content_requested_locale: displayLocale,
       training_session_id: activeSession.id,
       access_method: explanationAccess === "preview" ? "free_topic" : "premium",
       free_explanations_remaining: 0,
@@ -191,6 +200,8 @@ export function QuestionTrainingView({
   }, [
     activeSession.id,
     currentQuestionId,
+    currentQuestion,
+    displayLocale,
     explanationAccess,
     hasAnswered,
     isCorrectAnswer,
@@ -230,6 +241,7 @@ export function QuestionTrainingView({
       <View style={trainerStyles.mediaBleed}>
         {currentQuestion.media ? (
           <QuestionMediaCard
+            analyticsProperties={{ question_id: currentQuestion.id, training_session_id: activeSession.id }}
             key={currentQuestion.id}
             locale={displayLocale}
             media={currentQuestion.media}

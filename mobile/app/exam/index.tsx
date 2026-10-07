@@ -32,6 +32,7 @@ import { useQuestionCatalogResolved } from "../../src/state/question-catalog";
 import { ANALYTICS_EVENTS, getAnalyticsErrorCode } from "../../src/analytics/catalog";
 import { createAnalyticsId } from "../../src/analytics/runtime-context";
 import { readLearningIntentId } from "../../src/analytics/operations";
+import type { LearningInteractionPayloads } from "../../src/analytics/learning-interaction-payloads";
 import { useAnalyticsViewState } from "../../src/analytics/useAnalyticsViewState";
 import { trackPremiumGateOpen } from "../../src/features/monetization/v2/analytics";
 import { buildPaywallHref, openPaywall } from "../../src/features/monetization/v2/paywall";
@@ -123,7 +124,7 @@ export default function ExamIntroScreen() {
 
   const launchExam = async () => {
     const launchAttemptId = createAnalyticsId("launch");
-    let launchStep = "fetch_active_session";
+    let launchStep: LearningInteractionPayloads["exam_start_failed"]["launch_step"] = "fetch_active_session";
     track(ANALYTICS_EVENTS.examStartRequested.key, {
       ...examAnalyticsContext,
       launch_attempt_id: launchAttemptId,

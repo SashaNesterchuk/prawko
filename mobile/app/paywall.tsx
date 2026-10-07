@@ -23,6 +23,8 @@ import { PaywallScreen } from "../src/components/shell/PaywallScreen";
 import { NavigationButton } from "../src/components/shell/NavigationButton";
 import { getPaywallOfferHelperKind } from "../src/features/entitlements/paywall-offer-helper";
 import { createPaywallOfferTracker } from "../src/features/entitlements/paywall-offer-analytics";
+import { createPaywallOriginSnapshot } from "../src/features/entitlements/offer-origin";
+import { getPackageAnalyticsSnapshot } from "../src/features/entitlements/offer-snapshot";
 import {
   fetchRevenueCatOfferings,
   getRevenueCatDiagnostic,
@@ -67,7 +69,7 @@ import {
   type RevenueCatPackageSummary,
 } from "../src/state/entitlements";
 import { useAppUserId } from "../src/identity/AppIdentityProvider";
-import { useCurrentUser } from "../src/state/app-shell";
+import { useAppShellStore, useCurrentUser } from "../src/state/app-shell";
 import {
   getMonetizationContextProperties,
   getMonetizationOfferSnapshot,
@@ -182,6 +184,16 @@ function LegacyPaywallPage() {
   const paywallPresentation =
     getSingleParam(params.presentation) ?? "modal";
   const paywallEntry = getPaywallEntryProperties(params);
+  const countryConfig = useCountryConfig();
+  const [paywallOrigin] = useState(() => {
+    const shell = useAppShellStore.getState();
+    return createPaywallOriginSnapshot({
+      variant: "legacy", offer: countryConfig.paywallOffer, default_plan: null, config_version: 1,
+      country: shell.examCountry, category: shell.preferredCategory, locale: shell.preferredLocale,
+      monetization_version: monetizationV2 ? 2 : 1, presentation: paywallPresentation,
+      source: paywallEntry.source ?? null, surface: paywallEntry.surface ?? null,
+    });
+  });
   const { source: paywallSource, surface: paywallSurface, roadmap_step_id: paywallRoadmapStepId } = paywallEntry;
 
   const continueAfterUnlock = () => {
@@ -238,6 +250,8 @@ function LegacyPaywallPage() {
     const accessUnlocked = readHasPlusAccess();
     trackRef.current(ANALYTICS_EVENTS.paywallDismissed.key, {
       ...getMonetizationOfferSnapshot(),
+      ...getPackageAnalyticsSnapshot(recommendedPackage),
+      ...paywallOrigin,
       ...offerTracker.getProperties(),
       paywall_view_id: paywallViewId,
       purchase_attempt_id: associatedCheckout?.id ?? null,
@@ -261,6 +275,7 @@ function LegacyPaywallPage() {
 
   const offerContextRef = useRef(() => ({
     properties: {
+      ...paywallOrigin,
       ...paywallEntry, ...paywallMomentProperties, presentation: paywallPresentation,
       feature: highlightedFeature ?? null, has_plus_access: readHasPlusAccess(),
       plus_purchase_enabled: FEATURE_FLAGS.enablePlusPurchase,
@@ -272,6 +287,7 @@ function LegacyPaywallPage() {
   }));
   offerContextRef.current = () => ({
     properties: {
+      ...paywallOrigin,
       ...paywallEntry, ...paywallMomentProperties, presentation: paywallPresentation,
       feature: highlightedFeature ?? null, has_plus_access: readHasPlusAccess(),
       plus_purchase_enabled: FEATURE_FLAGS.enablePlusPurchase,
@@ -408,6 +424,7 @@ function LegacyPaywallPage() {
     paywallShownAtRef.current = Date.now();
     track(ANALYTICS_EVENTS.paywallViewed.key, {
       ...getMonetizationContextProperties(),
+      ...paywallOrigin,
       ...offerTracker.getProperties(),
       paywall_view_id: paywallViewId,
       purchase_attempt_id: relatedCheckoutRef.current?.id ?? null,
@@ -477,10 +494,12 @@ function LegacyPaywallPage() {
       return;
     }
     const ctaProperties = {
+      ...paywallOrigin,
+      ...getPackageAnalyticsSnapshot(selectedPackage),
       ...offerTracker.getProperties(),
       ...paywallEntry,
       paywall_view_id: paywallViewId,
-      action: confirmedRetryAttemptId ? "retry_purchase" : "purchase",
+      action: confirmedRetryAttemptId ? "retry_purchase" as const : "purchase" as const,
       offer_state: offerLoadStatus,
       package_available: Boolean(selectedPackage),
       revenuecat_configured: sdkConfigured,
@@ -527,6 +546,8 @@ function LegacyPaywallPage() {
       confirmedRetryAttemptId,
       selectPackage: (offers) => selectPaywallPackage(offers, monetizationV2),
       properties: {
+        ...paywallOrigin,
+        ...getPackageAnalyticsSnapshot(selectedPackage),
         ...offerTracker.getProperties(),
         feature: highlightedFeature ?? "premium_access",
         ...paywallMomentProperties,
@@ -555,10 +576,12 @@ function LegacyPaywallPage() {
       return;
     }
     const ctaProperties = {
+      ...paywallOrigin,
+      ...getPackageAnalyticsSnapshot(selectedPackage),
       ...offerTracker.getProperties(),
       ...paywallEntry,
       paywall_view_id: paywallViewId,
-      action: "restore",
+      action: "restore" as const,
       offer_state: offerLoadStatus,
       revenuecat_configured: sdkConfigured,
     };
@@ -591,7 +614,7 @@ function LegacyPaywallPage() {
     const result = await startCheckoutRestore({
       appUserId,
       originViewId: paywallViewId,
-      properties: { ...paywallMomentProperties, ...paywallEntry },
+      properties: { ...paywallOrigin, ...getPackageAnalyticsSnapshot(selectedPackage), ...paywallMomentProperties, ...paywallEntry },
       track,
       captureError,
     });

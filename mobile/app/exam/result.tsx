@@ -65,6 +65,7 @@ import { useIsFocused } from "expo-router/react-navigation";
 import { useAnalyticsViewState } from "../../src/analytics/useAnalyticsViewState";
 import { createAnalyticsId } from "../../src/analytics/runtime-context";
 import { withLearningIntent, reportLearningOperationFailure } from "../../src/analytics/operations";
+import type { LearningInteractionPayloads } from "../../src/analytics/learning-interaction-payloads";
 
 export default function ExamResultScreen() {
   const { t } = useTranslation();
@@ -303,6 +304,9 @@ export default function ExamResultScreen() {
         exam_session_id: snapshot.session.id,
         ...completionAnalytics,
         correct_count: snapshot.session.correctAnswersCount,
+        answered_count: snapshot.session.totalQuestionsAnswered,
+        completion_status: snapshot.session.status,
+        learning_outcome_rule_version: "learning-v1",
         duration_seconds: getExamDurationSeconds(snapshot.session),
         mode: snapshot.session.mode,
         passed: Boolean(snapshot.session.passed),
@@ -399,7 +403,7 @@ export default function ExamResultScreen() {
       wrong_count: snapshot.session.wrongAnswersCount,
     });
   }, [isFocused, outcome, params.justFinished, resultViewState, snapshot, track]);
-  function resultAction(action: string) {
+  function resultAction(action: LearningInteractionPayloads["exam_result_action"]["action"]) {
     track(ANALYTICS_EVENTS.examResultAction.key, {
       exam_session_id: sessionId, mode: snapshot?.session.mode ?? null, action,
     });
@@ -630,6 +634,7 @@ export default function ExamResultScreen() {
       question_total: sortedQuestions.length,
     });
     track(ANALYTICS_EVENTS.screenViewed.key, {
+      screen_observation_scope: "inline_review",
       exam_session_id: loadedSnapshot.session.id,
       route_pattern: "/exam/answers",
       screen_name: ANALYTICS_SCREENS.examAnswers,
