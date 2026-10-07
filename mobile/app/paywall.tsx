@@ -72,16 +72,21 @@ import {
   getMonetizationContextProperties,
   getMonetizationOfferSnapshot,
 } from "../src/features/monetization/monetization-analytics";
-import { isExamSimulatorMode } from "../src/features/exam/exam-config";
-import { isExamEntry } from "../src/features/exam/exam-entry";
-import { buildExamRouteParams } from "../src/features/exam/exam-routes";
 import {
-  decodePostPurchaseAction,
-  runPostPurchaseAction,
-} from "../src/features/monetization/v2/paywall";
+  getPaywallEntryProperties,
+  getSingleParam,
+  returnAfterPaywallUnlock,
+} from "../src/features/monetization/paywall-return";
+import { Paywall2Screen } from "../src/features/paywall2/Paywall2Screen";
+import { useCountryConfig } from "../src/countries/use-country";
 import { useMonetizationV2Active } from "../src/features/monetization/v2/store";
 
-export default function PaywallPage() {
+export default function PaywallRoute() {
+  const { paywallOffer } = useCountryConfig();
+  return paywallOffer === "plans" ? <Paywall2Screen testID="screen-paywall" /> : <LegacyPaywallPage />;
+}
+
+function LegacyPaywallPage() {
   const { t } = useTranslation();
   const { responsiveFont } = useResponsiveFonts();
   const { colors } = useTheme();
@@ -164,55 +169,16 @@ export default function PaywallPage() {
     return () => clearTimeout(timer);
   }, [isPurchasing, checkoutAttempt?.id, checkoutAttempt?.stage]);
   const targetFeature = getSingleParam(params.feature);
-  const returnTo = getSingleParam(params.returnTo);
-  const returnQuestionId = getSingleParam(params.questionId);
-  const returnLocale = getSingleParam(params.locale);
-  const returnSelectedAnswer = getSingleParam(params.selectedAnswer);
   const highlightedFeature = isAppFeature(targetFeature) ? targetFeature : null;
 
-  const returnExamMode = getSingleParam(params.mode);
-  const returnExamQuestionLimit = getSingleParam(params.questionLimit);
-  const returnExamStudyPlanTaskId = getSingleParam(params.studyPlanTaskId);
-  const requestedSource = getSingleParam(params.source);
   const paywallMoment = getSingleParam(params.moment);
   const paywallMomentProperties: AnalyticsProperties = paywallMoment
     ? { moment: paywallMoment }
     : {};
   const paywallPresentation =
     getSingleParam(params.presentation) ?? "modal";
-  const paywallSurface = getSingleParam(params.surface);
-  const paywallRoadmapStepId = getSingleParam(params.roadmapStepId);
-  const paywallTopicId = getSingleParam(params.topicId);
-  const paywallTrainingSessionId = getSingleParam(params.trainingSessionId);
-  const paywallExamSessionId = getSingleParam(params.examSessionId);
-  const paywallGateId = getSingleParam(params.premiumGateId);
-  const paywallAccessBlockId = getSingleParam(params.accessBlockId);
-  const paywallSourceScreen = getSingleParam(params.sourceScreen);
-  const paywallSource =
-    requestedSource ??
-    (returnTo === "exam"
-      ? "exam_restart"
-      : highlightedFeature === "ai_question_chat" || returnTo === "ai-chat"
-        ? "ai_chat"
-        : "profile");
-  const paywallEntry = {
-    source: paywallSource,
-    ...(returnQuestionId ? { question_id: returnQuestionId } : {}),
-    ...(paywallTopicId ? { topic_id: paywallTopicId } : {}),
-    ...(paywallTrainingSessionId ? { training_session_id: paywallTrainingSessionId } : {}),
-    ...(paywallExamSessionId ? { exam_session_id: paywallExamSessionId } : {}),
-    ...(paywallGateId ? { premium_gate_id: paywallGateId } : {}),
-    ...(paywallAccessBlockId ? { block_id: paywallAccessBlockId } : {}),
-    ...(paywallSourceScreen ? { source_screen: paywallSourceScreen } : {}),
-    ...(paywallSurface ? { surface: paywallSurface } : {}),
-    ...(paywallRoadmapStepId
-      ? { roadmap_step_id: paywallRoadmapStepId }
-      : {}),
-  };
-
-  const postPurchaseAction = decodePostPurchaseAction(
-    getSingleParam(params.postPurchase)
-  );
+  const paywallEntry = getPaywallEntryProperties(params);
+  const { source: paywallSource, surface: paywallSurface, roadmap_step_id: paywallRoadmapStepId } = paywallEntry;
 
   const continueAfterUnlock = () => {
     if (
@@ -226,40 +192,9 @@ export default function PaywallPage() {
     trackPaywallDismissRef.current("access_unlocked");
     viewClosedRef.current = true;
     screenOperation.invalidate();
-    if (runPostPurchaseAction(postPurchaseAction)) {
-      return;
+    if (!returnAfterPaywallUnlock(params)) {
+      router.back();
     }
-
-    if (returnTo === "ai-chat" && returnQuestionId) {
-      router.replace({
-        pathname: "/modals/ai-chat",
-        params: {
-          questionId: returnQuestionId,
-          ...(returnLocale ? { locale: returnLocale } : {}),
-          ...(returnSelectedAnswer
-            ? { selectedAnswer: returnSelectedAnswer }
-            : {}),
-        },
-      });
-      return;
-    }
-
-    if (returnTo === "exam") {
-      const returnExamEntry = getSingleParam(params.entry);
-      router.replace({
-        pathname: "/exam",
-        params: buildExamRouteParams({
-          entry: isExamEntry(returnExamEntry) ? returnExamEntry : "result_restart",
-          mode: isExamSimulatorMode(returnExamMode) ? returnExamMode : "exam",
-          questionLimit: parsePositiveInteger(returnExamQuestionLimit),
-          roadmapStepId: getSingleParam(params.roadmapStepId),
-          studyPlanTaskId: returnExamStudyPlanTaskId,
-        }),
-      });
-      return;
-    }
-
-    router.back();
   };
 
   const purchaseEndsAt = purchaseAccess?.latestExpirationDate
@@ -981,23 +916,6 @@ function selectPaywallPackage(offers: RevenueCatPackageSummary[], monetizationV2
     ? offers.find((item) => matchRevenueCatProductId(item) === "lifetime") ??
       offers.find((item) => item.packageType === "LIFETIME")
     : null) ?? pickRecommendedPackage(offers);
-}
-
-function parsePositiveInteger(value: string | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
-}
-
-function getSingleParam(value: string | string[] | undefined) {
-  if (Array.isArray(value)) {
-    return value[0];
-  }
-
-  return value;
 }
 
 function isAppFeature(value: string | undefined): value is AppFeature {

@@ -1,0 +1,55 @@
+# Feature: Monetization V2
+# Scenario: A free Poland learner sees the explanation on a free topic, with a Premium mark that opens the paywall.
+appId: com.mindjar.prawko
+tags:
+  - monetization
+  - monetization-v2
+  - trainer
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: trainer-modes
+      EXAM_COUNTRY: PL
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-trainer-modes
+
+- tapOn:
+    id: "trainer-mode-random"
+
+- runFlow:
+    file: subflows/start_default_question_count.yaml
+    env:
+      TARGET_ID: screen-question
+
+- runFlow:
+    file: subflows/answer_first_available_option.yaml
+
+- assertNotVisible:
+    id: "question-explanation-locked"
+
+- scrollUntilVisible:
+    element:
+      id: "question-explanation"
+    direction: DOWN
+    timeout: 8000
+
+- scrollUntilVisible:
+    element:
+      id: "question-explanation-premium"
+    direction: DOWN
+    timeout: 8000
+
+- assertVisible: "Premium"
+
+- tapOn:
+    id: "question-explanation-premium"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+
+- assertVisible:
+    id: "screen-paywall"

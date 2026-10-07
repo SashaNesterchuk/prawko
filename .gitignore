@@ -27,6 +27,8 @@ data/questions/exports/generated/**
 data/questions/delivery/generated/**
 docs/analytics/*.json
 mobile/.analytics/
+analytics-engine/warehouse/
+analytics-engine/.venv/
 data/legal/**/raw/
 data/legal/**/articles.json
 data/legal/**/meta.json

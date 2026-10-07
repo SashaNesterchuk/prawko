@@ -39,7 +39,6 @@ tags:
       visible: "Неправильно"
     commands:
       - assertVisible: "Зрозуміло"
-      - assertVisible: "Пояснити мою помилку"
       - assertVisible:
           id: "question-feedback-next"
 
@@ -48,9 +47,35 @@ tags:
       visible: "Правильно"
     commands:
       - assertVisible: "Наступне питання"
-      - assertVisible: "Пояснити чому інші хибні?"
       - assertVisible:
           id: "question-feedback-next"
+
+# Poland free topics show the explanation and a Premium mark. Other topics
+# keep the locked explain row.
+- runFlow:
+    when:
+      visible:
+        id: "question-explanation-locked"
+    commands:
+      - runFlow:
+          when:
+            visible: "Неправильно"
+          commands:
+            - assertVisible: "Пояснити мою помилку"
+      - runFlow:
+          when:
+            visible: "Правильно"
+          commands:
+            - assertVisible: "Пояснити чому інші хибні?"
+
+- runFlow:
+    when:
+      visible:
+        id: "question-explanation-premium"
+    commands:
+      - assertVisible:
+          id: "question-explanation"
+      - assertVisible: "Premium"
 
 # The panel is part of the scroll content now, so question, options and
 # explanation scroll as one block while the CTA stays pinned over the fade.

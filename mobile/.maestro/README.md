@@ -80,6 +80,7 @@ pnpm test:e2e:studio
 | `profile_category_can_switch.yaml` | Profile → Category screen → select A (not only B) |
 | `profile_offline_without_plus_opens_paywall.yaml` | Profile → Offline mode row → paywall (free) |
 | `paywall_activate_stays_on_paywall.yaml` | Guest Activate on paywall stays on paywall (never App access) |
+| `paywall2_renders_and_closes.yaml` | New paywall layout (`/paywall2`, bootstrap `DESTINATION=paywall2`): offer, Unlock stays on screen, sticky bar after the offer, comparison, FAQ expands, final CTA + restore, Close → Home |
 | `premium_after_ad_shows_teaser.yaml` | A dismissed ad does not open the premium bottom sheet or paywall |
 | `premium_training_result_hides_teaser.yaml` | Finished training result does not show the Premium teaser or paywall |
 | `premium_exam_result_opens_paywall.yaml` | Completed exam renders the result and then opens paywall directly |
@@ -87,7 +88,8 @@ pnpm test:e2e:studio
 | `monetization_v2_second_exam_opens_unlock_sheet.yaml` | V2 second exam opens the paywall directly, not the rewarded unlock sheet |
 | `monetization_v2_plus_exam_starts.yaml` | V2 Premium starts an exam with no unlock sheet |
 | `monetization_v2_training_limit_opens_paywall.yaml` | V2 training with the free question quota used opens the paywall |
-| `monetization_v2_explanation_locks.yaml` | First answer hides the explanation and opens the paywall |
+| `monetization_v2_explanation_locks.yaml` | CZ free topic: first answer hides the explanation and opens the paywall |
+| `monetization_v2_pl_free_topic_explanation.yaml` | PL free topic: first answer shows the explanation, marks it Premium, and that mark opens the paywall |
 | `explore/blogger_session.yaml` | V2 free user wanders Home, training, a short exam, signs, profile and paywall for 30 minutes. Tag `explore`, excluded from `pnpm test:e2e`. Run `pnpm test:e2e:explore` |
 | `profile_offline_missing_pack_can_download.yaml` | Offline mode → download missing pack (e2e) |
 | `profile_offline_incomplete_pack_shows_resume.yaml` | Incomplete pack shows resume + remove |

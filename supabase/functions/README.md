@@ -10,6 +10,12 @@ Current function status:
    - assistant/user logging into `ai_messages.question_id` (`questions_v2.id`)
    - pre-generated explanation response path when provider keys are missing
 
+2. `apple-search-ads-attribution`
+   - iOS install token in, Apple AdServices attribution out
+   - no user JWT: guests call it with the project apikey
+   - does not log the token or store a row
+   - deploy before the app build that requests the token: `supabase functions deploy apple-search-ads-attribution --project-ref ybqoporhnnbaluhaoppo`
+
 Suggested next functions:
 
 1. `generate-question-explanations`

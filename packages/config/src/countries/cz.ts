@@ -14,6 +14,8 @@ export const CZECH_EXAM_BASKETS: ExamBasketSlot[] = [
 
 export const CZ_COUNTRY_CONFIG: CountryConfig = {
   code: "CZ",
+  brandName: "Řidičák",
+  paywallOffer: "lifetime",
   categories: ["B"],
   defaultLocale: "cs",
   exam: {

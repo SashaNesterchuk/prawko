@@ -319,23 +319,26 @@ Skip и start у одного человека в разные визиты — 
 
 ## Paywall и покупка
 
+Все события paywall2 (PL) несут `paywall_variant=paywall2`, `paywall_offer=plans/lifetime` (lifetime, пока в offering нет подписок), `plan` и `trial_days` выбранного тарифа; `purchase_*` получают те же поля. У классического paywall `paywall_variant` нет.
+
 | Событие | Значение |
 |---|---|
 | `paywall_viewed` | Показали Plus. Вход — `source` и, если источник общий, `surface`. `offers_count`, `revenuecat_configured` (API key / SDK для платформы, не «последний fetch успешен»), опционально `hydration_error_code`. `moment` пишется только у старого промпта: `after_exam`, `after_ad`, `app_open`, `manual_test`. У V2 (`training_limit`, `explanation`, `roadmap`, `profile`, …) поля `moment` нет. Не подставлять `profile` вместо отсутствующего `moment`. V2 `source`: `training_limit`, `wrong_answers`, `explanation`, `exam_limit`, `weak_spots`, `smart_reviews`, `trap_questions`, `statistics`, `profile`, `roadmap`, `ai_chat`, `offline_mode`. С круга роадмапа ещё `roadmap_step_id` |
 | `paywall_cta_selected` | В обработчик пришло намерение: `action=purchase/retry_purchase/restore`, `paywall_view_id`, snapshot оффера/SDK, `offer_state`, для purchase `package_available`. Не native checkout и не покупка |
-| `paywall_checkout_blocked` | Обработчик остановился до checkout. `blocked_reason=checkout_busy/already_entitled/purchase_disabled/not_configured`, тот же view и action. Не `purchase_failed` и не отказ пользователя от оплаты |
+| `paywall_checkout_blocked` | Обработчик остановился до checkout. `blocked_reason=checkout_busy/already_entitled/purchase_disabled/not_configured`; у paywall2 ещё `package_unavailable` (тариф не пришёл из стора), тот же view и action. Не `purchase_failed` и не отказ пользователя от оплаты |
 | `paywall_offer_load_started` | Начался цикл доступности оффера на этом paywall. `paywall_view_id`, `offer_load_id`, при наличии `offer_request_id`; `load_reason=initial/refresh`, `offer_load_source`, `is_cached`. Не каждый цикл является новым запросом SDK |
 | `paywall_offer_ready` | Выбранный пакет реально доступен: product/package/offering, price/currency, число предложений и duration. Есть связанный `offer_load_id`; кеш приложения отмечается `is_cached=true`, `load_duration_ms=0`. Это готовность предложения, не покупка и не утверждение о доступности CTA для уже активного Premium |
 | `paywall_offer_failed` | Завершившийся запрос не дал готового оффера или SDK не настроен. `failure_reason`: `request_error`, `empty_offerings`, `not_configured`; `error_code`, структурированная диагностика. Ноль предложений **во время** загрузки не создаёт failed |
 | `premium_gate_viewed` | Упёрлись в лимит V2 или открыли премиум-вход, который сразу ведёт на paywall. `source` как у paywall. `surface` есть, когда `source` общий. Не путать с `exam_restart_gate_shown` |
 | `premium_gate_action` | `open_paywall` / `watch_ad` / `dismiss` на этом лимите. `surface` как у `premium_gate_viewed` |
-| `answer_explanation_viewed` | Полное объяснение у Premium. `access_method`: `premium` |
+| `answer_explanation_viewed` | Полное объяснение показано. `access_method`: `premium`, либо `free_topic` (бесплатная тема PL без Premium, текст открыт и только помечен как Premium) |
 | `ad_reward_earned` | SDK подтвердил награду. `placement=exam_unlock` даёт кредит экзамена, списание только на `exam_session_started` |
 | `paywall_dismissed` | Закрылся экран Plus, не результат оплаты. В новой реализации `dismiss_method`: `close_button` / `navigation` / `access_unlocked`; последнее означает продолжение после активации доступа. `has_plus_access` — доступ в момент закрытия. Исторические `swipe` / `background` остаются в старых дампах; новые события не называют любой выход свайпом и не считают уход в фон закрытием |
 | `premium_prompt_shown` | Исторический bottom sheet с оффером Plus. Больше не показывается: ни `app_open`, ни `after_ad` |
 | `premium_prompt_clicked` | Исторический CTA того шита. Новые события не пишутся |
 | `premium_prompt_dismissed` | Историческое закрытие шита. Новые события не пишутся |
-| `paywall_package_selected` | Исторический ключ. Селектора пакетов больше нет: один lifetime, сразу `purchase_started` |
+| `paywall_package_selected` | Исторический ключ. Классический paywall выбирает пакет в коде; выбор тарифа на paywall2 пишется в `paywall_plan_selected` |
+| `paywall_plan_selected` | На paywall2 (PL) выбрали тариф: `plan=week/month/quarter`, `previous_plan`, `placement=offer` (верхний выбор) / `final` (нижний), `trial_days`, product/price/currency. По умолчанию выбран `quarter` без события |
 | `purchase_stage_changed` | Началась стадия подготовки/оплаты: `get_customer_info`, `get_offerings`, `persist_checkout`, `purchase_package`. `persist_checkout` — сохранение локального маркера **до** вызова магазина; ещё не native start. Повторная загрузка offerings может дать ещё одно событие той же стадии |
 | `purchase_started` | Непосредственно перед вызовом нативного `purchasePackage`, после проверки доступа, получения пакета и успешной записи журнала. Нажатие CTA и ошибка подготовки сами по себе не являются checkout-start |
 | `purchase_attempt_recovered` | Незавершённая попытка загружена из журнала после перезапуска с тем же `purchase_attempt_id`, исходными view/product/retry IDs и `previous_status`. Не новый checkout, не успешная оплата и не выдача Premium. Может повторяться при следующих перезапусках той же попытки |
@@ -480,6 +483,25 @@ Raw `asset_url` теперь удаляется sanitizer, в том числе 
 
 External signal внутри уже active приложения может обновить entry context без нового `app_visit_id`. Это не дополнительный возврат пользователя: границу визита определяют visit-события, не число entry-resolved.
 
+### Apple Search Ads
+
+`apple_search_ads_attribution_resolved` — одна проверка установки на iOS. Пишется после ответа Apple AdServices, не в момент тапа по объявлению. Те же поля потом висят на человеке (`$set_once`) и на следующих событиях.
+
+| Поле | Значение |
+|---|---|
+| `asa_result` | `attributed` — установка с объявления. `organic` — Apple ответил, что клика не было. `unavailable` — ответа не получили; это не органика |
+| `asa_campaign_id` | Числовой id кампании. Названия в событии нет |
+| `asa_ad_group_id` | Id группы |
+| `asa_keyword_id` | Id ключа. Пустой у Search Match и когда ключа не было |
+| `asa_ad_id` / `asa_org_id` | Id объявления и кабинета Apple Ads |
+| `asa_conversion_type` | `Download` или `Redownload` |
+| `asa_claim_type` | `Click` или `Impression` |
+| `asa_country_or_region` | Двухбуквенный код страны клика |
+| `asa_click_date` / `asa_impression_date` | Время из ответа Apple, не время открытия приложения |
+| `asa_unavailable_reason` | `token_error`, `invalid_token` или `unresolved`. Только при `asa_result=unavailable` |
+
+Имя кампании и текст ключа берутся из отчёта Apple Ads по этим id. Спенд, CPA и ROAS из события не считаются. Android событие не шлёт. Ноль событий в старом окне значит, что билд ещё без этой проверки, а не что рекламы не было. Токен Apple в аналитику не пишется. Сброс прогресса в профиле проверку не стирает и второй раз её не запускает. Связь с покупкой — в воронке **Apple Search Ads → покупка** ниже: общий `app_user_id`, он же клиент RevenueCat. В кабинете RevenueCat этих id нет.
+
 `notification_opened` — наблюдали ответ ОС, `notification_response_id`, notification ID/action и `reminder_kind=study_daily/unknown`. `cached_response=true`, `entry_attributed=false`, `attribution_confidence=cached_os_response` означает сохранённый last response **без времени тапа**: он может относиться к старому запуску. Источник текущего визита из него не назначается. Только live OS response даёт `entry_reason=notification`, `entry_attributed=true`, `live_os_response`; повторный live ответ на уже записанный cached ID всё равно может дать entry resolution. Analytics-only local dedupe хранит последние 50 response IDs; это не durable delivery outbox.
 
 `notification_schedule_resolved` наблюдает результаты существующих enable/disable/sync helpers: operation ID/name, enabled/disabled/permission_denied/failed, request duration, scheduled count. `confirmation_scope=helper_result_not_delivery`: это не OS delivery, не push receipt и не гарантированная отмена всех нотификаций. Часы, тексты, permission policy и routing не меняются; добавлена только reminder-kind metadata.
@@ -499,6 +521,8 @@ External signal внутри уже active приложения может об�
 **Roadmap.** `roadmap_step_opened` → `training_session_started` или `premium_gate_viewed` → `paywall_viewed`. Сплиты: `roadmap_step_id`, `surface`, `locked`.
 
 **Training.** `training_session_started` → `training_question_viewed` → `training_question_answered` → `training_session_completed`. `training_mode_selected`/setup нужны только для соответствующего входа и не обязательны при прямом roadmap start. Resume может прийти без started в текущем окне. Для попыток связывать по `training_session_id`, а не временной близости. Result/review отдельно от completion, отсутствие terminal может быть censored. Сплиты: `mode`, `roadmap_step_id`, `practice_entry`, версия схемы.
+
+**Apple Search Ads → покупка.** `apple_search_ads_attribution_resolved` с `asa_result=attributed` и `purchase_succeeded` у одного `app_user_id`. Этот id — клиент RevenueCat. Кампания — `asa_campaign_id`, ключ — `asa_keyword_id`; текст ключа только из отчёта Apple Ads. Покупка может прийти раньше ответа Apple: тогда id нет на строке `purchase_succeeded`, он есть на событии атрибуции того же человека. `purchase_access_confirmed` и restore не считать новой покупкой с этого ключа. `asa_result=organic` и `unavailable` в числитель не входят.
 
 **Paywall.** `paywall_viewed` → `paywall_offer_ready` → `paywall_cta_selected action=purchase` → `purchase_started` → `purchase_succeeded`. Gate — отдельный предшествующий шаг для gated entry, не обязательный при прямом paywall. Связывать view/ready/CTA/start по `paywall_view_id`, outcome — по `purchase_attempt_id`. Loading/failed по `offer_load_id`; refresh не увеличивает views. Рядом: checkout_blocked, preparation_failed, pending/outcome_unknown, cancelled, failed, dismissed. Сплиты: фактический `auth_mode`, `source`, `surface`, `roadmap_step_id`; кеш и SDK-запросы раздельно. Package selector исторический. Старые версии без ready/CTA не включать в обязательную новую воронку.
 

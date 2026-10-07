@@ -2,6 +2,7 @@
  * Czech UI copy. Keep in sync with English keys in `resources.ts`.
  */
 import { monetizationV2Cs } from "./monetization-v2-copy";
+import { paywall2Cs } from "./paywall2-copy";
 import { roadmapCopyCs } from "./roadmap-copy";
 
 export const czechTranslations = {
@@ -1294,4 +1295,5 @@ export const czechTranslations = {
   },
   monetizationV2: monetizationV2Cs,
   roadmap: roadmapCopyCs,
+  paywall2: paywall2Cs,
 } as const;

@@ -58,3 +58,8 @@ enable_anonymous_sign_ins = false
 enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
+
+# Guests have no user JWT. The gateway still requires the project apikey.
+# The function only forwards an AdServices token to Apple and returns ids.
+[functions.apple-search-ads-attribution]
+verify_jwt = false

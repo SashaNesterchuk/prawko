@@ -53,7 +53,12 @@ describe("analytics catalog", () => {
       "home_contextual_selected"
     );
     expect(ANALYTICS_EVENTS.roadmapStepOpened.key).toBe("roadmap_step_opened");
-    expect(ANALYTICS_PROPERTIES.appUserId).toBe("app_user_id");
+    expect(ANALYTICS_EVENTS.appEntryResolved.key).toBe("app_entry_resolved");
+    expect(ANALYTICS_EVENTS.appleSearchAdsAttributionResolved.key).toBe(
+      "apple_search_ads_attribution_resolved"
+    );
+    expect(ANALYTICS_PROPERTIES.asaCampaignId).toBe("asa_campaign_id");
+    expect(ANALYTICS_PROPERTIES.asaKeywordId).toBe("asa_keyword_id");
     expect(ANALYTICS_PROPERTIES.adFormat).toBe("ad_format");
     expect(ANALYTICS_PROPERTIES.adNetwork).toBe("ad_network");
     expect(ANALYTICS_PROPERTIES.adUnitId).toBe("ad_unit_id");
@@ -106,6 +111,8 @@ describe("analytics catalog", () => {
       sanitizeAnalyticsProperties({
         email: "student@example.com",
         message: "sensitive details",
+        token: "secret-token",
+        attribution_token: "secret-token",
         question_id: "question-42",
         selected_answer: "A",
       })

@@ -1,6 +1,7 @@
 /**
  * Polish UI copy. Keep in sync with English keys in `resources.ts`.
  */
+import { paywall2Pl } from "./paywall2-copy";
 import { roadmapCopyPl } from "./roadmap-copy";
 
 export const polishTranslations = {
@@ -1365,4 +1366,5 @@ export const polishTranslations = {
     seeExplanations: "Zobacz wyjaśnienia",
   },
   roadmap: roadmapCopyPl,
+  paywall2: paywall2Pl,
 } as const;

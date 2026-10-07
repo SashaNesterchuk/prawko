@@ -208,6 +208,12 @@ function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="paywall2"
+          options={{
+            animation: "slide_from_bottom",
+          }}
+        />
+        <Stack.Screen
           name="offline-mode"
           options={{
             animation: "slide_from_right",

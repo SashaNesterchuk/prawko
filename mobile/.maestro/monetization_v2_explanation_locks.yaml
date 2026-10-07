@@ -1,5 +1,6 @@
 # Feature: Monetization V2
-# Scenario: A free learner's first answer hides the explanation behind Premium.
+# Scenario: Czech free topics still hide the explanation behind Premium.
+# Poland free topics are covered by monetization_v2_pl_free_topic_explanation.yaml.
 appId: com.mindjar.prawko
 tags:
   - monetization
@@ -10,6 +11,7 @@ tags:
     file: subflows/launch_onboarded_destination.yaml
     env:
       DESTINATION: trainer-modes
+      EXAM_COUNTRY: CZ
       MONETIZATION_V2: "true"
       PLUS_ACCESS: "false"
       TARGET_ID: screen-trainer-modes

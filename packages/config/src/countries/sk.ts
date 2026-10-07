@@ -20,6 +20,8 @@ export const SLOVAK_EXAM_BASKETS: ExamBasketSlot[] = [
 
 export const SK_COUNTRY_CONFIG: CountryConfig = {
   code: "SK",
+  brandName: "JazdiSK",
+  paywallOffer: "lifetime",
   categories: ["B"],
   defaultLocale: "sk",
   exam: {

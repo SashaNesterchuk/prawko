@@ -8,9 +8,11 @@ import { useTranslation } from "react-i18next";
 import { GreenWaveScreen } from "../../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../../components/shell/NavigationButton";
 import { TrainingExitDialog } from "../../../components/shell/TrainingExitDialog";
+import { resolveLearnerExplanationAccess } from "../explanation-access";
 import {
   formatSessionCountdown,
   getLocalizedText,
+  getQuestionTopicIds,
 } from "../question-engine";
 import { QuestionMediaCard } from "../QuestionMediaCard";
 import { QuestionMediaEmptyPlaceholder } from "../QuestionMediaEmptyPlaceholder";
@@ -25,6 +27,7 @@ import { getQuestionStepState } from "./visible-steps";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import { createAnalyticsId } from "../../../analytics/runtime-context";
 import { openPaywall } from "../../monetization/v2/paywall";
+import { useAppShellStore } from "../../../state/app-shell";
 import { useHasPlusAccess } from "../../../state/entitlements";
 import { useAnalytics } from "../../../providers/AnalyticsProvider";
 import { openSupportEmail } from "../../support/support-email";
@@ -95,6 +98,7 @@ export function QuestionTrainingView({
   const { track } = useAnalytics();
   const isFocused = useIsFocused();
   const hasPlusAccess = useHasPlusAccess();
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const insets = useSafeAreaInsets();
   const stepperRef = useRef<ScrollView>(null);
   const stepperWidthRef = useRef(0);
@@ -127,7 +131,13 @@ export function QuestionTrainingView({
 
   const hasAnswered = Boolean(currentAnswer);
   const isCorrectAnswer = currentAnswerCorrect;
-  const explanationLocked = hasAnswered && !hasPlusAccess;
+  const explanationAccess = resolveLearnerExplanationAccess({
+    country: examCountry,
+    hasPlusAccess,
+    topicIds: getQuestionTopicIds(currentQuestion),
+  });
+  const explanationLocked = hasAnswered && explanationAccess === "locked";
+  const explanationPreview = hasAnswered && explanationAccess === "preview";
   const explanationTrackedRef = useRef<string | null>(null);
   const explanationGateIdRef = useRef<string | null>(null);
   const sessionMode = activeSession.request.mode;
@@ -137,7 +147,7 @@ export function QuestionTrainingView({
       return;
     }
 
-    const recordToken = `${activeSession.id}:${currentQuestionId}:${hasPlusAccess}`;
+    const recordToken = `${activeSession.id}:${currentQuestionId}:${explanationAccess}`;
 
     if (explanationTrackedRef.current === recordToken) {
       return;
@@ -145,7 +155,7 @@ export function QuestionTrainingView({
 
     explanationTrackedRef.current = recordToken;
 
-    if (!hasPlusAccess) {
+    if (explanationAccess === "locked") {
       explanationGateIdRef.current = createAnalyticsId("gate");
       track(ANALYTICS_EVENTS.premiumGateViewed.key, {
         premium_gate_id: explanationGateIdRef.current,
@@ -158,9 +168,21 @@ export function QuestionTrainingView({
       return;
     }
 
+    if (explanationAccess === "preview") {
+      explanationGateIdRef.current = createAnalyticsId("gate");
+      track(ANALYTICS_EVENTS.premiumGateViewed.key, {
+        premium_gate_id: explanationGateIdRef.current,
+        training_session_id: activeSession.id,
+        presentation: "inline_mark",
+        free_explanations_remaining: 0,
+        question_id: currentQuestionId,
+        source: "explanation",
+      });
+    }
+
     track(ANALYTICS_EVENTS.answerExplanationViewed.key, {
       training_session_id: activeSession.id,
-      access_method: "premium",
+      access_method: explanationAccess === "preview" ? "free_topic" : "premium",
       free_explanations_remaining: 0,
       is_correct: isCorrectAnswer,
       mode: sessionMode,
@@ -169,8 +191,8 @@ export function QuestionTrainingView({
   }, [
     activeSession.id,
     currentQuestionId,
+    explanationAccess,
     hasAnswered,
-    hasPlusAccess,
     isCorrectAnswer,
     isFocused,
     sessionMode,
@@ -342,13 +364,14 @@ export function QuestionTrainingView({
                 isCorrectAnswer={isCorrectAnswer}
                 explanationText={explanationLocked ? null : explanationText || null}
                 explanationLocked={explanationLocked}
+                explanationPremiumMark={explanationPreview}
                 showExplain={explanationLocked}
                 onUnlockExplanation={() => {
                   track(ANALYTICS_EVENTS.premiumGateAction.key, {
                     premium_gate_id: explanationGateIdRef.current,
                     training_session_id: activeSession.id,
                     question_id: currentQuestionId,
-                    presentation: "inline_lock",
+                    presentation: explanationPreview ? "inline_mark" : "inline_lock",
                     action: "open_paywall",
                     source: "explanation",
                   });

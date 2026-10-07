@@ -1,4 +1,6 @@
 PODS:
+  - AppleSearchAds (1.0.0):
+    - ExpoModulesCore
   - EASClient (57.0.2):
     - ExpoModulesCore
   - EXApplication (57.0.2):
@@ -2423,6 +2425,7 @@ PODS:
   - Yoga (0.0.0)
 
 DEPENDENCIES:
+  - AppleSearchAds (from `../modules/apple-search-ads/ios`)
   - "EASClient (from `../../node_modules/.pnpm/expo-eas-client@57.0.2/node_modules/expo-eas-client/ios`)"
   - "EXApplication (from `../../node_modules/.pnpm/expo-application@57.0.2_expo@57.0.16/node_modules/expo-application/ios`)"
   - "EXConstants (from `../../node_modules/.pnpm/expo-constants@57.0.14_expo@57.0.16_react-native@0.86.2_@babel+core@7.29.0_@react-native+metr_z7ey5yedwg3ic5gikrtz2zfjqu/node_modules/expo-constants/ios`)"
@@ -2551,6 +2554,8 @@ SPEC REPOS:
     - RevenueCatUI
 
 EXTERNAL SOURCES:
+  AppleSearchAds:
+    :path: "../modules/apple-search-ads/ios"
   EASClient:
     :path: "../../node_modules/.pnpm/expo-eas-client@57.0.2/node_modules/expo-eas-client/ios"
   EXApplication:
@@ -2786,6 +2791,7 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/react-native@0.86.2_@babel+core@7.29.0_@react-native+metro-config@0.86.2_@babel+core@7.29.0___swkkcsfs6uvhh76ka3vphcdcyi/node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  AppleSearchAds: ac06e3b4eb4465fcd9013a06a50c9a9ece0db50f
   EASClient: 19dbd341708f694a526bdfe9e541fa54a7b8650b
   EXApplication: bbd517d50878ca1d121fb3843392beb210181e28
   EXConstants: 0023ccf3213a49042510a7a63e58a911cea6be8d

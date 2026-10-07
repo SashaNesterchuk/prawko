@@ -9,6 +9,7 @@ import type {
 import { PAYWALL_RESULT } from "react-native-purchases-ui";
 
 import { mobileEnv } from "../../config/env";
+import { getFreeTrialDays } from "./free-trial";
 import { createAppUserId } from "../../identity/app-user-id";
 import {
   createEmptyFeatureEntitlements,
@@ -224,6 +225,24 @@ export async function purchaseRevenueCatPackage(input: {
     }),
     transactionId: result.transaction?.transactionIdentifier ?? null,
   };
+}
+
+/**
+ * Product ids whose free trial this user may not get. iOS reports eligibility per
+ * Apple ID; Google Play only returns offers the user can redeem, so Android is never filtered.
+ */
+export async function fetchTrialIneligibleProductIds(
+  appUserId: string,
+  productIds: string[]
+): Promise<string[]> {
+  if (Platform.OS !== "ios" || productIds.length === 0) return [];
+  if (!(await ensureRevenueCatReady(appUserId))) return [];
+
+  const Purchases = (await getRevenueCatModule()).default;
+  const eligibility = await Purchases.checkTrialOrIntroductoryPriceEligibility(productIds);
+  return productIds.filter(
+    (id) => eligibility[id]?.status !== Purchases.INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE
+  );
 }
 
 export async function restoreRevenueCatPurchases(appUserId: string) {
@@ -678,6 +697,7 @@ function mapRevenueCatPackage(item: PurchasesPackage): RevenueCatPackageSummary 
   return {
     currencyCode: item.product.currencyCode,
     description: item.product.description,
+    freeTrialDays: getFreeTrialDays(item.product.introPrice),
     identifier: item.identifier,
     offeringIdentifier: item.presentedOfferingContext.offeringIdentifier,
     packageType: item.packageType,

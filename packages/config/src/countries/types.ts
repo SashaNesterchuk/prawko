@@ -45,6 +45,10 @@ export type CountryMediaEnvKey =
 
 export type CountryConfig = {
   code: CountryCode;
+  /** Short in-app brand for this market; must match the store listing brand. */
+  brandName: string;
+  /** "plans": 7 / 30 / 90-day subscriptions; "lifetime": one-time Premium purchase. */
+  paywallOffer: "plans" | "lifetime";
   categories: readonly DrivingCategory[];
   defaultLocale: SupportedLocale;
   exam: CountryExamConfig;

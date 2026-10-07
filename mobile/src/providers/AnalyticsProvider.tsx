@@ -3,6 +3,7 @@ import { PostHogProvider, usePostHog } from "posthog-react-native";
 
 import { ANALYTICS_EVENTS, ANALYTICS_PROPERTIES, sanitizeSdkAnalyticsValue } from "../analytics/catalog";
 import { AnalyticsLifecycleObserver } from "../analytics/AnalyticsLifecycleObserver";
+import { AppleSearchAdsObserver } from "../analytics/AppleSearchAdsObserver";
 import { getAnalyticsBaseProperties } from "../analytics/base-properties";
 import { useAnalytics } from "../hooks/useAnalytics";
 import { isPostHogCaptureEnabled } from "../analytics/posthog-build-gate";
@@ -54,6 +55,7 @@ export function AnalyticsProvider({ children }: PropsWithChildren) {
     >
       <PostHogIdentitySync />
       <AnalyticsLifecycleObserver />
+      <AppleSearchAdsObserver />
       <AccessAnalyticsObserver />
       {children}
     </PostHogProvider>

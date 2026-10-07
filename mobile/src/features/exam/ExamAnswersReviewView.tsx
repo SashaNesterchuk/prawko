@@ -10,10 +10,12 @@ import { GreenWaveScreen } from "../../components/shell/GreenWaveScreen";
 import { NavigationButton } from "../../components/shell/NavigationButton";
 import { CText, getFontFamily, useResponsiveFonts, useResponsiveStyles } from "../../portable-ui";
 import { useTheme } from "../../providers/ThemeProvider";
+import { resolveLearnerExplanationAccess } from "../questions/explanation-access";
 import {
   getLocalizedText,
   getQuestionById,
   getQuestionChoices,
+  getQuestionTopicIds,
 } from "../questions/question-engine";
 import { QuestionMediaCard } from "../questions/QuestionMediaCard";
 import { QuestionMediaEmptyPlaceholder } from "../questions/QuestionMediaEmptyPlaceholder";
@@ -27,6 +29,7 @@ import { useAnalyticsDuration } from "../../analytics/useAnalyticsDuration";
 import { useAnalyticsViewState } from "../../analytics/useAnalyticsViewState";
 import { openPaywall } from "../monetization/v2/paywall";
 import { useAnalytics } from "../../providers/AnalyticsProvider";
+import { useAppShellStore } from "../../state/app-shell";
 import { useHasPlusAccess } from "../../state/entitlements";
 import { openSupportEmail } from "../support/support-email";
 import type { RemoteExamAnswer, RemoteExamQuestionRef } from "./types";
@@ -73,6 +76,7 @@ export function ExamAnswersReviewView({
   const { track } = useAnalytics();
   const isFocused = useIsFocused();
   const hasPlusAccess = useHasPlusAccess();
+  const examCountry = useAppShellStore((state) => state.examCountry);
   const { accents, colors } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const insets = useSafeAreaInsets();
@@ -94,6 +98,13 @@ export function ExamAnswersReviewView({
   const explanationText = question
     ? getLocalizedText(question.explanation, displayLocale)
     : "";
+  const explanationAccess = resolveLearnerExplanationAccess({
+    country: examCountry,
+    hasPlusAccess,
+    topicIds: question ? getQuestionTopicIds(question) : [],
+  });
+  const explanationLocked = explanationAccess === "locked";
+  const explanationPreview = explanationAccess === "preview";
   const scopeLabel = question
     ? t(`question.scopes.${question.scope}`)
     : t(`question.scopes.${questionRef.scope}`);
@@ -276,9 +287,10 @@ export function ExamAnswersReviewView({
               <QuestionFeedbackBottomSheet
                 visible
                 isCorrectAnswer={isCorrectAnswer}
-                explanationText={hasPlusAccess ? explanationText || null : null}
-                explanationLocked={!hasPlusAccess}
-                showExplain={!hasPlusAccess}
+                explanationText={explanationLocked ? null : explanationText || null}
+                explanationLocked={explanationLocked}
+                explanationPremiumMark={explanationPreview}
+                showExplain={explanationLocked}
                 onUnlockExplanation={() => {
                   track(ANALYTICS_EVENTS.premiumGateAction.key, {
                     action: "open_paywall",

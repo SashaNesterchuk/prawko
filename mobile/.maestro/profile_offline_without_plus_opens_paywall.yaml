@@ -1,5 +1,5 @@
 # Feature: Offline mode
-# Scenario: Free user tapping Offline mode from Profile opens paywall directly
+# Scenario: Free user tapping Offline mode from Profile opens paywall directly (CZ keeps the classic paywall; PL uses paywall2)
 appId: com.mindjar.prawko
 tags:
   - offline
@@ -10,6 +10,7 @@ tags:
     file: subflows/launch_onboarded_destination.yaml
     env:
       DESTINATION: profile
+      EXAM_COUNTRY: CZ
       PLUS_ACCESS: "false"
       TARGET_ID: screen-profile
 

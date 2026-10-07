@@ -1,5 +1,6 @@
 import { czechTranslations } from "./cs";
 import { monetizationV2Ua } from "./monetization-v2-copy";
+import { paywall2En, paywall2Ua } from "./paywall2-copy";
 import { polishTranslations } from "./pl";
 import { roadmapCopyEn, roadmapCopyUa } from "./roadmap-copy";
 import { slovakTranslations } from "./sk";
@@ -1398,6 +1399,7 @@ const resourcesBase = {
       },
       monetizationV2: monetizationV2Ua,
       roadmap: roadmapCopyUa,
+      paywall2: paywall2Ua,
     },
   },
   en: {
@@ -2830,6 +2832,7 @@ const resourcesBase = {
         seeExplanations: "See explanations",
       },
       roadmap: roadmapCopyEn,
+      paywall2: paywall2En,
     },
   },
 } as const;

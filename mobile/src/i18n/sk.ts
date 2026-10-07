@@ -2,6 +2,7 @@
  * Slovak UI copy. Keep in sync with English keys in `resources.ts`.
  */
 import { monetizationV2Sk } from "./monetization-v2-copy";
+import { paywall2Sk } from "./paywall2-copy";
 import { roadmapCopySk } from "./roadmap-copy";
 
 export const slovakTranslations = {
@@ -1298,4 +1299,5 @@ export const slovakTranslations = {
   },
   monetizationV2: monetizationV2Sk,
   roadmap: roadmapCopySk,
+  paywall2: paywall2Sk,
 } as const;

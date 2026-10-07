@@ -12,6 +12,8 @@ type QuestionFeedbackBottomSheetProps = {
   isCorrectAnswer: boolean;
   explanationText: string | null;
   explanationLocked?: boolean;
+  /** Explanation is visible. The crown only marks the feature as Premium. */
+  explanationPremiumMark?: boolean;
   onUnlockExplanation?: () => void;
   isBookmarked: boolean;
   feedbackAccentFill: string;
@@ -31,6 +33,7 @@ export function QuestionFeedbackBottomSheet({
   isCorrectAnswer,
   explanationText,
   explanationLocked = false,
+  explanationPremiumMark = false,
   onUnlockExplanation,
   isBookmarked,
   feedbackAccentFill,
@@ -105,13 +108,39 @@ export function QuestionFeedbackBottomSheet({
       <View style={styles.gapMd} />
 
       {explanationText ? (
-        <CText style={styles.body}>{explanationText}</CText>
+        <CText style={styles.body} testID="question-explanation">
+          {explanationText}
+        </CText>
       ) : null}
 
       <ExplanationSignStrip
         excludeSignId={excludeSignId}
         text={explanationText}
       />
+
+      {explanationPremiumMark && !explanationLocked ? (
+        <>
+          <View style={styles.gapMd} />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("monetizationV2.premiumBadge")}
+            style={styles.explainRow}
+            testID="question-explanation-premium"
+            onPress={onUnlockExplanation}
+          >
+            <View style={styles.premiumBadge}>
+              <Icon
+                name="premiumSmall"
+                size={premiumIconSize}
+                color={colors.onAccent}
+              />
+            </View>
+            <CText style={styles.explainText}>
+              {t("monetizationV2.premiumBadge")}
+            </CText>
+          </Pressable>
+        </>
+      ) : null}
 
       {showExplain || explanationLocked ? (
         <>

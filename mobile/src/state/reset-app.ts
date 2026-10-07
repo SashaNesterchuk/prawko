@@ -5,6 +5,7 @@ import { disableStudyNotificationsAsync } from "../features/notifications/runtim
 import { getMobileSupabaseClient } from "../lib/supabase";
 import { clearOfflinePack } from "../features/offline/offline-pack";
 import { clearQuestionCatalogCache } from "../features/questions/question-catalog-cache";
+import { isAppleSearchAdsStorageKey } from "../analytics/apple-search-ads";
 import { isCheckoutJournalStorageKey } from "../features/entitlements/checkout-journal";
 import { clearLocalExamSessions } from "../features/exam/local-exam";
 import { clearExamSnapshotMemory, flushExamSnapshotPersistence } from "../features/exam/exam-snapshot-cache";
@@ -21,8 +22,9 @@ import { useMonetizationStore } from "../features/monetization/monetization-stor
 import { useHomeContextualStore } from "../features/home/home-contextual-store";
 
 /**
- * Resets learning/onboarding and free quota. Financial recovery markers are
- * independent: resetting progress must not forget a possibly charged checkout.
+ * Resets learning/onboarding and free quota. Financial recovery markers and
+ * the Apple Search Ads install check stay: resetting progress must not forget
+ * a possibly charged checkout or request a second attribution token.
  */
 export async function resetAppToFreshStart() {
   const { authMode } = useAppShellStore.getState();
@@ -64,7 +66,7 @@ export async function resetAppToFreshStart() {
   clearExamSnapshotMemory();
   try {
     const learningKeys = (await AsyncStorage.getAllKeys())
-      .filter((key) => !isCheckoutJournalStorageKey(key));
+      .filter((key) => !isCheckoutJournalStorageKey(key) && !isAppleSearchAdsStorageKey(key));
     if (learningKeys.length > 0) {
       await AsyncStorage.multiRemove(learningKeys);
     }

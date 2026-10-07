@@ -45,6 +45,10 @@ export const ANALYTICS_EVENTS = {
     key: "app_entry_resolved",
     description: "Observed launch/foreground entry attribution resolved to direct, notification, or a normalized deep link. No raw URL.",
   },
+  appleSearchAdsAttributionResolved: {
+    key: "apple_search_ads_attribution_resolved",
+    description: "Apple Search Ads install check finished for this iOS install. Campaign, ad group, and keyword are numeric ids, not names. asa_result=organic is a completed check with no ad click. Not a visit source, not Android, and not spend.",
+  },
   notificationOpened: {
     key: "notification_opened",
     description: "The OS supplied a notification response. Not proof of reminder delivery or a new installation.",
@@ -442,7 +446,7 @@ export const ANALYTICS_EVENTS = {
   answerExplanationViewed: {
     key: "answer_explanation_viewed",
     description:
-      "A full answer explanation was shown to a Premium learner. access_method: premium.",
+      "A full answer explanation was shown. access_method is premium, or free_topic when a Poland free-topic explanation stays open and is only marked as Premium.",
   },
   adRewardEarned: {
     key: "ad_reward_earned",
@@ -481,6 +485,10 @@ export const ANALYTICS_EVENTS = {
   paywallPackageSelected: {
     key: "paywall_package_selected",
     description: "Historical package selector event. The current paywall selects its package in code and does not emit this.",
+  },
+  paywallPlanSelected: {
+    key: "paywall_plan_selected",
+    description: "The user picked a subscription plan (week / month / quarter) on the plans paywall; placement is offer (top selector) or final (bottom selector).",
   },
   purchaseStarted: {
     key: "purchase_started",
@@ -702,6 +710,7 @@ const FORBIDDEN_ANALYTICS_PROPERTY_KEYS = new Set([
   "initial_url",
   "$initial_url",
   "token",
+  "attribution_token",
   "receipt_data",
   "push_notification_token",
   "query",
@@ -822,6 +831,18 @@ export const ANALYTICS_PROPERTIES = {
   adNetwork: "ad_network",
   adUnitId: "ad_unit_id",
   appUserId: "app_user_id",
+  asaAdGroupId: "asa_ad_group_id",
+  asaAdId: "asa_ad_id",
+  asaCampaignId: "asa_campaign_id",
+  asaClaimType: "asa_claim_type",
+  asaClickDate: "asa_click_date",
+  asaConversionType: "asa_conversion_type",
+  asaCountryOrRegion: "asa_country_or_region",
+  asaImpressionDate: "asa_impression_date",
+  asaKeywordId: "asa_keyword_id",
+  asaOrgId: "asa_org_id",
+  asaResult: "asa_result",
+  asaUnavailableReason: "asa_unavailable_reason",
   appRunId: "app_run_id",
   appVisitId: "app_visit_id",
   screenVisitId: "screen_visit_id",

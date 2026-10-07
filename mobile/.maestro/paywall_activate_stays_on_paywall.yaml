@@ -1,5 +1,5 @@
 # Feature: Paywall
-# Scenario: Guest tapping Activate stays on paywall and never opens App access
+# Scenario: Guest tapping Activate stays on paywall and never opens App access (CZ keeps the classic paywall; PL uses paywall2)
 appId: com.mindjar.prawko
 tags:
   - paywall
@@ -9,6 +9,7 @@ tags:
     file: subflows/launch_onboarded_destination.yaml
     env:
       DESTINATION: profile
+      EXAM_COUNTRY: CZ
       PLUS_ACCESS: "false"
       TARGET_ID: screen-profile
 

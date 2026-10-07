@@ -78,6 +78,7 @@ export type E2EDestination =
   | "topic"
   | "topics"
   | "trainer-modes"
+  | "paywall2"
   | "exam-session"
   | "exam-result"
   | "exam-answers"
@@ -287,6 +288,8 @@ export function resolveE2EDestination(
       };
     case "topics":
       return "/topics";
+    case "paywall2":
+      return "/paywall2";
     case "trainer-modes":
       return "/trainer-modes";
     case "exam-session":
@@ -351,6 +354,7 @@ function normalizeDestination(
     case "topic":
     case "topics":
     case "trainer-modes":
+    case "paywall2":
     case "exam-session":
     case "exam-result":
     case "exam-answers":

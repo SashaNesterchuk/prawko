@@ -1,0 +1,2 @@
+[console_scripts]
+prawko-analytics = prawko_analytics.cli:main

@@ -1,0 +1,66 @@
+# Feature: Paywall 2 (opened from the Home unlock card)
+# Scenario: Free user sees offer, benefits, comparison and FAQ; Unlock stays on
+# the screen without a configured SDK; sticky CTA stays visible down to the
+# final block; Close returns Home
+appId: com.mindjar.prawko
+tags:
+  - paywall
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: paywall2
+      LOCALE: pl
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-paywall2
+
+- assertVisible:
+    id: "paywall2-offer"
+
+- tapOn:
+    id: "paywall2-cta"
+
+- assertVisible:
+    id: "screen-paywall2"
+
+- scrollUntilVisible:
+    element:
+      id: "paywall2-comparison"
+    direction: DOWN
+    visibilityPercentage: 50
+    timeout: 15000
+
+- assertVisible:
+    id: "paywall2-sticky-cta"
+
+- scrollUntilVisible:
+    element:
+      id: "paywall2-faq-subscription"
+    direction: DOWN
+    timeout: 10000
+
+- tapOn:
+    id: "paywall2-faq-subscription"
+
+- assertVisible:
+    id: "paywall2-faq-subscription-answer"
+
+- scrollUntilVisible:
+    element:
+      id: "paywall2-restore"
+    direction: DOWN
+    timeout: 10000
+
+- assertVisible:
+    id: "paywall2-final-cta"
+
+- assertVisible:
+    id: "paywall2-sticky-cta"
+
+- tapOn:
+    id: "paywall2-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 10000

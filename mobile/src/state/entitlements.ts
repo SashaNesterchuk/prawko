@@ -27,6 +27,8 @@ export type PurchaseAccessState = {
 export type RevenueCatPackageSummary = {
   currencyCode: string;
   description: string;
+  /** Free intro period in days, from the store product; null when there is no free trial. */
+  freeTrialDays?: number | null;
   identifier: string;
   offeringIdentifier: string;
   packageType: string;

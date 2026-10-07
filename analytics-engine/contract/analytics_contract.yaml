@@ -1,0 +1,460 @@
+# Interpretation overlay. Event keys come from mobile/src/analytics/catalog.ts.
+# A new meaning is a new interpretation id. Do not edit the meaning of an existing id.
+contract_version: 1
+catalog_ref: mobile/src/analytics/catalog.ts
+keys_ref: docs/analytics/keys.md
+
+time:
+  product_timezone: Europe/Warsaw
+
+identity:
+  primary_analysis_key: app_user_id
+  fallback_analysis_key: distinct_id
+  never_analysis_key: [person_id]
+  # Share of product rows with an empty primary key at which identity becomes unusable.
+  unusable_missing_primary_share: 0.05
+
+lead:
+  recommendations_enabled: false
+  causal_hypotheses_enabled: false
+
+comparison:
+  mix_shift_pp: 10
+  confounders:
+    - app_version
+    - analytics_schema_version
+    - exam_country
+    - locale
+    - platform
+    - is_plus
+    - auth_mode
+  acquisition_mix: unavailable
+
+concentration:
+  top_n: 3
+  warning_event_share: 0.4
+
+confidence_ceilings:
+  deterministic_fact: high
+  descriptive_metric: high
+  association: medium
+  causal_hypothesis: low
+
+# PostHog lifecycle names. They are not in the product catalog.
+sdk_events:
+  - Application Installed
+  - Application Updated
+  - Application Opened
+  - Application Became Active
+  - Application Backgrounded
+  - $set
+
+# Product ship dates. Empty until a person writes one. Do not infer these from a metric move.
+changes: []
+
+events:
+  Application Installed:
+    interpretations:
+      - id: sdk_install_marker
+        meaning: The PostHog SDK did not find a previous installed-build record.
+        intent_signal: false
+        must_not_be_interpreted_as: [unique_person, first_human_install]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  first_start_shown:
+    interpretations:
+      - id: legacy_spotlight
+        meaning: Historical Home spotlight on an empty readiness card. The current roadmap UI does not show it.
+        intent_signal: false
+        must_not_be_interpreted_as: [onboarding_dropoff, activation_dropoff]
+        zero_events_mean: feature_not_in_current_ui
+        funnel_role: never_required
+
+  home_contextual_shown:
+    interpretations:
+      - id: legacy_home_card
+        meaning: Retention card on the old Home. It is not mounted on the current roadmap Home.
+        intent_signal: false
+        must_not_be_interpreted_as: [current_home_dropoff]
+        zero_events_mean: feature_not_in_current_ui
+        funnel_role: never_required
+
+  onboarding_step_completed:
+    interpretations:
+      - id: first_run_category
+        when_properties: { step: category }
+        meaning: The learner saved a licence category on the current first-run.
+        intent_signal: false
+        must_not_be_interpreted_as: []
+        zero_events_mean: not_observed
+        funnel_role: required_when_in_scope
+      - id: first_run_exam_schedule
+        when_properties: { step: exam_schedule }
+        meaning: The learner saved an exam date, or the 14-day default, on the current first-run.
+        intent_signal: false
+        must_not_be_interpreted_as: []
+        zero_events_mean: not_observed
+        funnel_role: required_when_in_scope
+      - id: inactive_notifications
+        when_properties: { step: notifications }
+        meaning: Notification step. It is not part of the current first-run.
+        intent_signal: false
+        must_not_be_interpreted_as: [onboarding_dropoff]
+        zero_events_mean: feature_not_in_current_ui
+        funnel_role: never_required
+      - id: inactive_minutes
+        when_properties: { step: minutes }
+        meaning: Daily-minutes step. It is not part of the current first-run.
+        intent_signal: false
+        must_not_be_interpreted_as: [onboarding_dropoff]
+        zero_events_mean: feature_not_in_current_ui
+        funnel_role: never_required
+      - id: inactive_level
+        when_properties: { step: level }
+        meaning: Level step. It is not part of the current first-run.
+        intent_signal: false
+        must_not_be_interpreted_as: [onboarding_dropoff]
+        zero_events_mean: feature_not_in_current_ui
+        funnel_role: never_required
+      - id: inactive_school_code
+        when_properties: { step: school_code }
+        meaning: School-code step. It is not part of the current first-run.
+        intent_signal: false
+        must_not_be_interpreted_as: [onboarding_dropoff]
+        zero_events_mean: feature_not_in_current_ui
+        funnel_role: never_required
+
+  exam_restart_gate_shown:
+    interpretations:
+      - id: result_new_attempt_modal
+        meaning: Modal on the exam result screen, opened from New attempt.
+        intent_signal: false
+        must_not_be_interpreted_as: [daily_exam_cap, home_exam_block, premium_gate]
+        zero_events_mean: not_observed
+        funnel_role: never_required
+
+  exam_restart_selected:
+    interpretations:
+      - id: result_new_attempt_choice
+        meaning: Choice on the result-screen New attempt modal. dismiss only closes that modal.
+        intent_signal: false
+        must_not_be_interpreted_as: [daily_exam_cap, exam_blocked, purchase]
+        zero_events_mean: not_observed
+        funnel_role: never_required
+
+  premium_gate_viewed:
+    interpretations:
+      - id: legacy_unscoped_gate
+        meaning: A premium gate became visible on a build that does not carry analytics schema 3.
+        intent_signal: false
+        must_not_be_interpreted_as: [purchase_intent, explain_tap, exam_restart_gate, daily_exam_cap]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: inline_lock_after_answer
+        since_schema: 3
+        when_properties: { presentation: inline_lock }
+        meaning: Automatic inline lock after an answer. Not an Explain tap and not a paywall open.
+        intent_signal: false
+        must_not_be_interpreted_as: [explain_tap, purchase_intent, paywall_open]
+        zero_events_mean: not_observed
+        funnel_role: never_required
+      - id: limit_or_entry_visible
+        since_schema: 3
+        meaning: A Monetization V2 limit or premium entry became visible. The view itself is not purchase intent.
+        intent_signal: false
+        must_not_be_interpreted_as: [purchase_intent, exam_restart_gate, daily_exam_cap]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  premium_gate_action:
+    interpretations:
+      - id: open_paywall_intent
+        when_properties: { action: open_paywall }
+        meaning: The learner chose to open the paywall from a premium gate.
+        intent_signal: true
+        must_not_be_interpreted_as: [purchase, purchase_start]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: other_gate_action
+        meaning: A premium-gate choice other than opening the paywall.
+        intent_signal: false
+        must_not_be_interpreted_as: [purchase_intent, purchase]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  paywall_viewed:
+    interpretations:
+      - id: plus_screen_visible
+        meaning: The Plus screen became visible. offers_count at this instant can still be loading.
+        intent_signal: false
+        must_not_be_interpreted_as: [purchase, purchase_intent]
+        zero_events_mean: not_observed
+        funnel_role: required_when_in_scope
+
+  paywall_offer_ready:
+    interpretations:
+      - id: offer_available
+        meaning: A purchasable package is available on this paywall view. Not a purchase.
+        intent_signal: false
+        must_not_be_interpreted_as: [purchase]
+        zero_events_mean: not_observed
+        funnel_role: required_when_in_scope
+
+  paywall_cta_selected:
+    interpretations:
+      - id: purchase_cta
+        when_properties: { action: purchase }
+        meaning: The purchase handler was invoked. Not a native store call.
+        intent_signal: true
+        must_not_be_interpreted_as: [purchase, purchase_start]
+        zero_events_mean: not_observed
+        funnel_role: required_when_in_scope
+      - id: other_cta
+        meaning: A paywall handler other than purchase, such as restore.
+        intent_signal: false
+        must_not_be_interpreted_as: [purchase]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  paywall_package_selected:
+    interpretations:
+      - id: historical_package_selector
+        meaning: Historical package selector. The current paywall does not emit this.
+        intent_signal: false
+        must_not_be_interpreted_as: [current_paywall_step, funnel_dropoff]
+        zero_events_mean: feature_not_in_current_ui
+        funnel_role: never_required
+
+  premium_prompt_shown:
+    interpretations:
+      - id: historical_prompt
+        meaning: Historical Premium bottom sheet. It is no longer presented.
+        intent_signal: false
+        must_not_be_interpreted_as: [current_paywall_step, funnel_dropoff]
+        zero_events_mean: feature_not_in_current_ui
+        funnel_role: never_required
+
+  purchase_started:
+    interpretations:
+      - id: native_purchase_call
+        meaning: Immediately before the native purchasePackage call.
+        intent_signal: true
+        must_not_be_interpreted_as: [purchase_succeeded, revenue]
+        zero_events_mean: not_observed
+        funnel_role: required_when_in_scope
+
+  purchase_succeeded:
+    interpretations:
+      - id: client_purchase_succeeded
+        meaning: The SDK reported a successful purchase and active access. Revenue still needs RevenueCat.
+        intent_signal: false
+        must_not_be_interpreted_as: [settled_revenue]
+        zero_events_mean: not_observed
+        funnel_role: required_when_in_scope
+
+  ad_skipped:
+    interpretations:
+      - id: policy_disabled
+        when_properties: { should_show: "no", why: disabled }
+        meaning: Policy did not allow an interstitial.
+        intent_signal: false
+        must_not_be_interpreted_as: [ad_failure, broken_ads]
+        zero_events_mean: not_observed
+        funnel_role: never_required
+      - id: other_skip
+        meaning: An interstitial did not show for a reason other than a disabled policy.
+        intent_signal: false
+        must_not_be_interpreted_as: [policy_disabled]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  training_question_answered:
+    interpretations:
+      - id: training_answer
+        meaning: The learner submitted one training question. Not a finished session.
+        intent_signal: false
+        must_not_be_interpreted_as: [session_completed, exam_pass]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  exam_question_answered:
+    interpretations:
+      - id: exam_answer
+        meaning: The learner submitted one exam question. Not a finished exam and not a pass.
+        intent_signal: false
+        must_not_be_interpreted_as: [exam_completed, exam_pass]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  training_session_abandoned:
+    interpretations:
+      - id: training_empty_exit
+        when_properties: { answered_count: 0 }
+        meaning: Left a training session with zero answers recorded on this event. Not a mid-session drop.
+        intent_signal: false
+        must_not_be_interpreted_as: [mid_session_drop, session_completed]
+        zero_events_mean: not_observed
+        funnel_role: never_required
+      - id: training_left_after_answers
+        meaning: Left an unfinished training session after at least one answer on this event.
+        intent_signal: false
+        must_not_be_interpreted_as: [session_completed, exam_pass]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  exam_session_ended:
+    interpretations:
+      - id: exam_empty_exit_legacy
+        when_properties: { end_reason: miss_click_empty_exit }
+        meaning: Closed the exam before answering. On this build the empty exit is exam_session_ended, not a mid-exam drop.
+        intent_signal: false
+        must_not_be_interpreted_as: [mid_exam_drop, failed_exam, fatigue]
+        zero_events_mean: not_observed
+        funnel_role: never_required
+      - id: exam_ended_early
+        when_properties: { end_reason: user_ended_early }
+        meaning: Left the exam after answering some questions, before a normal finish.
+        intent_signal: false
+        must_not_be_interpreted_as: [exam_completed, fatigue, failed_exam]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: exam_learner_finish
+        when_properties: { end_reason: learner_finish }
+        meaning: The exam end says the learner finished. This is not an abandonment. Completion still comes from exam_session_completed.
+        intent_signal: false
+        must_not_be_interpreted_as: [abandonment, failed_exam]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: exam_ended_other
+        meaning: The exam session ended for a reason other than empty exit, early exit, or learner finish.
+        intent_signal: false
+        must_not_be_interpreted_as: [abandonment, failed_exam]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+  apple_search_ads_attribution_resolved:
+    interpretations:
+      - id: asa_attributed_install
+        when_properties: { asa_result: attributed }
+        meaning: Apple Search Ads click or impression led to this iOS install. Campaign, ad group, and keyword are numeric ids. Names and spend are not on the event.
+        intent_signal: false
+        must_not_be_interpreted_as: [visit_entry, keyword_text, campaign_name, ad_spend, roas, unique_person]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: asa_organic_install_check
+        when_properties: { asa_result: organic }
+        meaning: Apple returned attribution false for this iOS install. The check completed. This is not Android and not a missing event.
+        intent_signal: false
+        must_not_be_interpreted_as: [visit_entry, paid_install, ad_spend]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: asa_check_unavailable
+        when_properties: { asa_result: unavailable }
+        meaning: The iOS install check did not get a usable Apple response. Do not read it as organic.
+        intent_signal: false
+        must_not_be_interpreted_as: [organic_install, paid_install]
+        zero_events_mean: not_observed
+        funnel_role: optional
+      - id: asa_check_other
+        meaning: The attribution event has an unrecognized asa_result.
+        intent_signal: false
+        must_not_be_interpreted_as: [paid_install, organic_install]
+        zero_events_mean: not_observed
+        funnel_role: optional
+
+funnels:
+  - id: paywall_purchase
+    grain: paywall_view_id
+    slice_by: [app_version, analytics_schema_version]
+    steps:
+      - event: paywall_viewed
+      - event: paywall_offer_ready
+        join: paywall_view_id
+      - event: paywall_cta_selected
+        when_properties: { action: purchase }
+      - event: purchase_started
+        join: purchase_attempt_id
+      - event: purchase_succeeded
+    never_required_steps:
+      - paywall_package_selected
+      - premium_prompt_shown
+
+  - id: exam_attempt
+    grain: exam_session_id
+    slice_by: [app_version, analytics_schema_version]
+    steps:
+      - event: exam_session_completed
+    never_required_steps:
+      - exam_restart_gate_shown
+      - exam_restart_selected
+
+metrics:
+  - id: paywall_purchase_conversion
+    evidence_class: descriptive_metric
+    funnel: paywall_purchase
+    numerator_event: purchase_succeeded
+    denominator_event: paywall_viewed
+    count: analysis_keys
+    homogeneity: [app_version, analytics_schema_version]
+    eligibility:
+      min_denominator: 30
+      require_homogeneous_slice: true
+      maturity: null
+
+  - id: exam_pass_rate
+    evidence_class: descriptive_metric
+    grain: exam_session_id
+    numerator_event: exam_session_completed
+    numerator_where: { passed: true }
+    denominator_event: exam_session_completed
+    count: grain
+    homogeneity: [app_version, analytics_schema_version]
+    eligibility:
+      min_denominator: 30
+      require_homogeneous_slice: true
+      maturity: null
+
+  - id: d7_return
+    evidence_class: descriptive_metric
+    definition: >
+      Share of analysis keys with Application Installed on Warsaw day D
+      that have any product event on Warsaw day D+7.
+      Application Installed is not a proven person.
+    cohort_event: Application Installed
+    maturity: { kind: calendar_day, n: 7 }
+    count: analysis_keys
+    homogeneity: [app_version, analytics_schema_version]
+    eligibility:
+      min_denominator: 30
+      require_homogeneous_slice: true
+      maturity: { kind: calendar_day, n: 7 }
+
+error_signatures:
+  - id: guest_answer_sync_denied
+    event: learning_operation_failed
+    match:
+      operation: sync_answer
+      error_code: "42501"
+      user_visible: false
+    evidence_class: deterministic_fact
+
+qa_rules:
+  - id: primary_key_unusable
+    severity: FATAL
+    effect: block_report
+  - id: identity_degraded
+    severity: WARNING
+    effect: exclude_keys_without_primary_id
+  - id: cohort_not_mature
+    severity: BLOCKS_METRIC
+    effect: prohibit_metric
+  - id: event_concentration
+    severity: WARNING
+    effect: limit_aggregate_metrics
+  - id: ambiguous_interpretation
+    severity: BLOCKS_METRIC
+    effect: prohibit_metric
+  - id: acquisition_unavailable
+    severity: INFO
+    effect: none

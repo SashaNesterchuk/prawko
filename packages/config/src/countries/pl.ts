@@ -4,6 +4,8 @@ import type { CountryConfig } from "./types";
 
 export const PL_COUNTRY_CONFIG: CountryConfig = {
   code: "PL",
+  brandName: "Prawko",
+  paywallOffer: "plans",
   categories: [
     "AM",
     "A1",
