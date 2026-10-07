@@ -1,5 +1,5 @@
-# Feature: Paywall 2 (opened from the Home unlock card)
-# Scenario: Free user sees offer, benefits, comparison and FAQ; Unlock stays on
+# Feature: PL subscription Paywall 2
+# Scenario: Free user sees subscription plans, benefits, comparison and FAQ; Unlock stays on
 # the screen without a configured SDK; sticky CTA stays visible down to the
 # final block; Close returns Home
 appId: com.mindjar.prawko
@@ -10,12 +10,24 @@ tags:
     file: subflows/launch_onboarded_destination.yaml
     env:
       DESTINATION: paywall2
+      EXAM_COUNTRY: PL
+      MONETIZATION_V2: "true"
       LOCALE: pl
       PLUS_ACCESS: "false"
       TARGET_ID: screen-paywall2
 
 - assertVisible:
     id: "paywall2-offer"
+
+- assertVisible:
+    id: "paywall2-plan-week"
+- assertVisible:
+    id: "paywall2-plan-month"
+- assertVisible:
+    id: "paywall2-plan-quarter"
+- assertVisible: "3 miesiące"
+- assertNotVisible: "Premium na zawsze"
+- assertNotVisible: "Jednorazowa płatność"
 
 - tapOn:
     id: "paywall2-cta"
@@ -44,6 +56,7 @@ tags:
 
 - assertVisible:
     id: "paywall2-faq-subscription-answer"
+    text: "Tak\\. Plan odnawia się.*"
 
 - scrollUntilVisible:
     element:

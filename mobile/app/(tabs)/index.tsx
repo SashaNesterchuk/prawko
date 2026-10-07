@@ -27,6 +27,8 @@ import { createLearningIntent } from "../../src/analytics/operations";
 import { buildExamRouteParams } from "../../src/features/exam/exam-routes";
 import { ANALYTICS_EVENTS } from "../../src/analytics/catalog";
 import { openTrackedPaywall } from "../../src/features/monetization/v2/analytics";
+import { getPremiumCopyKeys } from "../../src/features/monetization/premium-copy";
+import { useCountryConfig } from "../../src/countries/use-country";
 import { openStoreReview } from "../../src/features/profile/store-review";
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import {
@@ -49,7 +51,6 @@ type StepState = RoadmapStepVisual;
 const STEPS_PER_ROW = 3;
 
 const PERK_KEYS = [
-  { icon: "repeat" as const, labelKey: "roadmap.perkLifetime" },
   { icon: "chart" as const, labelKey: "roadmap.perkTopics" },
   { icon: "like" as const, labelKey: "roadmap.perkPrice" },
 ];
@@ -505,6 +506,11 @@ function ExamSimulatorCard({
 
 function UnlockCard() {
   const { t } = useTranslation();
+  const copyKeys = getPremiumCopyKeys(useCountryConfig().paywallOffer);
+  const perks = [
+    { icon: "repeat" as const, labelKey: copyKeys.roadmapBillingPerk },
+    ...PERK_KEYS,
+  ];
   const { track } = useAnalytics();
   const { accents } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
@@ -516,7 +522,9 @@ function UnlockCard() {
         <Icon color="#F0A93A" name="premium" size={responsiveFont(28)} />
       </View>
       <CText style={styles.unlockTitle}>{t("roadmap.unlockTitle")}</CText>
-      <CText style={styles.unlockBody}>{t("roadmap.unlockBody")}</CText>
+      <CText style={styles.unlockBody} testID="home-unlock-body">
+        {t(copyKeys.roadmapBody)}
+      </CText>
       <Pressable
         accessibilityRole="button"
         onPress={() =>
@@ -526,19 +534,29 @@ function UnlockCard() {
           })
         }
         style={styles.unlockButton}
+        testID="home-unlock-cta"
       >
         <CText style={styles.unlockButtonLabel}>{t("roadmap.unlockCta")}</CText>
         <Icon color="#FFFFFF" name="chevron" size={responsiveFont(16)} />
       </Pressable>
       <View style={styles.perks}>
-        {PERK_KEYS.map((perk) => (
+        {perks.map((perk) => (
           <View key={perk.labelKey} style={styles.perk}>
             <Icon
               color={accents.green.ink}
               name={perk.icon}
               size={responsiveFont(22)}
             />
-            <CText style={styles.perkLabel}>{t(perk.labelKey)}</CText>
+            <CText
+              style={styles.perkLabel}
+              testID={
+                perk.labelKey === copyKeys.roadmapBillingPerk
+                  ? "home-unlock-billing-perk"
+                  : undefined
+              }
+            >
+              {t(perk.labelKey)}
+            </CText>
           </View>
         ))}
       </View>

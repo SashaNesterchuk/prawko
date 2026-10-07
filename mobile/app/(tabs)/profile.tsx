@@ -90,6 +90,7 @@ import {
 import { useAnalytics } from "../../src/providers/AnalyticsProvider";
 import { createAnalyticsId } from "../../src/analytics/runtime-context";
 import { markAnalyticsProgressReset } from "../../src/analytics/onboarding-context";
+import { getPremiumCopyKeys } from "../../src/features/monetization/premium-copy";
 
 export default function ProfileTabScreen() {
   const { t, i18n } = useTranslation();
@@ -105,6 +106,8 @@ export default function ProfileTabScreen() {
   );
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
   const countryConfig = useCountryConfig();
+  const premiumCopyKeys = getPremiumCopyKeys(countryConfig.paywallOffer);
+  const subscriptionOffer = countryConfig.paywallOffer === "plans";
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const studyPlanSetup = useAppShellStore((state) => state.studyPlanSetup);
   const currentStudyPlanRemoteId = useAppShellStore(
@@ -426,12 +429,14 @@ export default function ProfileTabScreen() {
               description={
                 hasPlusAccess
                   ? t("monetizationV2.profileActive")
-                  : t("monetizationV2.profileSubtitle")
+                  : t(premiumCopyKeys.profileSubtitle)
               }
               priceBadge={
                 hasPlusAccess
                   ? undefined
-                  : t("profile.premiumPriceBadge", { price: plusPriceLabel })
+                  : subscriptionOffer
+                    ? t("monetizationV2.profileChoosePlan")
+                    : t("profile.premiumPriceBadge", { price: plusPriceLabel })
               }
               onPress={
                 hasPlusAccess
@@ -445,10 +450,14 @@ export default function ProfileTabScreen() {
           ) : !hasPlusAccess ? (
             <ProfilePremiumBanner
               title={t("profile.premiumTitle")}
-              description={t("profile.premiumDescription")}
-              priceBadge={t("profile.premiumPriceBadge", {
-                price: plusPriceLabel,
-              })}
+              description={t(
+                subscriptionOffer ? premiumCopyKeys.profileSubtitle : "profile.premiumDescription"
+              )}
+              priceBadge={
+                subscriptionOffer
+                  ? t("monetizationV2.profileChoosePlan")
+                  : t("profile.premiumPriceBadge", { price: plusPriceLabel })
+              }
               onPress={() => router.navigate("/paywall")}
             />
           ) : null}

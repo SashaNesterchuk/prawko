@@ -1,0 +1,38 @@
+# Feature: Country-specific Premium billing
+# Scenario: The same English UI sells subscriptions in PL and lifetime in CZ/SK.
+appId: com.mindjar.prawko
+tags:
+  - paywall
+  - monetization
+  - monetization-v2
+  - roadmap
+---
+- runFlow:
+    file: subflows/assert_premium_billing_flow.yaml
+    env:
+      EXAM_COUNTRY: PL
+      EXPECTED_BODY: ".*weekly, monthly or 3-month subscription.*"
+      EXPECTED_BILLING_PERK: "Flexible subscription plans"
+      EXPECTED_PROFILE_SUBTITLE: "Full access · Subscription"
+      EXPECTED_PAYWALL_ELEMENT: paywall2-offer
+      SUBSCRIPTION_FLOW: "true"
+
+- runFlow:
+    file: subflows/assert_premium_billing_flow.yaml
+    env:
+      EXAM_COUNTRY: CZ
+      EXPECTED_BODY: ".*Pay once, use forever.*"
+      EXPECTED_BILLING_PERK: "Lifetime access"
+      EXPECTED_PROFILE_SUBTITLE: "Full access · One payment"
+      EXPECTED_PAYWALL_ELEMENT: paywall-activate-cta
+      SUBSCRIPTION_FLOW: "false"
+
+- runFlow:
+    file: subflows/assert_premium_billing_flow.yaml
+    env:
+      EXAM_COUNTRY: SK
+      EXPECTED_BODY: ".*Pay once, use forever.*"
+      EXPECTED_BILLING_PERK: "Lifetime access"
+      EXPECTED_PROFILE_SUBTITLE: "Full access · One payment"
+      EXPECTED_PAYWALL_ELEMENT: paywall-activate-cta
+      SUBSCRIPTION_FLOW: "false"

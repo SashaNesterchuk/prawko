@@ -4,11 +4,14 @@
  * Entitlement identifier (source of truth for Plus):
  *   customerInfo.entitlements.active["premium"]
  *
- * Lifetime store product (example): com.prawko.lifetime
- * Buying lifetime activates the `premium` entitlement permanently.
- *
- * Optional subscription products on the current offering:
- * - yearly / monthly (same `premium` entitlement while active)
+ * Billing flows are country-specific (countryConfig.paywallOffer):
+ * - PL: weekly / monthly / 3-month auto-renewing subscriptions (P1W/P1M/P3M).
+ * - Other markets, currently CZ/SK: legacy one-time lifetime purchase.
+ * UI locale does not select billing. PL must not fall back to lifetime/annual
+ * when its offering is empty or unsupported. See docs/paywall.md.
+ * Both flows use the same `premium` entitlement, only while active for a
+ * subscription. Old lifetime purchasers retain their existing entitlement.
+ * Lifetime store product example: com.prawko.lifetime.
  *
  * Attach products → entitlement `premium` → current offering → Paywall / Customer Center.
  */

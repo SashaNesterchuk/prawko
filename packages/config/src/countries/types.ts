@@ -47,7 +47,11 @@ export type CountryConfig = {
   code: CountryCode;
   /** Short in-app brand for this market; must match the store listing brand. */
   brandName: string;
-  /** "plans": 7 / 30 / 90-day subscriptions; "lifetime": one-time Premium purchase. */
+  /**
+   * PL: "plans" = weekly / monthly / 3-month auto-renewing subscriptions.
+   * Other markets (currently CZ/SK): "lifetime" = one-time Premium purchase.
+   * This is independent of UI locale and store offering; see docs/paywall.md.
+   */
   paywallOffer: "plans" | "lifetime";
   categories: readonly DrivingCategory[];
   defaultLocale: SupportedLocale;

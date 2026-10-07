@@ -38,19 +38,17 @@ export function findPaywall2PlanPackage(
   );
 }
 
-export type Paywall2PlanOffer =
-  | { kind: "plans"; plans: Paywall2Plan[] }
-  | { kind: "lifetime" };
+export type Paywall2PlanOffer = { kind: "plans"; plans: Paywall2Plan[] };
 
 /**
- * Shows only the plans the current offering contains, so switching the RevenueCat
- * offering needs no new build. An offering without plans falls back to lifetime.
+ * PL is subscription-only: show supported store plans, or unavailable price
+ * placeholders. Empty, lifetime-only and annual-only offerings never change
+ * the billing model. Other countries use the legacy lifetime paywall.
  */
 export function resolvePaywall2Plans(
   offers: RevenueCatPackageSummary[],
   options: {
     preview: boolean;
-    offersLoaded: boolean;
     /** null while eligibility is unknown; trials stay hidden until confirmed. */
     trialIneligibleProductIds: readonly string[] | null;
   }
@@ -62,10 +60,9 @@ export function resolvePaywall2Plans(
     return [{ id, package: pkg, price: pkg.priceString, trialDays: ineligible ? 0 : pkg.freeTrialDays ?? 0 }];
   });
   if (storePlans.length > 0) return { kind: "plans", plans: storePlans };
-  if (options.preview) {
+  if (options.preview && offers.length === 0) {
     return { kind: "plans", plans: PAYWALL2_PLAN_ORDER.map((id) => ({ id, package: null, ...DEV_PREVIEW[id] })) };
   }
-  if (options.offersLoaded) return { kind: "lifetime" };
   return {
     kind: "plans",
     plans: PAYWALL2_PLAN_ORDER.map((id) => ({ id, package: null, price: null, trialDays: 0 })),

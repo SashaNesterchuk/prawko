@@ -82,6 +82,10 @@ import { useCountryConfig } from "../src/countries/use-country";
 import { useMonetizationV2Active } from "../src/features/monetization/v2/store";
 
 export default function PaywallRoute() {
+  // Billing contract: PL -> weekly/monthly/3-month subscriptions (Paywall2);
+  // all other countries -> unchanged one-time lifetime flow (LegacyPaywall).
+  // Route by country config, never UI language or available RevenueCat packages.
+  // See docs/paywall.md before changing either flow.
   const { paywallOffer } = useCountryConfig();
   return paywallOffer === "plans" ? <Paywall2Screen testID="screen-paywall" /> : <LegacyPaywallPage />;
 }

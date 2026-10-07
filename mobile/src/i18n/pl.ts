@@ -1334,6 +1334,8 @@ export const polishTranslations = {
   monetizationV2: {
     premiumName: "Prawko Premium",
     profileSubtitle: "Pełny dostęp · Jedna płatność",
+    profileSubscriptionSubtitle: "Pełny dostęp · Subskrypcja",
+    profileChoosePlan: "Wybierz plan",
     profileActive: "Aktywne",
     trainingExhaustedTitle: "Wykorzystałeś darmowe pytania",
     trainingExhaustedBody: "Odblokuj pełną bazę pytań bez limitu.",

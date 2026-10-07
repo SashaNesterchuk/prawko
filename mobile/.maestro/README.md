@@ -80,7 +80,8 @@ pnpm test:e2e:studio
 | `profile_category_can_switch.yaml` | Profile → Category screen → select A (not only B) |
 | `profile_offline_without_plus_opens_paywall.yaml` | Profile → Offline mode row → paywall (free) |
 | `paywall_activate_stays_on_paywall.yaml` | Guest Activate on paywall stays on paywall (never App access) |
-| `paywall2_renders_and_closes.yaml` | New paywall layout (`/paywall2`, bootstrap `DESTINATION=paywall2`): offer, Unlock stays on screen, sticky bar after the offer, comparison, FAQ expands, final CTA + restore, Close → Home |
+| `paywall2_renders_and_closes.yaml` | PL subscription layout (`/paywall2`): weekly/monthly/3-month plans without lifetime claims, subscription FAQ, unavailable checkout stays on screen, sticky bar, comparison, final CTA + restore, Close → Home |
+| `paywall_country_billing_flows.yaml` | English Home/Profile copy and `/paywall` routing: PL subscriptions, unchanged CZ/SK lifetime; billing follows country, not UI language |
 | `premium_after_ad_shows_teaser.yaml` | A dismissed ad does not open the premium bottom sheet or paywall |
 | `premium_training_result_hides_teaser.yaml` | Finished training result does not show the Premium teaser or paywall |
 | `premium_exam_result_opens_paywall.yaml` | Completed exam renders the result and then opens paywall directly |

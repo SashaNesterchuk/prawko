@@ -47,13 +47,13 @@ export function ProfilePremiumBanner({
         </View>
         {priceBadge ? (
           <View style={styles.priceBadge}>
-            <CText style={styles.priceBadgeText}>{priceBadge}</CText>
+            <CText style={styles.priceBadgeText} testID="profile-premium-badge">{priceBadge}</CText>
           </View>
         ) : null}
       </View>
       <View style={styles.copy}>
         <CText style={styles.title}>{title}</CText>
-        <CText style={styles.description}>{description}</CText>
+        <CText style={styles.description} testID="profile-premium-description">{description}</CText>
       </View>
     </Pressable>
   );

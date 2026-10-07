@@ -1,6 +1,8 @@
 export const monetizationV2Ua = {
   premiumName: "Prawko Premium",
   profileSubtitle: "Повний доступ · Одна оплата",
+  profileSubscriptionSubtitle: "Повний доступ · Підписка",
+  profileChoosePlan: "Обрати план",
   profileActive: "Активний",
   trainingExhaustedTitle: "Безкоштовні питання закінчились",
   trainingExhaustedBody: "Відкрий всю базу питань без ліміту.",
@@ -36,6 +38,8 @@ export const monetizationV2Ua = {
 export const monetizationV2Cs = {
   premiumName: "Prawko Premium",
   profileSubtitle: "Plný přístup · Jedna platba",
+  profileSubscriptionSubtitle: "Plný přístup · Předplatné",
+  profileChoosePlan: "Vybrat plán",
   profileActive: "Aktivní",
   trainingExhaustedTitle: "Vyčerpal(a) jsi otázky zdarma",
   trainingExhaustedBody: "Odemkni celou sadu otázek bez limitu.",
@@ -71,6 +75,8 @@ export const monetizationV2Cs = {
 export const monetizationV2Sk = {
   premiumName: "Prawko Premium",
   profileSubtitle: "Plný prístup · Jedna platba",
+  profileSubscriptionSubtitle: "Plný prístup · Predplatné",
+  profileChoosePlan: "Vybrať plán",
   profileActive: "Aktívne",
   trainingExhaustedTitle: "Minuli sa ti otázky zadarmo",
   trainingExhaustedBody: "Odomkni celú sadu otázok bez limitu.",

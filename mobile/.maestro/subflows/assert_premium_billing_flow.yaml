@@ -1,0 +1,90 @@
+# Shared country billing regression: Home copy -> paywall, then Profile copy -> paywall.
+# The calling flow supplies EXAM_COUNTRY and EXPECTED_* values.
+appId: com.mindjar.prawko
+---
+- runFlow:
+    file: launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      EXAM_COUNTRY: ${EXAM_COUNTRY}
+      LOCALE: en
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-home
+
+- scrollUntilVisible:
+    element:
+      id: "home-unlock-body"
+    direction: DOWN
+    timeout: 45000
+- assertVisible:
+    id: "home-unlock-body"
+    text: "${EXPECTED_BODY}"
+- scrollUntilVisible:
+    element:
+      id: "home-unlock-billing-perk"
+    direction: DOWN
+    timeout: 10000
+- assertVisible:
+    id: "home-unlock-billing-perk"
+    text: "${EXPECTED_BILLING_PERK}"
+- tapOn:
+    id: "home-unlock-cta"
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "${EXPECTED_PAYWALL_ELEMENT}"
+    direction: DOWN
+    timeout: 15000
+- runFlow:
+    when:
+      true: ${SUBSCRIPTION_FLOW == "true"}
+    commands:
+      - assertVisible:
+          id: "paywall2-plan-week"
+      - assertVisible:
+          id: "paywall2-plan-month"
+      - assertVisible:
+          id: "paywall2-plan-quarter"
+      - assertNotVisible: "Premium forever"
+      - assertNotVisible: "One-time payment"
+- runFlow:
+    when:
+      true: ${SUBSCRIPTION_FLOW == "false"}
+    commands:
+      - assertNotVisible:
+          id: "paywall2-offer"
+
+- runFlow:
+    file: launch_onboarded_destination.yaml
+    env:
+      DESTINATION: profile
+      EXAM_COUNTRY: ${EXAM_COUNTRY}
+      LOCALE: en
+      MONETIZATION_V2: "true"
+      PLUS_ACCESS: "false"
+      TARGET_ID: screen-profile
+- assertVisible:
+    id: "profile-premium-description"
+    text: "${EXPECTED_PROFILE_SUBTITLE}"
+- runFlow:
+    when:
+      true: ${SUBSCRIPTION_FLOW == "true"}
+    commands:
+      - assertVisible:
+          id: "profile-premium-badge"
+          text: "Choose a plan"
+- tapOn:
+    id: "profile-premium-banner"
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "${EXPECTED_PAYWALL_ELEMENT}"
+    direction: DOWN
+    timeout: 15000

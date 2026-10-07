@@ -319,7 +319,7 @@ Skip и start у одного человека в разные визиты — 
 
 ## Paywall и покупка
 
-Все события paywall2 (PL) несут `paywall_variant=paywall2`, `paywall_offer=plans/lifetime` (lifetime, пока в offering нет подписок), `plan` и `trial_days` выбранного тарифа; `purchase_*` получают те же поля. У классического paywall `paywall_variant` нет.
+Текущий PL использует подписочный paywall2: `paywall_variant=paywall2`, **`paywall_offer=plans`**, `plan` и `trial_days` выбранного тарифа; `purchase_*` получают те же поля. Неделя / месяц / 3 месяца соответствуют `P1W` / `P1M` / `P3M`. Пустой или неподдерживаемый offering не меняет модель на lifetime. В старых билдах PL мог отправлять `paywall_offer=lifetime` при fallback: не переносить эту историческую семантику на новые билды. CZ/SK сохраняют классический lifetime-paywall; у него `paywall_variant` нет. Страна, а не язык UI, определяет billing flow; актуальная карта — [../paywall.md](../paywall.md).
 
 | Событие | Значение |
 |---|---|

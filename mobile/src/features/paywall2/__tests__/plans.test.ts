@@ -25,6 +25,7 @@ const week = pkg({ identifier: "$rc_weekly", packageType: "WEEKLY", priceString:
 const month = pkg({ identifier: "$rc_monthly", productIdentifier: "prawko.month", packageType: "MONTHLY", priceString: "29,99 zł", subscriptionPeriod: "P1M", freeTrialDays: 3 });
 const quarter = pkg({ identifier: "three_month", productIdentifier: "prawko.quarter", packageType: "CUSTOM", priceString: "49,99 zł", subscriptionPeriod: "P3M", freeTrialDays: 3 });
 const lifetime = pkg({ identifier: "$rc_lifetime", packageType: "LIFETIME", priceString: "24,99 zł" });
+const annual = pkg({ identifier: "$rc_annual", packageType: "ANNUAL", subscriptionPeriod: "P1Y", priceString: "99,99 zł" });
 
 describe("paywall2 plans", () => {
   it("matches store packages by subscription period", () => {
@@ -34,7 +35,7 @@ describe("paywall2 plans", () => {
     expect(findPaywall2PlanPackage(offers, "quarter")).toBe(quarter);
   });
 
-  const release = { preview: false, offersLoaded: true, trialIneligibleProductIds: [] };
+  const release = { preview: false, trialIneligibleProductIds: [] };
 
   function plansOf(offer: ReturnType<typeof resolvePaywall2Plans>) {
     if (offer.kind !== "plans") throw new Error("expected plans");
@@ -53,13 +54,33 @@ describe("paywall2 plans", () => {
     expect(plansOf(resolvePaywall2Plans([lifetime, month], release))).toEqual([["month", "29,99 zł", 3]]);
   });
 
-  it("falls back to lifetime when the loaded offering has no plans", () => {
-    expect(resolvePaywall2Plans([lifetime], release)).toEqual({ kind: "lifetime" });
+  it.each([
+    ["empty", []],
+    ["lifetime-only", [lifetime]],
+    ["annual-only", [annual]],
+    ["unsupported mixed", [lifetime, annual]],
+  ] as const)("keeps PL subscription placeholders for an %s offering", (_, offers) => {
+    const offer = resolvePaywall2Plans([...offers], release);
+    expect(offer.kind).toBe("plans");
+    expect(offer.plans.map((plan) => plan.id)).toEqual(["week", "month", "quarter"]);
+    expect(offer.plans.every((plan) => plan.package === null && plan.price === null && plan.trialDays === 0)).toBe(true);
+    expect(pickPaywall2Plan(offer.plans, "quarter")?.package).toBeNull();
+    for (const id of ["week", "month", "quarter"] as const) {
+      expect(findPaywall2PlanPackage([...offers], id)).toBeNull();
+    }
   });
 
   it("keeps price placeholders while the store is loading", () => {
-    const offer = resolvePaywall2Plans([], { ...release, offersLoaded: false });
+    const offer = resolvePaywall2Plans([], release);
     expect(offer.kind === "plans" && offer.plans.every((plan) => plan.price === null)).toBe(true);
+  });
+
+  it("previews subscriptions only when no real packages are present", () => {
+    const preview = { ...release, preview: true };
+    const empty = resolvePaywall2Plans([], preview);
+    expect(empty.plans.every((plan) => plan.price !== null && plan.package === null)).toBe(true);
+    const unsupported = resolvePaywall2Plans([lifetime, annual], preview);
+    expect(unsupported.plans.every((plan) => plan.price === null && plan.package === null)).toBe(true);
   });
 
   it("hides trials the user is not eligible for or that are not confirmed yet", () => {
@@ -70,7 +91,7 @@ describe("paywall2 plans", () => {
       .toEqual([["month", "29,99 zł", 0], ["quarter", "49,99 zł", 0]]);
   });
 
-  it("selects the 90-day plan by default and the closest one when it is missing", () => {
+  it("selects the 3-month plan by default and the closest one when it is missing", () => {
     const all = resolvePaywall2Plans([quarter, month, week], release);
     const partial = resolvePaywall2Plans([month, week], release);
     if (all.kind !== "plans" || partial.kind !== "plans") throw new Error("expected plans");

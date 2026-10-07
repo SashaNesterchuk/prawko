@@ -2800,6 +2800,8 @@ const resourcesBase = {
       monetizationV2: {
         premiumName: "Prawko Premium",
         profileSubtitle: "Full access · One payment",
+        profileSubscriptionSubtitle: "Full access · Subscription",
+        profileChoosePlan: "Choose a plan",
         profileActive: "Active",
         trainingExhaustedTitle: "You have used the free questions",
         trainingExhaustedBody: "Unlock the full question bank with no limit.",

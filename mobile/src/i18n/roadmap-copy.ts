@@ -6,8 +6,10 @@ type RoadmapSectionCopy = {
 export type RoadmapCopy = {
   unlockTitle: string;
   unlockBody: string;
+  unlockSubscriptionBody: string;
   unlockCta: string;
   perkLifetime: string;
+  perkSubscription: string;
   perkTopics: string;
   perkPrice: string;
   ratingTitle: string;
@@ -24,8 +26,10 @@ export type RoadmapCopy = {
 export const roadmapCopyEn: RoadmapCopy = {
   unlockTitle: "Unlock the full roadmap",
   unlockBody: "Get access to all topics, practice tests and more. Pay once, use forever.",
+  unlockSubscriptionBody: "Get access to all topics, practice tests and more. Choose a weekly, monthly or 3-month subscription.",
   unlockCta: "Unlock now",
   perkLifetime: "Lifetime access",
+  perkSubscription: "Flexible subscription plans",
   perkTopics: "All topics and practice tests",
   perkPrice: "Cheaper than competitors",
   ratingTitle: "Enjoying Prawko?",
@@ -237,8 +241,10 @@ export const roadmapCopyEn: RoadmapCopy = {
 export const roadmapCopyUa: RoadmapCopy = {
   unlockTitle: "Відкрий увесь шлях",
   unlockBody: "Усі теми, пробні тести й інше. Одна оплата — назавжди.",
+  unlockSubscriptionBody: "Усі теми, пробні тести й інше. Обери підписку на тиждень, місяць або 3 місяці.",
   unlockCta: "Відкрити",
   perkLifetime: "Доступ назавжди",
+  perkSubscription: "Гнучкі плани підписки",
   perkTopics: "Усі теми і пробні тести",
   perkPrice: "Дешевше за конкурентів",
   ratingTitle: "Подобається Prawko?",
@@ -450,8 +456,10 @@ export const roadmapCopyUa: RoadmapCopy = {
 export const roadmapCopyPl: RoadmapCopy = {
   unlockTitle: "Odblokuj całą ścieżkę",
   unlockBody: "Wszystkie tematy, testy próbne i więcej. Płacisz raz, korzystasz na zawsze.",
+  unlockSubscriptionBody: "Wszystkie tematy, testy próbne i więcej. Wybierz subskrypcję tygodniową, miesięczną lub na 3 miesiące.",
   unlockCta: "Odblokuj",
   perkLifetime: "Dostęp na zawsze",
+  perkSubscription: "Elastyczne plany subskrypcji",
   perkTopics: "Wszystkie tematy i testy próbne",
   perkPrice: "Taniej niż u konkurencji",
   ratingTitle: "Podoba Ci się Prawko?",
@@ -663,8 +671,10 @@ export const roadmapCopyPl: RoadmapCopy = {
 export const roadmapCopyCs: RoadmapCopy = {
   unlockTitle: "Odemkni celou cestu",
   unlockBody: "Všechna témata, zkušební testy a další. Zaplatíš jednou, používáš navždy.",
+  unlockSubscriptionBody: "Všechna témata, zkušební testy a další. Vyber si předplatné na týden, měsíc nebo 3 měsíce.",
   unlockCta: "Odemknout",
   perkLifetime: "Přístup navždy",
+  perkSubscription: "Flexibilní plány předplatného",
   perkTopics: "Všechna témata a zkušební testy",
   perkPrice: "Levnější než konkurence",
   ratingTitle: "Líbí se vám Prawko?",
@@ -876,8 +886,10 @@ export const roadmapCopyCs: RoadmapCopy = {
 export const roadmapCopySk: RoadmapCopy = {
   unlockTitle: "Odomkni celú cestu",
   unlockBody: "Všetky témy, skúšobné testy a ďalšie. Zaplatíš raz, používaš navždy.",
+  unlockSubscriptionBody: "Všetky témy, skúšobné testy a ďalšie. Vyber si predplatné na týždeň, mesiac alebo 3 mesiace.",
   unlockCta: "Odomknúť",
   perkLifetime: "Prístup navždy",
+  perkSubscription: "Flexibilné plány predplatného",
   perkTopics: "Všetky témy a skúšobné testy",
   perkPrice: "Lacnejšie ako konkurencia",
   ratingTitle: "Páči sa vám Prawko?",

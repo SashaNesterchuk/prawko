@@ -65,6 +65,7 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
   const offerings = useRevenueCatOfferings();
   const hasPlusAccess = useHasPlusAccess();
   const monetizationV2 = useMonetizationV2Active();
+  const subscriptionOffer = useCountryConfig().paywallOffer === "plans";
   const sdkConfigured = isRevenueCatConfiguredForCurrentPlatform();
   const attempt = useCheckoutStore((state) => state.attempt);
   const nativeRequestInFlight = useCheckoutStore((state) => state.nativeRequestInFlight);
@@ -98,25 +99,25 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
     () => resolvePaywall2Plans(offerings, {
       // Dev builds run with RevenueCat off, so they preview sample prices.
       preview: __DEV__,
-      offersLoaded: offersLoadStatus === "ready" || offersLoadStatus === "empty",
       trialIneligibleProductIds: !trialKey ? [] : trialIneligible?.key === trialKey ? trialIneligible.ids : null,
     }),
-    [offerings, offersLoadStatus, trialIneligible, trialKey]
+    [offerings, trialIneligible, trialKey]
   );
-  const plans = useCountryConfig().paywallOffer === "plans" && planOffer.kind === "plans"
-    ? planOffer.plans
-    : null;
+  // Country config owns billing, not the offering or UI locale. PL must never
+  // show lifetime claims, even if the store has no supported subscription.
+  // The production /paywall route keeps CZ/SK on LegacyPaywallPage.
+  const plans = subscriptionOffer ? planOffer.plans : null;
   const selectedPlan = plans ? pickPaywall2Plan(plans, selectedPlanId) : null;
   const lifetimePackage = useMemo(
-    () => selectLifetimePackage(offerings, monetizationV2),
-    [monetizationV2, offerings]
+    () => subscriptionOffer ? null : selectLifetimePackage(offerings, monetizationV2),
+    [monetizationV2, offerings, subscriptionOffer]
   );
-  const selectedPackage = plans ? selectedPlan?.package ?? null : lifetimePackage;
-  const offer: Paywall2Offer = plans && selectedPlan
+  const selectedPackage = subscriptionOffer ? selectedPlan?.package ?? null : lifetimePackage;
+  const offer: Paywall2Offer = subscriptionOffer
     ? {
         kind: "plans",
-        plans,
-        selectedPlanId: selectedPlan.id,
+        plans: planOffer.plans,
+        selectedPlanId: selectedPlan?.id ?? PAYWALL2_DEFAULT_PLAN,
         onSelectPlan: (id, placement) => selectPlan(id, placement),
       }
     : {
@@ -126,6 +127,8 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
   const busy = nativeRequestInFlight || recoveryInFlight || isCheckoutPending(attempt);
   const purchaseBusy = nativeRequestInFlight && attempt?.kind === "purchase";
   const restoreBusy = nativeRequestInFlight && attempt?.kind === "restore";
+  const offerUnavailable = subscriptionOffer && !hasPlusAccess && !selectedPackage &&
+    (offersLoadStatus === "ready" || offersLoadStatus === "empty" || offersLoadStatus === "failed");
 
   const paywallProperties = {
     ...paywallEntry,
@@ -318,7 +321,7 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
     <>
       <StatusBar style="light" />
       <Paywall2View
-        feedback={feedback}
+        feedback={feedback ?? (offerUnavailable ? t("paywall.directNoOffers") : null)}
         hasPlusAccess={hasPlusAccess}
         onClose={() => {
           dismissMethodRef.current = "close_button";
@@ -329,7 +332,7 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
         offer={offer}
         onUnlock={() => void handleUnlock()}
         purchaseBusy={purchaseBusy}
-        purchaseDisabled={busy}
+        purchaseDisabled={busy || (!hasPlusAccess && !selectedPackage)}
         restoreBusy={restoreBusy}
         testID={testID}
       />
