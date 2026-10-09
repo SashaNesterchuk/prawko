@@ -106,6 +106,18 @@ require attributed/organic classification, clean dependent integrity and
 verified full observation coverage. Small descriptive subsets are not benchmarks
 or causal effects; excluded anchors and unknown scopes are explicit.
 
+## Ordered Product Funnel
+
+`product_funnel` is a separate client observation on the same ASA scope and
+anchored installation. It does not join spend or RevenueCat proceeds. Steps, in
+strictly later event time: accepted answer, completed practice exam,
+`paywall_viewed`, `purchase_started`, `purchase_succeeded`. A purchase that
+skips an earlier step stays in `purchase_outside_ordered_funnel`. The horizon
+is 30 elapsed days from `first_observed_at`; an unfinished horizon is censored.
+Successful purchases keep checkout-origin country, `plans`/`lifetime`, and
+subscription versus lifetime. A later `exam_country` does not rewrite that
+origin. Counts stay available when a fraction is withheld.
+
 ## Observation Horizon And Consumption
 
 ```bash

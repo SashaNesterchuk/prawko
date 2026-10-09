@@ -1,0 +1,261 @@
+# Feature: UI capture
+# Scenario: Fresh install from onboarding, then the main screens.
+# Tag explore so the default suite does not run this. Screenshots land in
+# --test-output-dir (see takeScreenshot/).
+appId: com.mindjar.prawko
+tags:
+  - explore
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-onboarding-category"
+    timeout: 30000
+- takeScreenshot: 01-onboarding-category
+
+- tapOn:
+    id: "onboarding-category-B"
+- takeScreenshot: 02-onboarding-category-selected
+- tapOn:
+    id: "onboarding-category-continue"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-onboarding-exam-schedule"
+    timeout: 15000
+- takeScreenshot: 03-onboarding-exam-schedule
+
+- tapOn:
+    id: "onboarding-exam-date-field"
+- extendedWaitUntil:
+    visible:
+      id: "exam-date-calendar"
+    timeout: 10000
+- takeScreenshot: 04-onboarding-exam-date-calendar
+- tapOn:
+    id: "exam-date-calendar-clear"
+
+- tapOn:
+    id: "onboarding-exam-schedule-continue"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
+- takeScreenshot: 05-home
+
+- scrollUntilVisible:
+    element:
+      id: "roadmap-exam-simulator"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: 06-home-scrolled
+
+- tapOn:
+    id: "tab-learn"
+- extendedWaitUntil:
+    visible:
+      id: "screen-learn"
+    timeout: 15000
+- takeScreenshot: 07-learn
+
+- scrollUntilVisible:
+    element:
+      id: "learn-topic-card-index-0"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: 08-learn-topics
+
+- scrollUntilVisible:
+    element:
+      id: "action-tile-trainer"
+    direction: UP
+    timeout: 15000
+- tapOn:
+    id: "action-tile-trainer"
+- extendedWaitUntil:
+    visible:
+      id: "screen-trainer-modes"
+    timeout: 15000
+- takeScreenshot: 09-trainer-modes
+
+- tapOn:
+    id: "trainer-mode-random"
+- extendedWaitUntil:
+    visible:
+      id: "question-count-dialog"
+    timeout: 10000
+- takeScreenshot: 10-question-count
+- tapOn:
+    id: "question-count-start"
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 20000
+- takeScreenshot: 11-question
+
+- tapOn:
+    id: "question-close"
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-learn"
+- extendedWaitUntil:
+    visible:
+      id: "screen-learn"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "action-tile-exam"
+    direction: DOWN
+    centerElement: true
+    timeout: 20000
+- tapOn:
+    id: "action-tile-exam"
+- extendedWaitUntil:
+    visible:
+      id: "screen-exam-session"
+    timeout: 20000
+- takeScreenshot: 12-exam
+
+- tapOn:
+    id: "exam-close"
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-signs"
+- extendedWaitUntil:
+    visible:
+      id: "screen-signs"
+    timeout: 15000
+- takeScreenshot: 13-signs
+
+- scrollUntilVisible:
+    element:
+      id: "sign-category-A"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: 14-signs-categories
+- tapOn:
+    id: "sign-category-A"
+- extendedWaitUntil:
+    visible:
+      id: "screen-signs-category-A"
+    timeout: 15000
+- takeScreenshot: 15-signs-category
+- tapOn:
+    id: "nav-back"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-signs"
+    timeout: 10000
+
+- tapOn:
+    id: "tab-profile"
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+- takeScreenshot: 16-profile
+
+- scrollUntilVisible:
+    element:
+      id: "profile-row-category"
+    direction: DOWN
+    centerElement: true
+    timeout: 20000
+- tapOn:
+    id: "profile-row-category"
+- extendedWaitUntil:
+    visible:
+      id: "screen-settings-category"
+    timeout: 15000
+- takeScreenshot: 18-settings-category
+- tapOn:
+    id: "nav-back"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 10000
+- tapOn:
+    id: "profile-row-exam-country"
+- extendedWaitUntil:
+    visible:
+      id: "screen-settings-exam-country"
+    timeout: 15000
+- takeScreenshot: 19-settings-exam-country
+- tapOn:
+    id: "nav-back"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 10000
+- tapOn:
+    id: "profile-row-language"
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-language-list"
+    timeout: 15000
+- takeScreenshot: 20-settings-language
+- tapOn:
+    id: "nav-back"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: "profile-premium-banner"
+    direction: UP
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "profile-premium-banner"
+- extendedWaitUntil:
+    visible:
+      id: "paywall2-offer"
+    timeout: 20000
+- takeScreenshot: 21-paywall
+
+- scrollUntilVisible:
+    element:
+      id: "paywall2-comparison"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: 22-paywall-scrolled
+- tapOn:
+    id: "paywall2-close"
+
+- openLink: "prawko://statistics"
+- extendedWaitUntil:
+    visible:
+      id: "screen-statistics"
+    timeout: 15000
+- takeScreenshot: 23-statistics
+
+- tapOn:
+    id: "nav-back"
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: "profile-row-support"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- takeScreenshot: 17-profile-scrolled

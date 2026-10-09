@@ -7,6 +7,7 @@ import {
   Animated,
   Image,
   LayoutAnimation,
+  Linking,
   Pressable,
   ScrollView,
   View,
@@ -62,6 +63,8 @@ export type Paywall2ViewProps = {
   onContinue: () => void;
 };
 
+const PRIVACY_POLICY_URL = "https://mind-jar.com/prawko/privacy-policy/";
+const TERMS_CONDITIONS_URL = "https://mind-jar.com/prawko/terms-conditions/";
 const APP_ICON = require("../../../assets/images/icon.png");
 const SCREEN_PADDING = 20;
 const HEADER_ROW_HEIGHT = 56;
@@ -293,6 +296,9 @@ export function Paywall2View(props: Paywall2ViewProps) {
           ) : selectedPlan && !props.hasPlusAccess ? (
             <PlanTerms plan={selectedPlan} testID="paywall2-terms" />
           ) : null}
+          {offer.kind === "plans" && !props.hasPlusAccess ? (
+            <LegalLinks testIDPrefix="paywall2" />
+          ) : null}
         </View>
 
         <SectionTitle
@@ -417,6 +423,9 @@ export function Paywall2View(props: Paywall2ViewProps) {
           ) : (
             <CText center style={styles.finalNote}>{t("paywall2.finalNote")}</CText>
           )}
+          {offer.kind === "plans" && !props.hasPlusAccess ? (
+            <LegalLinks testIDPrefix="paywall2-final" />
+          ) : null}
           {!props.hasPlusAccess ? (
             <Pressable
               accessibilityRole="button"
@@ -511,10 +520,13 @@ export function Paywall2View(props: Paywall2ViewProps) {
 }
 
 function PriceLabel({
+  fit = true,
   placeholderWidth,
   price,
   style,
 }: {
+  /** Plan rows hug their content. Auto-fit then shrinks the selected price on iOS. */
+  fit?: boolean;
   placeholderWidth: number;
   price: string | null;
   style: StyleProp<TextStyle>;
@@ -530,7 +542,13 @@ function PriceLabel({
     );
   }
   return (
-    <CText adjustsFontSizeToFit bold minimumFontScale={0.7} numberOfLines={1} style={style}>
+    <CText
+      adjustsFontSizeToFit={fit}
+      bold
+      minimumFontScale={fit ? 0.7 : undefined}
+      numberOfLines={1}
+      style={style}
+    >
       {price}
     </CText>
   );
@@ -550,6 +568,39 @@ function planCtaLabel(t: TFn, language: string, plan: Paywall2Plan) {
   return plan.trialDays > 0
     ? t(pluralKey("paywall2.ctaTrial", plan.trialDays, language), { count: plan.trialDays })
     : t("paywall2.ctaNoTrial");
+}
+
+function openLegalPage(url: string) {
+  void Linking.openURL(url).catch(() => {
+    // Leave the paywall open if the system browser cannot be launched.
+  });
+}
+
+function LegalLinks({ testIDPrefix }: { testIDPrefix: string }) {
+  const { t } = useTranslation();
+  const styles = useStyles();
+
+  return (
+    <View style={styles.legalRow}>
+      <Pressable
+        accessibilityRole="link"
+        hitSlop={8}
+        onPress={() => openLegalPage(PRIVACY_POLICY_URL)}
+        testID={`${testIDPrefix}-privacy`}
+      >
+        <CText style={styles.legalLink}>{t("paywall2.privacyPolicy")}</CText>
+      </Pressable>
+      <CText style={styles.legalDot}>·</CText>
+      <Pressable
+        accessibilityRole="link"
+        hitSlop={8}
+        onPress={() => openLegalPage(TERMS_CONDITIONS_URL)}
+        testID={`${testIDPrefix}-terms-link`}
+      >
+        <CText style={styles.legalLink}>{t("paywall2.termsConditions")}</CText>
+      </Pressable>
+    </View>
+  );
 }
 
 function PlanTerms({ plan, testID }: { plan: Paywall2Plan; testID?: string }) {
@@ -640,6 +691,7 @@ function PlanSelector({
               </View>
               <View style={styles.planPriceBox}>
                 <PriceLabel
+                  fit={false}
                   placeholderWidth={64}
                   price={plan.price}
                   style={[
@@ -1136,6 +1188,7 @@ function useStyles() {
     },
     planPriceBox: {
       alignItems: "flex-end",
+      flexShrink: 0,
     },
     planPrice: {
       fontSize: responsiveFont(17),
@@ -1148,6 +1201,24 @@ function useStyles() {
       color: palette.text,
     },
     planTerms: {
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(18),
+      color: palette.textMuted,
+    },
+    legalRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: spacing.exact(8),
+    },
+    legalLink: {
+      fontSize: responsiveFont(13),
+      lineHeight: responsiveFont(18),
+      color: palette.textMuted,
+      textDecorationLine: "underline",
+    },
+    legalDot: {
       fontSize: responsiveFont(13),
       lineHeight: responsiveFont(18),
       color: palette.textMuted,

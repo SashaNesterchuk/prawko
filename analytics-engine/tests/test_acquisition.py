@@ -505,4 +505,105 @@ def test_no_sources_are_unknown_not_zero_paid_acquisition(tmp_path):
     assert report["mix"]["status"] == "unavailable"
     assert report["mix"]["buckets"] == []
     assert report["cohorts"] == []
+    assert report["product_funnel"] == []
     assert report["coverage_complete"] is False
+
+
+def _funnel(report, *, result="attributed"):
+    return next(item for item in report["product_funnel"] if item["asa_result"] == result)
+
+
+def _answer(*, at=FIRST + timedelta(minutes=1), **props):
+    return _row(
+        "training_question_answered", at=at, training_session_id="training-a",
+        question_id="q1", answer_id="a1", is_correct=True, **props,
+    )
+
+
+def _exam(*, at=FIRST + timedelta(minutes=2), **props):
+    return _row("exam_session_completed", at=at, **{
+        "exam_session_id": "exam-a", "completion_status": "completed", "question_total": 2,
+        "answered_count": 2, "learning_outcome_rule_version": "learning-v1", **props,
+    })
+
+
+def _paywall(*, at=FIRST + timedelta(minutes=3), **props):
+    return _row("paywall_viewed", at=at, **{"paywall_view_id": "view-a", **props})
+
+
+def _started(*, at=FIRST + timedelta(minutes=4), attempt="checkout-a", **props):
+    return _row("purchase_started", at=at, purchase_attempt_id=attempt, **props)
+
+
+def _origin(**props):
+    return {
+        "checkout_origin_status": "observed", "checkout_origin_version": 1,
+        "checkout_origin_exam_country": "PL", "checkout_origin_paywall_offer": "plans",
+        "checkout_origin_subscription_period": "P1M", **props,
+    }
+
+
+def test_ordered_funnel_counts_dropoff_and_keeps_checkout_country_and_product_kind():
+    report = _report([
+        _asa(asa_keyword_id=300), _answer(), _exam(),
+        _asa(user="install-b", asa_keyword_id=300),
+        _answer(user="install-b"), _exam(user="install-b", exam_session_id="exam-b"),
+        _paywall(user="install-b", paywall_view_id="view-b"),
+        _started(user="install-b", attempt="checkout-b"),
+        _purchase(
+            user="install-b", at=FIRST + timedelta(minutes=5), purchase_attempt_id="checkout-b",
+            transaction_id="transaction-b", exam_country="PL",
+            **_origin(checkout_origin_exam_country="SK", checkout_origin_paywall_offer="lifetime",
+                      checkout_origin_subscription_period=None),
+        ),
+    ])
+    funnel = _funnel(report)
+    steps = {step["id"]: step for step in funnel["steps"]}
+    assert funnel["asa_campaign_id"] == 456 and funnel["asa_keyword_id"] == 300
+    assert funnel["mature_installations"] == 2 and funnel["censored_installations"] == 0
+    assert steps["first_useful_action"]["installations"] == 2
+    assert steps["practice_exam_completed"]["fraction"] == 1
+    assert steps["paywall_viewed"] == {"id": "paywall_viewed", "installations": 1, "fraction": 0.5}
+    assert steps["purchase_started"]["fraction"] == 0.5
+    assert steps["purchase_succeeded"]["fraction"] == 0.5
+    assert funnel["purchase_outside_ordered_funnel"] == 0
+    assert funnel["purchase_context"] == [{
+        "exam_country": "SK", "paywall_offer": "lifetime", "product_kind": "lifetime", "installations": 1,
+    }]
+    assert report["roas"] is None and "ordered_funnel_as_verified_revenue" in report["must_not_claim"]
+
+
+def test_purchase_and_paywall_before_the_exam_stay_outside_the_ordered_steps():
+    report = _report([
+        _asa(),
+        _paywall(at=FIRST + timedelta(minutes=1)),
+        _answer(at=FIRST + timedelta(minutes=2)),
+        _exam(at=FIRST + timedelta(minutes=3)),
+        _started(at=FIRST + timedelta(minutes=4)),
+        _purchase(at=FIRST + timedelta(minutes=5), **_origin()),
+    ])
+    steps = {step["id"]: step["installations"] for step in _funnel(report)["steps"]}
+    assert steps == {
+        "first_useful_action": 1, "practice_exam_completed": 1, "paywall_viewed": 0,
+        "purchase_started": 0, "purchase_succeeded": 0,
+    }
+    assert _funnel(report)["purchase_outside_ordered_funnel"] == 1
+
+
+def test_tied_event_time_does_not_order_the_next_funnel_step():
+    at = FIRST + timedelta(minutes=1)
+    report = _report([_asa(), _answer(at=at), _exam(at=at)])
+    steps = {step["id"]: step["installations"] for step in _funnel(report)["steps"]}
+    assert steps["first_useful_action"] == 1
+    assert steps["practice_exam_completed"] == 0
+
+
+def test_unfinished_30_day_window_censors_the_funnel():
+    report = _report([
+        _asa(), _answer(), _exam(), _paywall(), _started(),
+        _purchase(at=FIRST + timedelta(minutes=5), **_origin()),
+    ], observe_through=FIRST + timedelta(days=2))
+    funnel = _funnel(report)
+    assert funnel["censored_installations"] == 1 and funnel["mature_installations"] == 0
+    assert all(step["installations"] == 0 and step["fraction"] is None for step in funnel["steps"])
+    assert funnel["purchase_context"] == []

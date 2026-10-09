@@ -28,6 +28,13 @@ DATE_FIELDS = ("asa_click_date", "asa_impression_date")
 DIMENSIONS = ("asa_result", *ID_FIELDS, *ENUM_FIELDS)
 LEARNING_EVENTS = {"training_session_completed", "exam_session_completed"}
 PURCHASE_EVENTS = {"purchase_succeeded"}
+ANSWER_EVENTS = {"training_question_answered", "exam_question_answered"}
+FUNNEL_STEPS = (
+    "first_useful_action", "practice_exam_completed", "paywall_viewed",
+    "purchase_started", "purchase_succeeded",
+)
+FUNNEL_HORIZON = timedelta(days=30)
+SUBSCRIPTION_PERIODS = {"P1W", "P1M", "P3M"}
 ANCHOR_ISSUES = {
     "invalid_observation_anchor", "conflicting_observation_anchor", "conflicting_observation_anchor_identity",
 }
@@ -303,7 +310,7 @@ def observed_acquisition(
                 row.timestamp < terminal_at for row in purchases
             ) if terminal_at else 0,
         })
-        relevant_rows[install] = (purchases, meaningful, purchase_issues, learning_issue_rows)
+        relevant_rows[install] = (purchases, meaningful, purchase_issues, learning_issue_rows, source_rows)
 
     mix_groups = defaultdict(list)
     for installation in installations:
@@ -350,7 +357,9 @@ def observed_acquisition(
             "physical_install_date", "unique_accounts", "android_organic", "unknown_is_organic",
             "native_delivery", "historical_delivery_as_of", "verified_purchase", "settled_money",
             "store_proceeds", "causal_channel_lift", "fresh_spend", "automatic_app_scope_mapping",
+            "ordered_funnel_as_verified_revenue",
         ],
+        "product_funnel": _product_funnels(installations, relevant_rows, through, coverage_complete, issues),
     }
 
 
@@ -385,7 +394,7 @@ def _cohorts(installations, relevant_rows, through, complete, source_issues):
             for installation in group:
                 first = _moment(installation["first_observed_at"])
                 horizon, return_window = _horizons(first, days)
-                purchases, meaningful, purchase_issues, learning_issues = relevant_rows[installation["app_user_id"]]
+                purchases, meaningful, purchase_issues, learning_issues, _source_rows = relevant_rows[installation["app_user_id"]]
                 if horizon is None or horizon > through:
                     censored += 1
                 else:
@@ -442,6 +451,173 @@ def _cohorts(installations, relevant_rows, through, complete, source_issues):
                 "client_identity_scope_clean": client_scope_clean, "learning_identity_scope_clean": learning_scope_clean,
                 "sample_basis": "descriptive_observed_cohort_no_benchmark_or_causal_claim",
             })
+    return reports
+
+
+def _accepted_answer(row):
+    if row.event not in ANSWER_EVENTS or not observation_usable(row.properties):
+        return False
+    props = row.properties
+    if props.get("timed_out") is True:
+        return False
+    if row.event == "exam_question_answered" and props.get("answer_action") == "update":
+        return False
+    if not safe_identity_id(props.get("answer_id")) or not safe_identity_id(props.get("question_id")):
+        return False
+    if type(props.get("is_correct")) is not bool:
+        return False
+    if row.event == "exam_question_answered":
+        return props.get("answer_action") == "create" and bool(safe_identity_id(props.get("answer_revision_id")))
+    return True
+
+
+def _answer_invalid(row):
+    if row.event not in ANSWER_EVENTS or row.properties.get("timed_out") is True:
+        return False
+    if row.event == "exam_question_answered" and row.properties.get("answer_action") == "update":
+        return False
+    return not _accepted_answer(row)
+
+
+def _exam_completed(row):
+    return (
+        row.event == "exam_session_completed" and meaningful_learning(row) and not _learning_issue(row)
+    )
+
+
+def _identified(row, event, field):
+    return row.event == event and observation_usable(row.properties) and bool(safe_identity_id(row.properties.get(field)))
+
+
+def _purchase_context(row):
+    props = row.properties
+    if props.get("checkout_origin_status") != "observed" or props.get("checkout_origin_version") != 1:
+        return {"exam_country": None, "paywall_offer": None, "product_kind": "unclassified"}
+    country = props.get("checkout_origin_exam_country")
+    offer = props.get("checkout_origin_paywall_offer")
+    period = props.get("checkout_origin_subscription_period")
+    if not (isinstance(country, str) and re.fullmatch(r"[A-Z]{2}", country)):
+        country = None
+    if offer not in ("plans", "lifetime"):
+        offer = None
+    if period not in SUBSCRIPTION_PERIODS:
+        period = None
+    subscription = offer == "plans" or period in SUBSCRIPTION_PERIODS
+    lifetime = offer == "lifetime"
+    if subscription and lifetime:
+        kind = "unclassified"
+    elif subscription:
+        kind = "subscription"
+    elif lifetime:
+        kind = "lifetime"
+    else:
+        kind = "unclassified"
+    return {"exam_country": country, "paywall_offer": offer, "product_kind": kind}
+
+
+def _earliest(rows):
+    rows = list(rows)
+    return min(rows, key=lambda row: row.timestamp) if rows else None
+
+
+def _ordered_funnel(rows, purchases):
+    useful = _earliest(row for row in rows if _accepted_answer(row))
+    exam = _earliest(row for row in rows if useful and row.timestamp > useful.timestamp and _exam_completed(row))
+    paywall = _earliest(
+        row for row in rows
+        if exam and row.timestamp > exam.timestamp and _identified(row, "paywall_viewed", "paywall_view_id")
+    )
+    started = _earliest(
+        row for row in rows
+        if paywall and row.timestamp > paywall.timestamp and _identified(row, "purchase_started", "purchase_attempt_id")
+    )
+    attempt = safe_identity_id(started.properties.get("purchase_attempt_id")) if started else None
+    succeeded = _earliest(
+        row for row in purchases
+        if started and row.timestamp > started.timestamp
+        and safe_identity_id(row.properties.get("purchase_attempt_id")) == attempt
+    )
+    return useful, exam, paywall, started, succeeded
+
+
+def _funnel_invalid(row):
+    if _answer_invalid(row):
+        return True
+    if row.event == "exam_session_completed" and _learning_issue(row):
+        return True
+    if row.event == "paywall_viewed" and not _identified(row, "paywall_viewed", "paywall_view_id"):
+        return True
+    if row.event == "purchase_started" and not _identified(row, "purchase_started", "purchase_attempt_id"):
+        return True
+    return False
+
+
+def _product_funnels(installations, relevant_rows, through, complete, source_issues):
+    """Ordered client steps for one ASA scope. Counts are observations, not revenue."""
+    groups = defaultdict(list)
+    for installation in installations:
+        if installation["cohort_selected"]:
+            groups[_scope(installation)].append(installation)
+    scope_clean = not (
+        source_issues["missing_primary_installation_identity"]
+        or source_issues["missing_primary_purchase_identity"]
+        or source_issues["missing_primary_learning_identity"]
+    )
+    reports = []
+    for scope, group in sorted(groups.items(), key=lambda item: repr(item[0])):
+        reached = Counter()
+        contexts = Counter()
+        mature = censored = limited = outside = 0
+        for installation in group:
+            first = _moment(installation["first_observed_at"])
+            horizon = None
+            if first is not None:
+                try:
+                    horizon = first.astimezone(timezone.utc) + FUNNEL_HORIZON
+                except OverflowError:
+                    horizon = None
+            if horizon is None or horizon > through:
+                censored += 1
+                continue
+            mature += 1
+            purchases, _meaningful, purchase_issues, learning_issues, source_rows = relevant_rows[
+                installation["app_user_id"]
+            ]
+            window = [
+                row for row in source_rows if first <= row.timestamp < horizon and observation_usable(row.properties)
+            ]
+            purchases = [row for row in purchases if first <= row.timestamp < horizon]
+            issue_rows = [row for row in purchase_issues if first <= row[0].timestamp < horizon]
+            issue_rows += [row for row in learning_issues if first <= row.timestamp < horizon]
+            if installation["quality_issues"] or issue_rows or any(_funnel_invalid(row) for row in window):
+                limited += 1
+            steps = _ordered_funnel(window, purchases)
+            for name, row in zip(FUNNEL_STEPS, steps, strict=True):
+                reached[name] += row is not None
+            if steps[-1] is not None:
+                context = _purchase_context(steps[-1])
+                contexts[(context["exam_country"], context["paywall_offer"], context["product_kind"])] += 1
+            elif purchases:
+                outside += 1
+        channel_known = scope[0] in ("attributed", "organic")
+        rate_ok = bool(complete and channel_known and scope_clean and mature and not limited)
+        reports.append({
+            **_scope_dict(scope), "grain": "installation_observation_id",
+            "horizon": "elapsed_30d_half_open_from_first_observed_at",
+            "order": "strictly_later_event_time_same_installation",
+            "basis": "ordered_client_observations_not_verified_revenue",
+            "installations": len(group), "mature_installations": mature, "censored_installations": censored,
+            "limited_installations": limited, "purchase_outside_ordered_funnel": outside,
+            "steps": [
+                {"id": name, "installations": reached[name],
+                 "fraction": reached[name] / mature if rate_ok else None}
+                for name in FUNNEL_STEPS
+            ],
+            "purchase_context": [
+                {"exam_country": country, "paywall_offer": offer, "product_kind": kind, "installations": count}
+                for (country, offer, kind), count in sorted(contexts.items(), key=lambda item: repr(item[0]))
+            ],
+        })
     return reports
 
 

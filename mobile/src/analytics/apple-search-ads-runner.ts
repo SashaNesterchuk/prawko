@@ -4,6 +4,7 @@ import { Platform } from "react-native";
 import { isMobileSupabaseConfigured } from "../config/env";
 import { getMobileSupabaseClient } from "../lib/supabase";
 import { readAppleSearchAdsAttributionToken } from "../../modules/apple-search-ads/src/AppleSearchAdsModule";
+import { appleSearchAdsTokenFetchDelayMs } from "./adservices-token-schedule";
 import {
   APPLE_SEARCH_ADS_STORAGE_KEY,
   applyExchange,
@@ -51,6 +52,9 @@ export async function stepAppleSearchAdsAttribution(
   }
 
   if (plan.kind === "fetch_token") {
+    const delayMs = appleSearchAdsTokenFetchDelayMs(now);
+    if (delayMs > 0) return { retryInMs: delayMs };
+
     try {
       const token = await readAppleSearchAdsAttributionToken();
       const next = applyFetchedToken(state, io.now(), token);

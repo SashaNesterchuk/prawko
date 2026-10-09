@@ -80,7 +80,7 @@ pnpm test:e2e:studio
 | `profile_category_can_switch.yaml` | Profile → Category screen → select A (not only B) |
 | `profile_offline_without_plus_opens_paywall.yaml` | Profile → Offline mode row → paywall (free) |
 | `paywall_activate_stays_on_paywall.yaml` | Guest Activate on paywall stays on paywall (never App access) |
-| `paywall2_renders_and_closes.yaml` | PL subscription layout (`/paywall2`): weekly/monthly/3-month plans without lifetime claims, subscription FAQ, unavailable checkout stays on screen, sticky bar, comparison, final CTA + restore, Close → Home |
+| `paywall2_renders_and_closes.yaml` | PL subscription layout (`/paywall2`): weekly/monthly/3-month plans without lifetime claims, subscription FAQ, privacy policy and terms links, unavailable checkout stays on screen, sticky bar, comparison, final CTA + restore, Close → Home |
 | `paywall_country_billing_flows.yaml` | English Home/Profile copy and `/paywall` routing: PL subscriptions, unchanged CZ/SK lifetime; billing follows country, not UI language |
 | `premium_after_ad_shows_teaser.yaml` | A dismissed ad does not open the premium bottom sheet or paywall |
 | `premium_training_result_hides_teaser.yaml` | Finished training result does not show the Premium teaser or paywall |
@@ -92,6 +92,7 @@ pnpm test:e2e:studio
 | `monetization_v2_explanation_locks.yaml` | CZ free topic: first answer hides the explanation and opens the paywall |
 | `monetization_v2_pl_free_topic_explanation.yaml` | PL free topic: first answer shows the explanation, marks it Premium, and that mark opens the paywall |
 | `explore/blogger_session.yaml` | V2 free user wanders Home, training, a short exam, signs, profile and paywall for 30 minutes. Tag `explore`, excluded from `pnpm test:e2e`. Run `pnpm test:e2e:explore` |
+| `explore/capture_all_ui.yaml` | Fresh install from onboarding, then Home, Learn, training, exam, Signs, Profile, settings, paywall and statistics. Saves screenshots via `takeScreenshot`. Tag `explore`, excluded from `pnpm test:e2e` |
 | `profile_offline_missing_pack_can_download.yaml` | Offline mode → download missing pack (e2e) |
 | `profile_offline_incomplete_pack_shows_resume.yaml` | Incomplete pack shows resume + remove |
 | `profile_offline_downloading_can_be_stopped.yaml` | Downloading pack can be stopped → incomplete |

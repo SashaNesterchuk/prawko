@@ -25,7 +25,7 @@ tags:
     id: "paywall2-plan-month"
 - assertVisible:
     id: "paywall2-plan-quarter"
-- assertVisible: "3 miesiące"
+    text: ".*3 miesiące.*"
 - assertNotVisible: "Premium na zawsze"
 - assertNotVisible: "Jednorazowa płatność"
 
@@ -34,6 +34,16 @@ tags:
 
 - assertVisible:
     id: "screen-paywall2"
+
+- scrollUntilVisible:
+    element:
+      id: "paywall2-privacy"
+    direction: DOWN
+    timeout: 10000
+
+- assertVisible:
+    id: "paywall2-terms-link"
+    text: "Regulamin"
 
 - scrollUntilVisible:
     element:
@@ -63,6 +73,12 @@ tags:
       id: "paywall2-restore"
     direction: DOWN
     timeout: 10000
+
+- assertVisible:
+    id: "paywall2-final-privacy"
+- assertVisible:
+    id: "paywall2-final-terms-link"
+    text: "Regulamin"
 
 - assertVisible:
     id: "paywall2-final-cta"

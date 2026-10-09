@@ -8,6 +8,7 @@ import type {
 } from "react-native-purchases";
 import { PAYWALL_RESULT } from "react-native-purchases-ui";
 
+import { markRevenueCatAdServicesCollectionStarted } from "../../analytics/adservices-token-schedule";
 import { mobileEnv } from "../../config/env";
 import { getFreeTrialDays } from "./free-trial";
 import { observeTrialEligibility, type TrialEligibilityObserver, type ResolvedTrialEligibilityProduct } from "./trial-eligibility-observation";
@@ -96,6 +97,7 @@ const ENTITLEMENT_ALIASES: Record<AppFeature, string[]> = {
 let configuredAppUserId: string | null = null;
 let configuredApiKey: string | null = null;
 let didConfigurePurchases = false;
+let revenueCatAdServicesEnabled = false;
 let revenueCatModulePromise: Promise<RevenueCatModule> | null = null;
 let revenueCatUIModulePromise: Promise<RevenueCatUIModule> | null = null;
 let customerInfoListener: CustomerInfoUpdateListener | null = null;
@@ -501,6 +503,13 @@ function createEmptyRevenueCatSnapshot(
   };
 }
 
+export function resetRevenueCatClientForTests() {
+  configuredAppUserId = null;
+  configuredApiKey = null;
+  didConfigurePurchases = false;
+  revenueCatAdServicesEnabled = false;
+}
+
 export async function ensureRevenueCatReady(appUserId: string) {
   const apiKey = getRevenueCatPublicApiKey();
 
@@ -522,23 +531,34 @@ export async function ensureRevenueCatReady(appUserId: string) {
     configuredApiKey = apiKey;
     configuredAppUserId = appUserId;
     didConfigurePurchases = true;
-    return true;
-  }
-
-  if (configuredApiKey !== apiKey) {
+  } else if (configuredApiKey !== apiKey) {
     Purchases.configure(configureOptions);
     configuredApiKey = apiKey;
     configuredAppUserId = appUserId;
-    return true;
-  }
-
-  if (configuredAppUserId !== appUserId) {
+    revenueCatAdServicesEnabled = false;
+  } else if (configuredAppUserId !== appUserId) {
     await Purchases.logIn(appUserId);
     configuredAppUserId = appUserId;
-    return true;
   }
 
+  await enableRevenueCatAdServicesCollection(Purchases);
   return true;
+}
+
+async function enableRevenueCatAdServicesCollection(
+  Purchases: RevenueCatModule["default"],
+) {
+  if (Platform.OS !== "ios" || revenueCatAdServicesEnabled) return;
+  const enable = Purchases.enableAdServicesAttributionTokenCollection;
+  if (typeof enable !== "function") return;
+
+  try {
+    await enable();
+    revenueCatAdServicesEnabled = true;
+    markRevenueCatAdServicesCollectionStarted(Date.now());
+  } catch {
+    // A failed attribution opt-in must not block offerings, restore, or purchase.
+  }
 }
 
 async function getRevenueCatModule() {
