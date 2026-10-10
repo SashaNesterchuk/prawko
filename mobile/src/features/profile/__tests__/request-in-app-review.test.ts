@@ -87,6 +87,19 @@ describe("maybeRequestInAppReview", () => {
     );
   });
 
+  it("silently skips already-prompted users on repeated positive outcomes", async () => {
+    const deps = createDeps({ promptedAt: "2026-10-08T12:00:00Z" });
+    for (let i = 0; i < 3; i++) {
+      await expect(maybeRequestInAppReview({
+        positiveOutcome: true, source: "training_good", track,
+      }, deps)).resolves.toEqual({ allowed: false, reason: "already_prompted" });
+    }
+    expect(deps.requestReview).not.toHaveBeenCalled();
+    expect(deps.markPrompted).not.toHaveBeenCalled();
+    expect(deps.isReviewAvailable).not.toHaveBeenCalled();
+    expect(track).not.toHaveBeenCalled();
+  });
+
   it("does not request in e2e builds", async () => {
     const deps = createDeps({ isE2ETestMode: true });
 

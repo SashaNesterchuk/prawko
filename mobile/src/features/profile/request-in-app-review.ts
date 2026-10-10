@@ -59,6 +59,7 @@ function defaultDeps(): RequestInAppReviewDeps {
 }
 
 const SILENT_SKIP_REASONS = new Set([
+  "already_prompted",
   "e2e",
   "not_hydrated",
   "not_positive",

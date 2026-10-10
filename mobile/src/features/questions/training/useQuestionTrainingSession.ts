@@ -7,14 +7,12 @@ import type { SupportedLocale } from "@prawko/config";
 import { AD_POLICY } from "@prawko/config";
 
 import { hideModalAndWait } from "../../../components/shell/hide-modal-and-wait";
-import { isMobileSupabaseConfigured } from "../../../config/env";
 import { ANALYTICS_EVENTS } from "../../../analytics/catalog";
 import { trainingPracticeEntry } from "../../../analytics/practice-entry";
 import { createTrainingLifecycle } from "../../../analytics/training-lifecycle";
 import { useAnalyticsDuration } from "../../../analytics/useAnalyticsDuration";
 import { useAnalyticsViewState } from "../../../analytics/useAnalyticsViewState";
 import { useLearningReadyAnalytics } from "../../../analytics/useLearningReadyAnalytics";
-import { reportLearningOperationFailure } from "../../../analytics/operations";
 import { recordQuestionAnsweredForAds } from "../../ads/ad-session-policy";
 import { useAdInterstitialActions } from "../../ads/show-interstitial";
 import { maybeRequestInAppReview } from "../../profile/request-in-app-review";
@@ -45,8 +43,6 @@ import type {
   QuestionSessionSummary,
   QuestionUserState,
 } from "../types";
-import { recordQuestionAttemptBySourceId } from "../supabase-question-attempts";
-import { syncQuestionBookmarkState } from "../supabase-question-state";
 import { usePrefetchQuestionMedia } from "../usePrefetchQuestionMedia";
 
 import { isHomeDailySessionKey } from "../../home/home-daily-practice";
@@ -92,10 +88,6 @@ export function useQuestionTrainingSession() {
   const { mode, questionLimit, roadmapStepId, sessionKey, studyPlanTaskId, timeLimitSeconds, topic, topics } =
     routeParams;
 
-  const authMode = useAppShellStore((state) => state.authMode);
-  const currentStudyPlanRemoteId = useAppShellStore(
-    (state) => state.currentStudyPlanRemoteId
-  );
   const preferredCategory = useAppShellStore((state) => state.preferredCategory);
   const examCountry = useAppShellStore((state) => state.examCountry);
   const preferredLocale = useAppShellStore((state) => state.preferredLocale);
@@ -673,6 +665,7 @@ export function useQuestionTrainingSession() {
     }
 
     const isFirstAnswer = !currentAnswer;
+    // The current accountless app stores answers and progress on this device.
     const answeredAttempt = answerCurrentQuestion(choiceId);
 
     if (!answeredAttempt) {
@@ -727,43 +720,6 @@ export function useQuestionTrainingSession() {
         topicId: sessionTopic ?? null,
       }),
     });
-
-    if (authMode !== "supabase" || !isMobileSupabaseConfigured) {
-      return;
-    }
-
-    void recordQuestionAttemptBySourceId({
-      questionSourceId: currentQuestion.id,
-      mode: sessionMode,
-      selectedAnswer: answeredAttempt.selectedAnswer,
-      isCorrect: answeredAttempt.isCorrect,
-      locale: displayLocale,
-      studyPlanId: currentStudyPlanRemoteId,
-      answerDurationMs,
-      explanationOpened: readHasPlusAccess(),
-      aiChatUsed: false,
-      metadata: {
-        answered_at: answeredAttempt.answeredAt,
-        client_attempt_id: answeredAttempt.id,
-        client_session_id: answeredAttempt.sessionId,
-        displayed_locale: displayLocale,
-        source: "question_screen",
-        study_plan_task_id: activeSession?.request.studyPlanTaskId ?? null,
-        session_question_limit: activeSession?.request.questionLimit ?? null,
-        topic_block: currentQuestion.topicBlock,
-        primary_topic_id: currentQuestion.primaryTopicId ?? null,
-        topic_ids: currentQuestion.topicIds ?? [],
-      },
-    }).catch((error) => {
-      reportLearningOperationFailure(track, "sync_answer", error, {
-        training_session_id: answeredAttempt.sessionId, answer_id: answeredAttempt.id,
-        question_id: currentQuestion.id, user_visible: false,
-      });
-      console.warn(
-        `Failed to sync question attempt for ${currentQuestion.id}.`,
-        error
-      );
-    });
   };
 
   const handleToggleBookmark = (questionId: string) => {
@@ -775,22 +731,6 @@ export function useQuestionTrainingSession() {
       question_id: questionId,
       source: "training",
     });
-
-    if (authMode === "supabase" && isMobileSupabaseConfigured) {
-      void syncQuestionBookmarkState({
-        questionSourceId: questionId,
-        isBookmarked,
-        savedFromMode: sessionMode,
-        metadata: {
-          source: "mobile_question_screen",
-        },
-      }).catch((error) => {
-        console.warn(
-          `Failed to sync bookmark state for ${questionId}.`,
-          error
-        );
-      });
-    }
   };
 
   // Nothing answered in this sitting = miss-click: skip the confirm dialog

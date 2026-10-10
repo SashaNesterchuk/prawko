@@ -121,3 +121,9 @@ tags:
 
 - assertVisible:
     id: "screen-question"
+
+# Accountless local answer still advances the session without an account flow.
+- assertVisible:
+    id: "question-step-1-current"
+- assertNotVisible:
+    id: "question-step-0-current"

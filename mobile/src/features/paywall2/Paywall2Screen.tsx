@@ -302,13 +302,15 @@ export function Paywall2Screen({ testID }: { testID?: string }) {
     }
   };
 
-  const hasOffers = offerings.length > 0;
-  useEffect(() => {
-    if (!sdkConfigured || hasOffers) return;
-    void fetchRevenueCatOfferings(appUserId, "paywall_open").catch((error) => {
+  const hasPurchasableOffer = Boolean(selectedPackage);
+  useFocusEffect(useCallback(() => {
+    // A nonempty cache can contain only packages this country's paywall cannot sell.
+    // Retry on each opening/focus, without looping after an unavailable response.
+    if (!sdkConfigured || hasPurchasableOffer) return;
+    void fetchRevenueCatOfferings(appUserId, "paywall_open", { recoverMissingPlans: subscriptionOffer }).catch((error) => {
       console.warn("Failed to refresh RevenueCat offers on paywall2.", error);
     });
-  }, [appUserId, hasOffers, sdkConfigured]);
+  }, [appUserId, hasPurchasableOffer, sdkConfigured, subscriptionOffer]));
 
   const close = () => {
     if (router.canGoBack()) {

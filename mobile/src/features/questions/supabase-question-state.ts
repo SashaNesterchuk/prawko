@@ -4,6 +4,7 @@ import { isMobileSupabaseConfigured } from "../../config/env";
 import { getQuestionSetKey } from "../../countries/runtime";
 import { fetchAllSupabasePages } from "../../lib/fetch-all-supabase-pages";
 import { getMobileSupabaseClient } from "../../lib/supabase";
+import { getCurrentUserFromState, useAppShellStore } from "../../state/app-shell";
 import { createEmptyQuestionUserState } from "./question-engine";
 import type { QuestionUserStateMap } from "./types";
 
@@ -113,6 +114,9 @@ export async function fetchRemoteQuestionUserStateMap() {
 }
 
 export async function syncQuestionBookmarkState(input: SyncBookmarkInput) {
+  // Legacy review callers still use this helper; authMode alone does not prove login.
+  if (getCurrentUserFromState(useAppShellStore.getState())?.provider !== "supabase") return;
+
   if (!isMobileSupabaseConfigured) {
     throw new Error(
       "Mobile Supabase env is missing. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY."

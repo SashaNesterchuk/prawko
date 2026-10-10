@@ -4,6 +4,20 @@ Implemented October 7, 2026. These are client observations and offline warehouse
 diagnostics, not a change to authentication, RevenueCat identity, entitlements,
 feature rules, quotas or navigation.
 
+## Current mobile product (October 9, 2026)
+
+The shipped mobile UI has no account creation or login. `auth_mode=guest` is
+normal usage, including Premium buyers; it does not imply limited access.
+Training answers/progress/bookmarks are local. Historical sync_answer/42501
+failures record rejected legacy uploads, not proof of lost local answers.
+The training handler no longer uploads answers or bookmarks. Legacy review
+bookmark helpers skip network access without a real Supabase user.
+AppShellState.authMode selects an auth backend and stays `supabase` when signed
+out; analytics auth_mode instead derives from the actual user. Historical
+account/link observations below are retained for interpreting older data, not
+evidence of an account UI in the current app. Supabase content, RevenueCat
+purchase/restore and normal learning analytics are unaffected.
+
 ## Identity Ledger
 
 `context.identity_links` and the `identity-links` command derive a versioned

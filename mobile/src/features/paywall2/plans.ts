@@ -38,6 +38,10 @@ export function findPaywall2PlanPackage(
   );
 }
 
+export function hasSupportedPaywall2Plan(offers: RevenueCatPackageSummary[]): boolean {
+  return PAYWALL2_PLAN_ORDER.some((id) => findPaywall2PlanPackage(offers, id) !== null);
+}
+
 export type Paywall2PlanOffer = { kind: "plans"; plans: Paywall2Plan[] };
 
 /**

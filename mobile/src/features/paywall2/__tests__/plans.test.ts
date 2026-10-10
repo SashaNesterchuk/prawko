@@ -1,6 +1,6 @@
 import type { RevenueCatPackageSummary } from "../../../state/entitlements";
 import { getFreeTrialDays } from "../../entitlements/free-trial";
-import { findPaywall2PlanPackage, pickPaywall2Plan, resolvePaywall2Plans } from "../plans";
+import { findPaywall2PlanPackage, hasSupportedPaywall2Plan, pickPaywall2Plan, resolvePaywall2Plans } from "../plans";
 
 function pkg(overrides: Partial<RevenueCatPackageSummary>): RevenueCatPackageSummary {
   return {
@@ -28,6 +28,15 @@ const lifetime = pkg({ identifier: "$rc_lifetime", packageType: "LIFETIME", pric
 const annual = pkg({ identifier: "$rc_annual", packageType: "ANNUAL", subscriptionPeriod: "P1Y", priceString: "99,99 zł" });
 
 describe("paywall2 plans", () => {
+  it("requires at least one supported subscription for offer readiness", () => {
+    for (const offers of [[], [lifetime], [annual], [lifetime, annual]]) {
+      expect(hasSupportedPaywall2Plan(offers)).toBe(false);
+    }
+    for (const plan of [week, month, quarter]) {
+      expect(hasSupportedPaywall2Plan([lifetime, plan])).toBe(true);
+    }
+  });
+
   it("matches store packages by subscription period", () => {
     const offers = [lifetime, quarter, month, week];
     expect(findPaywall2PlanPackage(offers, "week")).toBe(week);

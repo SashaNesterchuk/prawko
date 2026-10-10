@@ -81,7 +81,7 @@ pnpm test:e2e:studio
 | `profile_offline_without_plus_opens_paywall.yaml` | Profile → Offline mode row → paywall (free) |
 | `paywall_activate_stays_on_paywall.yaml` | Guest Activate on paywall stays on paywall (never App access) |
 | `paywall2_renders_and_closes.yaml` | PL subscription layout (`/paywall2`): weekly/monthly/3-month plans without lifetime claims, subscription FAQ, privacy policy and terms links, unavailable checkout stays on screen, sticky bar, comparison, final CTA + restore, Close → Home |
-| `paywall_country_billing_flows.yaml` | English Home/Profile copy and `/paywall` routing: PL subscriptions, unchanged CZ/SK lifetime; billing follows country, not UI language |
+| `paywall_country_billing_flows.yaml` | English Home/Profile copy and `/paywall` routing: PL subscriptions, unchanged CZ/SK lifetime; billing follows country, not UI language; reopen in the same process preserves PL plans and CZ/SK lifetime |
 | `premium_after_ad_shows_teaser.yaml` | A dismissed ad does not open the premium bottom sheet or paywall |
 | `premium_training_result_hides_teaser.yaml` | Finished training result does not show the Premium teaser or paywall |
 | `premium_exam_result_opens_paywall.yaml` | Completed exam renders the result and then opens paywall directly |
@@ -108,7 +108,7 @@ pnpm test:e2e:studio
 | `trainer_result_work_on_mistakes.yaml` | Failed training result → Work on mistakes opens the mistakes monitor (does not freeze on the question spinner) |
 | `exam_answers_category_mismatch_switches_category.yaml` | Direct exam answer review → category mismatch → switch and load review |
 | `trainer_random_mode_starts_questions.yaml` | Trainer modes → count picker → first question |
-| `trainer_first_answer_shows_feedback.yaml` | Trainer question → first answer → feedback sheet (wrong → Зрозуміло / correct → Наступне питання); question, options and explanation scroll as one block while the CTA stays pinned; sign codes in the explanation open the sign plate popup |
+| `trainer_first_answer_shows_feedback.yaml` | Accountless local trainer → first answer → feedback → next question retains answered Q1; feedback sheet (wrong → Зрозуміло / correct → Наступне питання); question, options and explanation scroll as one block while the CTA stays pinned; sign codes in the explanation open the sign plate popup |
 | `trainer_exit_then_start_is_fresh.yaml` | Answer → finish training → start again → first unanswered question (not resumed) |
 | `trainer_exit_stays_tappable.yaml` | Answer → Finish (free) → Home stays tappable |
 | `trainer_empty_close_then_start_is_fresh.yaml` | Close unanswered trainer → start again at question 1 |

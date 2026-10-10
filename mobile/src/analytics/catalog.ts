@@ -70,7 +70,7 @@ export const ANALYTICS_EVENTS = {
   },
   notificationScheduleResolved: {
     key: "notification_schedule_resolved",
-    description: "A reminder schedule operation returned enabled/disabled/failed/permission_denied. Not proof the OS delivered it.",
+    description: "A reminder schedule operation returned enabled/disabled/failed/permission_denied. Idle sync of an already-disabled empty schedule is silent. Not proof the OS delivered it.",
   },
   accessStateChanged: {
     key: "access_state_changed",
@@ -659,7 +659,7 @@ export const ANALYTICS_EVENTS = {
   adSkipped: {
     key: "ad_skipped",
     description:
-      "An interstitial did not show. Includes after, should_show, step, why, detail for every skip including trigger_not_ready.",
+      "An interstitial did not show. Includes after, should_show, step, why, detail, including trigger_not_ready. Expected disabled-placement skips are silent.",
   },
   adFailed: {
     key: "ad_failed",
@@ -730,7 +730,7 @@ export const ANALYTICS_EVENTS = {
   },
   appReviewSkipped: {
     key: "app_review_skipped",
-    description: "An eligible review prompt was skipped by policy or the store API.",
+    description: "An eligible review prompt was skipped by policy or the store API. Already-prompted skips are silent.",
   },
   appReviewFailed: {
     key: "app_review_failed",

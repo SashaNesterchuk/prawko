@@ -22,6 +22,7 @@
 | [prawko-posthog-dump-2026-09-30-2026-10-01.json](./prawko-posthog-dump-2026-09-30-2026-10-01.json) | Сырой дамп PostHog за 30 сентября и 1 октября (~41 MB, в git не коммитится). 1 октября оборван на момент выгрузки |
 | [prawko-posthog-dump-2026-10-03.json](./prawko-posthog-dump-2026-10-03.json) | Сырой дамп PostHog за 3 октября (~20 MB, в git не коммитится) |
 | [prawko-posthog-dump-2026-10-07-2026-10-08.json](./prawko-posthog-dump-2026-10-07-2026-10-08.json) | Сырой дамп PostHog за 7–8 октября (~63 MB, в git не коммитится). 8 октября неполное |
+| [prawko-posthog-dump-2026-10-09.json](./prawko-posthog-dump-2026-10-09.json) | Сырой дамп PostHog за 9 октября (~33 MB, в git не коммитится). День неполный |
 | [apple/2026-09-12-2026-09-20.md](./apple/2026-09-12-2026-09-20.md) | Apple Search Ads за то же окно (кампании, ключи, сверка с инсталлами) |
 
 PostHog EU, проект `249243`. JSON-дампы в этой папке в `.gitignore`.

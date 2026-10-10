@@ -186,10 +186,22 @@ describe("show-interstitial", () => {
         })
       ).resolves.toBe(false);
 
-      expect(track).toHaveBeenCalledWith(
-        "ad_skipped",
-        expect.objectContaining({ reason: "disabled" })
-      );
+      expect(track).not.toHaveBeenCalled();
+      expect(mockEnsureInterstitialReady).not.toHaveBeenCalled();
+      expect(mockShowPreloadedInterstitial).not.toHaveBeenCalled();
+    });
+
+    it("silently skips disabled policy decisions on repeated answers", async () => {
+      mockShouldShow.mockReturnValue({ allowed: false, reason: "disabled" });
+      const captureError = jest.fn();
+      for (let i = 0; i < 3; i++) {
+        await expect(showInterstitialIfAllowed({
+          hasPlusAccess: false, track, captureError, trigger: "after_question_answer",
+        })).resolves.toBe(false);
+      }
+      expect(track).not.toHaveBeenCalled();
+      expect(captureError).not.toHaveBeenCalled();
+      expect(mockShowPreloadedInterstitial).not.toHaveBeenCalled();
     });
 
     it("does not wait for load when waitForLoad is false", async () => {
@@ -323,6 +335,19 @@ describe("show-interstitial", () => {
   });
 
   describe("showInterstitialForUnlockGate", () => {
+    it.each(["feature_flag", "sdk_config"])("silently skips disabled ads (%s)", async (disabledBy) => {
+      if (disabledBy === "feature_flag") featureFlags.enableAds = false;
+      else mockIsAdMobEnabled.mockReturnValue(false);
+      const captureError = jest.fn();
+      await expect(showInterstitialForUnlockGate({
+        hasPlusAccess: false, track, captureError,
+      })).resolves.toBe(false);
+      expect(track).not.toHaveBeenCalled();
+      expect(captureError).not.toHaveBeenCalled();
+      expect(mockEnsureInterstitialReady).not.toHaveBeenCalled();
+      expect(mockShowPreloadedInterstitial).not.toHaveBeenCalled();
+    });
+
     it("skips plus users and disabled ads without showing", async () => {
       await expect(
         showInterstitialForUnlockGate({

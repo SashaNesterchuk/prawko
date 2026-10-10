@@ -11,6 +11,7 @@ import { PAYWALL_RESULT } from "react-native-purchases-ui";
 import { markRevenueCatAdServicesCollectionStarted } from "../../analytics/adservices-token-schedule";
 import { mobileEnv } from "../../config/env";
 import { getFreeTrialDays } from "./free-trial";
+import { hasSupportedPaywall2Plan } from "../paywall2/plans";
 import { observeTrialEligibility, type TrialEligibilityObserver, type ResolvedTrialEligibilityProduct } from "./trial-eligibility-observation";
 import { createAppUserId } from "../../identity/app-user-id";
 import {
@@ -101,7 +102,7 @@ let revenueCatAdServicesEnabled = false;
 let revenueCatModulePromise: Promise<RevenueCatModule> | null = null;
 let revenueCatUIModulePromise: Promise<RevenueCatUIModule> | null = null;
 let customerInfoListener: CustomerInfoUpdateListener | null = null;
-let offeringsRequest: { id: string; appUserId: string; promise: Promise<PurchasesOfferings> } | null = null;
+let offeringsRequest: { id: string; appUserId: string; recoverMissingPlans: boolean; promise: Promise<PurchasesOfferings> } | null = null;
 
 export function isRevenueCatConfiguredForCurrentPlatform() {
   return Boolean(getRevenueCatPublicApiKey());
@@ -119,7 +120,7 @@ export function hasProEntitlement(customerInfo: CustomerInfo) {
 
 export async function fetchRevenueCatSnapshot(
   appUserId: string,
-  options: { forceRefresh?: boolean } = {}
+  options: { forceRefresh?: boolean; recoverMissingPlans?: boolean } = {}
 ): Promise<RevenueCatSnapshot> {
   const isConfigured = await ensureRevenueCatReady(appUserId);
 
@@ -136,7 +137,7 @@ export async function fetchRevenueCatSnapshot(
     STORE_REQUEST_TIMEOUT_MS,
     STORE_CUSTOMER_INFO_TIMEOUT_MESSAGE
   );
-  const { offerings, offeringsError, offeringsDiagnostic } = await loadOfferingsSafely(appUserId);
+  const { offerings, offeringsError, offeringsDiagnostic } = await loadOfferingsSafely(appUserId, options.recoverMissingPlans);
 
   return {
     ...mapRevenueCatSnapshot({
@@ -152,9 +153,10 @@ export async function fetchRevenueCatSnapshot(
 /** Offer readiness must not wait for a CustomerInfo request. */
 export async function fetchRevenueCatOfferings(
   appUserId: string,
-  source: "paywall_open" | "paywall_retry"
+  source: "paywall_open" | "paywall_retry",
+  options: { recoverMissingPlans?: boolean } = {}
 ) {
-  return mapOfferings(await requestRevenueCatOfferings(appUserId, source));
+  return mapOfferings(await requestRevenueCatOfferings(appUserId, source, options.recoverMissingPlans));
 }
 
 /** Access reconciliation must not depend on another offerings request. */
@@ -614,9 +616,12 @@ async function buildSnapshotFromCustomerInfo(customerInfo: CustomerInfo) {
   };
 }
 
-function requestRevenueCatOfferings(appUserId: string, source: string): Promise<PurchasesOfferings> {
+function requestRevenueCatOfferings(appUserId: string, source: string, recoverMissingPlans = false): Promise<PurchasesOfferings> {
   if (offeringsRequest?.appUserId === appUserId &&
-    useEntitlementStore.getState().revenueCatOfferingsLoad?.id === offeringsRequest.id) return offeringsRequest.promise;
+    useEntitlementStore.getState().revenueCatOfferingsLoad?.id === offeringsRequest.id) {
+    offeringsRequest.recoverMissingPlans ||= recoverMissingPlans;
+    return offeringsRequest.promise;
+  }
   const id = createAppUserId().replace(/^usr_/, "");
   useEntitlementStore.getState().beginRevenueCatOfferingsLoad({
     id, source, status: "loading", startedAt: Date.now(), completedAt: null,
@@ -629,7 +634,16 @@ function requestRevenueCatOfferings(appUserId: string, source: string): Promise<
       }
       const Purchases = (await getRevenueCatModule()).default;
       const offerings = await withStoreRequestTimeout(
-        Purchases.getOfferings(), STORE_REQUEST_TIMEOUT_MS, STORE_OFFERS_TIMEOUT_MESSAGE
+        (async () => {
+          const cached = await Purchases.getOfferings();
+          const needsPlans = recoverMissingPlans ||
+            (offeringsRequest?.id === id && offeringsRequest.recoverMissingPlans);
+          if (!needsPlans || hasSupportedPaywall2Plan(mapOfferings(cached))) return cached;
+          // getOfferings can return the SDK cache while refreshing in the background.
+          // This public SDK method waits for fresh offerings (subject to SDK rate limits).
+          // Recover once per load, only for a missing PL subscription; no polling.
+          return Purchases.syncAttributesAndOfferingsIfNeeded();
+        })(), STORE_REQUEST_TIMEOUT_MS, STORE_OFFERS_TIMEOUT_MESSAGE
       );
       useEntitlementStore.getState().finishRevenueCatOfferingsLoad({ id, offerings: mapOfferings(offerings) });
       return offerings;
@@ -643,13 +657,13 @@ function requestRevenueCatOfferings(appUserId: string, source: string): Promise<
       if (offeringsRequest?.id === id) offeringsRequest = null;
     }
   })();
-  offeringsRequest = { id, appUserId, promise };
+  offeringsRequest = { id, appUserId, recoverMissingPlans, promise };
   return promise;
 }
 
-async function loadOfferingsSafely(appUserId: string) {
+async function loadOfferingsSafely(appUserId: string, recoverMissingPlans = false) {
   try {
-    const offerings = await requestRevenueCatOfferings(appUserId, "hydration");
+    const offerings = await requestRevenueCatOfferings(appUserId, "hydration", recoverMissingPlans);
 
     return { offerings, offeringsError: null, offeringsDiagnostic: undefined };
   } catch (error) {

@@ -164,6 +164,29 @@ describe("notification schedule analytics producer", () => {
     expect(observation()).not.toHaveProperty("error_code");
   });
 
+  it.each([granted, denied])("silently checks an already-disabled empty schedule (%j)", async (permission) => {
+    jest.mocked(Notifications.getPermissionsAsync).mockResolvedValue(permission as never);
+    for (let i = 0; i < 3; i++) {
+      await expect(syncNotificationStateAsync()).resolves.toBe(false);
+    }
+    expect(Notifications.getPermissionsAsync).toHaveBeenCalledTimes(3);
+    expect(Notifications.requestPermissionsAsync).not.toHaveBeenCalled();
+    expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
+    expect(mockCapture).not.toHaveBeenCalled();
+  });
+
+  it("still observes an explicit disable when the schedule is already off", async () => {
+    await expect(disableStudyNotificationsAsync()).resolves.toBeUndefined();
+    expect(observation()).toMatchObject({ operation: "disable", outcome: "disabled", enabled: false });
+  });
+
+  it("still observes a failed check when the schedule was already disabled", async () => {
+    const error = { code: "permission_read_failed" };
+    jest.mocked(Notifications.getPermissionsAsync).mockRejectedValue(error);
+    await expect(syncNotificationStateAsync()).rejects.toBe(error);
+    expect(observation()).toMatchObject({ operation: "sync", outcome: "failed", error_code: "permission_read_failed" });
+  });
+
   it("does not claim a permission-denied enable flow when sync returns disabled", async () => {
     mockStore.isScheduleNotificationEnabled = true;
     mockStore.scheduledNotificationIds = ["old-1"];

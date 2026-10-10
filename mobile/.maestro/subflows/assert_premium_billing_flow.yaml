@@ -88,3 +88,44 @@ appId: com.mindjar.prawko
       id: "${EXPECTED_PAYWALL_ELEMENT}"
     direction: DOWN
     timeout: 15000
+
+# Reopen in the same process: refresh must preserve the country's billing model.
+- runFlow:
+    when:
+      true: ${SUBSCRIPTION_FLOW == "true"}
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "paywall2-close"
+          direction: UP
+          timeout: 15000
+      - tapOn:
+          id: "paywall2-close"
+- runFlow:
+    when:
+      true: ${SUBSCRIPTION_FLOW == "false"}
+    commands:
+      - tapOn: "Close"
+- extendedWaitUntil:
+    visible:
+      id: "screen-profile"
+    timeout: 15000
+- tapOn:
+    id: "profile-premium-banner"
+- extendedWaitUntil:
+    visible:
+      id: "screen-paywall"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "${EXPECTED_PAYWALL_ELEMENT}"
+    direction: DOWN
+    timeout: 15000
+- runFlow:
+    when:
+      true: ${SUBSCRIPTION_FLOW == "false"}
+    commands:
+      - assertNotVisible:
+          id: "paywall2-offer"
+      - assertNotVisible:
+          id: "paywall2-plan-month"

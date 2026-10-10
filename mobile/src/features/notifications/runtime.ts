@@ -213,13 +213,21 @@ async function syncNotificationStateImpl() {
 async function observeSchedule<T>(operation: NotificationSchedulePayload["operation"], run: () => Promise<T>): Promise<T> {
   const operationId = createAnalyticsId("notification_schedule");
   const startedAt = analyticsMonotonicNow();
+  const previousState = useAppShellStore.getState();
+  const wasEnabled = previousState.isScheduleNotificationEnabled;
+  const hadScheduledNotifications = previousState.scheduledNotificationIds.length > 0;
   const record = (outcome: NotificationSchedulePayload["outcome"], error?: unknown) => {
     try {
+      const state = useAppShellStore.getState();
+      // Keep user actions, failures and enabled-to-disabled transitions observable.
+      if (operation === "sync" && outcome === "disabled" && !wasEnabled &&
+        !hadScheduledNotifications && state.scheduledNotificationIds.length === 0) return;
+
       analyticsActivity.capture(ANALYTICS_EVENTS.notificationScheduleResolved.key, {
         operation_id: operationId, operation, outcome, reminder_kind: "study_daily",
         request_duration_ms: Math.round(analyticsMonotonicNow() - startedAt),
-        scheduled_count: useAppShellStore.getState().scheduledNotificationIds.length,
-        enabled: useAppShellStore.getState().isScheduleNotificationEnabled,
+        scheduled_count: state.scheduledNotificationIds.length,
+        enabled: state.isScheduleNotificationEnabled,
         confirmation_scope: "helper_result_not_delivery",
         ...(error ? { error_code: getAnalyticsErrorCode(error) } : {}),
       });

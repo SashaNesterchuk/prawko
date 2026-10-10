@@ -23,12 +23,15 @@ import { useAnalytics } from "../hooks/useAnalytics";
 import { useAppUserId } from "../identity/AppIdentityProvider";
 import { useHasHydrated, useAppShellStore } from "../state/app-shell";
 import { useEntitlementStore } from "../state/entitlements";
+import { useCountryConfig } from "../countries/use-country";
+import { hasSupportedPaywall2Plan } from "../features/paywall2/plans";
 import { useErrorLogger } from "./ErrorLoggingProvider";
 
 const REVENUECAT_HYDRATION_RETRY_MS = 2_000;
 
 export function RevenueCatProvider({ children }: PropsWithChildren) {
   const appUserId = useAppUserId();
+  const { paywallOffer } = useCountryConfig();
   const appShellHydrated = useHasHydrated();
   const { captureError } = useErrorLogger();
   const { track } = useAnalytics();
@@ -105,7 +108,11 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
 
       const current = useEntitlementStore.getState();
 
-      if (kind === "retry" && current.revenueCatOfferings.length > 0) {
+      // Preserve lifetime-market refresh behavior; PL needs a supported subscription.
+      const hasOffers = paywallOffer === "plans"
+        ? hasSupportedPaywall2Plan(current.revenueCatOfferings)
+        : current.revenueCatOfferings.length > 0;
+      if (kind === "retry" && hasOffers) {
         return;
       }
 
@@ -116,10 +123,13 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
       }
 
       try {
-        const accessOnly = kind === "foreground" && current.revenueCatOfferings.length > 0;
+        const accessOnly = kind === "foreground" && hasOffers;
         const snapshot = accessOnly
           ? await fetchRevenueCatAccessSnapshot(appUserId, { forceRefresh: true })
-          : await fetchRevenueCatSnapshot(appUserId, { forceRefresh: kind === "foreground" });
+          : await fetchRevenueCatSnapshot(appUserId, {
+              forceRefresh: kind === "foreground",
+              recoverMissingPlans: paywallOffer === "plans",
+            });
 
         if (cancelled) {
           return;
@@ -139,12 +149,11 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
             why: snapshot.offeringsError,
             extra: snapshot.offeringsDiagnostic,
           });
-
-          if (kind === "initial") {
-            retryTimer = setTimeout(() => {
-              void hydrate("retry");
-            }, REVENUECAT_HYDRATION_RETRY_MS);
-          }
+        }
+        if (kind === "initial" && snapshot.offeringsError) {
+          retryTimer = setTimeout(() => {
+            void hydrate("retry");
+          }, REVENUECAT_HYDRATION_RETRY_MS);
         }
       } catch (error) {
         if (cancelled) {
@@ -286,6 +295,7 @@ export function RevenueCatProvider({ children }: PropsWithChildren) {
     hydrateRevenueCatSnapshot,
     markRevenueCatHydrationFailed,
     sessionResolved,
+    paywallOffer,
   ]);
 
   useEffect(() => {

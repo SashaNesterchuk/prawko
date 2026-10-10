@@ -466,7 +466,7 @@ Restore неопределённой покупки сохраняет исхо�
 | `ad_requested` | Вошли в request path; для rewarded это opportunity, не доказательство вызова SDK load |
 | `ad_shown` | Наблюдали SDK OPENED; не отдельный impression callback |
 | `ad_dismissed` | Закрыли. `why` = native close reason |
-| `ad_skipped` | Не показали. Каждый вызов, включая `trigger_not_ready` |
+| `ad_skipped` | Не показали, включая `trigger_not_ready`. Ожидаемый пропуск отключённой рекламы (`disabled`, `should_show=no`) больше не отправляется |
 | `ad_failed` | Existing failed outcome; rewarded `disabled` / missing unit отдельно от SDK failure |
 | `ad_impression_revenue` | Client SDK PAID value. Валюты отдельно, scoped дубли убрать, конфликты карантинировать; не settled money и не verified AdMob LTV |
 | `ad_native_request_started` | Rewarded SDK load invocation, с request/instance ID; не loaded ad |
@@ -602,7 +602,7 @@ verified revenue или ROAS; financial app-scope mapping ещё не подкл
 
 `notification_opened` — наблюдали ответ ОС, `notification_response_id`, notification ID/action и `reminder_kind=study_daily/unknown`. `cached_response=true`, `entry_attributed=false`, `attribution_confidence=cached_os_response` означает сохранённый last response **без времени тапа**: он может относиться к старому запуску. Источник текущего визита из него не назначается. Только live OS response даёт `entry_reason=notification`, `entry_attributed=true`, `live_os_response`; повторный live ответ на уже записанный cached ID всё равно может дать entry resolution. Analytics-only local dedupe хранит последние 50 response IDs; это не durable delivery outbox.
 
-`notification_schedule_resolved` наблюдает результаты существующих enable/disable/sync helpers: operation ID/name, enabled/disabled/permission_denied/failed, request duration, scheduled count. `confirmation_scope=helper_result_not_delivery`: это не OS delivery, не push receipt и не гарантированная отмена всех нотификаций. Часы, тексты, permission policy и routing не меняются; добавлена только reminder-kind metadata.
+`notification_schedule_resolved` наблюдает результаты существующих enable/disable/sync helpers (обычная sync-проверка уже выключенного пустого расписания не отправляется; переход enabled → disabled, ошибки, stale IDs и явные действия пользователя сохраняются): operation ID/name, enabled/disabled/permission_denied/failed, request duration, scheduled count. `confirmation_scope=helper_result_not_delivery`: это не OS delivery, не push receipt и не гарантированная отмена всех нотификаций. Часы, тексты, permission policy и routing не меняются; добавлена только reminder-kind metadata.
 
 Частые `event_name`: `question_media_preview_failed`, `revenuecat_hydration_failed`, `ad_not_shown`, `ad_failed`.
 
@@ -938,3 +938,7 @@ Legacy client coverage без явного `application_ids` не доказыв
 использование; malformed coverage ограничивает fractions, не падает.
 Это не current paid access, revoked access, churn, proceeds или causal lift.
 Паспорт и оставшаяся приёмка: [billing-learning.md](./billing-learning.md).
+
+### Подавление ожидаемого диагностического шума
+
+В текущем коде не отправляются `ad_skipped` для ожидаемого `disabled/should_show=no`, `app_review_skipped/already_prompted` и `notification_schedule_resolved/sync/disabled`, если до проверки напоминания были выключены и до/после неё нет локальных scheduled IDs. Решения рекламы/оценки и сама проверка напоминаний не меняются. Ошибки, остальные причины пропуска, явные enable/disable и переход включённых напоминаний в выключенное состояние сохраняются. Исторические события этих причин остаются валидной диагностикой старых сборок; отсутствие события в новых сборках не доказывает включённую рекламу/напоминания.

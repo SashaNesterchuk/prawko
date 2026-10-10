@@ -147,6 +147,9 @@ function trackAdSkipped(
   step: AdDecisionStep,
   shouldShow: boolean
 ) {
+  // Disabled placements are expected no-ops, not observed ad opportunities.
+  if (!shouldShow && reason === "disabled") return;
+
   const properties = buildAdEventProperties(input, {
     shouldShow,
     step,
