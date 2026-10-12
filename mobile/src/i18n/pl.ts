@@ -1353,6 +1353,8 @@ export const polishTranslations = {
     weakSpotsBody: "Znaleźliśmy {{count}} obszary, które wymagają poprawy.",
     weakSpotsCta: "Zobacz analizę",
     premiumBadge: "Premium",
+    explanationPremiumTitle: "Wyjaśnienia Premium",
+    explanationPremiumPreview: "Teraz bezpłatnie · wkrótce w Premium",
     paywallHeadline: "Prawko Premium",
     paywallSubhead: "Pełne przygotowanie do egzaminu bez ograniczeń",
     paywallOnce: "jednorazowo",

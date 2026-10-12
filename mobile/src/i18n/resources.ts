@@ -1,3 +1,4 @@
+import { focusedLearningCopy } from "./focused-learning-copy";
 import { czechTranslations } from "./cs";
 import { monetizationV2Ua } from "./monetization-v2-copy";
 import { paywall2En, paywall2Ua } from "./paywall2-copy";
@@ -2819,6 +2820,8 @@ const resourcesBase = {
         weakSpotsBody: "We found {{count}} areas that need work.",
         weakSpotsCta: "See the analysis",
         premiumBadge: "Premium",
+        explanationPremiumTitle: "Premium explanations",
+        explanationPremiumPreview: "Free for now · later in Premium",
         paywallHeadline: "Prawko Premium",
         paywallSubhead: "Full exam preparation without limits",
         paywallOnce: "one time",
@@ -2864,7 +2867,7 @@ const sharedLanguageOptions = {
   },
 } as const;
 
-export const resources = {
+const resourcesWithoutFocusedLearning = {
   ...resourcesBase,
   cs: {
     translation: czechTranslations,
@@ -2875,6 +2878,11 @@ export const resources = {
   de: {
     translation: {
       ...enTranslation,
+      monetizationV2: {
+        ...enTranslation.monetizationV2,
+        explanationPremiumTitle: "Premium-Erklärungen",
+        explanationPremiumPreview: "Jetzt kostenlos · später in Premium",
+      },
       languages: {
         ...sharedLanguageOptions,
         de: {
@@ -2911,6 +2919,11 @@ export const resources = {
   es: {
     translation: {
       ...enTranslation,
+      monetizationV2: {
+        ...enTranslation.monetizationV2,
+        explanationPremiumTitle: "Explicaciones Premium",
+        explanationPremiumPreview: "Gratis por ahora · más adelante en Premium",
+      },
       languages: {
         ...sharedLanguageOptions,
         de: {
@@ -2945,3 +2958,19 @@ export const resources = {
     },
   },
 };
+
+type FocusedResources = {
+  [Locale in keyof typeof resourcesWithoutFocusedLearning]: {
+    translation: (typeof resourcesWithoutFocusedLearning)[Locale]["translation"] & {
+      focusedLearning: typeof focusedLearningCopy.en;
+    };
+  };
+};
+export const resources = Object.fromEntries(
+  Object.entries(resourcesWithoutFocusedLearning).map(([locale, resource]) => [locale, {
+    translation: {
+      ...resource.translation,
+      focusedLearning: focusedLearningCopy[locale as keyof typeof focusedLearningCopy] ?? focusedLearningCopy.en,
+    },
+  }])
+) as FocusedResources;

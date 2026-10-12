@@ -3,6 +3,7 @@ import { PostHogProvider, usePostHog } from "posthog-react-native";
 
 import { ANALYTICS_EVENTS, ANALYTICS_PROPERTIES, sanitizeSdkAnalyticsValue } from "../analytics/catalog";
 import type { AccessSource } from "../analytics/activity-payloads";
+import { RoadmapAnalyticsObserver } from "../analytics/RoadmapAnalyticsObserver";
 import { AnalyticsLifecycleObserver } from "../analytics/AnalyticsLifecycleObserver";
 import { AppleSearchAdsObserver } from "../analytics/AppleSearchAdsObserver";
 import { ContentAnalyticsObserver } from "../analytics/ContentAnalyticsObserver";
@@ -61,6 +62,7 @@ export function AnalyticsProvider({ children }: PropsWithChildren) {
       <AnalyticsLifecycleObserver />
       <AppleSearchAdsObserver />
       <ContentAnalyticsObserver />
+      <RoadmapAnalyticsObserver />
       <InstallAnalyticsObserver />
       <AccessAnalyticsObserver />
       {children}

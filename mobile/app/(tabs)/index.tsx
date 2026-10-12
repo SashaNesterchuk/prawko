@@ -1,7 +1,13 @@
+import { useQuestionProgressHydrated, useQuestionProgressStore } from "../../src/state/question-progress";
+import { useSignPracticeProgressStore } from "../../src/state/sign-practice-progress";
+import { getQuestionById, getRoadmapPoolRevision } from "../../src/features/questions/question-engine";
+import { FirstStepNudge } from "../../src/features/home/FirstStepNudge";
+import { LessonProgressRing } from "../../src/features/home/LessonProgressRing";
+import { useQuestionCatalogResolved, useQuestionCatalogVersion } from "../../src/state/question-catalog";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,7 +15,8 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Icon } from "../../src/components/icons";
 import { GreenWaveScreen } from "../../src/components/shell/GreenWaveScreen";
 import { ExamReadinessCard } from "../../src/components/shell/ExamReadinessCard";
-import { useReadinessCard } from "../../src/features/home/ReadinessIndexBlock";
+import { getPreparationProgress } from "../../src/features/home/preparation-progress";
+import { useShowPremiumMark } from "../../src/features/monetization/v2/store";
 import {
   getRoadmap,
   type RoadmapSection,
@@ -17,8 +24,13 @@ import {
 } from "../../src/features/home/roadmap";
 import {
   resolveRoadmapStepVisuals,
+  hasRoadmapLearningProgress,
   roadmapStepId,
+  roadmapLessonKey,
+  roadmapLessonCoverage,
+  roadmapSectionCorrectPercent,
   useRoadmapProgressStore,
+  type RoadmapLesson,
   type RoadmapStepVisual,
 } from "../../src/features/home/roadmap-progress";
 import { getExamProfileForCountry } from "../../src/features/exam/exam-profile";
@@ -50,6 +62,17 @@ type StepState = RoadmapStepVisual;
 
 const STEPS_PER_ROW = 3;
 
+function currentLessonCoverage(lesson: RoadmapLesson | undefined) {
+  const current =
+    lesson != null &&
+    lesson.questionIds.every((id) => getQuestionById(id)) &&
+    lesson.revision === getRoadmapPoolRevision(lesson.questionIds);
+
+  return current
+    ? roadmapLessonCoverage(lesson)
+    : { correctPercent: 0, wrongPercent: 0 };
+}
+
 const PERK_KEYS = [
   { icon: "chart" as const, labelKey: "roadmap.perkTopics" },
   { icon: "like" as const, labelKey: "roadmap.perkPrice" },
@@ -62,19 +85,49 @@ export default function RoadmapScreen() {
     (state) => state.setDebugPlusOverride
   );
   const sections = getRoadmap(examCountry);
-  const readiness = useReadinessCard();
+  const { t } = useTranslation();
+  const { track } = useAnalytics();
+  const showPremiumMark = useShowPremiumMark();
+  const progressHydrated = useQuestionProgressHydrated();
+  const catalogResolved = useQuestionCatalogResolved();
+  const userStates = useQuestionProgressStore((s) => s.questionUserState);
+  const category = useAppShellStore((s) => s.preferredCategory);
   const completedStepIds = useRoadmapProgressStore(
     (state) => state.completedStepIds
   );
+  const lessons = useRoadmapProgressStore((state) => state.lessons);
+  const catalogVersion = useQuestionCatalogVersion();
+  const context = `${examCountry}:${category}`;
+  const catalogContext = useRef({ context, version: catalogVersion, awaitingVersion: false });
+  if (catalogContext.current.context !== context) {
+    catalogContext.current = { context, version: catalogVersion, awaitingVersion: catalogContext.current.version === catalogVersion };
+  }
+  if (catalogContext.current.version !== catalogVersion) {
+    catalogContext.current.awaitingVersion = false;
+    catalogContext.current.version = catalogVersion;
+  }
+  const progressLoading = !progressHydrated || !catalogResolved || catalogContext.current.awaitingVersion;
+  const preparation = useMemo(() => getPreparationProgress(userStates), [userStates, catalogVersion, context]);
+  const hasHistoricalAnswers = useQuestionProgressStore((state) => state.attempts.length > 0 || Object.values(state.questionUserState).some((q) => q.timesSeen > 0));
+  useEffect(() => { if (hasHistoricalAnswers || completedStepIds.length > 0) useRoadmapProgressStore.getState().markStarted(); }, [hasHistoricalAnswers, completedStepIds]);
+  const verifiedCompletedIds = useMemo(() => {
+    if (!hasRoadmapLearningProgress(examCountry)) return completedStepIds;
+    return sections.flatMap((section, sectionIndex) => section.steps.flatMap((step, stepIndex) => {
+      const id = roadmapStepId(examCountry, sectionIndex, stepIndex);
+      if (step.startsExam) return completedStepIds.includes(id) ? [id] : [];
+      const lesson = lessons[roadmapLessonKey(examCountry!, category, id)];
+      return Math.floor(currentLessonCoverage(lesson).correctPercent) === 100 ? [id] : [];
+    }));
+  }, [category, catalogVersion, completedStepIds, examCountry, lessons, sections]);
   const roadmapProgress = useMemo(
     () =>
       resolveRoadmapStepVisuals(
         examCountry,
         sections,
-        completedStepIds,
+        verifiedCompletedIds,
         hasPlusAccess
       ),
-    [completedStepIds, examCountry, hasPlusAccess, sections]
+    [verifiedCompletedIds, examCountry, hasPlusAccess, sections]
   );
   const { bottom: safeBottom } = useSafeAreaInsets();
   const styles = useStyles({ safeBottom });
@@ -89,27 +142,34 @@ export default function RoadmapScreen() {
           style={styles.scroll}
         >
           <ExamReadinessCard
-            coveredLabel={`${roadmapProgress.completedCount} / ${roadmapProgress.totalCount}`}
-            detailsLabel={readiness.t("dash.readinessDetails", {
-              defaultValue: "Пройти тест",
-            })}
-            empty={readiness.isReadinessEmpty}
-            loading={readiness.isReadinessLoading}
+            title={t("focusedLearning.preparationTitle")}
+            progress={preparation.percent}
+            correctPercent={preparation.correctPercent}
+            wrongPercent={preparation.wrongPercent}
+            correctLabel={t("focusedLearning.correct", { count: preparation.correct })}
+            mistakesLabel={t("focusedLearning.mistakes", { count: preparation.wrong })}
+            loading={progressLoading}
+            testID="home-exam-readiness"
             onPress={() => {
-              if (readiness.isReadinessEmpty) {
-                readiness.startFirstSession("card");
-                return;
-              }
-
+              track(ANALYTICS_EVENTS.homePreparationActionSelected.key, {
+                source: "home_preparation", action: "statistics", destination: "statistics",
+                question_total: preparation.total, correct_count: preparation.correct,
+                wrong_count: preparation.wrong, progress_percent: preparation.percent,
+              });
               router.navigate("/statistics");
             }}
-            progress={readiness.readinessPercent}
-            testID="home-exam-readiness"
-            title={readiness.t("dash.examReadinessTitle", {
-              defaultValue: "Готовність до іспиту",
-            })}
-            weekChangeLabel={readiness.readinessWeekChangeLabel}
-            weekChangePercent={readiness.readinessWeekChangePercent}
+            onMistakesPress={preparation.wrong > 0 ? () => {
+              track(ANALYTICS_EVENTS.homePreparationActionSelected.key, {
+                source: "home_preparation", action: "mistakes", destination: showPremiumMark ? "paywall" : "mistakes",
+                question_total: preparation.total, correct_count: preparation.correct,
+                wrong_count: preparation.wrong, progress_percent: preparation.percent,
+              });
+              if (showPremiumMark) {
+                openTrackedPaywall(track, { source: "wrong_answers" });
+                return;
+              }
+              router.navigate("/mistakes");
+            } : undefined}
           />
           {sections.map((section, sectionIndex) => (
             <SectionCard
@@ -168,7 +228,20 @@ function SectionCard({
   const { accents } = useTheme();
   const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles({ safeBottom: 0 });
-  const done = visuals.filter((visual) => visual === "completed").length;
+  const examCountry = useAppShellStore((state) => state.examCountry);
+  const category = useAppShellStore((state) => state.preferredCategory);
+  const lessons = useRoadmapProgressStore((state) => state.lessons);
+  const correctPercent = roadmapSectionCorrectPercent(section.steps, (stepIndex) => {
+    const lesson =
+      lessons[
+        roadmapLessonKey(
+          examCountry ?? "PL",
+          category,
+          roadmapStepId(examCountry, sectionIndex, stepIndex)
+        )
+      ];
+    return currentLessonCoverage(lesson).correctPercent;
+  });
 
   return (
     <View style={styles.card}>
@@ -183,8 +256,11 @@ function SectionCard({
         <CText style={styles.sectionTitle}>
           {`${sectionIndex + 1}. ${t(section.titleKey)}`}
         </CText>
-        <CText style={styles.progress}>
-          {done}/{section.steps.length}
+        <CText
+          style={styles.progress}
+          testID={`roadmap-section-progress-${sectionIndex}`}
+        >
+          {`${correctPercent}%`}
         </CText>
         <Icon
           color="#8FA099"
@@ -226,6 +302,13 @@ function StepRows({
   const examCountry = useAppShellStore((state) => state.examCountry);
   const styles = useStyles({ safeBottom: 0 });
   const rows: RoadmapStep[][] = [];
+  const category = useAppShellStore((state) => state.preferredCategory);
+  const lessons = useRoadmapProgressStore((state) => state.lessons);
+  const started = useRoadmapProgressStore((state) => state.hasStartedLearning);
+  const hydrated = useRoadmapProgressStore((state) => state.hasHydrated);
+  const historicalAttempts = useQuestionProgressStore((state) => state.attempts.length);
+  const historicalProgress = useQuestionProgressStore((state) => Object.keys(state.questionUserState).some((id) => state.questionUserState[id].timesCorrect + state.questionUserState[id].timesWrong > 0));
+  const historicalSigns = useSignPracticeProgressStore((state) => Object.values(state.records).some((record) => record.attempts > 0));
 
   for (let index = 0; index < steps.length; index += STEPS_PER_ROW) {
     rows.push(steps.slice(index, index + STEPS_PER_ROW));
@@ -257,9 +340,16 @@ function StepRows({
               (state === "premium" && premiumUnlocked);
 
             const label = t(step.labelKey);
+            const lesson = lessons[roadmapLessonKey(examCountry ?? "PL", category, roadmapStepId(examCountry, sectionIndex, stepIndex))];
+            const coverage = currentLessonCoverage(lesson);
+            const percent = coverage.correctPercent;
+            const showRing = hasRoadmapLearningProgress(examCountry) && !step.startsExam && !premiumLocked;
+            const nudge = hasRoadmapLearningProgress(examCountry) && sectionIndex === 0 && stepIndex === 0 && hydrated && !started && !historicalAttempts && !historicalProgress && !historicalSigns && useRoadmapProgressStore.getState().completedStepIds.length === 0;
             const bubble = (
               <>
-                <StepBubble index={stepIndex + 1} state={state} />
+                {nudge ? <FirstStepNudge enabled>
+                  <StepBubble index={stepIndex + 1} state={state} percent={showRing ? percent : undefined} wrongPercent={showRing ? coverage.wrongPercent : 0} testID={`roadmap-progress-${sectionIndex}-${stepIndex}`} />
+                </FirstStepNudge> : <StepBubble index={stepIndex + 1} state={state} percent={showRing ? percent : undefined} wrongPercent={showRing ? coverage.wrongPercent : 0} testID={`roadmap-${state === "completed" ? "completed" : "progress"}-${sectionIndex}-${stepIndex}`} />}
                 <CText
                   style={[
                     styles.stepLabel,
@@ -362,9 +452,15 @@ function StepRows({
 function StepBubble({
   index,
   state,
+  percent,
+  wrongPercent = 0,
+  testID,
 }: {
   index: number;
   state: StepState;
+  percent?: number;
+  wrongPercent?: number;
+  testID: string;
 }) {
   const { responsiveFont } = useResponsiveFonts();
   const styles = useStyles({ safeBottom: 0 });
@@ -372,8 +468,9 @@ function StepBubble({
   const completed = state === "completed";
 
   return (
-    <View style={styles.bubbleSlot}>
-      {active ? (
+    <View style={styles.bubbleSlot} testID={testID} accessibilityValue={percent == null ? undefined : { min: 0, max: 100, now: percent }}>
+      {percent != null && !completed ? <LessonProgressRing percent={percent} wrongPercent={wrongPercent} testID={`${testID}-ring`} size={responsiveFont(58)} /> : null}
+      {active && percent == null ? (
         <>
           <View style={styles.bubbleRingOuter} />
           <View style={styles.bubbleRingInner} />

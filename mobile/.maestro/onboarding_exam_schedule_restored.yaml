@@ -1,0 +1,59 @@
+# Category -> restored date screen -> Home. No demo or learning answer.
+appId: com.mindjar.prawko
+env:
+  EXAM_COUNTRY: ${EXAM_COUNTRY || "PL"}
+---
+- runFlow:
+    when:
+      true: ${EXAM_COUNTRY == "PL"}
+    commands:
+      - launchApp:
+          clearState: true
+          clearKeychain: true
+      - extendedWaitUntil:
+          visible:
+            id: screen-onboarding-category
+          timeout: 30000
+      - tapOn:
+          id: onboarding-category-B
+      - tapOn:
+          id: onboarding-category-continue
+- runFlow:
+    when:
+      true: ${EXAM_COUNTRY != "PL"}
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: onboarding-schedule
+      TARGET_ID: screen-onboarding-exam-schedule
+- extendedWaitUntil:
+    visible:
+      id: screen-onboarding-exam-schedule
+    timeout: 15000
+- assertNotVisible:
+    id: screen-onboarding-example
+- tapOn:
+    id: onboarding-exam-date-field
+- extendedWaitUntil:
+    visible:
+      id: exam-date-calendar
+    timeout: 10000
+- tapOn:
+    id: exam-date-calendar-today
+- tapOn:
+    id: exam-date-calendar-confirm
+- tapOn:
+    id: onboarding-exam-schedule-continue
+- extendedWaitUntil:
+    visible:
+      id: screen-home
+    timeout: 20000
+- assertVisible:
+    id: roadmap-first-step-nudge
+- tapOn:
+    id: tab-profile
+- extendedWaitUntil:
+    visible:
+      id: screen-profile
+    timeout: 15000
+- assertVisible:
+    id: profile-exam-date-set

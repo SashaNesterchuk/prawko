@@ -1,5 +1,5 @@
 # Feature: Home contextual card
-# Scenario: An in-progress daily session does not put the old resume card on Today
+# Scenario: Preparation card reflects daily answers without a resume label
 appId: com.mindjar.prawko
 tags:
   - home
@@ -22,3 +22,9 @@ tags:
     id: "home-contextual-card"
 - assertNotVisible:
     id: "home-contextual-resume"
+
+- assertVisible:
+    id: "home-exam-readiness-correct"
+- assertVisible:
+    id: "home-exam-readiness-mistakes"
+- assertNotVisible: "Продовжити:.*"

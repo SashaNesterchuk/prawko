@@ -20,6 +20,26 @@ export function getE2EQuestionScenarioQuestions(
   scenario: E2EQuestionScenario
 ): LocalQuestion[] {
   switch (scenario) {
+    case "roadmap-progress":
+      return [1, 2, 3].map((number) => ({
+        id: `e2e-roadmap-progress-${number}`,
+        sourceRowNumber: number,
+        prompt: { ...sharedTopicQuestionText, ua: `Питання кроку ${number}`, en: `Lesson question ${number}` },
+        explanation: sharedTopicQuestionText,
+        answerType: "abc" as const,
+        correctAnswer: "A" as const,
+        choices: [
+          { id: "A" as const, text: { ...sharedTopicQuestionText, ua: "Правильна відповідь", en: "Correct answer" } },
+          { id: "B" as const, text: { ...sharedTopicQuestionText, ua: "Неправильна відповідь", en: "Wrong answer" } },
+          { id: "C" as const, text: sharedTopicQuestionText },
+        ],
+        points: 1 as const,
+        scope: "base" as const,
+        topicBlock: "signs" as const,
+        primaryTopicId: "signs_signals" as const,
+        topicIds: ["signs_signals" as const, "road_traffic_rules" as const],
+        difficultySeed: number,
+      }));
     case "topic-progress":
       return [
         {

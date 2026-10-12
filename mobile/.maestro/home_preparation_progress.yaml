@@ -1,0 +1,138 @@
+# Unique global coverage, exact mistakes pool, repetition, correction, zero and gates.
+# Positive coverage below 1% displays 1%; exact fractions are covered by preparation-progress.test.ts.
+appId: com.mindjar.prawko
+tags:
+  - home
+  - progress
+env:
+  EXAM_COUNTRY: ${EXAM_COUNTRY || "PL"}
+  LOCALE: ${LOCALE || "ua"}
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      QUESTION_SCENARIO: roadmap-progress
+      PLUS_ACCESS: "true"
+      TARGET_ID: home-exam-readiness
+- assertVisible:
+    id: home-exam-readiness-percent
+    text: "0%"
+- assertVisible:
+    id: home-exam-readiness-mistakes
+    text: ".*: 0"
+- tapOn:
+    id: home-exam-readiness
+- extendedWaitUntil:
+    visible:
+      id: screen-statistics
+    timeout: 15000
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: screen-home
+- tapOn:
+    id: roadmap-step-0-0
+- extendedWaitUntil:
+    visible:
+      id: screen-question
+    timeout: 15000
+- tapOn:
+    id: question-choice-index-0
+- tapOn:
+    id: question-feedback-next
+- tapOn:
+    id: question-choice-index-1
+- tapOn:
+    id: question-feedback-next
+- tapOn:
+    id: question-close
+- runFlow: subflows/confirm_training_exit_to_home.yaml
+- assertVisible:
+    id: home-exam-readiness-percent
+    text: "67%"
+- assertVisible:
+    id: home-exam-readiness-correct
+    text: ".*: 1"
+- assertVisible:
+    id: home-exam-readiness-mistakes
+    text: ".*: 1"
+- assertVisible:
+    id: home-exam-readiness-mistakes-chevron
+- takeScreenshot: home-preparation-mixed
+- tapOn:
+    id: home-exam-readiness-correct
+- extendedWaitUntil:
+    visible:
+      id: screen-statistics
+    timeout: 15000
+- tapOn:
+    id: nav-back
+- tapOn:
+    id: home-exam-readiness-mistakes
+- extendedWaitUntil:
+    visible:
+      id: screen-mistakes
+    timeout: 15000
+- tapOn:
+    id: mistakes-train-all
+- extendedWaitUntil:
+    visible:
+      id: screen-question
+    timeout: 15000
+- assertVisible:
+    id: question-counter
+    text: "1 / 1"
+- tapOn:
+    id: question-choice-index-1
+- tapOn:
+    id: question-feedback-next
+- extendedWaitUntil:
+    visible:
+      id: screen-question-result
+    timeout: 15000
+- tapOn:
+    id: question-result-close
+- extendedWaitUntil:
+    visible:
+      id: screen-home
+    timeout: 15000
+- assertVisible:
+    id: home-exam-readiness-percent
+    text: "67%"
+- assertVisible:
+    id: home-exam-readiness-mistakes
+    text: ".*: 1"
+- tapOn:
+    id: home-exam-readiness-mistakes
+- tapOn:
+    id: mistakes-train-all
+- extendedWaitUntil:
+    visible:
+      id: screen-question
+    timeout: 15000
+- assertVisible:
+    id: question-counter
+    text: "1 / 1"
+- tapOn:
+    id: question-choice-index-0
+- tapOn:
+    id: question-feedback-next
+- extendedWaitUntil:
+    visible:
+      id: screen-question-result
+    timeout: 15000
+- tapOn:
+    id: question-result-close
+- assertVisible:
+    id: home-exam-readiness-percent
+    text: "67%"
+- assertVisible:
+    id: home-exam-readiness-correct
+    text: ".*: 2"
+- assertVisible:
+    id: home-exam-readiness-mistakes
+    text: ".*: 0"
+- assertNotVisible:
+    id: home-exam-readiness-mistakes-chevron
+- takeScreenshot: home-preparation-corrected

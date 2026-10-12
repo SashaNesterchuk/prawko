@@ -1,0 +1,214 @@
+# PL/CZ/SK: latest answers split the ring into green/red; correction completes the lesson.
+appId: com.mindjar.prawko
+tags:
+  - roadmap
+  - progress
+env:
+  EXAM_COUNTRY: ${EXAM_COUNTRY || "PL"}
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      QUESTION_SCENARIO: roadmap-progress
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-home
+- assertVisible:
+    id: "roadmap-first-step-nudge"
+- assertVisible:
+    id: "roadmap-section-progress-0"
+    text: "^0%$"
+- tapOn:
+    id: "roadmap-step-0-0"
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 15000
+- tapOn:
+    id: "question-choice-index-0"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "question-feedback-next"
+- tapOn:
+    id: "question-choice-index-1"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "question-feedback-next"
+- tapOn:
+    id: "question-choice-index-0"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "question-feedback-next"
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-result"
+    timeout: 15000
+- tapOn:
+    id: "question-result-close"
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 15000
+- assertVisible:
+    id: "roadmap-progress-0-0"
+- assertNotVisible:
+    id: "roadmap-completed-0-0"
+- assertNotVisible:
+    id: "roadmap-first-step-nudge"
+- assertVisible:
+    id: "roadmap-progress-0-0-ring"
+    text: "Correct 67%, mistakes 33%"
+- runFlow:
+    file: subflows/assert_roadmap_section_percent.yaml
+    env:
+      PROGRESS_KIND: partial
+- assertVisible:
+    id: "home-exam-readiness-percent"
+    text: "100%"
+- assertVisible:
+    id: "home-exam-readiness-correct"
+    text: ".*: 2"
+- assertVisible:
+    id: "home-exam-readiness-mistakes"
+    text: ".*: 1"
+- assertVisible:
+    id: "home-exam-readiness-mistakes-chevron"
+- takeScreenshot: roadmap-partial-progress
+- tapOn:
+    id: "roadmap-step-0-0"
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 15000
+- assertVisible:
+    id: "question-counter"
+    text: "1 / 1"
+- tapOn:
+    id: "question-choice-index-0"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "question-feedback-next"
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-result"
+    timeout: 15000
+- tapOn:
+    id: "question-result-primary"
+- extendedWaitUntil:
+    visible:
+      id: "screen-home"
+    timeout: 15000
+- assertVisible:
+    id: "roadmap-completed-0-0"
+- assertNotVisible:
+    id: "roadmap-first-step-nudge"
+- runFlow:
+    file: subflows/assert_roadmap_section_percent.yaml
+    env:
+      PROGRESS_KIND: complete
+- assertVisible:
+    id: "home-exam-readiness-percent"
+    text: "100%"
+- assertVisible:
+    id: "home-exam-readiness-correct"
+    text: ".*: 3"
+- assertVisible:
+    id: "home-exam-readiness-mistakes"
+    text: ".*: 0"
+- takeScreenshot: roadmap-completed-progress
+- stopApp
+- launchApp
+# Restore the synthetic bank after runtime restart without clearing progress.
+- openLink:
+    link: "prawko://e2e/bootstrap?destination=home&questionScenario=roadmap-progress&plusAccess=true&locale=ua&examCountry=${EXAM_COUNTRY}"
+- runFlow: subflows/confirm_app_link.yaml
+- extendedWaitUntil:
+    visible:
+      id: "roadmap-completed-0-0"
+    timeout: 20000
+- assertNotVisible:
+    id: "roadmap-first-step-nudge"
+
+# A new mistake in a completed lesson removes the check and survives restart.
+- tapOn:
+    id: "roadmap-step-0-0"
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 15000
+- tapOn:
+    id: "question-choice-index-1"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "question-feedback-next"
+- tapOn:
+    id: "question-choice-index-0"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "question-feedback-next"
+- tapOn:
+    id: "question-choice-index-0"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "question-feedback-next"
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-result"
+    timeout: 15000
+- tapOn:
+    id: "question-result-close"
+- assertNotVisible:
+    id: "roadmap-completed-0-0"
+- assertVisible:
+    id: "roadmap-progress-0-0-ring"
+    text: "Correct 67%, mistakes 33%"
+- runFlow:
+    file: subflows/assert_roadmap_section_percent.yaml
+    env:
+      PROGRESS_KIND: partial
+- stopApp
+- launchApp
+- openLink:
+    link: "prawko://e2e/bootstrap?destination=home&questionScenario=roadmap-progress&plusAccess=true&locale=ua&examCountry=${EXAM_COUNTRY}"
+- runFlow: subflows/confirm_app_link.yaml
+- extendedWaitUntil:
+    visible:
+      id: "roadmap-progress-0-0-ring"
+      text: "Correct 67%, mistakes 33%"
+    timeout: 20000
+- assertNotVisible:
+    id: "roadmap-completed-0-0"
+- tapOn:
+    id: "roadmap-step-0-0"
+- extendedWaitUntil:
+    visible:
+      id: "screen-question"
+    timeout: 15000
+- assertVisible:
+    id: "question-counter"
+    text: "1 / 1"
+- tapOn:
+    id: "question-choice-index-0"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "question-feedback-next"
+- extendedWaitUntil:
+    visible:
+      id: "screen-question-result"
+    timeout: 15000
+- tapOn:
+    id: "question-result-primary"
+- assertVisible:
+    id: "roadmap-completed-0-0"
+- runFlow:
+    file: subflows/assert_roadmap_section_percent.yaml
+    env:
+      PROGRESS_KIND: complete

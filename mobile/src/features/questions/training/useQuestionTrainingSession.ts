@@ -51,7 +51,7 @@ import {
   getFreeRoadmapTopicIds,
   resolveTopicSessionAccess,
 } from "../../home/roadmap";
-import { useRoadmapProgressStore } from "../../home/roadmap-progress";
+import { hasRoadmapLearningProgress, useRoadmapProgressStore } from "../../home/roadmap-progress";
 import { shouldAutoShowPracticeSessionCompleteAd } from "../initial-diagnostic/session-ads";
 import { getTrainingResultOutcome } from "./training-result-stats";
 import { useQuestionRouteParams } from "./route-params";
@@ -98,6 +98,7 @@ export function useQuestionTrainingSession() {
   } = useAdInterstitialActions();
   const questionCatalogVersion = useQuestionCatalogVersion();
   const questionProgressHydrated = useQuestionProgressHydrated();
+  const roadmapHydrated = useRoadmapProgressStore((state) => state.hasHydrated);
   const activeSession = useActiveQuestionSession();
   const startOrResumeSession = useQuestionProgressStore(
     (state) => state.startOrResumeSession
@@ -153,7 +154,7 @@ export function useQuestionTrainingSession() {
   }, [sessionKey]);
 
   useEffect(() => {
-    if (!questionProgressHydrated) {
+    if (!questionProgressHydrated || (roadmapStepId && !roadmapHydrated)) {
       return;
     }
 
@@ -319,6 +320,7 @@ export function useQuestionTrainingSession() {
     questionLimit,
     questionProgressHydrated,
     roadmapStepId,
+    roadmapHydrated,
     sessionKey,
     startOrResumeSession,
     studyPlanTaskId,
@@ -407,12 +409,12 @@ export function useQuestionTrainingSession() {
   }, [activeSession, preferredCategory, sessionKey]);
 
   useEffect(() => {
-    if (!isCompleted || !roadmapStepId) {
+    if (!isCompleted || !roadmapStepId || hasRoadmapLearningProgress(examCountry)) {
       return;
     }
 
     completeRoadmapStep(roadmapStepId);
-  }, [completeRoadmapStep, isCompleted, roadmapStepId]);
+  }, [completeRoadmapStep, examCountry, isCompleted, roadmapStepId]);
   const isEmptyState = Boolean(activeSession?.emptyReason);
   const remainingSeconds = getRemainingSessionSeconds(
     activeSession,

@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { useRoadmapProgressStore } from "../features/home/roadmap-progress";
 
 export type SignPracticeOutcome = "mastered" | "wrong";
 
@@ -49,6 +50,8 @@ export const useSignPracticeProgressStore =
           if (!signId || totalQuestions <= 0) {
             return null;
           }
+
+          useRoadmapProgressStore.getState().markStarted();
 
           const previousRecord = get().records[signId];
           const nextRecord: SignPracticeRecord = {

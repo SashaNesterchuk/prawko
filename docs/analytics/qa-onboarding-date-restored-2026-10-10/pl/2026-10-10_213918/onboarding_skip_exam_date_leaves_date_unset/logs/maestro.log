@@ -1,0 +1,57 @@
+21:39:58.646 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+21:39:58.646 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+21:39:58.647 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Apply configuration RUNNING
+21:39:58.647 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Apply configuration COMPLETED
+21:39:58.647 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Launch app "com.mindjar.prawko" with clear state and clear keychain RUNNING
+21:39:58.647 [ INFO] maestro.Maestro.clearKeychain$lambda$10: Clearing keychain
+21:39:58.973 [ INFO] maestro.Maestro.clearAppState$lambda$8: Clearing app state com.mindjar.prawko
+21:40:03.103 [ INFO] maestro.Maestro.launchApp$lambda$5: Launching app com.mindjar.prawko
+21:40:03.103 [ INFO] maestro.Maestro.launchApp$lambda$5: Stopping com.mindjar.prawko app during launch
+21:40:04.032 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Launch app "com.mindjar.prawko" with clear state and clear keychain COMPLETED
+21:40:04.072 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-onboarding-category is visible RUNNING
+21:40:13.334 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-onboarding-category is visible COMPLETED
+21:40:13.335 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: onboarding-category-B RUNNING
+21:40:13.493 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=B, title=, value=, text=, hintText=, resource-id=onboarding-category-B, bounds=[24,386][196,444], enabled=true, focused=false, selected=true, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=true), bounds=Bounds(x=24, y=386, width=172, height=58))
+21:40:13.976 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+21:40:13.978 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (110, 415) using hierarchy based logic for wait
+21:40:13.980 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+21:40:13.980 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+21:40:15.316 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+21:40:15.317 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: onboarding-category-B COMPLETED
+21:40:15.317 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: onboarding-category-continue RUNNING
+21:40:15.527 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Continue, title=, value=, text=, hintText=, resource-id=onboarding-category-continue, bounds=[24,764][378,816], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=764, width=354, height=52))
+21:40:15.825 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+21:40:15.826 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (201, 790) using hierarchy based logic for wait
+21:40:15.826 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+21:40:15.826 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+21:40:17.099 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+21:40:17.103 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: onboarding-category-continue COMPLETED
+21:40:17.103 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-onboarding-exam-schedule is visible RUNNING
+21:40:17.263 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-onboarding-exam-schedule is visible COMPLETED
+21:40:17.263 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: onboarding-exam-date-skip RUNNING
+21:40:17.412 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Not sure yet, title=, value=, text=, hintText=, resource-id=onboarding-exam-date-skip, bounds=[24,776][378,816], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=776, width=354, height=40))
+21:40:17.650 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+21:40:17.650 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (201, 796) using hierarchy based logic for wait
+21:40:17.651 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+21:40:17.651 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+21:40:18.437 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+21:40:18.437 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: onboarding-exam-date-skip COMPLETED
+21:40:18.437 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-home is visible RUNNING
+21:40:18.956 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-home is visible COMPLETED
+21:40:18.956 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: home-start-spotlight is not visible RUNNING
+21:40:19.939 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: home-start-spotlight is not visible COMPLETED
+21:40:19.939 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: tab-profile RUNNING
+21:40:20.255 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Profile, title=, value=, text=, hintText=, resource-id=tab-profile, bounds=[287,780][374,836], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=287, y=780, width=87, height=56))
+21:40:20.739 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+21:40:20.744 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (330, 808) using hierarchy based logic for wait
+21:40:20.744 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+21:40:20.744 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+21:40:21.522 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+21:40:21.522 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: tab-profile COMPLETED
+21:40:21.523 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Run flow when id: screen-profile is not visible RUNNING
+21:40:28.621 [ INFO] maestro.orchestra.Orchestra.executeCommands: [Command execution] CommandSkipped: null
+21:40:28.622 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Run flow when id: screen-profile is not visible SKIPPED
+21:40:28.622 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-profile is visible RUNNING
+21:40:28.795 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-profile is visible COMPLETED
+21:40:28.795 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: profile-exam-date-missing is visible RUNNING
+21:40:28.965 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: profile-exam-date-missing is visible COMPLETED

@@ -1,0 +1,71 @@
+# A real Profile reset clears the learning-started marker, including persistence.
+appId: com.mindjar.prawko
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      QUESTION_SCENARIO: roadmap-progress
+      PLUS_ACCESS: "true"
+- tapOn:
+    id: roadmap-step-0-0
+- extendedWaitUntil:
+    visible:
+      id: screen-question
+    timeout: 15000
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: question-choice-index-1
+      - tapOn:
+          id: question-feedback-next
+- extendedWaitUntil:
+    visible:
+      id: screen-question-result
+    timeout: 15000
+- tapOn:
+    id: question-result-close
+- assertNotVisible:
+    id: roadmap-first-step-nudge
+- tapOn:
+    id: tab-profile
+- scrollUntilVisible:
+    element:
+      id: profile-reset-progress
+    direction: DOWN
+- tapOn:
+    id: profile-reset-progress
+- tapOn:
+    id: training-exit-finish
+- extendedWaitUntil:
+    visible:
+      id: screen-onboarding-category
+    timeout: 20000
+- tapOn:
+    id: onboarding-category-B
+- tapOn:
+    id: onboarding-category-continue
+- extendedWaitUntil:
+    visible:
+      id: screen-onboarding-exam-schedule
+    timeout: 15000
+- tapOn:
+    id: onboarding-exam-schedule-continue
+- extendedWaitUntil:
+    visible:
+      id: screen-home
+    timeout: 20000
+- assertVisible:
+    id: roadmap-first-step-nudge
+- assertNotVisible:
+    id: roadmap-completed-0-0
+- stopApp
+- launchApp
+# No synthetic question scenario: leave a normal bank after the test.
+- openLink:
+    link: "prawko://e2e/bootstrap?destination=home&locale=ua&examCountry=PL"
+- extendedWaitUntil:
+    visible:
+      id: roadmap-first-step-nudge
+    timeout: 20000
+- takeScreenshot: reset-restored-first-step-nudge

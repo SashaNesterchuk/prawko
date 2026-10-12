@@ -1,4 +1,4 @@
-import { resolveRoadmapStepVisuals, roadmapStepId } from "../roadmap-progress";
+import { resolveRoadmapStepVisuals, roadmapSectionCorrectPercent, roadmapStepId } from "../roadmap-progress";
 
 const sections = [
   {
@@ -64,5 +64,32 @@ describe("resolveRoadmapStepVisuals", () => {
       ["completed", "completed", "completed", "active"],
       ["upcoming", "upcoming"],
     ]);
+  });
+});
+
+describe("roadmapSectionCorrectPercent", () => {
+  const nineGroups = Array.from({ length: 9 }, () => ({}));
+
+  it("is zero before any group has a correct answer", () => {
+    expect(roadmapSectionCorrectPercent(nineGroups, () => 0)).toBe(0);
+  });
+
+  it("gives every group an equal share of its correct answers", () => {
+    expect(roadmapSectionCorrectPercent(nineGroups, (index) => (index === 0 ? 100 : 0))).toBe(11);
+    expect(roadmapSectionCorrectPercent(nineGroups, (index) => (index === 0 ? 200 / 3 : 0))).toBe(7);
+    expect(roadmapSectionCorrectPercent(Array.from({ length: 6 }, () => ({})), (index) => (index === 0 ? 200 / 3 : 0))).toBe(11);
+    expect(roadmapSectionCorrectPercent(Array.from({ length: 10 }, () => ({})), (index) => (index === 0 ? 200 / 3 : 0))).toBe(6);
+    expect(roadmapSectionCorrectPercent(nineGroups, () => 100)).toBe(100);
+  });
+
+  it("stays below 100 while any learning group is incomplete", () => {
+    expect(roadmapSectionCorrectPercent(nineGroups, (index) => (index === 0 ? 99.9 : 100))).toBe(99);
+  });
+
+  it("ignores the exam step because it has no answer coverage", () => {
+    expect(
+      roadmapSectionCorrectPercent([...nineGroups, { startsExam: true }], (index) => (index < 9 ? 100 : 0))
+    ).toBe(100);
+    expect(roadmapSectionCorrectPercent([{ startsExam: true }], () => 100)).toBe(0);
   });
 });

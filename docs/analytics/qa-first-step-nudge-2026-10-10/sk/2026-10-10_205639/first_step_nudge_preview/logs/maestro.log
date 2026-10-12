@@ -1,0 +1,30 @@
+20:57:25.604 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+20:57:25.604 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+20:57:25.605 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Apply configuration RUNNING
+20:57:25.605 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Apply configuration COMPLETED
+20:57:25.605 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Run ../subflows/launch_onboarded_destination.yaml RUNNING
+20:57:25.605 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+20:57:25.605 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+20:57:25.605 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+20:57:25.658 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+20:57:25.658 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Apply configuration RUNNING
+20:57:25.659 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Apply configuration COMPLETED
+20:57:25.659 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Launch app "com.mindjar.prawko" with clear state and clear keychain RUNNING
+20:57:25.659 [ INFO] maestro.Maestro.clearKeychain$lambda$10: Clearing keychain
+20:57:25.934 [ INFO] maestro.Maestro.clearAppState$lambda$8: Clearing app state com.mindjar.prawko
+20:57:28.692 [ INFO] maestro.Maestro.launchApp$lambda$5: Launching app com.mindjar.prawko
+20:57:28.693 [ INFO] maestro.Maestro.launchApp$lambda$5: Stopping com.mindjar.prawko app during launch
+20:57:28.977 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Launch app "com.mindjar.prawko" with clear state and clear keychain COMPLETED
+20:57:28.977 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Open prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&monetizationV2=${MONETIZATION_V2}&freeExamUsed=${FREE_EXAM_USED}&freeQuestionsExhausted=${FREE_QUESTIONS_EXHAUSTED}&wrongAnswersPreviewUsed=${WRONG_ANSWERS_PREVIEW_USED}&explanationsExhausted=${EXPLANATIONS_EXHAUSTED}&enableAds=${ENABLE_ADS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&examCountry=${EXAM_COUNTRY}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}&firstStart=${FIRST_START}&homeDaily=${HOME_DAILY}&homeContextual=${HOME_CONTEXTUAL}&trainingCompletedLifetime=${TRAINING_COMPLETED_LIFETIME}&premiumTeaserMoment=${PREMIUM_TEASER_MOMENT} RUNNING
+20:57:29.139 [ INFO] maestro.Maestro.openLink: Opening link prawko://e2e/bootstrap?destination=home&category=B&daysUntilExam=14&locale=ua&plusAccess=true&monetizationV2=false&freeExamUsed=&freeQuestionsExhausted=&wrongAnswersPreviewUsed=&explanationsExhausted=&enableAds=false&questionScenario=roadmap-progress&reachability=&offlinePackStatus=&offlinePackCategory=&examSessionStatus=&examSessionCategory=&examStartOrder=1&examCountry=SK&signCategoryId=A&topicId=signs_signals&firstStart=&homeDaily=&homeContextual=&trainingCompletedLifetime=&premiumTeaserMoment= for app: com.mindjar.prawko with autoVerify config as false
+20:57:30.222 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Open prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&monetizationV2=${MONETIZATION_V2}&freeExamUsed=${FREE_EXAM_USED}&freeQuestionsExhausted=${FREE_QUESTIONS_EXHAUSTED}&wrongAnswersPreviewUsed=${WRONG_ANSWERS_PREVIEW_USED}&explanationsExhausted=${EXPLANATIONS_EXHAUSTED}&enableAds=${ENABLE_ADS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&examCountry=${EXAM_COUNTRY}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}&firstStart=${FIRST_START}&homeDaily=${HOME_DAILY}&homeContextual=${HOME_CONTEXTUAL}&trainingCompletedLifetime=${TRAINING_COMPLETED_LIFETIME}&premiumTeaserMoment=${PREMIUM_TEASER_MOMENT} COMPLETED
+20:57:30.223 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Run flow when "Close Advertisement" is visible RUNNING
+20:57:37.506 [ INFO] maestro.orchestra.Orchestra.executeSubflowCommands: [Command execution subflow] CommandSkipped: null
+20:57:37.507 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Run flow when "Close Advertisement" is visible SKIPPED
+20:57:37.507 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-e2e-bootstrap-disabled is not visible RUNNING
+20:57:38.281 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-e2e-bootstrap-disabled is not visible COMPLETED
+20:57:38.282 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: ${TARGET_ID} is visible RUNNING
+20:57:38.549 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: ${TARGET_ID} is visible COMPLETED
+20:57:38.550 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Run ../subflows/launch_onboarded_destination.yaml COMPLETED
+20:57:38.550 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: roadmap-first-step-nudge is visible RUNNING
+20:57:38.812 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: roadmap-first-step-nudge is visible COMPLETED

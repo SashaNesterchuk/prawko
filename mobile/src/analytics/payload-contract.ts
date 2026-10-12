@@ -251,6 +251,22 @@ const externalEntry = {
 
 /** Critical event contracts are observation QA, never product preconditions. */
 export const ANALYTICS_PAYLOAD_CONTRACTS = {
+  home_preparation_action_selected: {
+    source: { type: "string", values: ["home_preparation"] },
+    action: { type: "string", values: ["statistics", "mistakes"] },
+    destination: { type: "string", values: ["statistics", "mistakes", "paywall"] },
+    question_total: integer, correct_count: integer, wrong_count: integer, progress_percent: count,
+  },
+  first_step_nudge_shown: { roadmap_step_id: id, category, exam_country: { type: "string", values: ["PL", "CZ", "SK"] }, animation: { type: "string", values: ["double_bounce"] } },
+  roadmap_lesson_progress_changed: {
+    roadmap_step_id: id, category, exam_country: { type: "string", values: ["PL", "CZ", "SK"] },
+    question_total: integer, correct_count: integer, wrong_count: integer,
+    previous_correct_count: integer, previous_wrong_count: integer,
+    correct_percent: count, wrong_percent: count, completed: bool, pool_revision: id,
+    change_reason: { type: "string", values: ["answer", "content_changed"] },
+    completion_transition: { type: "string", values: ["completed", "reopened", "none"] },
+    training_session_id: optionalId, question_id: optionalId,
+  },
   training_feedback_continued: {
     ...trainingScope, ...reviewPosition, question_id: id, feedback_foreground_ms: count, is_correct: bool,
     action: { type: "string", values: ["next", "finish"] },

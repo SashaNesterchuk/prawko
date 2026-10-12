@@ -1,0 +1,152 @@
+20:56:50.052 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+20:56:50.054 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+20:56:50.054 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+20:56:50.833 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+20:56:50.833 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Apply configuration RUNNING
+20:56:50.833 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Apply configuration COMPLETED
+20:56:50.834 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Run subflows/launch_onboarded_destination.yaml RUNNING
+20:56:50.834 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+20:56:50.835 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+20:56:50.835 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+20:56:50.876 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+20:56:50.876 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Apply configuration RUNNING
+20:56:50.877 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Apply configuration COMPLETED
+20:56:50.877 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Launch app "com.mindjar.prawko" with clear state and clear keychain RUNNING
+20:56:50.878 [ INFO] maestro.Maestro.clearKeychain$lambda$10: Clearing keychain
+20:56:51.245 [ INFO] maestro.Maestro.clearAppState$lambda$8: Clearing app state com.mindjar.prawko
+20:56:54.036 [ INFO] maestro.Maestro.launchApp$lambda$5: Launching app com.mindjar.prawko
+20:56:54.036 [ INFO] maestro.Maestro.launchApp$lambda$5: Stopping com.mindjar.prawko app during launch
+20:56:54.308 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Launch app "com.mindjar.prawko" with clear state and clear keychain COMPLETED
+20:56:54.308 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Open prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&monetizationV2=${MONETIZATION_V2}&freeExamUsed=${FREE_EXAM_USED}&freeQuestionsExhausted=${FREE_QUESTIONS_EXHAUSTED}&wrongAnswersPreviewUsed=${WRONG_ANSWERS_PREVIEW_USED}&explanationsExhausted=${EXPLANATIONS_EXHAUSTED}&enableAds=${ENABLE_ADS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&examCountry=${EXAM_COUNTRY}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}&firstStart=${FIRST_START}&homeDaily=${HOME_DAILY}&homeContextual=${HOME_CONTEXTUAL}&trainingCompletedLifetime=${TRAINING_COMPLETED_LIFETIME}&premiumTeaserMoment=${PREMIUM_TEASER_MOMENT} RUNNING
+20:56:54.419 [ INFO] maestro.Maestro.openLink: Opening link prawko://e2e/bootstrap?destination=home&category=B&daysUntilExam=14&locale=ua&plusAccess=true&monetizationV2=false&freeExamUsed=&freeQuestionsExhausted=&wrongAnswersPreviewUsed=&explanationsExhausted=&enableAds=false&questionScenario=roadmap-progress&reachability=&offlinePackStatus=&offlinePackCategory=&examSessionStatus=&examSessionCategory=&examStartOrder=1&examCountry=SK&signCategoryId=A&topicId=signs_signals&firstStart=&homeDaily=&homeContextual=&trainingCompletedLifetime=&premiumTeaserMoment= for app: com.mindjar.prawko with autoVerify config as false
+20:56:55.741 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Open prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&monetizationV2=${MONETIZATION_V2}&freeExamUsed=${FREE_EXAM_USED}&freeQuestionsExhausted=${FREE_QUESTIONS_EXHAUSTED}&wrongAnswersPreviewUsed=${WRONG_ANSWERS_PREVIEW_USED}&explanationsExhausted=${EXPLANATIONS_EXHAUSTED}&enableAds=${ENABLE_ADS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&examCountry=${EXAM_COUNTRY}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}&firstStart=${FIRST_START}&homeDaily=${HOME_DAILY}&homeContextual=${HOME_CONTEXTUAL}&trainingCompletedLifetime=${TRAINING_COMPLETED_LIFETIME}&premiumTeaserMoment=${PREMIUM_TEASER_MOMENT} COMPLETED
+20:56:55.742 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Run flow when "Close Advertisement" is visible RUNNING
+20:57:03.127 [ INFO] maestro.orchestra.Orchestra.executeSubflowCommands: [Command execution subflow] CommandSkipped: null
+20:57:03.128 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Run flow when "Close Advertisement" is visible SKIPPED
+20:57:03.129 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-e2e-bootstrap-disabled is not visible RUNNING
+20:57:03.881 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-e2e-bootstrap-disabled is not visible COMPLETED
+20:57:03.882 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: ${TARGET_ID} is visible RUNNING
+20:57:04.150 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: ${TARGET_ID} is visible COMPLETED
+20:57:04.151 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Run subflows/launch_onboarded_destination.yaml COMPLETED
+20:57:04.151 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: roadmap-first-step-nudge is visible RUNNING
+20:57:04.415 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: roadmap-first-step-nudge is visible COMPLETED
+20:57:04.416 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: roadmap-step-0-0 RUNNING
+20:57:04.677 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=1, Zastavenie a státie, title=, value=, text=, hintText=, resource-id=roadmap-step-0-0, bounds=[32,252][144,328], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=, title=, value=, text=, hintText=, resource-id=roadmap-first-step-nudge, bounds=[66,252][110,296], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=, title=, value=, text=, hintText=, resource-id=, bounds=[59,245][117,303], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=, title=, value=, text=, hintText=, resource-id=, bounds=[59,245][117,303], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=, title=, value=, text=, hintText=, resource-id=, bounds=[59,245][117,303], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=, title=, value=, text=, hintText=, resource-id=, bounds=[59,245][117,303], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false), TreeNode(attributes={accessibilityText=, title=, value=0%, text=0%, hintText=, resource-id=roadmap-progress-0-0, bounds=[66,252][110,296], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), TreeNode(attributes={accessibilityText=, title=, value=, text=, hintText=, resource-id=, bounds=[66,252][110,296], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), TreeNode(attributes={accessibilityText=1, title=, value=, text=, hintText=, resource-id=, bounds=[83,262][93,286], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=1, title=, value=, text=, hintText=, resource-id=, bounds=[83,262][93,286], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=32, y=252, width=112, height=76))
+20:57:04.930 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:04.932 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (88, 290) using hierarchy based logic for wait
+20:57:04.936 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:04.936 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:06.562 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:06.562 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: roadmap-step-0-0 COMPLETED
+20:57:06.562 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-question is visible RUNNING
+20:57:06.723 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-question is visible COMPLETED
+20:57:06.723 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: question-close RUNNING
+20:57:06.872 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Zavrieť, title=, value=, text=, hintText=, resource-id=question-close, bounds=[24,62][65,103], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=62, width=41, height=41))
+20:57:07.074 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:07.075 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (44, 82) using hierarchy based logic for wait
+20:57:07.075 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:07.075 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:07.764 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:07.764 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: question-close COMPLETED
+20:57:07.764 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-home is visible RUNNING
+20:57:08.066 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-home is visible COMPLETED
+20:57:08.067 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: roadmap-first-step-nudge is visible RUNNING
+20:57:08.430 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: roadmap-first-step-nudge is visible COMPLETED
+20:57:08.431 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: roadmap-step-0-2 RUNNING
+20:57:08.709 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=3, Predchádzanie, chodci a cyklisti, title=, value=, text=, hintText=, resource-id=roadmap-step-0-2, bounds=[257,252][369,328], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=, title=, value=0%, text=0%, hintText=, resource-id=roadmap-progress-0-2, bounds=[291,252][335,296], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=257, y=252, width=112, height=76))
+20:57:09.219 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:09.221 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (313, 290) using hierarchy based logic for wait
+20:57:09.222 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:09.222 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:10.092 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:10.093 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: roadmap-step-0-2 COMPLETED
+20:57:10.093 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-question is visible RUNNING
+20:57:10.671 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-question is visible COMPLETED
+20:57:10.672 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Repeat 3 times RUNNING
+20:57:10.673 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: question-choice-index-0 RUNNING
+20:57:10.823 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Correct answer, title=, value=, text=, hintText=, resource-id=question-choice-index-0, bounds=[24,475][378,523], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=475, width=354, height=48))
+20:57:11.025 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:11.027 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (201, 499) using hierarchy based logic for wait
+20:57:11.027 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:11.027 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:12.169 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:12.169 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: question-choice-index-0 COMPLETED
+20:57:12.169 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: question-feedback-next RUNNING
+20:57:12.336 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Ďalšia otázka, title=, value=, text=, hintText=, resource-id=question-feedback-next, bounds=[24,786][378,840], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=786, width=354, height=54))
+20:57:12.562 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:12.562 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (201, 813) using hierarchy based logic for wait
+20:57:12.563 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:12.563 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:13.284 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:13.284 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: question-feedback-next COMPLETED
+20:57:13.285 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandReset: Tap on id: question-choice-index-0 PENDING
+20:57:13.285 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandReset: Tap on id: question-feedback-next PENDING
+20:57:13.285 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: question-choice-index-0 RUNNING
+20:57:13.444 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Correct answer, title=, value=, text=, hintText=, resource-id=question-choice-index-0, bounds=[24,475][378,523], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=475, width=354, height=48))
+20:57:13.646 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:13.647 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (201, 499) using hierarchy based logic for wait
+20:57:13.648 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:13.648 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:14.801 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:14.802 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: question-choice-index-0 COMPLETED
+20:57:14.802 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: question-feedback-next RUNNING
+20:57:14.965 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Ďalšia otázka, title=, value=, text=, hintText=, resource-id=question-feedback-next, bounds=[24,786][378,840], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=Ďalšia otázka, title=, value=, text=, hintText=, resource-id=, bounds=[140,799][261,827], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=Ďalšia otázka, title=, value=, text=, hintText=, resource-id=, bounds=[140,799][261,827], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=786, width=354, height=54))
+20:57:15.195 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:15.196 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (201, 813) using hierarchy based logic for wait
+20:57:15.196 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:15.196 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:16.112 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:16.113 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: question-feedback-next COMPLETED
+20:57:16.113 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandReset: Tap on id: question-choice-index-0 PENDING
+20:57:16.113 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandReset: Tap on id: question-feedback-next PENDING
+20:57:16.113 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: question-choice-index-0 RUNNING
+20:57:16.270 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Correct answer, title=, value=, text=, hintText=, resource-id=question-choice-index-0, bounds=[24,475][378,523], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=, title=, value=, text=, hintText=, resource-id=, bounds=[36,487][60,511], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=475, width=354, height=48))
+20:57:16.474 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:16.474 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (201, 499) using hierarchy based logic for wait
+20:57:16.475 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:16.475 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:17.612 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:17.612 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: question-choice-index-0 COMPLETED
+20:57:17.612 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: question-feedback-next RUNNING
+20:57:17.775 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Dokončiť, title=, value=, text=, hintText=, resource-id=question-feedback-next, bounds=[24,786][378,840], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=786, width=354, height=54))
+20:57:18.001 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:18.002 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (201, 813) using hierarchy based logic for wait
+20:57:18.003 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:18.003 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:19.461 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:19.464 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: question-feedback-next COMPLETED
+20:57:19.464 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Repeat 3 times COMPLETED
+20:57:19.465 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-question-result is visible RUNNING
+20:57:19.645 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-question-result is visible COMPLETED
+20:57:19.646 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: question-result-close RUNNING
+20:57:19.811 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Zavrieť, title=, value=, text=, hintText=, resource-id=question-result-close, bounds=[24,62][65,103], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=62, width=41, height=41))
+20:57:20.048 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:20.049 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (44, 82) using hierarchy based logic for wait
+20:57:20.049 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:20.049 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:20.790 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:20.790 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: question-result-close COMPLETED
+20:57:20.790 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-home is visible RUNNING
+20:57:21.152 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-home is visible COMPLETED
+20:57:21.153 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: roadmap-first-step-nudge is not visible RUNNING
+20:57:21.950 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: roadmap-first-step-nudge is not visible COMPLETED
+20:57:21.950 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: roadmap-completed-0-2 is visible RUNNING
+20:57:22.218 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: roadmap-completed-0-2 is visible COMPLETED
+20:57:22.219 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: roadmap-completed-0-0 is not visible RUNNING
+20:57:23.009 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: roadmap-completed-0-0 is not visible COMPLETED
+20:57:23.010 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Take screenshot roadmap-third-only-completed RUNNING
+20:57:23.015 [ INFO] maestro.Maestro.takeScreenshot: Taking screenshot
+20:57:23.016 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:23.149 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Take screenshot roadmap-third-only-completed COMPLETED
+20:57:23.149 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: roadmap-step-0-0 RUNNING
+20:57:23.409 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=1, Zastavenie a státie, title=, value=, text=, hintText=, resource-id=roadmap-step-0-0, bounds=[32,252][144,328], enabled=true, focused=false, selected=false, checked=false}, children=[TreeNode(attributes={accessibilityText=, title=, value=0%, text=0%, hintText=, resource-id=roadmap-progress-0-0, bounds=[66,252][110,296], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false)], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=32, y=252, width=112, height=76))
+20:57:23.670 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+20:57:23.671 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (88, 290) using hierarchy based logic for wait
+20:57:23.672 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:57:23.672 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:57:24.469 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:57:24.472 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: roadmap-step-0-0 COMPLETED
+20:57:24.472 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-question is visible RUNNING
+20:57:24.944 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-question is visible COMPLETED
+20:57:24.947 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that "1 / 3", id: question-counter is visible RUNNING
+20:57:25.143 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that "1 / 3", id: question-counter is visible COMPLETED

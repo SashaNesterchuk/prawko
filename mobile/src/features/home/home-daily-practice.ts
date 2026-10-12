@@ -99,3 +99,9 @@ export function resumeHomeDailySession(session: QuestionSession) {
     currentIndex: firstUnansweredIndex,
   };
 }
+
+export function getUnfinishedDiagnostic(session: QuestionSession | null | undefined, category: string) {
+  if (!session || session.request.mode !== "initial_diagnostic" || session.request.currentCategory !== category || session.finishedAt || session.emptyReason || !session.questionIds.length) return null;
+  const answered = session.questionIds.filter((id) => session.answers[id] != null).length;
+  return answered > 0 && answered < session.questionIds.length ? { session, answered, total: session.questionIds.length } : null;
+}

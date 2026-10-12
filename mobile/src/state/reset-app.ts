@@ -21,6 +21,7 @@ import { useSignBookmarksStore } from "./sign-bookmarks";
 import { useSignPracticeProgressStore } from "./sign-practice-progress";
 import { useMonetizationStore } from "../features/monetization/monetization-store";
 import { useHomeContextualStore } from "../features/home/home-contextual-store";
+import { useRoadmapProgressStore } from "../features/home/roadmap-progress";
 
 /**
  * Resets learning/onboarding and free quota. Financial recovery markers and
@@ -51,6 +52,7 @@ export async function resetAppToFreshStart() {
   useReviewPromptStore.getState().resetPrompt();
   useMonetizationStore.getState().resetMonetization();
   useHomeContextualStore.getState().resetHomeContextual();
+  useRoadmapProgressStore.setState({ lessons: {}, completedStepIds: [], hasStartedLearning: false });
   useAiChatStore.setState({
     conversations: {},
     latestConversationByQuestionId: {},
@@ -67,7 +69,7 @@ export async function resetAppToFreshStart() {
   clearExamSnapshotMemory();
   try {
     const learningKeys = (await AsyncStorage.getAllKeys())
-      .filter((key) => !isCheckoutJournalStorageKey(key) && !isAppleSearchAdsStorageKey(key) &&
+      .filter((key) => key !== "prawko-roadmap-progress" && !isCheckoutJournalStorageKey(key) && !isAppleSearchAdsStorageKey(key) &&
         !isDurableAnalyticsStorageKey(key));
     if (learningKeys.length > 0) {
       await AsyncStorage.multiRemove(learningKeys);

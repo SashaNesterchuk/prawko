@@ -30,10 +30,12 @@ pnpm test:e2e:studio
 
 | Flow | What it covers |
 | --- | --- |
-| `onboarding_completes_and_lands_on_home.yaml` | Category → exam date continue without a date → Today roadmap and readiness card (no first-start spotlight, no old tiles) |
-| `onboarding_skip_exam_date_leaves_date_unset.yaml` | Skip exam date → Home exam-date card → Profile shows unset date |
-| `home_first_start_spotlight_starts_training.yaml` | First-start Home (`FIRST_START`) does not show the spotlight; empty readiness card starts 10-question untimed Quick check (`initial_diagnostic`) |
-| `home_first_start_skip_shows_home_tiles.yaml` | First-start Today without spotlight → readiness card starts the assessment |
+| `home_preparation_context_and_gate.yaml` | Category-bank changes, country isolation/restoration, long German title, existing Premium gate |
+| `home_preparation_progress.yaml` | Global unique latest-answer coverage, gray/green/red, zero action disabled, exact mistakes pool, repeated wrong answer and correction without increasing coverage |
+| `onboarding_completes_and_lands_on_home.yaml` | Category → optional exam date → Today roadmap and readiness card (no first-start spotlight, no old tiles) |
+| `onboarding_skip_exam_date_leaves_date_unset.yaml` | Skip exam date → Home → Profile shows unset exam date |
+| `home_first_start_spotlight_starts_training.yaml` | First-start Home (`FIRST_START`) does not show the spotlight; empty preparation card shows zero coverage and has no practice action |
+| `home_first_start_skip_shows_home_tiles.yaml` | First-start Today without spotlight → preparation card shows zero coverage with disabled mistakes |
 | `home_today_done_hides_card.yaml` | Finished daily 10 → Home has no today-start card; result hides New attempt |
 | `home_first_start_dim_dismisses_spotlight.yaml` | First-start Today has no dimmed spotlight overlay; readiness card is visible, old tiles are not |
 | `diagnostic_result_continue_shows_reminder.yaml` | Finished first diagnostic → Continue → reminder prompt → Not now → Home |
@@ -48,7 +50,7 @@ pnpm test:e2e:studio
 | `home_contextual_hidden_for_new_user.yaml` | First-start Home does not show the retention/completion card |
 | `home_contextual_mistakes_opens_session.yaml` | Today is the roadmap; the old next-action card is not shown |
 | `home_contextual_completion_shows_once.yaml` | The old completion card is not on the Today roadmap |
-| `home_contextual_resume_opens_session.yaml` | An in-progress daily session does not put the old resume card on Today |
+| `home_contextual_resume_opens_session.yaml` | An in-progress daily session contributes to preparation coverage; no resume label on Today |
 | `profile_exam_country_screen_opens.yaml` | Profile → Exam country screen with PL and CZ tiles |
 | `profile_exam_country_switch_cz_exam.yaml` | Profile → CZ → language tiles only cs/en → official 25-question eTesty exam |
 | `profile_exam_country_switch_back_keeps_pl.yaml` | PL exam progress stays namespaced: CZ exam starts at 25 questions, switching back restores the 32-question WORD exam |
@@ -90,8 +92,9 @@ pnpm test:e2e:studio
 | `monetization_v2_plus_exam_starts.yaml` | V2 Premium starts an exam with no unlock sheet |
 | `monetization_v2_training_limit_opens_paywall.yaml` | V2 training with the free question quota used opens the paywall |
 | `monetization_v2_explanation_locks.yaml` | CZ free topic: first answer hides the explanation and opens the paywall |
-| `monetization_v2_pl_free_topic_explanation.yaml` | PL free topic: first answer shows the explanation, marks it Premium, and that mark opens the paywall |
+| `monetization_v2_pl_free_topic_explanation.yaml` | PL free topic: first answer shows the explanation, Premium crown and temporary free-access caption; tapping the caption opens the paywall |
 | `explore/blogger_session.yaml` | V2 free user wanders Home, training, a short exam, signs, profile and paywall for 30 minutes. Tag `explore`, excluded from `pnpm test:e2e`. Run `pnpm test:e2e:explore` |
+| `explore/first_step_nudge_preview.yaml` | Fresh Home with first-step hint running for video inspection. |
 | `explore/capture_all_ui.yaml` | Fresh install from onboarding, then Home, Learn, training, exam, Signs, Profile, settings, paywall and statistics. Saves screenshots via `takeScreenshot`. Tag `explore`, excluded from `pnpm test:e2e` |
 | `profile_offline_missing_pack_can_download.yaml` | Offline mode → download missing pack (e2e) |
 | `profile_offline_incomplete_pack_shows_resume.yaml` | Incomplete pack shows resume + remove |
@@ -129,11 +132,13 @@ Shared steps live in:
 
 - `subflows/complete_onboarding.yaml` for the real first-run onboarding smoke
 - `subflows/launch_onboarded_destination.yaml` for fast bootstrap into an onboarded state
+- `subflows/confirm_app_link.yaml` for the system deep-link confirmation on fresh simulators
 - `subflows/start_default_question_count.yaml` for accepting the default count picker
 - `subflows/start_exam_from_home.yaml` for Home → Exam tile → official simulator session
 - `subflows/confirm_training_exit_to_home.yaml` for Finish on the training/exam exit dialog
 - `subflows/dismiss_interstitial_if_present.yaml` after a free-user session end that may show a test interstitial
 - `subflows/answer_first_available_option.yaml` for generic “answer first option” steps
+- `subflows/assert_roadmap_section_percent.yaml` for the first category’s correct-answer percent (`PROGRESS_KIND`: `partial` or `complete`)
 
 Supported bootstrap destinations: `home`, `learn`, `practice`, `profile`, `statistics`, `signs`, `signs-category`, `topic`, `topics`, `trainer-modes`, `exam-session`, `exam-result`, `exam-answers`, `question-result`, `question-result-failed`, `diagnostic-result`.
 
@@ -170,3 +175,20 @@ compare the same run's capture dump against these expectations, sorting within
 Training lifecycle and gate-to-paywall context also have Jest regression fixtures.
 The 2026-10-02 analytics changes were not executed in Jest, Maestro or a build, at
 the user's request. These are expected contracts, not recorded passing results.
+
+
+
+| `roadmap_correct_answer_progress.yaml` | PL/CZ/SK correct-only ring, remaining-question retry, full checkmark, persistent stopped nudge, and the category header as the average correct-answer percent of its groups; run with `-e EXAM_COUNTRY=SK` or `CZ` for Slovakia or Czechia. |
+| `roadmap_step_progress_isolated.yaml` | Open first step without answering: hint remains. Answer in third: hint disappears, first still has all questions, and the category header counts only that group's correct answers. Run for PL, CZ and SK. |
+
+| `onboarding_exam_schedule_restored.yaml` | Category → restored optional exam date → Home with first-step nudge, no demo. SK/CZ variants use the onboarding-schedule fixture. |
+
+`roadmap_correct_answer_progress.yaml` also checks green/red proportions, losing a check after a new mistake, persistence after restart, and restoring the check after correction (PL/CZ/SK).
+
+- `roadmap_reset_restores_nudge.yaml`: answer questions → reset through Profile → category/date onboarding → first-step double-bounce hint returns and remains enabled after app restart. Ends without the synthetic question bank.
+
+Home preparation card opens `/statistics` when tapped; its mistakes action retains the existing mistakes/Premium route. Covered by `home_preparation_progress.yaml` and first-start Home flows.
+
+Analytics QA for Home changes: run the local collector (`node scripts/local-analytics-log.mjs`) with `home_preparation_progress.yaml` and `roadmap_correct_answer_progress.yaml`. Check the captured stream for `home_preparation_action_selected` (statistics and mistakes), one `first_step_nudge_shown` per mounted hint and `roadmap_lesson_progress_changed` with completed/reopened transitions. Hydration/restart must not create fresh completion transitions. Events in local Metro/E2E runs do not go to production PostHog.
+
+Validate that captured stream with `node scripts/check-home-roadmap-analytics.mjs` (or pass a JSONL path). This checks real captured payload validity, action destinations, completion/reopening, unique event IDs and source session/question joins.

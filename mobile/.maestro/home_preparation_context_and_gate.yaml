@@ -1,0 +1,65 @@
+# Active bank changes, country isolation, restoration and existing Premium entry.
+appId: com.mindjar.prawko
+tags:
+  - home
+  - progress
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      DESTINATION: home
+      QUESTION_SCENARIO: roadmap-progress
+      HOME_CONTEXTUAL: mistakes
+      LOCALE: de
+      PLUS_ACCESS: "true"
+      TARGET_ID: home-exam-readiness
+- assertVisible: "Vorbereitungsfortschritt"
+- assertVisible:
+    id: home-exam-readiness-percent
+    text: "100%"
+- assertVisible:
+    id: home-exam-readiness-mistakes
+    text: "Fehler: 3"
+- takeScreenshot: home-preparation-long-title
+# A different active category bank contains none of the previous questions.
+- openLink: "prawko://e2e/bootstrap?destination=home&category=A&examCountry=PL&questionScenario=topic-progress&plusAccess=true&locale=de"
+- runFlow: subflows/confirm_app_link.yaml
+- extendedWaitUntil:
+    visible:
+      id: home-exam-readiness-percent
+      text: "0%"
+    timeout: 20000
+- assertVisible:
+    id: home-exam-readiness-mistakes
+    text: "Fehler: 0"
+- openLink: "prawko://e2e/bootstrap?destination=home&category=B&examCountry=PL&questionScenario=roadmap-progress&plusAccess=true&locale=de"
+- runFlow: subflows/confirm_app_link.yaml
+- extendedWaitUntil:
+    visible:
+      id: home-exam-readiness-mistakes
+      text: "Fehler: 3"
+    timeout: 20000
+# Even identical fixture IDs in another country must not reuse PL progress.
+- openLink: "prawko://e2e/bootstrap?destination=home&category=B&examCountry=SK&questionScenario=roadmap-progress&plusAccess=true&locale=sk"
+- runFlow: subflows/confirm_app_link.yaml
+- extendedWaitUntil:
+    visible:
+      id: home-exam-readiness-percent
+      text: "0%"
+    timeout: 20000
+- assertVisible:
+    id: home-exam-readiness-mistakes
+    text: "Chyby: 0"
+- openLink: "prawko://e2e/bootstrap?destination=home&category=B&examCountry=PL&questionScenario=roadmap-progress&plusAccess=false&monetizationV2=true&locale=pl"
+- runFlow: subflows/confirm_app_link.yaml
+- extendedWaitUntil:
+    visible:
+      id: home-exam-readiness-mistakes
+      text: "Błędy: 3"
+    timeout: 20000
+- tapOn:
+    id: home-exam-readiness-mistakes
+- extendedWaitUntil:
+    visible:
+      id: screen-paywall
+    timeout: 15000

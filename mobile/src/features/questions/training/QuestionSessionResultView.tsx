@@ -344,6 +344,7 @@ export function QuestionSessionResultView({
           <NavigationButton
             inset
             type="close"
+            testID="question-result-close"
             accessibilityLabel={t("common.close")}
             onPress={() => {
               track(ANALYTICS_EVENTS.trainingResultAction.key, {

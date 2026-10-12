@@ -5,6 +5,7 @@ const interactions = new Set<AnalyticsEventName>([
   ANALYTICS_EVENTS.authStarted.key,
   ANALYTICS_EVENTS.firstStartStarted.key,
   ANALYTICS_EVENTS.roadmapStepOpened.key,
+  ANALYTICS_EVENTS.homePreparationActionSelected.key,
   ANALYTICS_EVENTS.practiceSetupResolved.key,
   ANALYTICS_EVENTS.trainingModeSelected.key,
   ANALYTICS_EVENTS.trainingQuestionAnswered.key,

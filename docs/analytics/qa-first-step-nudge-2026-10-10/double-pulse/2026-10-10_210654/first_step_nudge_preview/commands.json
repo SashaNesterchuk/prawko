@@ -1,0 +1,613 @@
+[ {
+  "command" : {
+    "defineVariablesCommand" : {
+      "env" : {
+        "MAESTRO_FILENAME" : "first_step_nudge_preview",
+        "MAESTRO_DEVICE_UDID" : "4562915B-4E1D-48B8-A9C3-1C9C3EF57DBF",
+        "MAESTRO_SHARD_ID" : "1",
+        "MAESTRO_SHARD_INDEX" : "0"
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659227190,
+    "duration" : 4,
+    "sequenceNumber" : 0,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "defineVariablesCommand" : {
+        "env" : {
+          "MAESTRO_FILENAME" : "first_step_nudge_preview",
+          "MAESTRO_DEVICE_UDID" : "4562915B-4E1D-48B8-A9C3-1C9C3EF57DBF",
+          "MAESTRO_SHARD_ID" : "1",
+          "MAESTRO_SHARD_INDEX" : "0"
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "applyConfigurationCommand" : {
+      "config" : {
+        "appId" : "com.mindjar.prawko",
+        "tags" : [ "explore" ]
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659227195,
+    "duration" : 2,
+    "sequenceNumber" : 1,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "applyConfigurationCommand" : {
+        "config" : {
+          "appId" : "com.mindjar.prawko",
+          "tags" : [ "explore" ]
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "runFlowCommand" : {
+      "commands" : [ {
+        "defineVariablesCommand" : {
+          "env" : {
+            "DESTINATION" : "home",
+            "QUESTION_SCENARIO" : "roadmap-progress",
+            "PLUS_ACCESS" : "true",
+            "TARGET_ID" : "screen-home"
+          },
+          "optional" : false
+        }
+      }, {
+        "applyConfigurationCommand" : {
+          "config" : {
+            "appId" : "com.mindjar.prawko"
+          },
+          "optional" : false
+        }
+      }, {
+        "defineVariablesCommand" : {
+          "env" : {
+            "CATEGORY" : "${CATEGORY || \"B\"}",
+            "DAYS_UNTIL_EXAM" : "${DAYS_UNTIL_EXAM || \"14\"}",
+            "DESTINATION" : "${DESTINATION || \"home\"}",
+            "EXAM_SESSION_CATEGORY" : "${EXAM_SESSION_CATEGORY || \"\"}",
+            "EXAM_SESSION_STATUS" : "${EXAM_SESSION_STATUS || \"\"}",
+            "EXAM_START_ORDER" : "${EXAM_START_ORDER || \"1\"}",
+            "EXAM_COUNTRY" : "${EXAM_COUNTRY || \"PL\"}",
+            "FIRST_START" : "${FIRST_START || \"\"}",
+            "HOME_DAILY" : "${HOME_DAILY || \"\"}",
+            "HOME_CONTEXTUAL" : "${HOME_CONTEXTUAL || \"\"}",
+            "LOCALE" : "${LOCALE || \"ua\"}",
+            "OFFLINE_PACK_CATEGORY" : "${OFFLINE_PACK_CATEGORY || \"\"}",
+            "OFFLINE_PACK_STATUS" : "${OFFLINE_PACK_STATUS || \"\"}",
+            "EXPLANATIONS_EXHAUSTED" : "${EXPLANATIONS_EXHAUSTED || \"\"}",
+            "FREE_EXAM_USED" : "${FREE_EXAM_USED || \"\"}",
+            "WRONG_ANSWERS_PREVIEW_USED" : "${WRONG_ANSWERS_PREVIEW_USED || \"\"}",
+            "FREE_QUESTIONS_EXHAUSTED" : "${FREE_QUESTIONS_EXHAUSTED || \"\"}",
+            "MONETIZATION_V2" : "${MONETIZATION_V2 || \"false\"}",
+            "PLUS_ACCESS" : "${PLUS_ACCESS || \"false\"}",
+            "ENABLE_ADS" : "${ENABLE_ADS || \"false\"}",
+            "QUESTION_SCENARIO" : "${QUESTION_SCENARIO || \"\"}",
+            "REACHABILITY" : "${REACHABILITY || \"\"}",
+            "SIGN_CATEGORY_ID" : "${SIGN_CATEGORY_ID || \"A\"}",
+            "TOPIC_ID" : "${TOPIC_ID || \"signs_signals\"}",
+            "TARGET_ID" : "${TARGET_ID || \"screen-home\"}",
+            "TRAINING_COMPLETED_LIFETIME" : "${TRAINING_COMPLETED_LIFETIME || \"\"}",
+            "PREMIUM_TEASER_MOMENT" : "${PREMIUM_TEASER_MOMENT || \"\"}"
+          },
+          "optional" : false
+        }
+      }, {
+        "launchAppCommand" : {
+          "appId" : "com.mindjar.prawko",
+          "clearState" : true,
+          "clearKeychain" : true,
+          "optional" : false
+        }
+      }, {
+        "openLinkCommand" : {
+          "link" : "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&monetizationV2=${MONETIZATION_V2}&freeExamUsed=${FREE_EXAM_USED}&freeQuestionsExhausted=${FREE_QUESTIONS_EXHAUSTED}&wrongAnswersPreviewUsed=${WRONG_ANSWERS_PREVIEW_USED}&explanationsExhausted=${EXPLANATIONS_EXHAUSTED}&enableAds=${ENABLE_ADS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&examCountry=${EXAM_COUNTRY}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}&firstStart=${FIRST_START}&homeDaily=${HOME_DAILY}&homeContextual=${HOME_CONTEXTUAL}&trainingCompletedLifetime=${TRAINING_COMPLETED_LIFETIME}&premiumTeaserMoment=${PREMIUM_TEASER_MOMENT}",
+          "autoVerify" : false,
+          "browser" : false,
+          "optional" : false
+        }
+      }, {
+        "runFlowCommand" : {
+          "commands" : [ {
+            "tapOnElement" : {
+              "selector" : {
+                "textRegex" : "Close Advertisement",
+                "optional" : false
+              },
+              "retryIfNoChange" : false,
+              "waitUntilVisible" : false,
+              "longPress" : false,
+              "optional" : false
+            }
+          } ],
+          "condition" : {
+            "visible" : {
+              "textRegex" : "Close Advertisement",
+              "optional" : false
+            }
+          },
+          "optional" : false
+        }
+      }, {
+        "assertConditionCommand" : {
+          "condition" : {
+            "notVisible" : {
+              "idRegex" : "screen-e2e-bootstrap-disabled",
+              "optional" : false
+            }
+          },
+          "timeout" : "5000",
+          "optional" : false
+        }
+      }, {
+        "assertConditionCommand" : {
+          "condition" : {
+            "visible" : {
+              "idRegex" : "${TARGET_ID}",
+              "optional" : false
+            }
+          },
+          "timeout" : "20000",
+          "optional" : false
+        }
+      } ],
+      "sourceDescription" : "../subflows/launch_onboarded_destination.yaml",
+      "config" : {
+        "appId" : "com.mindjar.prawko"
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659227197,
+    "duration" : 14303,
+    "sequenceNumber" : 2,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "runFlowCommand" : {
+        "commands" : [ {
+          "defineVariablesCommand" : {
+            "env" : {
+              "DESTINATION" : "home",
+              "QUESTION_SCENARIO" : "roadmap-progress",
+              "PLUS_ACCESS" : "true",
+              "TARGET_ID" : "screen-home"
+            },
+            "optional" : false
+          }
+        }, {
+          "applyConfigurationCommand" : {
+            "config" : {
+              "appId" : "com.mindjar.prawko"
+            },
+            "optional" : false
+          }
+        }, {
+          "defineVariablesCommand" : {
+            "env" : {
+              "CATEGORY" : "${CATEGORY || \"B\"}",
+              "DAYS_UNTIL_EXAM" : "${DAYS_UNTIL_EXAM || \"14\"}",
+              "DESTINATION" : "${DESTINATION || \"home\"}",
+              "EXAM_SESSION_CATEGORY" : "${EXAM_SESSION_CATEGORY || \"\"}",
+              "EXAM_SESSION_STATUS" : "${EXAM_SESSION_STATUS || \"\"}",
+              "EXAM_START_ORDER" : "${EXAM_START_ORDER || \"1\"}",
+              "EXAM_COUNTRY" : "${EXAM_COUNTRY || \"PL\"}",
+              "FIRST_START" : "${FIRST_START || \"\"}",
+              "HOME_DAILY" : "${HOME_DAILY || \"\"}",
+              "HOME_CONTEXTUAL" : "${HOME_CONTEXTUAL || \"\"}",
+              "LOCALE" : "${LOCALE || \"ua\"}",
+              "OFFLINE_PACK_CATEGORY" : "${OFFLINE_PACK_CATEGORY || \"\"}",
+              "OFFLINE_PACK_STATUS" : "${OFFLINE_PACK_STATUS || \"\"}",
+              "EXPLANATIONS_EXHAUSTED" : "${EXPLANATIONS_EXHAUSTED || \"\"}",
+              "FREE_EXAM_USED" : "${FREE_EXAM_USED || \"\"}",
+              "WRONG_ANSWERS_PREVIEW_USED" : "${WRONG_ANSWERS_PREVIEW_USED || \"\"}",
+              "FREE_QUESTIONS_EXHAUSTED" : "${FREE_QUESTIONS_EXHAUSTED || \"\"}",
+              "MONETIZATION_V2" : "${MONETIZATION_V2 || \"false\"}",
+              "PLUS_ACCESS" : "${PLUS_ACCESS || \"false\"}",
+              "ENABLE_ADS" : "${ENABLE_ADS || \"false\"}",
+              "QUESTION_SCENARIO" : "${QUESTION_SCENARIO || \"\"}",
+              "REACHABILITY" : "${REACHABILITY || \"\"}",
+              "SIGN_CATEGORY_ID" : "${SIGN_CATEGORY_ID || \"A\"}",
+              "TOPIC_ID" : "${TOPIC_ID || \"signs_signals\"}",
+              "TARGET_ID" : "${TARGET_ID || \"screen-home\"}",
+              "TRAINING_COMPLETED_LIFETIME" : "${TRAINING_COMPLETED_LIFETIME || \"\"}",
+              "PREMIUM_TEASER_MOMENT" : "${PREMIUM_TEASER_MOMENT || \"\"}"
+            },
+            "optional" : false
+          }
+        }, {
+          "launchAppCommand" : {
+            "appId" : "com.mindjar.prawko",
+            "clearState" : true,
+            "clearKeychain" : true,
+            "optional" : false
+          }
+        }, {
+          "openLinkCommand" : {
+            "link" : "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&monetizationV2=${MONETIZATION_V2}&freeExamUsed=${FREE_EXAM_USED}&freeQuestionsExhausted=${FREE_QUESTIONS_EXHAUSTED}&wrongAnswersPreviewUsed=${WRONG_ANSWERS_PREVIEW_USED}&explanationsExhausted=${EXPLANATIONS_EXHAUSTED}&enableAds=${ENABLE_ADS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&examCountry=${EXAM_COUNTRY}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}&firstStart=${FIRST_START}&homeDaily=${HOME_DAILY}&homeContextual=${HOME_CONTEXTUAL}&trainingCompletedLifetime=${TRAINING_COMPLETED_LIFETIME}&premiumTeaserMoment=${PREMIUM_TEASER_MOMENT}",
+            "autoVerify" : false,
+            "browser" : false,
+            "optional" : false
+          }
+        }, {
+          "runFlowCommand" : {
+            "commands" : [ {
+              "tapOnElement" : {
+                "selector" : {
+                  "textRegex" : "Close Advertisement",
+                  "optional" : false
+                },
+                "retryIfNoChange" : false,
+                "waitUntilVisible" : false,
+                "longPress" : false,
+                "optional" : false
+              }
+            } ],
+            "condition" : {
+              "visible" : {
+                "textRegex" : "Close Advertisement",
+                "optional" : false
+              }
+            },
+            "optional" : false
+          }
+        }, {
+          "assertConditionCommand" : {
+            "condition" : {
+              "notVisible" : {
+                "idRegex" : "screen-e2e-bootstrap-disabled",
+                "optional" : false
+              }
+            },
+            "timeout" : "5000",
+            "optional" : false
+          }
+        }, {
+          "assertConditionCommand" : {
+            "condition" : {
+              "visible" : {
+                "idRegex" : "${TARGET_ID}",
+                "optional" : false
+              }
+            },
+            "timeout" : "20000",
+            "optional" : false
+          }
+        } ],
+        "sourceDescription" : "../subflows/launch_onboarded_destination.yaml",
+        "config" : {
+          "appId" : "com.mindjar.prawko"
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "defineVariablesCommand" : {
+      "env" : {
+        "DESTINATION" : "home",
+        "QUESTION_SCENARIO" : "roadmap-progress",
+        "PLUS_ACCESS" : "true",
+        "TARGET_ID" : "screen-home"
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659227214,
+    "duration" : 0,
+    "sequenceNumber" : 3,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "defineVariablesCommand" : {
+        "env" : {
+          "DESTINATION" : "home",
+          "QUESTION_SCENARIO" : "roadmap-progress",
+          "PLUS_ACCESS" : "true",
+          "TARGET_ID" : "screen-home"
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "defineVariablesCommand" : {
+      "env" : {
+        "CATEGORY" : "${CATEGORY || \"B\"}",
+        "DAYS_UNTIL_EXAM" : "${DAYS_UNTIL_EXAM || \"14\"}",
+        "DESTINATION" : "${DESTINATION || \"home\"}",
+        "EXAM_SESSION_CATEGORY" : "${EXAM_SESSION_CATEGORY || \"\"}",
+        "EXAM_SESSION_STATUS" : "${EXAM_SESSION_STATUS || \"\"}",
+        "EXAM_START_ORDER" : "${EXAM_START_ORDER || \"1\"}",
+        "EXAM_COUNTRY" : "${EXAM_COUNTRY || \"PL\"}",
+        "FIRST_START" : "${FIRST_START || \"\"}",
+        "HOME_DAILY" : "${HOME_DAILY || \"\"}",
+        "HOME_CONTEXTUAL" : "${HOME_CONTEXTUAL || \"\"}",
+        "LOCALE" : "${LOCALE || \"ua\"}",
+        "OFFLINE_PACK_CATEGORY" : "${OFFLINE_PACK_CATEGORY || \"\"}",
+        "OFFLINE_PACK_STATUS" : "${OFFLINE_PACK_STATUS || \"\"}",
+        "EXPLANATIONS_EXHAUSTED" : "${EXPLANATIONS_EXHAUSTED || \"\"}",
+        "FREE_EXAM_USED" : "${FREE_EXAM_USED || \"\"}",
+        "WRONG_ANSWERS_PREVIEW_USED" : "${WRONG_ANSWERS_PREVIEW_USED || \"\"}",
+        "FREE_QUESTIONS_EXHAUSTED" : "${FREE_QUESTIONS_EXHAUSTED || \"\"}",
+        "MONETIZATION_V2" : "${MONETIZATION_V2 || \"false\"}",
+        "PLUS_ACCESS" : "${PLUS_ACCESS || \"false\"}",
+        "ENABLE_ADS" : "${ENABLE_ADS || \"false\"}",
+        "QUESTION_SCENARIO" : "${QUESTION_SCENARIO || \"\"}",
+        "REACHABILITY" : "${REACHABILITY || \"\"}",
+        "SIGN_CATEGORY_ID" : "${SIGN_CATEGORY_ID || \"A\"}",
+        "TOPIC_ID" : "${TOPIC_ID || \"signs_signals\"}",
+        "TARGET_ID" : "${TARGET_ID || \"screen-home\"}",
+        "TRAINING_COMPLETED_LIFETIME" : "${TRAINING_COMPLETED_LIFETIME || \"\"}",
+        "PREMIUM_TEASER_MOMENT" : "${PREMIUM_TEASER_MOMENT || \"\"}"
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659227215,
+    "duration" : 803,
+    "sequenceNumber" : 4,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "defineVariablesCommand" : {
+        "env" : {
+          "CATEGORY" : "B",
+          "DAYS_UNTIL_EXAM" : "14",
+          "DESTINATION" : "home",
+          "EXAM_START_ORDER" : "1",
+          "EXAM_COUNTRY" : "PL",
+          "LOCALE" : "ua",
+          "MONETIZATION_V2" : "false",
+          "PLUS_ACCESS" : "true",
+          "ENABLE_ADS" : "false",
+          "QUESTION_SCENARIO" : "roadmap-progress",
+          "SIGN_CATEGORY_ID" : "A",
+          "TOPIC_ID" : "signs_signals",
+          "TARGET_ID" : "screen-home"
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "applyConfigurationCommand" : {
+      "config" : {
+        "appId" : "com.mindjar.prawko"
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659228019,
+    "duration" : 0,
+    "sequenceNumber" : 5,
+    "depth" : 1,
+    "evaluatedCommand" : {
+      "applyConfigurationCommand" : {
+        "config" : {
+          "appId" : "com.mindjar.prawko"
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "launchAppCommand" : {
+      "appId" : "com.mindjar.prawko",
+      "clearState" : true,
+      "clearKeychain" : true,
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659228020,
+    "duration" : 3327,
+    "sequenceNumber" : 6,
+    "depth" : 1,
+    "evaluatedCommand" : {
+      "launchAppCommand" : {
+        "appId" : "com.mindjar.prawko",
+        "clearState" : true,
+        "clearKeychain" : true,
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "openLinkCommand" : {
+      "link" : "prawko://e2e/bootstrap?destination=${DESTINATION}&category=${CATEGORY}&daysUntilExam=${DAYS_UNTIL_EXAM}&locale=${LOCALE}&plusAccess=${PLUS_ACCESS}&monetizationV2=${MONETIZATION_V2}&freeExamUsed=${FREE_EXAM_USED}&freeQuestionsExhausted=${FREE_QUESTIONS_EXHAUSTED}&wrongAnswersPreviewUsed=${WRONG_ANSWERS_PREVIEW_USED}&explanationsExhausted=${EXPLANATIONS_EXHAUSTED}&enableAds=${ENABLE_ADS}&questionScenario=${QUESTION_SCENARIO}&reachability=${REACHABILITY}&offlinePackStatus=${OFFLINE_PACK_STATUS}&offlinePackCategory=${OFFLINE_PACK_CATEGORY}&examSessionStatus=${EXAM_SESSION_STATUS}&examSessionCategory=${EXAM_SESSION_CATEGORY}&examStartOrder=${EXAM_START_ORDER}&examCountry=${EXAM_COUNTRY}&signCategoryId=${SIGN_CATEGORY_ID}&topicId=${TOPIC_ID}&firstStart=${FIRST_START}&homeDaily=${HOME_DAILY}&homeContextual=${HOME_CONTEXTUAL}&trainingCompletedLifetime=${TRAINING_COMPLETED_LIFETIME}&premiumTeaserMoment=${PREMIUM_TEASER_MOMENT}",
+      "autoVerify" : false,
+      "browser" : false,
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659231349,
+    "duration" : 1483,
+    "sequenceNumber" : 7,
+    "depth" : 1,
+    "evaluatedCommand" : {
+      "openLinkCommand" : {
+        "link" : "prawko://e2e/bootstrap?destination=home&category=B&daysUntilExam=14&locale=ua&plusAccess=true&monetizationV2=false&freeExamUsed=&freeQuestionsExhausted=&wrongAnswersPreviewUsed=&explanationsExhausted=&enableAds=false&questionScenario=roadmap-progress&reachability=&offlinePackStatus=&offlinePackCategory=&examSessionStatus=&examSessionCategory=&examStartOrder=1&examCountry=PL&signCategoryId=A&topicId=signs_signals&firstStart=&homeDaily=&homeContextual=&trainingCompletedLifetime=&premiumTeaserMoment=",
+        "autoVerify" : false,
+        "browser" : false,
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "runFlowCommand" : {
+      "commands" : [ {
+        "tapOnElement" : {
+          "selector" : {
+            "textRegex" : "Close Advertisement",
+            "optional" : false
+          },
+          "retryIfNoChange" : false,
+          "waitUntilVisible" : false,
+          "longPress" : false,
+          "optional" : false
+        }
+      } ],
+      "condition" : {
+        "visible" : {
+          "textRegex" : "Close Advertisement",
+          "optional" : false
+        }
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "SKIPPED",
+    "timestamp" : 1791659232833,
+    "duration" : 7451,
+    "sequenceNumber" : 8,
+    "depth" : 1,
+    "evaluatedCommand" : {
+      "runFlowCommand" : {
+        "commands" : [ {
+          "tapOnElement" : {
+            "selector" : {
+              "textRegex" : "Close Advertisement",
+              "optional" : false
+            },
+            "retryIfNoChange" : false,
+            "waitUntilVisible" : false,
+            "longPress" : false,
+            "optional" : false
+          }
+        } ],
+        "condition" : {
+          "visible" : {
+            "textRegex" : "Close Advertisement",
+            "optional" : false
+          }
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "assertConditionCommand" : {
+      "condition" : {
+        "notVisible" : {
+          "idRegex" : "screen-e2e-bootstrap-disabled",
+          "optional" : false
+        }
+      },
+      "timeout" : "5000",
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659240285,
+    "duration" : 896,
+    "sequenceNumber" : 9,
+    "depth" : 1,
+    "evaluatedCommand" : {
+      "assertConditionCommand" : {
+        "condition" : {
+          "notVisible" : {
+            "idRegex" : "screen-e2e-bootstrap-disabled",
+            "optional" : false
+          }
+        },
+        "timeout" : "5000",
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "assertConditionCommand" : {
+      "condition" : {
+        "visible" : {
+          "idRegex" : "${TARGET_ID}",
+          "optional" : false
+        }
+      },
+      "timeout" : "20000",
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659241181,
+    "duration" : 317,
+    "sequenceNumber" : 10,
+    "depth" : 1,
+    "evaluatedCommand" : {
+      "assertConditionCommand" : {
+        "condition" : {
+          "visible" : {
+            "idRegex" : "screen-home",
+            "optional" : false
+          }
+        },
+        "timeout" : "20000",
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "assertConditionCommand" : {
+      "condition" : {
+        "visible" : {
+          "idRegex" : "roadmap-first-step-nudge",
+          "optional" : false
+        }
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1791659241501,
+    "duration" : 294,
+    "sequenceNumber" : 11,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "assertConditionCommand" : {
+        "condition" : {
+          "visible" : {
+            "idRegex" : "roadmap-first-step-nudge",
+            "optional" : false
+          }
+        },
+        "optional" : false
+      }
+    }
+  }
+} ]

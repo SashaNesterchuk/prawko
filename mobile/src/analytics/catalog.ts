@@ -283,6 +283,18 @@ export const ANALYTICS_EVENTS = {
     description:
       "The learner tapped the legacy Home retention card. kind matches home_contextual_shown; not a current roadmap Home funnel step.",
   },
+  homePreparationActionSelected: {
+    key: "home_preparation_action_selected",
+    description: "Tap on the Home preparation card or mistakes action. action, destination and exact current-bank counts; intent, not successful arrival.",
+  },
+  firstStepNudgeShown: {
+    key: "first_step_nudge_shown",
+    description: "First-step double bounce started on focused foreground Home with Reduce Motion off. Once per mounted country/category hint, never per pulse.",
+  },
+  roadmapLessonProgressChanged: {
+    key: "roadmap_lesson_progress_changed",
+    description: "Local lesson answer coverage changed. Before/after counts, pool revision, country/category/step; completion_transition completed/reopened/none. Hydration, reset and repeated unchanged answers are silent.",
+  },
   roadmapStepOpened: {
     key: "roadmap_step_opened",
     description:
@@ -980,6 +992,7 @@ export const ANALYTICS_EXAM_COUNTRY_SOURCES = {
   deviceRegion: "device_region",
   e2e: "e2e",
   legacyOnboarded: "legacy_onboarded",
+  onboarding: "onboarding",
   settings: "settings",
   storefront: "storefront",
 } as const;

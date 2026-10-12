@@ -61,7 +61,7 @@ JSONL хранит порядок приёма асинхронных запро
 
 `source` на разных событиях значит разное (spotlight vs profile vs manual). Смотреть в контексте события.
 
-`exam_country` источники (`exam_country_resolved.source` / смена страны): `device_region`, `storefront`, `default`, `settings`, `legacy_onboarded`, `e2e`.
+`exam_country` источники (`exam_country_resolved.source` / смена страны): `device_region`, `storefront`, `default`, `settings`, `onboarding`, `legacy_onboarded`, `e2e`.
 
 ---
 
@@ -942,3 +942,14 @@ Legacy client coverage без явного `application_ids` не доказыв
 ### Подавление ожидаемого диагностического шума
 
 В текущем коде не отправляются `ad_skipped` для ожидаемого `disabled/should_show=no`, `app_review_skipped/already_prompted` и `notification_schedule_resolved/sync/disabled`, если до проверки напоминания были выключены и до/после неё нет локальных scheduled IDs. Решения рекламы/оценки и сама проверка напоминаний не меняются. Ошибки, остальные причины пропуска, явные enable/disable и переход включённых напоминаний в выключенное состояние сохраняются. Исторические события этих причин остаются валидной диагностикой старых сборок; отсутствие события в новых сборках не доказывает включённую рекламу/напоминания.
+
+
+Onboarding for PL/SK/CZ is restored to category → exam schedule → Home; `onboarding_step_completed.step=exam_schedule`, `exam_date_provided` reports date selection or skip. The standalone learning example was reverted.
+
+## Home preparation and roadmap observation — 11 October 2026
+
+- `home_preparation_action_selected`: actual tap, `source=home_preparation`, `action=statistics|mistakes`, `destination=statistics|mistakes|paywall`. Includes exact current-bank `question_total`, `correct_count`, `wrong_count`, `progress_percent`. This is navigation intent; use the following `screen_viewed`/paywall event for arrival. Zero-error action falls back to statistics.
+- `first_step_nudge_shown`: the first-step double bounce starts after its 500 ms delay on focused foreground Home with Reduced Motion disabled. Once per mounted country/category hint, not per pulse. Includes `roadmap_step_id`, `exam_country`, `category`, `animation=double_bounce`. Opening a lesson without answering can expose it again on a later mounted hint; a reset intentionally allows a new exposure.
+- `roadmap_lesson_progress_changed`: committed local lesson coverage changes. Includes country/category/step, `pool_revision`, total and before/after correct/wrong counts, exact green/red percentages, `completed` and `completion_transition=completed|reopened|none`. `change_reason=answer|content_changed` distinguishes learner answers from content invalidation. `question_id` and `training_session_id` join the answer when available. Hydration, new empty pool registration, reset and unchanged repeat answers do not manufacture completion events.
+
+Events use the existing analytics enrichment, validation and production/local build gates. Existing answer, session, onboarding and reset events remain the canonical actions for those flows. UI-only percent rounding and icon changes have no separate click or success event.

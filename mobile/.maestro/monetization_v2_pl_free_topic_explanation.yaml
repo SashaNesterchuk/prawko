@@ -41,7 +41,9 @@ tags:
     direction: DOWN
     timeout: 8000
 
-- assertVisible: "Premium"
+- assertVisible: "Пояснення Premium.*Зараз безкоштовно · згодом у Premium"
+
+- takeScreenshot: artifacts/explanation-premium-preview
 
 - tapOn:
     id: "question-explanation-premium"

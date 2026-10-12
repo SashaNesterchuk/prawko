@@ -1,0 +1,11 @@
+# A fresh simulator may show two queued system confirmations for a deep link.
+appId: com.mindjar.prawko
+---
+- repeat:
+    times: 3
+    commands:
+      - runFlow:
+          when:
+            visible: 'Open in.*Prawko.*'
+          commands:
+            - tapOn: "^Open$"

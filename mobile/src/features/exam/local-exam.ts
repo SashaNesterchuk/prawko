@@ -7,6 +7,7 @@ import {
 
 import { getExamCountry, useAppShellStore } from "../../state/app-shell";
 import { createExamOriginRuleMetadata } from "../../analytics/exam-rules-observation";
+import { useRoadmapProgressStore } from "../home/roadmap-progress";
 
 import {
   flushQuestionProgressPersist,
@@ -419,6 +420,7 @@ export function submitLocalExamAnswer(
     return cloneSnapshot(snapshot);
   }
 
+  useRoadmapProgressStore.getState().markStarted();
   const isCorrect = question.correctAnswer === input.answerGiven;
   const answer: RemoteExamAnswer = {
     answerDurationMs: input.answerDurationMs ?? null,

@@ -251,3 +251,5 @@ No native build, Maestro, simulator, Xcode, real checkout, vendor mutation,
 commit or deployment is part of this acceptance. Full-catalog typing/golden
 coverage, owners, privacy policy and native/production/dashboard gates remain
 open in [the full A-R ledger](./handbook-implementation.md).
+
+Home preparation actions, first-step nudge exposure and roadmap lesson coverage changes have required runtime contracts in `ANALYTICS_PAYLOAD_CONTRACTS`. Their triggers and grain are documented in `keys.md`; coverage counts retain exact fractions rather than rounded display values. Exposure/coverage events are observations, while preparation taps count as explicit interactions.

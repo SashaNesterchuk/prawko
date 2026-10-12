@@ -325,7 +325,7 @@ tags:
                       timeout: 8000
                       centerElement: false
                   - tapOn:
-                      id: home-exam-readiness
+                      id: home-exam-readiness-mistakes
             - runFlow:
                 when:
                   true: ${output.homeBeat % 6 == 1}

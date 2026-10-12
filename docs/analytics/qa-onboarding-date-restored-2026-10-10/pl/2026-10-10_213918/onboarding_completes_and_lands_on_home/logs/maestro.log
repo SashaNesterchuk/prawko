@@ -1,0 +1,60 @@
+21:40:29.061 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+21:40:29.061 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+21:40:29.061 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Apply configuration RUNNING
+21:40:29.061 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Apply configuration COMPLETED
+21:40:29.062 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Run subflows/complete_onboarding.yaml RUNNING
+21:40:29.062 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Apply configuration RUNNING
+21:40:29.062 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Apply configuration COMPLETED
+21:40:29.062 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Launch app "com.mindjar.prawko" with clear state and clear keychain RUNNING
+21:40:29.062 [ INFO] maestro.Maestro.clearKeychain$lambda$10: Clearing keychain
+21:40:29.475 [ INFO] maestro.Maestro.clearAppState$lambda$8: Clearing app state com.mindjar.prawko
+21:40:33.687 [ INFO] maestro.Maestro.launchApp$lambda$5: Launching app com.mindjar.prawko
+21:40:33.688 [ INFO] maestro.Maestro.launchApp$lambda$5: Stopping com.mindjar.prawko app during launch
+21:40:34.215 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Launch app "com.mindjar.prawko" with clear state and clear keychain COMPLETED
+21:40:34.216 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-onboarding-category is visible RUNNING
+21:40:42.215 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-onboarding-category is visible COMPLETED
+21:40:42.218 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: exam-country-list is not visible RUNNING
+21:40:43.022 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: exam-country-list is not visible COMPLETED
+21:40:43.023 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: onboarding-category-B RUNNING
+21:40:43.180 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=B, title=, value=, text=, hintText=, resource-id=onboarding-category-B, bounds=[24,386][196,444], enabled=true, focused=false, selected=true, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=true), bounds=Bounds(x=24, y=386, width=172, height=58))
+21:40:43.508 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+21:40:43.510 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (110, 415) using hierarchy based logic for wait
+21:40:43.510 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+21:40:43.510 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+21:40:44.267 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+21:40:44.267 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: onboarding-category-B COMPLETED
+21:40:44.267 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: onboarding-category-continue RUNNING
+21:40:44.432 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Continue, title=, value=, text=, hintText=, resource-id=onboarding-category-continue, bounds=[24,764][378,816], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=764, width=354, height=52))
+21:40:44.652 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+21:40:44.653 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (201, 790) using hierarchy based logic for wait
+21:40:44.653 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+21:40:44.653 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+21:40:46.091 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+21:40:46.096 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: onboarding-category-continue COMPLETED
+21:40:46.097 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-onboarding-exam-schedule is visible RUNNING
+21:40:46.285 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-onboarding-exam-schedule is visible COMPLETED
+21:40:46.286 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Tap on id: onboarding-exam-schedule-continue RUNNING
+21:40:46.494 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Continue, title=, value=, text=, hintText=, resource-id=onboarding-exam-schedule-continue, bounds=[24,712][378,764], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=24, y=712, width=354, height=52))
+21:40:46.795 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tap aimed via trusted pre-wait hierarchy (null settle, no recent scroll)
+21:40:46.796 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (201, 738) using hierarchy based logic for wait
+21:40:46.796 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+21:40:46.796 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+21:40:47.567 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+21:40:47.568 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Tap on id: onboarding-exam-schedule-continue COMPLETED
+21:40:47.568 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-home is visible RUNNING
+21:40:48.092 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-home is visible COMPLETED
+21:40:48.092 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Run subflows/complete_onboarding.yaml COMPLETED
+21:40:48.093 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: screen-home is visible RUNNING
+21:40:48.485 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: screen-home is visible COMPLETED
+21:40:48.486 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: tab-index is visible RUNNING
+21:40:48.809 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: tab-index is visible COMPLETED
+21:40:48.809 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: home-start-spotlight is not visible RUNNING
+21:40:49.779 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: home-start-spotlight is not visible COMPLETED
+21:40:49.781 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: home-exam-readiness is visible RUNNING
+21:40:50.197 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: home-exam-readiness is visible COMPLETED
+21:40:50.198 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: action-tile-trainer is not visible RUNNING
+21:40:51.176 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: action-tile-trainer is not visible COMPLETED
+21:40:51.177 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: home-tile-blitz is not visible RUNNING
+21:40:52.112 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: home-tile-blitz is not visible COMPLETED
+21:40:52.112 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: home-exam-date is not visible RUNNING
+21:40:53.053 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: home-exam-date is not visible COMPLETED

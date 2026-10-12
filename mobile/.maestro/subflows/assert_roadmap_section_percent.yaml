@@ -1,0 +1,47 @@
+# First category header: equal share of each group's correct-answer percent.
+# partial = one group at 2/3. complete = one group at 100%.
+# PL has 9 groups, CZ 6, SK 10. The exam step is not part of this header's groups.
+appId: com.mindjar.prawko
+---
+- runFlow:
+    when:
+      true: ${PROGRESS_KIND == "partial" && EXAM_COUNTRY == "CZ"}
+    commands:
+      - assertVisible:
+          id: "roadmap-section-progress-0"
+          text: "^11%$"
+- runFlow:
+    when:
+      true: ${PROGRESS_KIND == "partial" && EXAM_COUNTRY == "SK"}
+    commands:
+      - assertVisible:
+          id: "roadmap-section-progress-0"
+          text: "^6%$"
+- runFlow:
+    when:
+      true: ${PROGRESS_KIND == "partial" && EXAM_COUNTRY != "CZ" && EXAM_COUNTRY != "SK"}
+    commands:
+      - assertVisible:
+          id: "roadmap-section-progress-0"
+          text: "^7%$"
+- runFlow:
+    when:
+      true: ${PROGRESS_KIND == "complete" && EXAM_COUNTRY == "CZ"}
+    commands:
+      - assertVisible:
+          id: "roadmap-section-progress-0"
+          text: "^16%$"
+- runFlow:
+    when:
+      true: ${PROGRESS_KIND == "complete" && EXAM_COUNTRY == "SK"}
+    commands:
+      - assertVisible:
+          id: "roadmap-section-progress-0"
+          text: "^10%$"
+- runFlow:
+    when:
+      true: ${PROGRESS_KIND == "complete" && EXAM_COUNTRY != "CZ" && EXAM_COUNTRY != "SK"}
+    commands:
+      - assertVisible:
+          id: "roadmap-section-progress-0"
+          text: "^11%$"

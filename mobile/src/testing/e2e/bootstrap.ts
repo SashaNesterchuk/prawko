@@ -69,6 +69,7 @@ import { getE2EQuestionScenarioQuestions } from "./question-scenarios";
 
 export type E2EDestination =
   | "home"
+  | "onboarding-schedule"
   | "learn"
   | "practice"
   | "profile"
@@ -115,6 +116,7 @@ type PrepareE2EAppStateInput = {
   seedQuestionResult?: boolean | null;
   seedQuestionResultOutcome?: "good" | "poor" | null;
   seedDiagnosticResult?: boolean | null;
+  seedOnboardingSchedule?: boolean | null;
   premiumTeaserMoment?: E2EPremiumTeaserMoment | null;
   trainingCompletedLifetime?: number | null;
   unlockHomeChrome?: boolean | null;
@@ -165,6 +167,11 @@ export async function prepareE2EAppState(
     });
   }
 
+  // Country/category changes load a different bank asynchronously. A resolved
+  // previous bank must not satisfy the fixture's readiness check.
+  if (!input.questionScenario && (store.examCountry !== examCountry || store.preferredCategory !== preferredCategory)) {
+    useQuestionCatalogStore.getState().setLoading();
+  }
   store.setSessionResolved(true);
   store.setExamCountry(examCountry);
   await rehydrateCountryScopedStores(examCountry);
@@ -178,7 +185,13 @@ export async function prepareE2EAppState(
     examDate: getExamDateFromDays(daysUntilExam),
   });
 
-  finalizeLocalOnboarding();
+  if (input.seedOnboardingSchedule) {
+    useAppShellStore.setState((state) => ({
+      onboardingCompleted: false,
+      onboardingProgress: { ...state.onboardingProgress, categoryDone: true, scheduleDone: false },
+      studyPlanSetup: { ...state.studyPlanSetup, examDate: null },
+    }));
+  } else finalizeLocalOnboarding();
   useAppShellStore.setState({ homeStartSpotlightDismissed: false });
   if (input.trainingCompletedLifetime != null) {
     useMonetizationStore.setState({
@@ -262,6 +275,8 @@ export function resolveE2EDestination(
   input: ResolveE2EDestinationInput = {},
 ): Href {
   switch (normalizeDestination(input.destination)) {
+    case "onboarding-schedule":
+      return "/(onboarding)/exam-schedule";
     case "learn":
       return "/(tabs)/learn";
     case "profile":
@@ -345,6 +360,7 @@ function normalizeDestination(
   const normalized = value?.trim().toLowerCase();
 
   switch (normalized) {
+    case "onboarding-schedule":
     case "learn":
     case "practice":
     case "profile":
@@ -428,6 +444,7 @@ function seedE2EMonetizationV2(input: PrepareE2EAppStateInput) {
   }
 
   const usage = createEmptyMonetizationUsage();
+
 
   if (input.freeExamUsed) {
     usage.freeExamUsed = true;
@@ -811,7 +828,7 @@ function seedE2EHomeDailySession(input: {
     id: `session-${sessionKey}`,
     request: {
       currentCategory: input.category,
-      mode: "mini_test",
+      mode: "initial_diagnostic",
       questionLimit: HOME_DAILY_QUESTION_COUNT,
       sessionKey,
     },

@@ -10,7 +10,7 @@ export type E2EOfflinePackStatus =
   | "missing"
   | "ready";
 
-export type E2EQuestionScenario = "topic-progress";
+export type E2EQuestionScenario = "topic-progress" | "roadmap-progress";
 
 type E2ETestOverrides = {
   offlinePackCategory: DrivingCategory | null;

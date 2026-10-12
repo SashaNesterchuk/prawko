@@ -101,6 +101,10 @@ of a better product. State the measurable hypothesis before changing a flow.
 - Saving the local plan, completing onboarding, reaching Home and obtaining
   usable learning content are separate outcomes.
 - An unset exam date is valid. Skipping the date must not silently invent one.
+- First-run onboarding is category → exam date (optional) → Home in PL/SK/CZ. The standalone learning example was reverted. No added country/language selectors on the category screen.
+- PL/CZ/SK roadmap correct answers are scoped to the active step. Prefer distinct pools between steps; when small banks overlap, never broadcast coverage. Version-0 migration removes only ambiguous shared-question coverage, preserving other answers and stats.
+- PL/CZ/SK roadmap training checkmarks require unique correct coverage of a locally persisted lesson pool, keyed by country/category/step and validated against question content. Reopening an incomplete lesson retries its remaining questions, preserving access limits. Old completion-only flags do not establish correct coverage. The official simulator remains a separate flow.
+- The small first-step nudge applies to PL/CZ/SK and stops permanently after learning starts; respect reduced motion. Learning reset clears lesson pools and the started flag, so completing onboarding again restores the first-step hint.
 - Home/Today is the current roadmap surface. Older spotlight, daily-card and
   contextual-card implementations or filenames do not establish current UI.
 - Distinguish `initial_diagnostic`, training modes, timed practice, mistakes,
@@ -110,6 +114,8 @@ of a better product. State the measurable hypothesis before changing a flow.
   the same question must not manufacture new learned coverage.
 - Keep result display, session completion, review exposure and starting a new
   attempt separate. Reopening a stored result is not a new completion.
+- PL/SK Home readiness resumes a started, unfinished initial diagnostic,
+  preserving its answers and original daily key even after the day changes.
 - A fresh attempt must use fresh session state and identifiers. Continuing an
   in-progress attempt must retain its answer position and relevant context.
 - Empty pools, country/category mismatch, unavailable catalog and offline
@@ -339,3 +345,11 @@ pnpm test:e2e:smoke
   Check referenced paths and consistency with the current implementation.
 - Finish with what changed, why, what was verified and any remaining limitation.
   Do not claim a product improvement before its outcome has been measured.
+
+- PL/CZ/SK first-step hint starts after 500 ms: two 5-point bounces separated by 100 ms, then a 2-second pause. It stops after any accepted training, exam or sign-test answer. Opening a step does not stop it. Reduced Motion disables movement.
+
+- CZ now uses the same correct-answer roadmap rings and double-bounce first-step hint as PL/SK. This does not enable the PL/SK focused-mistakes or diagnostic-resume changes for CZ. Old training completion flags alone do not produce a checkmark; overall answer statistics remain intact.
+
+Roadmap rings in PL/CZ/SK use the latest accepted answer per question in the fixed step pool: green correct, red incorrect, gray unanswered. Wrong answers remove previous correct coverage and the checkmark; correction restores coverage. Only 100% correct with zero remaining mistakes completes a lesson. Stored v1 correct coverage is preserved; new wrong answers are recorded going forward.
+
+The Today roadmap's top preparation card is unique latest-answer coverage of the active country/category bank, independent of lesson pools and the readiness score. Green is latest correct, red uses the same unresolved-wrong criterion as `/mistakes`, and gray is unanswered. Only the nonzero mistakes label opens the existing Premium-gated mistakes entry. Other readiness screens keep their score.

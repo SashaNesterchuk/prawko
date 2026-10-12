@@ -35,6 +35,7 @@ import { getCountryConfig } from "@prawko/config";
 import { contentFingerprint } from "../../../analytics/content-revisions";
 import { getExamSessionRulesProperties } from "../../../analytics/exam-rules-observation";
 
+import { useRoadmapProgressStore } from "../../home/roadmap-progress";
 import { useQuestionProgressStore } from "../../../state/question-progress";
 import {
   hydrateQuestionBankFromLocalQuestions,
@@ -163,6 +164,7 @@ describe("local exam session lifecycle", () => {
   });
 
   it("advances to question 2 after the first answer", () => {
+    useRoadmapProgressStore.setState({ hasStartedLearning: false });
     const started = startMiniExam();
     const firstQuestionId = started.questions[0]!.questionSourceId;
     const answered = submitLocalExamAnswer({
@@ -175,6 +177,7 @@ describe("local exam session lifecycle", () => {
     expect(answered.session.totalQuestionsAnswered).toBe(1);
     expect(answered.answers[0]?.questionSourceId).toBe(firstQuestionId);
     expect(answered.session.status).toBe("active");
+    expect(useRoadmapProgressStore.getState().hasStartedLearning).toBe(true);
   });
 
   it("resumes the unanswered follow-up when the active session was kept", async () => {

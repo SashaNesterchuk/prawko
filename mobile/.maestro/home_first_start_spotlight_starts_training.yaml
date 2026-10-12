@@ -1,6 +1,6 @@
 # Feature: Home first start
 # Scenario: First-start Home (FIRST_START) does not show the spotlight; the empty
-# readiness card on Today starts the 10-question untimed assessment
+# preparation card on Today stays at zero until the first answer
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -23,19 +23,18 @@ tags:
 - assertNotVisible:
     id: "home-tile-blitz"
 
+- assertVisible:
+    id: "home-exam-readiness-percent"
+    text: "0%"
+- assertVisible:
+    id: "home-exam-readiness-correct"
+    text: ".*: 0"
+- assertVisible:
+    id: "home-exam-readiness-mistakes"
+    text: ".*: 0"
 - tapOn:
-    id: "home-exam-readiness"
-
-- extendedWaitUntil:
-    visible:
-      id: "screen-question"
-    timeout: 20000
-
+    id: "home-exam-readiness-percent"
 - assertVisible:
-    id: "question-choice-index-0"
-- assertVisible:
-    id: "question-title-quick-check"
+    id: "screen-statistics"
 - assertNotVisible:
-    id: "question-title-training"
-- assertNotVisible:
-    id: "screen-exam-session"
+    id: "screen-question"

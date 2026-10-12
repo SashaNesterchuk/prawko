@@ -32,3 +32,10 @@ describe("onboarding routes", () => {
     ).toBe(false);
   });
 });
+
+it.each(["PL", "SK", "CZ"] as const)("%s uses the restored date step", (examCountry) => {
+  const state = { examCountry, onboardingProgress: { categoryDone: true, scheduleDone: false }, studyPlanSetup: { daysUntilExam: null } };
+  expect(getNextOnboardingRoute(state)).toBe("/(onboarding)/exam-schedule");
+  expect(canFinalizeOnboarding(state)).toBe(false);
+  expect(canFinalizeOnboarding({ ...state, onboardingProgress: { categoryDone: true, scheduleDone: true }, studyPlanSetup: { daysUntilExam: 14 } })).toBe(true);
+});

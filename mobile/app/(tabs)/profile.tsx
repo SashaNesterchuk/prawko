@@ -654,6 +654,7 @@ export default function ProfileTabScreen() {
 
           <Pressable
             accessibilityRole="button"
+            testID="profile-reset-progress"
             onPress={handleResetAll}
             style={({ pressed }) => [
               styles.resetCard,

@@ -1,65 +1,27 @@
-import { Pressable, View } from "react-native";
-
+import { Pressable, View, useWindowDimensions } from "react-native";
 import { Icon } from "../icons";
-import {
-  CText,
-  useResponsiveFonts,
-  useResponsiveStyles,
-  type PercentageString,
-} from "../../portable-ui";
-import { useTheme } from "../../providers/ThemeProvider";
+import { CText, useResponsiveStyles, type PercentageString } from "../../portable-ui";
+import { formatPreparationPercent } from "../../features/home/preparation-progress";
 
 type ExamReadinessCardProps = {
   title: string;
   progress: number;
-  coveredLabel?: string;
-  weekChangePercent?: number | null;
-  weekChangeLabel?: string;
-  detailsLabel?: string;
-  empty?: boolean;
-  loading?: boolean;
-  onPress?: () => void;
-  testID?: string;
+  correctPercent: number;
+  wrongPercent: number;
+  correctLabel: string;
+  mistakesLabel: string;
+  loading: boolean;
+  onPress: () => void;
+  onMistakesPress?: () => void;
+  testID: string;
 };
 
-export function ExamReadinessCard({
-  title,
-  progress,
-  coveredLabel,
-  weekChangePercent,
-  weekChangeLabel,
-  detailsLabel,
-  empty = false,
-  loading = false,
-  onPress,
-  testID,
-}: ExamReadinessCardProps) {
-  const theme = useTheme();
-  const { responsiveFont } = useResponsiveFonts();
-  const clamped = Math.max(0, Math.min(progress, 100));
-  const shownProgress = loading || empty ? 0 : clamped;
-  const fillWidth = `${shownProgress}%` as PercentageString;
-  const styles = useStyles({ fillWidth });
-  const isPressable = Boolean(onPress) && !loading;
-  const showWeekChange =
-    !empty &&
-    !loading &&
-    weekChangePercent != null &&
-    weekChangePercent !== 0 &&
-    Boolean(weekChangeLabel);
-  const isWeekUp = (weekChangePercent ?? 0) > 0;
-
+export function ExamReadinessCard({ title, progress, correctPercent, wrongPercent,
+  correctLabel, mistakesLabel, loading, onPress, onMistakesPress, testID }: ExamReadinessCardProps) {
+  const styles = useStyles();
   return (
-    <Pressable
-      accessibilityRole={isPressable ? "button" : undefined}
-      disabled={!isPressable}
-      onPress={isPressable ? onPress : undefined}
-      testID={loading && testID ? `${testID}-loading` : testID}
-      style={({ pressed }) => [
-        styles.card,
-        pressed && isPressable ? styles.pressed : null,
-      ]}
-    >
+    <Pressable testID={loading ? `${testID}-loading` : testID} accessible={false}
+      onPress={onPress} style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}>
       {loading ? (
         <View style={styles.skeleton}>
           <View style={[styles.skeletonLine, styles.skeletonTitle]} />
@@ -69,48 +31,21 @@ export function ExamReadinessCard({
       ) : (
         <>
           <View style={styles.titleRow}>
-            <CText numberOfLines={2} style={styles.title} semiBold>
-              {title}
-            </CText>
-            <CText style={styles.percent} bold>
-              {Math.round(shownProgress)}%
-            </CText>
+            <CText numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={styles.title} semiBold>{title}</CText>
+            <CText testID={`${testID}-percent`} style={styles.percent} bold>{formatPreparationPercent(progress)}</CText>
           </View>
-          <View
-            accessibilityRole="progressbar"
-            accessibilityValue={{ min: 0, max: 100, now: Math.round(shownProgress) }}
-            style={styles.track}
-          >
-            {shownProgress > 0 ? <View style={styles.fill} /> : null}
+          <View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: Math.round(progress) }} style={styles.track}>
+            <View style={[styles.fill, { width: `${correctPercent}%` as PercentageString }]} />
+            <View style={[styles.wrongFill, { width: `${wrongPercent}%` as PercentageString }]} />
           </View>
           <View style={styles.footer}>
-            {empty ? (
-              detailsLabel ? (
-                <CText style={styles.details}>{detailsLabel}</CText>
-              ) : (
-                <View />
-              )
-            ) : (
-              <CText style={styles.covered}>{coveredLabel}</CText>
-            )}
-            {showWeekChange ? (
-              <View
-                style={styles.change}
-                testID={testID ? `${testID}-week-change` : undefined}
-              >
-                <Icon
-                  color={
-                    isWeekUp ? theme.accents.green.ink : theme.accents.red.ink
-                  }
-                  name="arrow"
-                  size={responsiveFont(12)}
-                  style={isWeekUp ? styles.arrowUp : undefined}
-                />
-                <CText style={isWeekUp ? styles.changeUp : styles.changeDown}>
-                  {weekChangeLabel}
-                </CText>
-              </View>
-            ) : null}
+            <CText testID={`${testID}-correct`} numberOfLines={1} style={styles.covered}>{correctLabel}</CText>
+            <Pressable testID={`${testID}-mistakes`} accessibilityRole={onMistakesPress ? "button" : undefined}
+              onPress={(event) => { event.stopPropagation(); (onMistakesPress ?? onPress)(); }} hitSlop={8}
+              style={({ pressed }) => [styles.mistakesAction, pressed && onMistakesPress ? styles.pressed : null]}>
+              <CText numberOfLines={1} style={styles.mistakes}>{mistakesLabel}</CText>
+              {onMistakesPress ? <Icon testID={`${testID}-mistakes-chevron`} name="chevron" size={16} color={styles.mistakes.color as string} /> : null}
+            </Pressable>
           </View>
         </>
       )}
@@ -118,9 +53,11 @@ export function ExamReadinessCard({
   );
 }
 
-function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
+function useStyles() {
+  const { width } = useWindowDimensions();
   return useResponsiveStyles(({ colors, elevation, radius, responsiveFont, spacing, theme }) => ({
     card: {
+      width: Math.max(0, width - spacing.exact(32)),
       backgroundColor: colors.white,
       borderRadius: radius.xxxl,
       paddingHorizontal: spacing.exact(16),
@@ -139,6 +76,8 @@ function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
     },
     title: {
       flex: 1,
+      minWidth: 0,
+      flexShrink: 1,
       fontSize: responsiveFont(18),
       lineHeight: responsiveFont(24),
       color: colors.ink,
@@ -153,12 +92,15 @@ function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
       borderRadius: radius.pill,
       backgroundColor: colors.track,
       overflow: "hidden",
+      flexDirection: "row",
     },
     fill: {
-      width: fillWidth,
       height: "100%",
-      borderRadius: radius.pill,
       backgroundColor: theme.accents.green.fill,
+    },
+    wrongFill: {
+      height: "100%",
+      backgroundColor: theme.accents.red.fill,
     },
     footer: {
       flexDirection: "row",
@@ -171,28 +113,15 @@ function useStyles({ fillWidth }: { fillWidth: PercentageString }) {
       lineHeight: responsiveFont(18),
       color: colors.inkSecondary,
     },
-    details: {
-      fontSize: responsiveFont(13),
-      lineHeight: responsiveFont(18),
-      color: theme.accents.blue.ink,
-    },
-    change: {
+    mistakesAction: {
       flexDirection: "row",
       alignItems: "center",
-      gap: spacing.exact(2),
+      gap: spacing.exact(4),
     },
-    changeUp: {
-      fontSize: responsiveFont(13),
-      lineHeight: responsiveFont(18),
-      color: theme.accents.green.ink,
-    },
-    changeDown: {
+    mistakes: {
       fontSize: responsiveFont(13),
       lineHeight: responsiveFont(18),
       color: theme.accents.red.ink,
-    },
-    arrowUp: {
-      transform: [{ rotate: "180deg" }],
     },
     skeleton: {
       gap: spacing.exact(10),

@@ -2,6 +2,7 @@ import type { QuestionSession } from "../../questions/types";
 
 import {
   createHomeDailySessionKey,
+  getUnfinishedDiagnostic,
   getHomeDailyPracticeStatus,
   getHomeDailyRemainingCount,
   isHomeDailySessionKey,
@@ -137,4 +138,13 @@ describe("home daily practice", () => {
       }).currentIndex
     ).toBe(0);
   });
+});
+
+
+it("resumes yesterday's diagnostic but rejects another category or a finished attempt", () => {
+  const session = makeSession({ request: { mode: "initial_diagnostic" }, answers: { q1: { questionId: "q1", selectedAnswer: "A", isCorrect: false, answeredAt: "2026-09-06T08:01:00.000Z" } } });
+  expect(getUnfinishedDiagnostic(session, "B")).toMatchObject({ answered: 1, total: 3 });
+  expect(getUnfinishedDiagnostic(session, "A")).toBeNull();
+  expect(getUnfinishedDiagnostic({ ...session, finishedAt: "2026-09-06T08:02:00.000Z" }, "B")).toBeNull();
+  expect(getUnfinishedDiagnostic({ ...session, answers: {} }, "B")).toBeNull();
 });

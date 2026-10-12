@@ -19,6 +19,7 @@ import {
 } from "@prawko/config";
 
 import { getExamCountry } from "../../state/app-shell";
+import { hasRoadmapLearningProgress, roadmapLessonKey, useRoadmapProgressStore } from "../home/roadmap-progress";
 import { getInitialDiagnosticQuestionIds } from "./initial-diagnostic/selection";
 import { INITIAL_DIAGNOSTIC_QUESTION_COUNT } from "./initial-diagnostic/mix";
 import { getQuestionBank, getQuestionBankById } from "./question-bank";
@@ -1577,6 +1578,16 @@ function restrictToAllowedTopics(
   });
 }
 
+export function getRoadmapPoolRevision(questionIds: readonly string[]) {
+  const content = JSON.stringify(questionIds.map((id) => {
+    const q = getQuestionById(id);
+    return [id, q?.prompt, q?.correctAnswer, q?.choices, q?.answerType, q?.media, q?.primaryTopicId, q?.topicIds];
+  }));
+  let hash = 2166136261;
+  for (let i = 0; i < content.length; i++) hash = Math.imul(hash ^ content.charCodeAt(i), 16777619);
+  return (hash >>> 0).toString(16);
+}
+
 function getQuestionIdsForMode(
   request: QuestionSessionRequest,
   userStates: QuestionUserStateMap,
@@ -1595,9 +1606,25 @@ function getQuestionIdsForMode(
 
   switch (request.mode) {
     case "learning": {
-      const learningIds = pool(
+      const country = getExamCountry();
+      if (hasRoadmapLearningProgress(country) && request.roadmapStepId?.startsWith(`${country}:`)) {
+        const lesson = useRoadmapProgressStore.getState().lessons[roadmapLessonKey(country, request.currentCategory, request.roadmapStepId)];
+        if (lesson?.questionIds.length && lesson.questionIds.every((id) => getQuestionById(id)) && lesson.revision === getRoadmapPoolRevision(lesson.questionIds)) {
+          const remaining = lesson.questionIds.filter((id) => !lesson.correctIds.includes(id));
+          return applyQuestionLimit(pool(remaining.length ? remaining : lesson.questionIds), questionLimit);
+        }
+      }
+      let learningIds = pool(
         getLearningQuestionIds(request.topic, userStates, now, request.topics)
       );
+      if (hasRoadmapLearningProgress(country) && request.roadmapStepId?.startsWith(`${country}:`)) {
+        const ownKey = roadmapLessonKey(country, request.currentCategory, request.roadmapStepId);
+        const reserved = new Set(Object.entries(useRoadmapProgressStore.getState().lessons).flatMap(([key, lesson]) =>
+          key !== ownKey && key.startsWith(`${country}:${request.currentCategory}:`) && lesson.revision === getRoadmapPoolRevision(lesson.questionIds) ? lesson.questionIds : []));
+        const unassigned = learningIds.filter((id) => !reserved.has(id));
+        // Tiny banks can require reuse; answer attribution still stays step-specific.
+        if (unassigned.length) learningIds = unassigned;
+      }
 
       // Topic-less limited sessions are the app's "random" entry points
       // (trainer random). Shuffle so each run differs.

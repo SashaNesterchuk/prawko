@@ -131,6 +131,7 @@ export default function E2EBootstrapScreen() {
         seedQuestionResultOutcome:
           destination === "question-result-failed" ? "poor" : "good",
         seedDiagnosticResult: destination === "diagnostic-result",
+        seedOnboardingSchedule: destination === "onboarding-schedule",
         premiumTeaserMoment,
         trainingCompletedLifetime,
         unlockHomeChrome: firstStart === true ? false : true,
@@ -315,8 +316,9 @@ function parseExamSessionStatus(
 function parseQuestionScenario(
   value: string | undefined
 ): E2EQuestionScenario | null {
-  return value?.trim().toLowerCase() === "topic-progress"
-    ? "topic-progress"
+  const normalized = value?.trim().toLowerCase();
+  return normalized === "topic-progress" || normalized === "roadmap-progress"
+    ? normalized
     : null;
 }
 

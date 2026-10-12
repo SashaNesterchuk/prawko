@@ -1,5 +1,5 @@
 # Feature: Home first start
-# Scenario: Without the spotlight, the Today readiness card still starts the assessment
+# Scenario: Empty preparation card has no action into empty practice
 appId: com.mindjar.prawko
 tags:
   - smoke
@@ -29,19 +29,18 @@ tags:
 - assertNotVisible:
     id: "home-today-start"
 
+- assertVisible:
+    id: "home-exam-readiness-percent"
+    text: "0%"
+- assertVisible:
+    id: "home-exam-readiness-correct"
+    text: ".*: 0"
+- assertVisible:
+    id: "home-exam-readiness-mistakes"
+    text: ".*: 0"
 - tapOn:
-    id: "home-exam-readiness"
-
-- extendedWaitUntil:
-    visible:
-      id: "screen-question"
-    timeout: 20000
-
+    id: "home-exam-readiness-percent"
 - assertVisible:
-    id: "question-choice-index-0"
-- assertVisible:
-    id: "question-title-quick-check"
+    id: "screen-statistics"
 - assertNotVisible:
-    id: "question-title-training"
-- assertNotVisible:
-    id: "screen-exam-session"
+    id: "screen-question"

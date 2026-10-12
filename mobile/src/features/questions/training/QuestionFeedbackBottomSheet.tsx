@@ -123,20 +123,28 @@ export function QuestionFeedbackBottomSheet({
           <View style={styles.gapMd} />
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t("monetizationV2.premiumBadge")}
-            style={styles.explainRow}
+            accessibilityLabel={`${t("monetizationV2.explanationPremiumTitle")}. ${t("monetizationV2.explanationPremiumPreview")}`}
+            style={styles.premiumPreview}
             testID="question-explanation-premium"
             onPress={onUnlockExplanation}
           >
-            <View style={styles.premiumBadge}>
-              <Icon
-                name="premiumSmall"
-                size={premiumIconSize}
-                color={colors.onAccent}
-              />
+            <View style={styles.premiumPreviewTitleRow}>
+              <View style={styles.premiumBadge}>
+                <Icon
+                  name="premiumSmall"
+                  size={premiumIconSize}
+                  color={colors.onAccent}
+                />
+              </View>
+              <CText style={styles.premiumPreviewTitle}>
+                {t("monetizationV2.explanationPremiumTitle")}
+              </CText>
             </View>
-            <CText style={styles.explainText}>
-              {t("monetizationV2.premiumBadge")}
+            <CText
+              style={styles.premiumPreviewSubtitle}
+              testID="question-explanation-premium-preview"
+            >
+              {t("monetizationV2.explanationPremiumPreview")}
             </CText>
           </Pressable>
         </>
@@ -230,6 +238,32 @@ function useStyles({ feedbackTitleColor }: { feedbackTitleColor: string }) {
         fontSize: responsiveFont(16),
         lineHeight: responsiveFont(24),
         color: accents.blue.ink,
+      },
+      premiumPreview: {
+        alignSelf: "stretch",
+        alignItems: "center",
+        gap: spacing.exact(4),
+        paddingVertical: spacing.exact(12),
+      },
+      premiumPreviewTitleRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.exact(8),
+      },
+      premiumPreviewTitle: {
+        flexShrink: 1,
+        fontSize: responsiveFont(14),
+        lineHeight: responsiveFont(20),
+        fontFamily: getFontFamily("semiBold"),
+        color: colors.textSecondary,
+        textAlign: "center",
+      },
+      premiumPreviewSubtitle: {
+        fontSize: responsiveFont(13),
+        lineHeight: responsiveFont(18),
+        color: colors.textSecondary,
+        textAlign: "center",
       },
       premiumBadge: {
         width: spacing.exact(20),

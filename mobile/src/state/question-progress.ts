@@ -14,6 +14,7 @@ import {
   canResumeQuestionSession,
   finishQuestionSession,
   getQuestionById,
+  getRoadmapPoolRevision,
   getQuestionTopicIds,
   getNextQuestionUserStateAfterAttempt,
   getNextTopicQuestionProgressMapAfterAttempt,
@@ -43,6 +44,8 @@ import type {
   TopicQuestionProgressMap,
 } from "../features/questions/types";
 import { getExamCountry, useAppShellStore } from "./app-shell";
+import { hasRoadmapLearningProgress, roadmapLessonKey, useRoadmapProgressStore } from "../features/home/roadmap-progress";
+import { getRoadmap } from "../features/home/roadmap";
 
 type ExamProgressLedger = Record<
   string,
@@ -511,6 +514,7 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           };
         });
 
+        useRoadmapProgressStore.getState().recordAnswer(getExamCountry(), activeSession.request.currentCategory, questionId, isCorrect, activeSession.request.roadmapStepId);
         return attempt;
       },
       clearActiveSession: () => set({ activeSession: null }),
@@ -683,6 +687,24 @@ export const useQuestionProgressStore = create<QuestionProgressState>()(
           return resumedSession;
         }
 
+        const country = getExamCountry();
+        if (hasRoadmapLearningProgress(country) && request.mode === "learning" && request.roadmapStepId?.startsWith(`${country}:`)) {
+          const key = roadmapLessonKey(country, request.currentCategory, request.roadmapStepId);
+          const previous = useRoadmapProgressStore.getState().lessons[key];
+          if (!previous || previous.questionIds.some((id) => !getQuestionById(id)) || previous.revision !== getRoadmapPoolRevision(previous.questionIds)) {
+            const [, sectionIndex, stepIndex] = request.roadmapStepId.split(":");
+            const step = getRoadmap(country)[Number(sectionIndex)]?.steps[Number(stepIndex)];
+            if (step && !step.startsExam) {
+              // Plan the full lesson before an access allowance shortens this entry.
+              const planned = buildQuestionSession({ ...request, questionLimit: step.questionLimit }, state.questionUserState, new Date(), state.topicQuestionContextProgress);
+              if (planned.questionIds.length) useRoadmapProgressStore.getState().registerLesson(key, {
+                questionIds: planned.questionIds,
+                correctIds: [],
+                revision: getRoadmapPoolRevision(planned.questionIds),
+              });
+            }
+          }
+        }
         const session = buildQuestionSession(
           request,
           state.questionUserState,

@@ -1,0 +1,29 @@
+# Feature: Training session result
+# Scenario: CZ keeps the existing global mistakes route.
+appId: com.mindjar.prawko
+tags:
+  - training
+  - result
+  - mistakes
+---
+- runFlow:
+    file: subflows/launch_onboarded_destination.yaml
+    env:
+      EXAM_COUNTRY: CZ
+      DESTINATION: question-result-failed
+      PLUS_ACCESS: "true"
+      TARGET_ID: screen-question-result
+
+- assertVisible:
+    id: "screen-question-result"
+
+- tapOn:
+    id: "question-result-primary"
+
+- extendedWaitUntil:
+    visible:
+      id: "screen-mistakes"
+    timeout: 15000
+
+- assertNotVisible:
+    id: "screen-question-result"
